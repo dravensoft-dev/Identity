@@ -32,11 +32,17 @@ export function clampPercentage(value: number): number {
   `,
 })
 export class ProgressBar {
+  /** How far along, 0-100. Clamped and rounded. Ignored when `indeterminate`. */
   readonly progressPercentage = input(0, { transform: numberAttribute });
+  /** A wait with no percentage; the bar sweeps instead of filling. */
   readonly indeterminate = input(false, { transform: booleanAttribute });
+  /** The bar's colour. */
   readonly tone = input<ProgressTone>('accent');
+  /** Names what is progressing. Drawn above the bar, and it is the bar's accessible name. Required and guarded rather than defaulted: nothing can derive what is progressing, and a fallback of "Progress" satisfies roles.label mechanically while telling a screen-reader user only what the component is -- two of them on one page announce identically. */
   readonly label = input.required<string>();
+  /** Shows the percentage beside the label. Determinate only. */
   readonly showPercentage = input(true, { transform: booleanAttribute });
+  /** The bar's thickness. */
   readonly size = input<ControlSize>('md');
 
   protected readonly percentage = computed(() => clampPercentage(this.progressPercentage()));

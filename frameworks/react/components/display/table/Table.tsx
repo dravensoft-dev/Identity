@@ -8,14 +8,19 @@ export type { TableColumn };
 
 export interface TableProps {
 
+  /** Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it — Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". */
   label: string;
 
+  /** The columns, in order. A column heads and sets its cells; it never says what goes in them. */
   columns: TableColumn[];
 
+  /** The rows. One TableRow per row. Where a row sits, the columns its cells are set against and how the keyboard reaches them are Table's to decide and no row's to declare; how that reaches a row is each layer's own idiom. */
   children?: React.ReactNode;
 
+  /** What shows when no row is written. Every layer falls back to the string 'No data.' when nothing is given, each in its own idiom for a default. Unlike Table.label this one IS derivable: 'No data.' states what happened rather than what the component is, which is the distinction that makes a fallback useful here and useless there. A consumer with a better sentence, what to do next or why the list is empty, projects it. */
   empty?: React.ReactNode;
 
+  /** Card mode below --bp-md. Set false only when the columns are meaningless apart. */
   responsive?: boolean;
 }
 

@@ -28,12 +28,19 @@ let nextId = 0;
   `,
 })
 export class SegmentedControl {
+  /** The options, in order. Two to four with one-word labels. */
   readonly options = input.required<readonly SegmentOption[]>();
+  /** The selected option's value. Omit and pass `defaultValue` to let it govern itself. */
   readonly value = input<string>();
+  /** The initially selected value when uncontrolled. Defaults to the first option. */
   readonly defaultValue = input<string>();
+  /** Compact or default. */
   readonly size = input<SegmentedControlSize>('md');
+  /** Names what is being filtered — "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
   readonly ariaLabel = input.required<string>();
+  /** Shared name for the underlying radios; generated when omitted. */
   readonly name = input<string>();
+  /** A different option was chosen; carries its value. */
   readonly change = output<string>();
 
   private readonly fallbackName = `arena-segmented-control-${nextId++}`;

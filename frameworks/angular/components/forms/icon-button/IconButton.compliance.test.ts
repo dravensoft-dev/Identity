@@ -26,12 +26,13 @@ const BINDING = join(ANGULAR_COMPONENTS, 'forms/icon-button/IconButton.behaviour
   standalone: true,
   imports: [IconButton],
   template: `<arena-icon-button icon="ph-bold ph-trash" label="Delete project"
-                                [disabled]="disabled" [showLabel]="showLabel"
+                                [disabled]="disabled" [showLabel]="showLabel" [pressed]="pressed"
                                 (click)="clicks = clicks + 1" />`,
 })
 class IconButtonHost {
   disabled = false;
   showLabel = false;
+  pressed: boolean | undefined = undefined;
   clicks = 0;
 }
 
@@ -152,5 +153,50 @@ test('arena-icon-button meets the button pattern', () => {
     });
   } finally {
     fixture.destroy();
+  }
+});
+
+test('no pressed member means no aria-pressed at all -- a plain button is not an unpressed toggle', () => {
+  const { fixture, control } = render();
+  try {
+    assert.equal(control.getAttribute('aria-pressed'), null,
+      'a control that is not a toggle announced itself as one that is off');
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('pressed reflects both of its states, and the name never moves between them', () => {
+  const on = render({ pressed: true });
+  try {
+    assert.equal(on.control.getAttribute('aria-pressed'), 'true');
+    assert.equal(on.control.getAttribute('aria-label'), 'Delete project');
+  } finally {
+    on.fixture.destroy();
+  }
+
+  const off = render({ pressed: false });
+  try {
+    assert.equal(off.control.getAttribute('aria-pressed'), 'false');
+    assert.equal(off.control.getAttribute('aria-label'), 'Delete project',
+      'a toggle that renames itself is announced as another control rather than the same one in another state');
+  } finally {
+    off.fixture.destroy();
+  }
+});
+
+test('a toggle still meets the button pattern in both of its states', () => {
+  for (const pressed of [true, false]) {
+    const { fixture, host, control } = render({ pressed });
+    try {
+      assertPattern({
+        root: host,
+        bindingPath: BINDING,
+        subjects: { default: control },
+        behavioural: { 'states.disabled': true, 'keyboard.Space': true, 'keyboard.Enter': true },
+      });
+    } finally {
+      fixture.destroy();
+    }
   }
 });

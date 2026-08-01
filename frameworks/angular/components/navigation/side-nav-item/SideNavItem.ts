@@ -34,10 +34,15 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
   `,
 })
 export class SideNavItem {
+  /** Identifies the destination. SideNav.active names one of these, and the item whose id matches is the one marked aria-current="page". Required, and guarded with a falsy check rather than an absence check: a blank id can never match and is an omission wearing a value. */
   readonly id = input.required<string>();
+  /** What the item reads, and its whole accessible name. Required and falsy-guarded for the same reason. */
   readonly label = input.required<string>();
+  /** A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph. */
   readonly icon = input<string>();
+  /** Present => the item renders an <a>; absent => a <button>. A control that navigates must be a link -- openable in a new tab, address copyable, announced as a link. An item that only changes local state is a button. */
   readonly href = input<string>();
+  /** Whether the destination is drawn but cannot be reached -- one the consumer's rules lock, such as a feature the current plan does not include. It reflects through `aria-disabled` rather than the native attribute, and rather than by not rendering the item at all: an unavailable destination a user can see and hear announced as unavailable is what tells them it exists, which is the whole reason to draw it. The anchor keeps its `href` so the case split stays what it is -- what changes is that activation is refused and the state is announced. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly nav = inject(SideNavState);

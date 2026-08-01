@@ -6,15 +6,21 @@ export type { StatDelta };
 
 export interface StatCardProps {
 
+  /** Short uppercase microlabel, two words at most. */
   label: string;
 
+  /** Preformatted, e.g. "1,284" or "99.9%". StatCard never formats. */
   value: string;
 
+  /** What state the number IS in right now, as against how it moved. Badge's vocabulary. */
   tone?: Tone;
+  /** How the number moved. Absent renders no pill. */
   delta?: StatDelta;
 
+  /** Small muted line under the value — context, e.g. "vs last week". */
   sub?: string;
 
+  /** A Phosphor class name for a small glyph beside the label, drawn muted. Arena renders the aria-hidden wrapper and the `<i>`. */
   icon?: string;
 }
 

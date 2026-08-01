@@ -34,8 +34,11 @@ import { tableStyles } from './Table.variants';
   `,
 })
 export class Table {
+  /** Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it — Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". */
   readonly label = input.required<string>();
+  /** The columns, in order. A column heads and sets its cells; it never says what goes in them. */
   readonly columns = input.required<TableColumn[]>();
+  /** Card mode below --bp-md. Set false only when the columns are meaningless apart. */
   readonly responsive = input(true, { transform: booleanAttribute });
 
   protected readonly state = inject(TableState);

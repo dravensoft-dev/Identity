@@ -21,13 +21,26 @@ export function useContainerWidth<T extends Element = HTMLDivElement>():
 
 const cache = new Map<string, number>();
 
+const warned = new Set<string>();
+
+function warnUnresolved(name: string): void {
+  if (warned.has(name) || typeof console === 'undefined') return;
+  warned.add(name);
+  console.warn(`[arena] --bp-${name} did not resolve, so readBreakpoint('${name}') is NaN and every`
+    + ' comparison against it is false: a responsive component stays on its wide branch on a phone.'
+    + " Arena's stylesheet is missing, or it loads after this ran.");
+}
+
 export function readBreakpoint(name: 'sm' | 'md' | 'lg'): number {
   if (typeof document === 'undefined') return NaN;
   const hit = cache.get(name);
   if (hit !== undefined) return hit;
   const raw = getComputedStyle(document.documentElement).getPropertyValue(`--bp-${name}`);
   const value = parseFloat(raw);
-  const px = Number.isFinite(value) ? value : NaN;
-  cache.set(name, px);
-  return px;
+  if (!Number.isFinite(value)) {
+    warnUnresolved(name);
+    return NaN;
+  }
+  cache.set(name, value);
+  return value;
 }

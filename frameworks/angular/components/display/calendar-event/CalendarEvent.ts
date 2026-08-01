@@ -79,14 +79,23 @@ let seq = 0;
   `,
 })
 export class CalendarEvent {
+  /** Stable identity, so a host can switch on it rather than on the title. */
   readonly id = input.required<string>();
+  /** What the chip reads. */
   readonly title = input.required<string>();
+  /** ISO datetime the event begins. */
   readonly start = input.required<string>();
+  /** ISO datetime the event ends. */
   readonly end = input.required<string>();
+  /** Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. */
   readonly colorId = input<CatSlot>();
+  /** Whether the chip can be activated. A boolean rather than "is `click` bound?" — R6, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. */
   readonly interactive = input(false, { transform: booleanAttribute });
+  /** Whether the chip shows its action button. A boolean rather than "is the actions slot filled?" — R6: projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. */
   readonly actionsEnabled = input(false, { transform: booleanAttribute });
+  /** Whether the chip is drawn but cannot be activated — an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about. Never emitted while `disabled`. */
   readonly click = output<void>();
 
   protected readonly domId = `arena-calendar-event-${seq++}`;

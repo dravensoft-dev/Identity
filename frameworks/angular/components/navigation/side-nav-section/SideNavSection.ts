@@ -25,6 +25,7 @@ let nextId = 0;
   `,
 })
 export class SideNavSection {
+  /** Names the group, both on screen and to assistive technology. Required, and guarded at runtime: a blank label leaves the group with no accessible name, which is the defect the guard exists to prevent arriving through a value that is present, so the guard trims before it decides. */
   readonly label = input.required<string>();
 
   private readonly parent = inject(SideNavState, { skipSelf: true });

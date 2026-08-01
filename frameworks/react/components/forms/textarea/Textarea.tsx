@@ -2,34 +2,49 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export interface TextareaProps {
 
+  /** Field label; the counter and error sit under the field. */
   label?: string;
 
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `ta-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased — the derivation Input.id states, under this component's own prefix. */
   id?: string;
 
+  /** A line of help under the field. */
   hint?: string;
 
+  /** Error message; turns the border crimson and shows below. */
   error?: string;
 
+  /** Marks the label and the control required. */
   required?: boolean;
 
+  /** Shows a live length/maxLength count, which warns once the length is STRICTLY past nine tenths of `maxLength` — exactly at the share is not yet near the limit. */
   counter?: boolean;
 
+  /** Grows with the content instead of scrolling. */
   autoResize?: boolean;
 
+  /** The controlled text. */
   value?: string;
 
+  /** Blocks editing and dims it. */
   disabled?: boolean;
 
+  /** Shows the value but blocks editing. */
   readOnly?: boolean;
 
+  /** Shown when empty. */
   placeholder?: string;
 
+  /** Submitted with the form. */
   name?: string;
 
+  /** Caps the length; feeds the counter. */
   maxLength?: number;
 
+  /** Initial visible rows. */
   rows?: number;
 
+  /** Edited; carries the new text. */
   onChange?: (value: string) => void;
 }
 

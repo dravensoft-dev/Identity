@@ -6,12 +6,16 @@ export type { MenuItem };
 
 export interface MenuProps {
 
+  /** The element that opens the menu. The consumer draws it -- an IconButton with ph-dots-three-vertical, a secondary Button -- so it is a slot, and it carries its own accessible name. */
   trigger: React.ReactNode;
 
+  /** The entries, in order: activatable rows, dividers and group headers. */
   items: MenuItem[];
 
+  /** Which edge of the trigger the panel lines up with. */
   align?: MenuAlign;
 
+  /** An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. */
   onSelect?: (item: MenuItem) => void;
 }
 

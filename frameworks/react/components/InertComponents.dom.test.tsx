@@ -3,8 +3,8 @@
  * outside COVERED for exactly that reason: a compliance suite over `none` would have been
  * ceremony. So each renders with no consumer content and is asserted INERT, which is the
  * sentence the pattern's own description makes and no requirement can. Content a consumer
- * projects is theirs and is deliberately not passed: Card and PageHead have action slots, and a
- * Button inside one leaves the binding correct. SideNavSection is the one that needs a child at
+ * projects is theirs and is deliberately not passed: PageHead has an action slot, and a Button
+ * inside one leaves the binding correct. SideNavSection is the one that needs a child at
  * all -- its content slot is required -- and it gets an inert one that absorbs the props the
  * section injects into its direct children, because a bare <span> would receive them as unknown
  * DOM attributes. */
@@ -41,7 +41,6 @@ const INERT: [string, string, React.ReactElement][] = [
   ['AppLogo', 'brand/app-logo/AppLogo.behaviour.json', <AppLogo mark={<svg />} name="Dravensoft" />],
   ['Avatar', 'display/avatar/Avatar.behaviour.json', <Avatar name="Ada Lovelace" />],
   ['Badge', 'display/badge/Badge.behaviour.json', <Badge>Healthy</Badge>],
-  ['Card', 'display/card/Card.behaviour.json', <Card title="Deployments" />],
   ['StatCard', 'display/stat-card/StatCard.behaviour.json', <StatCard label="Uptime" value="99.98%" />],
   ['UnauthCard', 'display/unauth-card/UnauthCard.behaviour.json', <UnauthCard title="Sign in" />],
   ['ChartCard', 'charts/chart-card/ChartCard.behaviour.json', <ChartCard title="Latency" />],
@@ -78,7 +77,7 @@ for (const [name, tail, element] of INERT) {
 }
 
 test('the inert set is not empty and every entry names a real binding, so a shrinking list cannot pass by having nothing in it', () => {
-  assert.ok(INERT.length >= 10, 'the inert set lost an entry -- a component leaving it should leave by changing its binding');
+  assert.ok(INERT.length >= 9, 'the inert set lost an entry -- a component leaving it should leave by changing its binding');
   for (const [name, tail] of INERT) {
     assert.match(tail, new RegExp(`/${name}\\.behaviour\\.json$`), `${name} names a binding tail that is not its own`);
   }

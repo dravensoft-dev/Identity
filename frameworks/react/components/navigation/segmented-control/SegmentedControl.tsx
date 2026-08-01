@@ -5,18 +5,25 @@ import type { SegmentOption, SegmentedControlSize } from '../../../Api.generated
 export type { SegmentOption };
 export interface SegmentedControlProps {
 
+  /** The options, in order. Two to four with one-word labels. */
   options: SegmentOption[];
 
+  /** The selected option's value. Omit and pass `defaultValue` to let it govern itself. */
   value?: string;
 
+  /** The initially selected value when uncontrolled. Defaults to the first option. */
   defaultValue?: string;
 
+  /** Compact or default. */
   size?: SegmentedControlSize;
 
+  /** Names what is being filtered — "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
   ariaLabel: string;
 
+  /** Shared name for the underlying radios; generated when omitted. */
   name?: string;
 
+  /** A different option was chosen; carries its value. */
   onChange?: (value: string) => void;
 }
 

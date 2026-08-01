@@ -59,3 +59,10 @@ test('the disabled treatment is a :disabled variant, which only a real disabled 
   assert.match(root, /disabled:opacity-45/);
   assert.match(root, /disabled:cursor-not-allowed/);
 });
+
+test('the pressed treatment is the accent tint a current SideNav item takes, not a second convention', () => {
+  const on = iconButtonStyles({ pressed: true }).root();
+  assert.match(on, /bg-primary\/14/);
+  assert.match(on, /text-primary\b/);
+  assert.doesNotMatch(iconButtonStyles({ pressed: false }).root(), /bg-primary\/14/);
+});

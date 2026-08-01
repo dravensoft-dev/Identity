@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { Toast } from './Toast.tsx';
+import { Toast, TOAST_DISMISS } from './Toast.tsx';
+import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js';
 
 test('actionLabel renders a real button carrying that label', () => {
   const html = renderToStaticMarkup(<Toast title="Deployment archived" actionLabel="Undo" onAction={() => {}} />);
@@ -63,4 +64,10 @@ test('Toast drops a consumer style object -- the ...style escape is gone', () =>
 test('Toast drops a consumer attribute -- no {...rest} spread reaches the root', () => {
   const html = renderToStaticMarkup(<Toast title="Deployment archived" data-stray="x" />);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
+});
+
+test('TOAST_DISMISS carries the two token intervals, and the actionable one is the longer', () => {
+  assert.deepEqual({ ...TOAST_DISMISS }, { default: dismissDefault, actionable: dismissActionable });
+  assert.ok(TOAST_DISMISS.actionable > TOAST_DISMISS.default,
+    'a notice carrying a button asks the reader to decide rather than only to read, so it lives longer');
 });

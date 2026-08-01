@@ -5,12 +5,16 @@ import type { Crumb } from '../../../Api.generated';
 export type { Crumb };
 export interface BreadcrumbsProps {
 
+  /** Names this navigation landmark. Required, and guarded at runtime: nothing can derive it, and the constant "Breadcrumb" it used to hardcode made two trails on one page indistinguishable as landmarks while satisfying the requirement mechanically. Say which hierarchy this is a trail through — "Project navigation", never "Breadcrumb". */
   ariaLabel: string;
 
+  /** The trail, root first. The last entry is the current location and is never a link. */
   items: Crumb[];
 
+  /** Drawn between crumbs, never before the first. Arena draws it, in its own aria-hidden span. */
   separator?: string;
 
+  /** A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, so a listener cannot call preventDefault() on the anchor's own navigation -- ctrl-click, middle-click and open-in-new-tab still work for a consumer who wires nothing; intercepting a plain click to substitute SPA routing belongs at the router (routerLink, Link), not here. */
   onNavigate?: (crumb: Crumb) => void;
 }
 

@@ -24,10 +24,15 @@ import type { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generat
   `,
 })
 export class Avatar {
+  /** Image URL. Absent renders initials from `name`. */
   readonly src = input<string>();
+  /** The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text. */
   readonly name = input('');
+  /** The avatar's diameter. */
   readonly size = input<AvatarSize>('md');
+  /** Circle for a person, rounded for a team. */
   readonly shape = input<AvatarShape>('circle');
+  /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional — there is no invisible enum value. */
   readonly status = input<AvatarStatus>();
 
   protected readonly styles = computed(() =>

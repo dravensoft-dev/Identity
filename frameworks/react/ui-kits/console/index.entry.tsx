@@ -2,11 +2,10 @@ import type { ToastTone } from '../../Api.generated';
 import type { ConsoleProject } from './DashboardScreen.tsx';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { dismissDefault, dismissActionable } from '../../Tokens.generated.js';
 import { LoginScreen } from './LoginScreen.tsx';
 import { DashboardScreen } from './DashboardScreen.tsx';
 import { ProjectScreen } from './ProjectScreen.tsx';
-import { Toast } from '../../components/feedback/toast/Toast.tsx';
+import { Toast, TOAST_DISMISS } from '../../components/feedback/toast/Toast.tsx';
 
 interface ConsoleToast {
   tone: ToastTone;
@@ -28,7 +27,7 @@ function App(){
 
     if (t.persist) return;
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
-      t.actionLabel ? dismissActionable : dismissDefault);
+      t.actionLabel ? TOAST_DISMISS.actionable : TOAST_DISMISS.default);
   };
 
   const nav = (id: string) => {

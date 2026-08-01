@@ -3,11 +3,27 @@ import { Button } from '../../forms/button/Button.tsx';
 import { useDialogModal } from '../../../UseDialogModal.ts';
 
 export interface ConfirmDialogProps {
-  open: boolean; onCancel?: () => void; onConfirm?: () => void;
+  /** Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let a ConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog. */
+  open: boolean;
+  /** The dialog was dismissed -- by the Cancel action or by the Escape key, in both layers. A scrim click is deliberately NOT one of them: this component never closes on click-outside. No payload. */
+  onCancel?: () => void;
+  /** The action was confirmed. */
+  onConfirm?: () => void;
 
-  title: string; eyebrow?: string; children?: React.ReactNode;
-  confirmLabel?: string; cancelLabel?: string;
-  destructive?: boolean; requireText?: string;
+  /** The dialog heading, and the name the panel's aria-labelledby points at. Required: nothing can derive a name for a confirmation, because its subject is editorial, and a modal announcing only its role is worse than none at all. */
+  title: string;
+  /** Small uppercase label above the title. */
+  eyebrow?: string;
+  /** The dialog body — the question and any detail. */
+  children?: React.ReactNode;
+  /** The confirm button's label. */
+  confirmLabel?: string;
+  /** The cancel button's label. */
+  cancelLabel?: string;
+  /** Gives the confirm button Arena's only filled danger surface. */
+  destructive?: boolean;
+  /** Locks the confirm button until this exact word is typed. */
+  requireText?: string;
 }
 
 

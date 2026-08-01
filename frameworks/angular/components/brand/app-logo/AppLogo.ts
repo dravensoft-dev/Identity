@@ -16,9 +16,13 @@ import type { LogoSize, Orientation } from '../../../Api.generated';
   `,
 })
 export class AppLogo {
+  /** The product name, or its first half when `dim` carries the second. */
   readonly name = input.required<string>();
+  /** The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome — which is why there is no `variant` member: the mark's ink and this are the same two decisions. */
   readonly dim = input<string>();
+  /** Both halves at once — the mark's slot and the wordmark. */
   readonly size = input<LogoSize>('md');
+  /** Mark beside the name, or above it. */
   readonly orientation = input<Orientation>('horizontal');
 
   protected readonly styles = computed(() =>

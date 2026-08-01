@@ -11,12 +11,21 @@ activate and disable.
 <arena-icon-button icon="ph-bold ph-pencil-simple" label="Rename" size="sm" (click)="rename()" />
 <arena-icon-button icon="ph-bold ph-download-simple" label="Export CSV" showLabel (click)="export()" />
 <arena-icon-button icon="ph-bold ph-arrow-clockwise" label="Retry" disabled />
+<arena-icon-button icon="ph-bold ph-push-pin" label="Pin this view" [pressed]="pinned()" (click)="pinned.set(!pinned())" />
 ```
 
 **Do / Don't**
 - `label` is **required and is the accessible name**, not a decoration. It is the `aria-label` in
   every state, the visible text under `showLabel`, and the `title` when there is none. An icon
   button without it announces nothing at all, which is why this input has no default.
+- **`pressed` is what makes it a toggle, and its absence is a state of its own.** Bound, Arena
+  writes `aria-pressed` and draws the on state with the accent tint a current `arena-side-nav`
+  item takes; unbound, the control is not a toggle at all. Never default it to `false`: on a
+  plain button `aria-pressed="false"` announces a toggle that is off rather than a button, so
+  every icon button in the app would read as an unpressed toggle.
+- **A toggle keeps its `label` in both states.** Changing the name to carry the state is the
+  workaround `pressed` exists to end: a screen reader then announces a different control instead
+  of the same one in another state. Name what it does, not what pressing it will do next.
 - `icon` is a Phosphor class-name string Arena draws inside an `aria-hidden` `<i>`, never a slot.
   That is the single-icon convention, and it is why this component projects nothing.
 - The `title` is dropped the moment `showLabel` is set. A title beside a visible label makes the

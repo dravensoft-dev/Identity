@@ -33,11 +33,17 @@ import { errorStateStyles } from './ErrorState.variants';
   `,
 })
 export class ErrorState {
+  /** A Phosphor class name for the danger glyph Arena draws. */
   readonly icon = input<string>();
+  /** The headline — what failed. */
   readonly title = input('Something went wrong');
+  /** A sentence of detail under the title. */
   readonly message = input<string>();
+  /** A diagnostic/support code, shown monospaced. */
   readonly code = input<string>();
+  /** The label of the retry button Arena draws. Absent renders no retry. */
   readonly retryLabel = input<string>();
+  /** The retry button was activated. */
   readonly retry = output<void>();
 
   protected readonly secondaryAction = contentChild(ArenaSecondaryAction);

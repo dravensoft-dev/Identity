@@ -68,7 +68,10 @@ tile with a microlabel, so it has a manifest like every other expressible compon
 
 Four shared files are not components, and each sits at the narrowest level that contains
 all of its consumers rather than in one shared bucket:
-`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`),
+`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
+once per name when a breakpoint token does not resolve and never caches the failure**: every
+comparison against `NaN` is false, so a silent one leaves `Table`, `Calendar` and `PageHead` on
+their wide branch on a phone with nothing reported),
 `FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
 used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
@@ -314,9 +317,9 @@ no recipe, so there is no `root` slot to bind. The **form controls** each need t
 `<button>`, `<input>` or `<label>`. Some **keep a specific semantic or structural element**: a
 real `<ul>` for a feed, a `<div role="tablist">` whose panels are siblings outside it, a real
 `<nav>` for a navigation landmark, since the `navigation` pattern offers `role="navigation"` only
-for when a `<nav>` cannot be used. The fourth group has one member and a reason unlike the other
-three: **a component that owns an output named after a DOM event it must be able to refuse needs
-an inner element to stop the event at.** An Angular output named after a native DOM event is
+for when a `<nav>` cannot be used. The fourth group has a reason unlike the other three:
+**a component that owns an output named after a DOM event it must be able to refuse needs an inner
+element to stop the event at.** An Angular output named after a native DOM event is
 delivered twice, once as the output and once as the bubbled DOM event Angular also listens for
 on the host, so with `stopPropagation()` removed one pointer click reaches the consumer twice and a
 disabled row activates. A host listener cannot fix it: `stopPropagation` does not reach a sibling
@@ -324,6 +327,11 @@ listener on the same element, and `stopImmediatePropagation` would depend on reg
 So the rule has a second clause: **host-bind unless the root must be a specific element, or unless
 the component owns an output named after a DOM event it must be able to refuse.** The suites
 assert the delivery count, so a wrapper cannot be optimised away without a red run.
+
+**`arena-card` is in that fourth group and shows how far the defect goes.** A host that both
+listens for `click` and emits an output of that name does not merely double-deliver: each emission
+re-enters the host's own listener, and one measured press reached the consumer 7609 times before
+the run gave up. So the wrapper is not a tidiness question there either.
 
 **The consequence a carve-out pays** is that a consumer attribute written on `<arena-x>`, a
 static `class` or an ARIA attribute, lands on the inert host and never on the styled element

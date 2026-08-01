@@ -29,8 +29,11 @@ let nextId = 0;
   `,
 })
 export class Tabs {
+  /** The selected tab's value. Omit and pass `defaultValue` to let it govern itself. */
   readonly value = input<string>();
+  /** The initially selected value when uncontrolled. Defaults to the first tab. */
   readonly defaultValue = input<string>();
+  /** A different tab was chosen; carries its value. */
   readonly change = output<string>();
 
   private readonly base = `arena-tabs-${nextId++}`;

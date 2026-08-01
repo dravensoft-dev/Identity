@@ -11,8 +11,12 @@ fields, and a callback is not data; `Alert` takes the same pair for the same rea
 **`dismissible` is what shows the ×**, not the presence of `onClose`. A handler alone renders no
 close button, because a layer that cannot detect a listener could not implement the other rule.
 
-On the host, respect `persist`: `if (!toast.persist) setTimeout(dismiss, 4200);` and key the
-longer `--dismiss-actionable` clock off `actionLabel`, which is what actually renders the button.
+On the host, respect `persist`, and take the interval from `TOAST_DISMISS`, exported beside the
+component, rather than typing a number:
+`if (!t.persist) setTimeout(dismiss, t.actionLabel ? TOAST_DISMISS.actionable : TOAST_DISMISS.default);`.
+The longer clock keys off `actionLabel`, which is what actually renders the button, because a
+notice carrying one asks the reader to decide rather than only to read. They are tokens, so a host
+that reads them stays in step with a release that moves one; a host that retypes 4200 does not.
 
 **Do / Don't**
 - `persist` on every error/critical toast; the close uses the standard `ph-x` icon (H4).

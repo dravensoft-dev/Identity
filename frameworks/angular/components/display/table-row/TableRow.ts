@@ -22,8 +22,11 @@ import { tableRowStyles } from './TableRow.variants';
   `,
 })
 export class TableRow {
+  /** Whether the row can be activated. A boolean rather than "is `click` bound?" — R6: an outbound member's subscriber list is private in at least one platform and a consumer's binding leaves nothing in the DOM to detect, so deriving the interactive shape from it is a divergence waiting to happen, and it was one. Below --bp-md the row is a card, and an interactive card is a role="button" tab stop with an Enter/Space handler; a non-interactive one is inert, because a dead tab stop on every row of every table is worse than the gap it would close. */
   readonly interactive = input(false, { transform: booleanAttribute });
+  /** Whether the row is drawn but cannot be activated — a record the consumer's rules lock. It reflects through `aria-disabled` rather than the native attribute, and the card shape stays a role="button" in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. With no `click` there is nothing to disable and the row is inert already. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** The row was activated, by pointer or by Enter on one of its cells. No payload, because the consumer wrote this element and already holds the row this is about. */
   readonly click = output<void>();
 
   private readonly table = inject(TableState);

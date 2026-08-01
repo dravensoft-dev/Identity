@@ -2,8 +2,20 @@ import React from 'react';
 import { Button } from '../../forms/button/Button.tsx';
 
 export interface ErrorStateProps {
-  icon?: string; title?: string; message?: string; code?: string;
-  retryLabel?: string; onRetry?: () => void; secondaryAction?: React.ReactNode;
+  /** A Phosphor class name for the danger glyph Arena draws. */
+  icon?: string;
+  /** The headline — what failed. */
+  title?: string;
+  /** A sentence of detail under the title. */
+  message?: string;
+  /** A diagnostic/support code, shown monospaced. */
+  code?: string;
+  /** The label of the retry button Arena draws. Absent renders no retry. */
+  retryLabel?: string;
+  /** The retry button was activated. */
+  onRetry?: () => void;
+  /** An extra control beside the retry (e.g. a link to logs). */
+  secondaryAction?: React.ReactNode;
 }
 
 

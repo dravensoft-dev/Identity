@@ -72,6 +72,14 @@ function isPragma(text) {
   return /^\/[/*]\s*(@ts-|eslint-|prettier-|c8 |istanbul )/.test(text);
 }
 
+export const MEMBER_DOC_TREE = /^frameworks\/[^/]+\/components\//;
+
+function isMemberDoc(text, repoRelativePath) {
+  return MEMBER_DOC_TREE.test(repoRelativePath)
+    && !repoRelativePath.includes('.test.')
+    && text.startsWith('/**');
+}
+
 function documents(root) {
   return walk(root, (p) => p.endsWith('.md'), emittedTree(root));
 }
@@ -136,7 +144,8 @@ export function commentRuleProblems(root = ROOT) {
     scanned += 1;
 
     const rel = relative(root, path);
-    const comments = findComments(source).filter((c) => !isPragma(c.text));
+    const comments = findComments(source)
+      .filter((c) => !isPragma(c.text) && !isMemberDoc(c.text, rel));
     if (comments.length === 0) continue;
 
     const [first, ...rest] = comments;

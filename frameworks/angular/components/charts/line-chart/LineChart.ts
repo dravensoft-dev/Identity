@@ -139,12 +139,19 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
   `,
 })
 export class LineChart {
+  /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
   readonly labels = input.required<string[]>();
+  /** The plotted data, in order. One point per entry; a negative value clamps to the baseline. */
   readonly values = input.required<number[]>();
+  /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason Table.label is required. */
   readonly seriesLabel = input.required<string>();
+  /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */
   readonly slot = input<number>();
+  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot — passing both warns in development and tone wins. */
   readonly tone = input<SeriesTone>();
+  /** Fill under the line at 18% of the series colour — a tint, never a gradient. For a single series; two fills occlude each other. */
   readonly area = input(false, { transform: booleanAttribute });
+  /** Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
 
   protected readonly height = CHART_HEIGHT;

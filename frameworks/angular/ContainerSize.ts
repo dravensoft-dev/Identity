@@ -19,13 +19,26 @@ export function containerWidth(): Signal<number | null> {
   return width.asReadonly();
 }
 
+const warned = new Set<string>();
+
+function warnUnresolved(name: string): void {
+  if (warned.has(name) || typeof console === 'undefined') return;
+  warned.add(name);
+  console.warn(`[arena] --bp-${name} did not resolve, so readBreakpoint('${name}') is NaN and every`
+    + ' comparison against it is false: a responsive component stays on its wide branch on a phone.'
+    + " Arena's stylesheet is missing, or it loads after this ran.");
+}
+
 export function readBreakpoint(name: 'sm' | 'md' | 'lg'): number {
   const doc = inject(DOCUMENT);
   const cached = breakpoints.get(name);
   if (cached !== undefined) return cached;
   const raw = doc.defaultView?.getComputedStyle(doc.documentElement).getPropertyValue(`--bp-${name}`);
   const value = Number.parseFloat(raw ?? '');
-  const px = Number.isFinite(value) ? value : Number.NaN;
-  if (Number.isFinite(px)) breakpoints.set(name, px);
-  return px;
+  if (!Number.isFinite(value)) {
+    warnUnresolved(name);
+    return Number.NaN;
+  }
+  breakpoints.set(name, value);
+  return value;
 }

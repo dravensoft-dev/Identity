@@ -33,9 +33,13 @@ import { radioStyles } from './Radio.variants';
   `,
 })
 export class Radio {
+  /** This option's value, matched against the group's. */
   readonly value = input.required<string>();
+  /** The option's label. */
   readonly label = input<string>();
+  /** A line of help under the label. */
   readonly hint = input<string>();
+  /** Blocks selection and dims the option. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly group = inject(RadioGroupState);

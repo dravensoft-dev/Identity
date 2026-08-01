@@ -7,10 +7,13 @@ export type { ActivityItem };
 
 export interface ActivityFeedProps {
 
+  /** Names the feed for assistive technology. Required, and guarded at runtime: nothing can derive it, and a feed is a landmark a reader navigates BY — say what the events are about ("Deployment activity"), never "Activity feed". */
   label: string;
 
+  /** The events, newest first by convention. Each row is drawn by Arena; there is no per-item projection. */
   items: ActivityItem[];
 
+  /** Whether a multi-step update to the feed is in progress, reflected as `aria-busy`. Set it while rows are being loaded or replaced and clear it once they settle, so a screen reader announces the settled feed rather than each intermediate state. It is an input rather than something Arena infers: only the host knows when its own loading has finished. */
   busy?: boolean;
 }
 

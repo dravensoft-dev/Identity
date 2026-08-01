@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
-  isGenerated, allowsHeader,
+  isGenerated, allowsHeader, MEMBER_DOC_TREE,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -246,4 +246,37 @@ test('a shebang buys no second comment, and no comment below the header', () => 
   });
   assert.equal(commentRuleProblems(root).problems.length, 1);
   rmSync(root, { recursive: true });
+});
+
+test('a member doc under a component directory is not a comment this rule counts', () => {
+  const root = tree({
+    'frameworks/react/components/a/A.tsx':
+      'export interface AProps {\n  /** The shadow. */\n  floating?: boolean;\n}\n',
+  });
+  assert.deepEqual(commentRuleProblems(root).problems, [],
+    'a contract-derived member doc must pass: check:api holds it equal to the contract, which is '
+    + 'the whole reason it is allowed where a hand-written note is not');
+  rmSync(root, { recursive: true });
+});
+
+test('the carve-out is the /** shape only, and only under a component directory', () => {
+  const line = tree({
+    'frameworks/react/components/a/A.tsx': '// a hand-written note\nexport const A = 1;\n',
+  });
+  assert.equal(commentRuleProblems(line).problems.length, 1, 'a // comment slipped through the carve-out');
+  rmSync(line, { recursive: true });
+
+  const block = tree({
+    'frameworks/react/components/a/A.tsx': '/* a hand-written note */\nexport const A = 1;\n',
+  });
+  assert.equal(commentRuleProblems(block).problems.length, 1, 'a /* comment slipped through the carve-out');
+  rmSync(block, { recursive: true });
+
+  const root = tree({ 'frameworks/react/Theme.ts': '/** Not a member. */\nexport const T = 1;\n' });
+  assert.equal(commentRuleProblems(root).problems.length, 1,
+    'the carve-out reached a layer-root file, where no contract member lives and nothing holds a doc');
+  rmSync(root, { recursive: true });
+
+  assert.match('frameworks/angular/components/display/card/Card.ts', MEMBER_DOC_TREE);
+  assert.doesNotMatch('frameworks/react/Theme.ts', MEMBER_DOC_TREE);
 });

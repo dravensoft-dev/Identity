@@ -57,15 +57,24 @@ export function isConfirmLocked(required: string | undefined, typed: string): bo
   `,
 })
 export class ConfirmDialog {
+  /** Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let a ConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
 
+  /** The dialog heading, and the name the panel's aria-labelledby points at. Required: nothing can derive a name for a confirmation, because its subject is editorial, and a modal announcing only its role is worse than none at all. */
   readonly title = input.required<string>();
+  /** Small uppercase label above the title. */
   readonly eyebrow = input('Confirm');
+  /** The confirm button's label. */
   readonly confirmLabel = input('Confirm');
+  /** The cancel button's label. */
   readonly cancelLabel = input('Cancel');
+  /** Gives the confirm button Arena's only filled danger surface. */
   readonly destructive = input(false, { transform: booleanAttribute });
+  /** Locks the confirm button until this exact word is typed. */
   readonly requireText = input<string>();
+  /** The dialog was dismissed -- by the Cancel action or by the Escape key, in both layers. A scrim click is deliberately NOT one of them: this component never closes on click-outside. No payload. */
   readonly cancel = output<void>();
+  /** The action was confirmed. */
   readonly confirm = output<void>();
 
   private readonly doc = inject(DOCUMENT);

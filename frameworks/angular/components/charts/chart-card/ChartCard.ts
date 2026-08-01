@@ -25,6 +25,7 @@ import { chartCardStyles } from './ChartCard.variants';
   `,
 })
 export class ChartCard {
+  /** The card heading. Absent renders no head unless `actions` is present. */
   readonly title = input<string>();
 
   protected readonly actions = contentChild(ArenaActions);

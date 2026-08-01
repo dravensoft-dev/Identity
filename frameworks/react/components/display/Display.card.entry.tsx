@@ -28,7 +28,7 @@ function Demo(){return (<div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
     <div style={{width:'calc(var(--sp-1) * 75)',display:'grid'}}>
-      <Card eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>}>
+      <Card interactive onClick={() => {}} eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>}>
         <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Last published 2 h ago · build #4821</div>
       </Card>
     </div>

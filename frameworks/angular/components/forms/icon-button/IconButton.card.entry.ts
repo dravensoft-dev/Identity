@@ -34,6 +34,14 @@ import { IconButton } from './IconButton';
       <arena-icon-button icon="ph-bold ph-download-simple" label="Hover me for the title" />
     </div>
 
+    <p class="sub">pressed makes it a toggle, and the label never changes with the state</p>
+    <div class="row">
+      <arena-icon-button icon="ph-bold ph-push-pin" label="Pin this view" [pressed]="pinned()" (click)="pinned.set(!pinned())" />
+      <arena-icon-button icon="ph-bold ph-push-pin" label="Pin this view" [pressed]="true" />
+      <arena-icon-button icon="ph-bold ph-push-pin" label="Pin this view" [pressed]="false" />
+      <arena-icon-button icon="ph-bold ph-push-pin" label="Pin this view" />
+    </div>
+
     <p class="sub">Disabled dims to 45% through a :disabled variant, so the native attribute is really set</p>
     <div class="row">
       <arena-icon-button icon="ph-bold ph-arrow-clockwise" label="Retry" disabled />
@@ -54,6 +62,7 @@ import { IconButton } from './IconButton';
 })
 class IconButtonCard {
   protected readonly clicks = signal(0);
+  protected readonly pinned = signal(true);
 
   protected bump(): void {
     this.clicks.update((n) => n + 1);

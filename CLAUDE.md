@@ -82,6 +82,13 @@ maps the rest of the repository.
   name. The only exception is `scripts/` and test files, which may carry **one** comment,
   inline or block, as a file header, **at most 10 lines**. Files a script generates are
   outside the rule entirely and keep their comments.
+- **A contracted member's own doc is the one carve-out, and it earns it by being held.** Under
+  `frameworks/<layer>/components/`, a `/** … */` above a member is exempt, because `check:api`
+  fails it unless its text is that member's `description`, and fails one on anything no
+  contract names. A comment a gate keeps equal to its source cannot go quietly false, which is
+  the whole reason the rule exists. **That shape and no other**: a `//` or a bare `/*` there
+  still fails, as does a `/** … */` outside a component directory. `generate:api` writes them,
+  so nobody types one; `contracts/api/README.md` says why they must exist at all.
 - Knowledge a rename cannot express, such as a measurement, a vendor's behaviour, a pinned
   version or a constraint of a test environment, goes in the one header `scripts/` and test
   files are allowed, in a gate's own reason string, or in the component's `.prompt.md`.
@@ -329,16 +336,15 @@ tabpanel, because a panel whose `aria-labelledby` points at a tab that does not 
 than an absent one.
 
 **The `SideNav` family is the recursive case, and the layers solve it in opposite directions.**
-In React nesting is arbitrary, to any depth, with **no context anywhere**, because injection
-is **direct children only, one hop**, and a section or a collapsible re-injects into its own
-children with `depth + 1`. Angular pushes nothing: each container re-provides `SideNavState` at
-`depth + 1` and a row **pulls** the nearest. React's shared helper is
-`frameworks/react/components/navigation/side-nav/SideNavInject.tsx`; it covers that family and
-no more, so the placement rule sends it to the family's parent directory rather than up to
-`navigation/`. **Its `.tsx` extension is load-bearing**: `check:dimensions` never opens a
-`.js`, and the helper's `indentFor()` produces a governed `padding-inline-start`. It is a
-`.tsx` under `components/` that is **not a component**, since a component is a **directory**, both
-in `reactComponents()` and in every measurement of the set.
+In React nesting is arbitrary, to any depth, with **no context anywhere**, because injection is
+**direct children only, one hop**, and a section or a collapsible re-injects into its own children
+with `depth + 1`. Angular pushes nothing: each container re-provides `SideNavState` at `depth + 1`
+and a row **pulls** the nearest. React's shared helper is
+`frameworks/react/components/navigation/side-nav/SideNavInject.tsx`, which covers that family and
+no more, so the placement rule sends it to the family's parent directory. **Its `.tsx` extension
+is load-bearing**: `check:dimensions` never opens a `.js`, and its `indentFor()` produces a
+governed `padding-inline-start`. It is a `.tsx` under `components/` that is **not a component**,
+since a component is a **directory**, in `reactComponents()` and in every count of the set.
 
 Every compound family shares one limit: **a consumer's own wrapper component between two levels
 breaks the chain, and so does a fragment.** `React.Children.toArray` flattens a nested array and
@@ -381,16 +387,14 @@ every global/ARIA attribute a `{...rest}` spread would forward, with no gate beh
 `check:api` reads the `.tsx`, so a restored spread fails, but nothing re-derives which native
 members the flattening dropped.
 
-**React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.`
-suite renders into a real DOM; every other `*.test.tsx` asserts on `renderToStaticMarkup`, with
-no DOM, by design, because those suites prove those components render correctly server-side.
-**The preload must never reach the DOM-free invocation, and it is mandatory for the DOM one**:
-`react-dom` latches its `input`-event support at module evaluation, so without a DOM already
-installed an `onChange` handler receives a dispatched event **zero** times, silently. Angular's
-suites sit beside their components, with the run target the whole emitted layer
-(`build/angular-test/angular`).
-[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full,
-why one process forces the split, and what `scripts/` adds to it.
+**React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.` suite
+renders into a real DOM; every other `*.test.tsx` asserts on `renderToStaticMarkup` with no DOM,
+by design, because those suites prove those components render correctly server-side. **The
+preload must never reach the DOM-free invocation, and is mandatory for the DOM one**: `react-dom`
+latches its `input`-event support at module evaluation, so without a DOM already installed an
+`onChange` handler receives a dispatched event **zero** times, silently.
+[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full, why
+one process forces the split, and what `scripts/` adds to it.
 
 **`check:react-types` compiles the layer.** That README says what it reaches, and which two
 compiler options are load-bearing rather than stylistic.
@@ -537,16 +541,13 @@ requirement `HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
-test surface with `ngc --strictTemplates` into git-ignored `build/angular-test/`, and
-`test:angular`, `test` and `testStep()` all run `bun test` over that emit rather than over the
-`.ts` sources, so a type error anywhere in it fails the *build*, and no test in that run executes
-at all.
-**A green compile is a claim about TYPES, and never about behaviour.** One process means one
-document and one `TestBed` environment for the whole layer, claimed once by
-`frameworks/angular/test/TestbedEnv.ts`; **state written onto that shared document outlives the
-file that wrote it**, and every directly-created fixture must be `destroy()`-ed or it throws out
-of an unrelated later test. `frameworks/angular/README.md` carries all of it, including why
-`TestBed.resetTestEnvironment()` is not an option and what
+test surface with `ngc --strictTemplates` into git-ignored `build/angular-test/`, and every run
+target is that emit rather than the `.ts` sources, so a type error anywhere in it fails the
+*build* and no test executes at all. **A green compile is a claim about TYPES, never about
+behaviour.** One process means one document and one `TestBed` environment for the whole layer, so
+**state written onto that shared document outlives the file that wrote it** and every
+directly-created fixture must be `destroy()`-ed. `frameworks/angular/README.md` carries all of
+it: the shared environment, why `TestBed.resetTestEnvironment()` is not an option, and what
 `HarnessCapabilities.test.ts` pins.
 
 **Specimen/demo pages** start with an HTML comment
@@ -637,12 +638,9 @@ harness; and a component's three files, `<Name>.manifest.json`, the generated
 `find frameworks/tailwind/components -name '*.manifest.json' | wc -l`.
 
 **The Tailwind layer derives every utility from an existing token and introduces no new hex and
-no new value**: add the token first, then reference it. Four gates hold it, and
-`frameworks/tailwind/README.md` states what each reaches: `check:tailwind` (every class emits a
-rule, every theme key resolves, **and it found any manifests at all**), `check:coverage` (every
-token reaches a utility or is named in `EXCLUDED` with a reason), `check:arbitrary` (no bracket
-carries a raw literal) and `check:radius` (`rounded-full` where `rounded-pill` belongs, one
-verified case rather than "every utility traces to a token" in general).
+no new value**: add the token first, then reference it. Four gates hold it, `check:tailwind`,
+`check:coverage`, `check:arbitrary` and `check:radius`, and `frameworks/tailwind/README.md`
+states what each reaches and what none of them does.
 
 `bun run check` runs every gate plus the test suite, without stopping at the first failure.
 **Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`,

@@ -38,12 +38,19 @@ const TONE_ICONS: Record<AlertTone, string> = {
   `,
 })
 export class Alert {
+  /** The severity — colour, default icon, and (for danger) the alert role. */
   readonly tone = input<AlertTone>('info');
+  /** An optional bold lead line above the message. */
   readonly title = input<string>();
+  /** A Phosphor class name overriding the tone's default glyph. Arena draws it. */
   readonly icon = input<string>();
+  /** The label of a single inline action button. Absent renders no action. */
   readonly actionLabel = input<string>();
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6. */
   readonly dismissible = input(false, { transform: booleanAttribute });
+  /** The inline action button was activated. */
   readonly action = output<void>();
+  /** The × was activated. */
   readonly close = output<void>();
 
   protected readonly styles = computed(() => alertStyles({ tone: this.tone(), titled: !!this.title() }));

@@ -52,29 +52,53 @@ export function inputIdFor(id: string | undefined, label: string | undefined): s
   `,
 })
 export class Input {
+  /** Field label above the control. */
   readonly label = input<string>();
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `in-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased. The derivation is normative, and the prefix differs per component on purpose: the same markup must get the same id in every layer, and an Input and a Textarea sharing a label must not collide. */
   readonly id = input<string>();
+  /** A line of help under the field. */
   readonly hint = input<string>();
+  /** Controlled error message; wins over `validate`. */
   readonly error = input<string>();
+  /** Force the valid (green check) state. */
   readonly valid = input(false, { transform: booleanAttribute });
+  /** Marks the label and the control required. */
   readonly required = input(false, { transform: booleanAttribute });
+  /** Called on the value; returns the error message, or empty for valid. */
   readonly validate = input<(value: string) => string>();
+  /** When `validate` runs. */
   readonly validateOn = input<ValidateOn>('blur');
+  /** Native input type. */
   readonly type = input<InputType>('text');
+  /** Phosphor class name drawn at the field's start. */
   readonly icon = input<string>();
+  /** Static text Arena draws before the value, e.g. `git@`. */
   readonly prefix = input<string>();
+  /** The controlled text. */
   readonly value = input<string>();
+  /** Blocks editing and dims it. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Shows the value but blocks editing. */
   readonly readOnly = input(false, { transform: booleanAttribute });
+  /** Shown when empty. */
   readonly placeholder = input<string>();
+  /** Submitted with the form. */
   readonly name = input<string>();
+  /** The browser autofill hint. */
   readonly autoComplete = input<string>();
+  /** Minimum, for number/date types. */
   readonly min = input<string>();
+  /** Maximum, for number/date types. */
   readonly max = input<string>();
+  /** Step, for number/date types. */
   readonly step = input<string>();
+  /** Caps the length. */
   readonly maxLength = input<number>();
+  /** A regex the value must match. */
   readonly pattern = input<string>();
+  /** Edited; carries the new value. */
   readonly change = output<string>();
+  /** Left the field; carries the value. */
   readonly blur = output<string>();
 
   private readonly localError = signal<string | null>(null);

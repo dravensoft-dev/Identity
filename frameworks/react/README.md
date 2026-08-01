@@ -71,6 +71,12 @@ shared internals: `DataVisuals.ts`, `UseContainerWidth.ts`, `Theme.ts` and `UseD
 that last one because its suite counts as a consumer: its three component consumers are all in
 `feedback/`, but `test/UseDialogModal.dom.test.tsx` is one too.
 
+**`UseContainerWidth.ts`'s `readBreakpoint` warns once per name when a breakpoint token does not
+resolve, and never caches the failure.** Every comparison against `NaN` is false, so a silent one
+leaves `Table`, `Calendar` and `PageHead` on their wide branch on a phone with nothing reported,
+and a cached one pins that for the life of the process. `test/UseContainerWidth.dom.test.tsx`
+holds both halves.
+
 **`UseDialogModal.js` implements `contracts/behaviour/dialog-modal.json` for this layer, and
 that contract is its only authority**, covering `focus.trap`, `focus.onOpen`, `focus.onClose` and
 `keyboard.Escape`, in one hook because all three consumers need all four. Escape always reports

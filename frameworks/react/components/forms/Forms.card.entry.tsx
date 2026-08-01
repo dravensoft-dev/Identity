@@ -28,6 +28,8 @@ function Demo(){
         <Button size="lg" variant="secondary">lg</Button>
         <IconButton label="New" variant="solid" icon="ph-bold ph-plus" />
         <IconButton label="New" icon="ph-bold ph-plus" />
+        <IconButton label="Pin this view" pressed icon="ph-bold ph-push-pin" />
+        <IconButton label="Pin this view" pressed={false} icon="ph-bold ph-push-pin" />
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>
@@ -38,7 +40,7 @@ function Demo(){
           <Input label="Email" error="Invalid format" value={email} onChange={setEmail} />
         </div>
         <div style={{width:'calc(var(--sp-1) * 45)'}}>
-          <Select label="Environment" options={[{value:'Production',label:'Production'},{value:'Staging',label:'Staging'},{value:'QA',label:'QA'}]} />
+          <Select label="Environment" placeholder="Choose one" icon="ph-bold ph-stack" error="Pick an environment" options={[{value:'Production',label:'Production'},{value:'Staging',label:'Staging'},{value:'QA',label:'QA'}]} />
         </div>
         <div style={{width:'calc(var(--sp-1) * 45)'}}>
           <Input label="Cluster" value="eu-west-1" readOnly hint="Set at project creation" />

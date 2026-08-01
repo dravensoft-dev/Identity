@@ -4,9 +4,12 @@ component carries no CSS classes of its own. The host **is** the card, so `<aren
 element you place.
 
 It positions nothing and owns no clock. The host decides where the stack sits and when each
-notice goes, `dismissDefault` and `dismissActionable` in `frameworks/angular/Tokens.generated`
-are the two intervals to run it off. The component's only say in the matter is `data-persist`,
-which it sets when the notice must not be taken away on a timer.
+notice goes, and `TOAST_DISMISS`, exported beside the component, carries the two intervals to run
+it off: `.default` for a notice that only has to be read, `.actionable` for one carrying a button,
+which asks the reader to decide rather than only to read. They are tokens, so a host that reads
+them stays in step with a release that moves one; a host that retypes 4200 does not. The
+component's only say in the matter is `data-persist`, which it sets when the notice must not be
+taken away on a timer.
 
 ```html
 @for (notice of notices(); track notice.id) {
