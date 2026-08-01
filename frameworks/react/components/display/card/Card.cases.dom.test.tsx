@@ -27,6 +27,20 @@ test('Card meets both of its declared shapes', () => {
     bindingPath: BINDING,
     cases: {
 
+      link: () => {
+        const root = mount(<Card title="Acme Corp" href="/clients/acme"><p>Everything the client can see.</p></Card>);
+        const el = root.firstElementChild;
+        assert.equal(el!.tagName, 'A', 'href must render a real anchor, not a div wearing a role');
+        assert.equal(el!.getAttribute('href'), '/clients/acme');
+        assert.equal(el!.hasAttribute('role'), false,
+          'the anchor already has the link role; naming another would take it away');
+        assert.equal(el!.hasAttribute('tabindex'), false,
+          'an anchor with an href is focusable by the platform, and a tabindex would only be noise');
+        assert.match(el!.textContent, /Everything the client can see\./,
+          'the children must live INSIDE the anchor, or the whole surface is not the target');
+        return { root, subjects: { default: el } };
+      },
+
       surface: () => {
         const root = mount(<Card title="Deployments" />);
         const el = root.firstElementChild;

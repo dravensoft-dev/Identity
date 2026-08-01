@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { SideNav } from '../side-nav/SideNav';
+import { assertNoNode } from '../../../test/NodeAssert';
 import { SideNavItem } from './SideNavItem';
 
 @Component({
@@ -62,6 +63,7 @@ test('the count is not hidden from assistive technology -- the row announces it'
       /12/,
       'a count a screen-reader user cannot hear is a count that is not there',
     );
-    assert.equal(row?.querySelector('[aria-hidden="true"]:not(i)'), null);
+    assertNoNode(row?.querySelector('[aria-hidden="true"]:not(i)'),
+      'the count must not be hidden from a screen reader');
   } finally { fixture.destroy(); }
 });

@@ -28,6 +28,9 @@ function Demo(){return (<div>
   <div className="sub">Card</div>
   <div className="row" style={{alignItems:'stretch'}}>
     <div style={{width:'calc(var(--sp-1) * 75)',display:'grid'}}>
+      <Card href="#acme" eyebrow="Delivery" title="Acme Corp" action={<Badge tone="info" dot>Link</Badge>}>
+        <div style={{color:'var(--mute)',fontSize:'var(--fs-sm)'}}>A real anchor: middle-click and ctrl-click open a new tab.</div>
+      </Card>
       <Card interactive onClick={() => {}} eyebrow="Delivery" title="Client Portal" action={<Badge tone="success" dot>Deployed</Badge>}>
         <div style={{color:'var(--mute)',fontSize:'var(--dz-text)',lineHeight:'var(--lh-body)'}}>Last published 2 h ago · build #4821</div>
       </Card>

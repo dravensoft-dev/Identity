@@ -21,19 +21,25 @@ export interface CardProps {
   /** Whether an interactive card is drawn but cannot be activated. It reflects through aria-disabled rather than any native attribute, and the card stays in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. Without `interactive` there is nothing to disable and the card is inert already. */
   disabled?: boolean;
 
+  /** Present => the card renders an <a>; absent, with `interactive`, a role="button". The same split, and the same reason, as SideNavItem.href: a control that navigates must be a link, openable in a new tab, address copyable, announced as a link, and none of that can be rebuilt on a div. It implies interaction on its own, so `interactive` is not also required, and with `disabled` it refuses activation through aria-disabled the way an item does. The card's own content still holds whatever controls it holds; a control inside the anchor is a control inside a link, which is the price of making the whole surface the target and the reason `interactive` exists as the alternative. */
+  href?: string;
+
   /** An interactive card was activated, by pointer or by Enter or Space. No payload, because the consumer wrote this element and already holds what it is about. */
   onClick?: () => void;
 }
 
 export function Card({
   children, title, eyebrow, action, floating = false, accent = false,
-  interactive = false, disabled = false, onClick,
+  interactive = false, disabled = false, href, onClick,
 }: CardProps) {
   const [hover, setHover] = useState(false);
   const [focus, setFocus] = useState(false);
 
+  const target = href !== undefined;
+  const acts = interactive || target;
+
   const activate = () => {
-    if (interactive && !disabled) onClick?.();
+    if (acts && !disabled) onClick?.();
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -43,23 +49,31 @@ export function Card({
     activate();
   };
 
-  const live = interactive && !disabled;
-  return (
-    <div role={interactive ? 'button' : undefined} tabIndex={interactive ? 0 : undefined}
-      aria-disabled={interactive && disabled ? true : undefined}
-      onClick={interactive ? activate : undefined} onKeyDown={interactive ? onKeyDown : undefined}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
-      style={{ background: live && hover ? 'var(--panel)' : 'var(--surface-card)',
+  const live = acts && !disabled;
+
+  const shared = {
+    'aria-disabled': acts && disabled ? true as const : undefined,
+    onMouseEnter: () => setHover(true),
+    onMouseLeave: () => setHover(false),
+    onFocus: () => setFocus(true),
+    onBlur: () => setFocus(false),
+      style: { background: live && hover ? 'var(--panel)' : 'var(--surface-card)',
         border: 'var(--bw) solid ' + (accent ? 'var(--crimson)' : 'var(--color-base-300)'),
         borderRadius: 'var(--r-lg)', boxShadow: floating ? 'var(--shadow-2)' : 'none',
         outline: live && focus ? 'var(--bw-2) solid var(--crimson)' : 'none',
         outlineOffset: focus ? 'var(--sp-1)' : 0,
-        cursor: interactive ? (disabled ? 'not-allowed' : 'pointer') : 'auto',
-        opacity: interactive && disabled ? 0.45 : 1,
-        textAlign: 'left',
+        cursor: acts ? (disabled ? 'not-allowed' : 'pointer') : 'auto',
+        opacity: acts && disabled ? 0.45 : 1,
+        textAlign: 'left' as const,
+        textDecoration: 'none',
+        display: 'block',
+        color: 'inherit',
         transition: 'background var(--dur-fast) var(--ease-out)',
-        overflow: 'hidden' }}>
+        overflow: 'hidden' },
+  };
+
+  const body = (
+    <>
       {(title || eyebrow || action) && (
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5) 0' }}>
           <div>
@@ -70,6 +84,23 @@ export function Card({
         </div>
       )}
       <div style={{ padding: 'calc(var(--sp-1) * 5)' }}>{children}</div>
+    </>
+  );
+
+  if (target) {
+    return (
+      <a href={href} {...shared}
+        onClick={(event) => { if (disabled) { event.preventDefault(); return; } activate(); }}>
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <div role={interactive ? 'button' : undefined} tabIndex={interactive ? 0 : undefined}
+      onClick={interactive ? activate : undefined} onKeyDown={interactive ? onKeyDown : undefined}
+      {...shared}>
+      {body}
     </div>
   );
 }

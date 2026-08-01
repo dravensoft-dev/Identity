@@ -397,6 +397,38 @@ measured. `change` is the widest at eight primitives, and `Checkbox.compliance.t
 `RadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
 half the pair above; the other six assert nothing about it.
 
+## Two roots, two projections, one template
+
+Angular hands projected content to the **first matching** `<ng-content>`, so a component with
+two root branches cannot give each its own. `Table.prompt.md` records what that cost the table:
+its wide and card shapes are one projection into a box whose display and role change, and the
+empty state is a block beside the grid rather than a cell spanning it.
+
+`Card` is the one place in this layer that pays for both roots instead. `href` has to render a
+real `<a>`, because openable in a new tab, address copyable and announced as a link cannot be
+rebuilt on a div, and a card projects into two slots. So both `<ng-content>` elements live in
+one `<ng-template>`, and whichever branch renders stamps it with `ngTemplateOutlet`:
+
+```html
+<ng-template #body>… <ng-content select="[action]" /> … <ng-content /> …</ng-template>
+@if (href(); as url) {
+  <a [href]="url"><ng-container *ngTemplateOutlet="body" /></a>
+} @else {
+  <div …><ng-container *ngTemplateOutlet="body" /></div>
+}
+```
+
+**The limit is what nothing documents**: whether the content survives when the branch changes
+and the template is re-instantiated. Angular projects content nodes once, so an emptied card
+would be a silent failure. `CardProjection.test.ts` toggles `href` at runtime in both
+directions and asserts both slots arrive, exactly once, inside the new root. **Any component
+copying this shape owes the same suite**, because the answer is a property of the framework
+version rather than of the pattern, and it is the only thing standing between the idiom and a
+card that renders nothing.
+
+`SideNavItem` splits on `href` too and needs none of this: it projects nothing, so its two
+branches carry only interpolated inputs.
+
 ## Adopting it
 
 Adopt it in the order the layer is built. Import `theme/arena-tailwind.css` once from the

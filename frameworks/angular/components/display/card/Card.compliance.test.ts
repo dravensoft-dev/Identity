@@ -26,7 +26,8 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/card/Card.behaviour.json');
   imports: [Card, ArenaAction],
   template: `
     <arena-card [title]="title" [eyebrow]="eyebrow" [accent]="accent" [floating]="floating"
-                [interactive]="interactive" [disabled]="disabled" (click)="activated = activated + 1">
+                [interactive]="interactive" [disabled]="disabled" [href]="href"
+                (click)="activated = activated + 1">
       @if (withAction) {
         <button action type="button">Open</button>
       }
@@ -42,6 +43,7 @@ class CardHost {
   interactive = false;
   disabled = false;
   withAction = false;
+  href: string | undefined = undefined;
   activated = 0;
 }
 
@@ -67,10 +69,24 @@ test('arena-card meets both of its declared shapes', () => {
   const surface = render();
   const live = render({ interactive: true, title: 'checkout-api', eyebrow: undefined });
   const off = render({ interactive: true, disabled: true, title: 'checkout-api', eyebrow: undefined });
+  const routed = render({ href: '/clients/acme', title: 'Acme Corp', eyebrow: undefined });
   try {
     assertPatternCases({
       bindingPath: BINDING,
       cases: {
+        link: () => {
+          const el = rootOf(routed);
+          assert.equal(el.tagName, 'A', 'href must render a real anchor, not a div wearing a role');
+          assert.equal(el.getAttribute('href'), '/clients/acme');
+          assert.equal(el.getAttribute('role'), null,
+            'the anchor already has the link role; naming another would take it away');
+          assert.equal(el.hasAttribute('tabindex'), false,
+            'an anchor with an href is focusable by the platform, and a tabindex would only be noise');
+          assert.match(el.textContent ?? '', /Everything the client can see\./,
+            'the projected body must live INSIDE the anchor, or the whole surface is not the target');
+          return { root: el, subjects: { default: el } };
+        },
+
         surface: () => {
           const el = rootOf(surface);
           assert.equal(el.getAttribute('role'), null,
@@ -130,6 +146,7 @@ test('arena-card meets both of its declared shapes', () => {
       },
     });
   } finally {
+    routed.destroy();
     surface.destroy();
     live.destroy();
     off.destroy();

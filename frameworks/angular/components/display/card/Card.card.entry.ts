@@ -40,6 +40,20 @@ import { Card } from './Card';
       </div>
     </div>
 
+    <p class="sub">href: a real anchor. Middle-click and ctrl-click open a new tab</p>
+    <div class="row">
+      <div class="col">
+        <arena-card href="#acme" [title]="'Acme Corp'">
+          <p class="note">Everything the client can see. The whole surface is the link.</p>
+        </arena-card>
+      </div>
+      <div class="col">
+        <arena-card href="#locked" disabled [title]="'Globex'">
+          <p class="note">Announced as unavailable, and the anchor refuses to navigate.</p>
+        </arena-card>
+      </div>
+    </div>
+
     <p class="sub">A control inside an interactive card keeps its own press</p>
     <div class="row">
       <div class="col">

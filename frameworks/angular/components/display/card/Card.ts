@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy, Component, booleanAttribute, computed, contentChild, input, output,
 } from '@angular/core';
@@ -12,9 +13,9 @@ import { cardStyles } from './Card.variants';
     style: 'display: contents',
     '[attr.title]': 'null',
   },
+  imports: [NgTemplateOutlet],
   template: `
-    <div [class]="styles().root()" [attr.role]="role()" [attr.tabindex]="stop()"
-         [attr.aria-disabled]="inert()" (click)="onClick($event)" (keydown)="onKeydown($event)">
+    <ng-template #body>
       @if (headed()) {
         <div [class]="styles().head()">
           <div>
@@ -29,7 +30,19 @@ import { cardStyles } from './Card.variants';
         </div>
       }
       <div [class]="styles().body()"><ng-content /></div>
-    </div>
+    </ng-template>
+
+    @if (href(); as url) {
+      <a [class]="styles().root()" [href]="url" [attr.aria-disabled]="inert()"
+         (click)="onAnchorClick($event)">
+        <ng-container *ngTemplateOutlet="body" />
+      </a>
+    } @else {
+      <div [class]="styles().root()" [attr.role]="role()" [attr.tabindex]="stop()"
+           [attr.aria-disabled]="inert()" (click)="onClick($event)" (keydown)="onKeydown($event)">
+        <ng-container *ngTemplateOutlet="body" />
+      </div>
+    }
   `,
 })
 export class Card {
@@ -45,6 +58,8 @@ export class Card {
   readonly interactive = input(false, { transform: booleanAttribute });
   /** Whether an interactive card is drawn but cannot be activated. It reflects through aria-disabled rather than any native attribute, and the card stays in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. Without `interactive` there is nothing to disable and the card is inert already. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Present => the card renders an <a>; absent, with `interactive`, a role="button". The same split, and the same reason, as SideNavItem.href: a control that navigates must be a link, openable in a new tab, address copyable, announced as a link, and none of that can be rebuilt on a div. It implies interaction on its own, so `interactive` is not also required, and with `disabled` it refuses activation through aria-disabled the way an item does. The card's own content still holds whatever controls it holds; a control inside the anchor is a control inside a link, which is the price of making the whole surface the target and the reason `interactive` exists as the alternative. */
+  readonly href = input<string>();
   /** An interactive card was activated, by pointer or by Enter or Space. No payload, because the consumer wrote this element and already holds what it is about. */
   readonly click = output<void>();
 
@@ -56,11 +71,19 @@ export class Card {
 
   protected readonly stop = computed(() => (this.interactive() ? 0 : null));
 
-  protected readonly inert = computed(() => (this.interactive() && this.disabled() ? 'true' : null));
+  protected readonly inert = computed(
+    () => ((this.interactive() || this.href()) && this.disabled() ? 'true' : null),
+  );
 
   protected readonly styles = computed(() => cardStyles({
-    accent: this.accent(), floating: this.floating(), interactive: this.interactive(),
+    accent: this.accent(), floating: this.floating(),
+    interactive: this.interactive() || this.href() !== undefined,
   }));
+
+  protected onAnchorClick(event: MouseEvent): void {
+    if (this.disabled()) { event.preventDefault(); return; }
+    this.click.emit();
+  }
 
   protected onClick(event: MouseEvent): void {
     if (!this.interactive()) return;

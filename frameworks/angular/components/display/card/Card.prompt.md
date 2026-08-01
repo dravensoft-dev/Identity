@@ -70,3 +70,31 @@ render, the card is a plain surface.
   clips with `overflow-hidden`, so a wide child is cropped rather than overflowing.
 - With only an `action` and no title or eyebrow, the header still renders and the
   action sits right-aligned against an empty title block.
+
+### A card that navigates
+
+`href` makes the whole card a real `<a>`: openable in a new tab, address copyable, announced
+as a link. It is the same split, and the same reason, as `arena-side-nav-item`'s own `href`,
+and it implies interaction on its own, so `interactive` is not also needed. With `disabled` it
+refuses activation through `aria-disabled` and prevents the anchor's default, the way an item
+does.
+
+```html
+<arena-card href="/clients/acme" title="Acme Corp">
+  <p>Everything the client can see.</p>
+</arena-card>
+```
+
+Choose between the two by what the press DOES. A card that goes somewhere is `href`; a card
+that changes local state is `interactive` with `(click)`. And a card whose body holds controls
+of its own is `interactive`, not `href`: the anchor wraps the whole surface, so a button inside
+it is a control inside a link, which is exactly the nesting `interactive` was made a
+`role="button"` div to avoid.
+
+**How it is built, and why that is worth knowing.** The card projects into two slots, and
+Angular hands projected content to the first matching one, so two branches cannot each carry
+their own `<ng-content>`. Both projections live in one `<ng-template>` that whichever branch
+renders stamps out with `ngTemplateOutlet`. `CardProjection.test.ts` is the suite that earns
+this: it toggles `href` at runtime in both directions and asserts the content survives, once,
+inside the new root. Nothing in Angular's documentation settles that, and an empty card would
+be a silent failure.
