@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 export const API_TARGETS = [
-  'frameworks/react/Api.generated.d.ts',
+  'frameworks/react/Api.generated.ts',
   'frameworks/angular/Api.generated.ts',
 ];
 

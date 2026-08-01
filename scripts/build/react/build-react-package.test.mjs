@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { rewriteSourceSpecifiers, untypedProblems, isSource, manifest, NAME, ROOT_JS, ROOT_TS, ROOT_TYPES, LAYER } from './build-react-package.mjs';
+import { rewriteSourceSpecifiers, untypedProblems, isSource, manifest, NAME, ROOT_JS, ROOT_TS, LAYER } from './build-react-package.mjs';
 import { version } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -75,8 +75,8 @@ test('every layer-root module the package needs is named, and Tokens is among th
   assert.ok(ROOT_JS.includes('Tokens.generated.js'),
     'DataVisuals imports it, so it ships even though the barrel does not export it');
   assert.ok(ROOT_JS.includes('Index.generated.js'));
-  assert.deepEqual(ROOT_TYPES, ['Api.generated.d.ts'],
-    'the contract types are declaration-only and have no module to compile');
+  assert.ok(ROOT_TS.includes('Api.generated.ts'),
+    'the contract types are a source in both layers, compiled like any other');
   for (const name of ROOT_TS)
     assert.ok(name.endsWith('.ts'), `${name} is compiled, so it must be a TypeScript source`);
   assert.equal(LAYER, 'frameworks/react');
