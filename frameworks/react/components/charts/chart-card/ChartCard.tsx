@@ -20,12 +20,12 @@ export function ChartCard({ title, actions, children }: ChartCardProps) {
       display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 3)',
     }}>
       {(title || actions) && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 'calc(var(--sp-1) * 3)' }}>
           {title && <span style={{
             fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-label)',
             textTransform: 'uppercase', color: 'var(--mute)',
           }}>{title}</span>}
-          {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)' }}>{actions}</div>}
+          {actions && <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)' }}>{actions}</div>}
         </div>
       )}
       {children}

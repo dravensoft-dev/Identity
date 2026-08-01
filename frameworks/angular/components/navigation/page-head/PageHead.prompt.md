@@ -5,10 +5,8 @@ they are real `mat-button`s wearing Arena.
 
 ```html
 <arena-page-head title="Deployments" subtitle="Everything shipped in the last 30 days" align="center">
-  <div actions>
-    <button mat-stroked-button>Export</button>
-    <button mat-flat-button>New deployment</button>
-  </div>
+  <button actions mat-stroked-button>Export</button>
+  <button actions mat-flat-button>New deployment</button>
 </arena-page-head>
 ```
 
@@ -45,5 +43,7 @@ the same tokens.
 - Keep the subtitle to one line of orientation. It is not the place for instructions.
 - Don't write a media query to stack it. It already stacks, on its own width, which is
   the measurement that is right more often.
-- Don't wrap each button in its own `actions` element. One wrapper holds them
-  all; the recipe already lays them out in a wrapping row.
+- Mark **each** control with `actions`, as siblings. The recipe lays them out in a wrapping
+  row, and that row wraps its own children: a single `<div actions>` holding three buttons is
+  one flex item, so it can never wrap, and three buttons overflow the page at 390px. One
+  element per control is what makes the wrap reachable at all.

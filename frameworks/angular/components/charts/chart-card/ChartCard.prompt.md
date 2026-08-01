@@ -23,6 +23,10 @@ The head row (title plus actions) renders only when one of them is actually pres
 With neither, no empty row ships dead space above the chart.
 
 **Do / Don't**
+- Mark **each** control with `actions`, as siblings. The head row and the actions row both
+  wrap their own children, so a single wrapper holding three buttons is one flex item that
+  can never wrap and overflows the tile on a phone. `arena-page-head` says the same thing
+  about the same slot.
 - Keep the title short and in the tile's own words. It is a label, not a sentence.
 - Don't put two charts in one card. A card is one question answered once.
 - Don't reach for this as a general card: that is `mat-card` wearing Arena.

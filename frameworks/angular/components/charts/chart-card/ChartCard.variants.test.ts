@@ -37,3 +37,13 @@ test('the manifest carries no variants -- title and actions are conditionally re
     assert.ok(styles[slot]().length > 0, `${slot} resolved to an empty class string`);
   }
 });
+
+test('the head row and the actions row both wrap, because the slot projects one element per control', () => {
+  assert.match(chartCardStyles().head(), /\bflex-wrap\b/);
+  assert.match(
+    chartCardStyles().actions(),
+    /\bflex-wrap\b/,
+    'a title and three buttons at 390px overflow the tile without it, and the row is what has to '
+    + 'wrap because the consumer projects siblings rather than a wrapper of their own',
+  );
+});

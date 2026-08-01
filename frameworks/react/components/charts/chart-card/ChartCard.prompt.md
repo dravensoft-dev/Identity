@@ -14,6 +14,9 @@ The card a chart sits on: an uppercase muted microlabel, optional actions on the
 - Let `title` name the series when there is only one; that is why a single-series chart draws no legend box.
 - Keep `title` to a short uppercase microlabel, like every other label in Arena (H2/H6/H8).
 - Put the range picker or the export button in `actions`, not above the card.
+- Pass several controls as siblings, in a fragment. The head row and the actions row both
+  wrap, and they wrap their own children: a `<div>` of your own holding three buttons is one
+  flex item that can never wrap, and overflows the tile at 390px.
 
 **Don't**
 - Don't pass a heading into `title` expecting an `h2`: it renders a label on purpose. A dashboard is a grid of tiles, not a document outline.

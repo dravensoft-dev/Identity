@@ -36,6 +36,18 @@ test('the default is the WIDE layout -- a page head renders as a row before anyt
   assert.match(wide.actions(), /\bw-auto\b/);
 });
 
+test('the actions row wraps at every width, because the slot projects one element per control', () => {
+
+  for (const styles of [pageHeadStyles(), pageHeadStyles({ narrow: true })]) {
+    assert.match(
+      styles.actions(),
+      /\bflex-wrap\b/,
+      'three buttons at 390px overflow the page without it. The row wraps its own children, so '
+      + 'the prompt asks for a sibling per control: a single wrapper is one flex item and never wraps',
+    );
+  }
+});
+
 test('below the breakpoint the row stacks and the actions go full width', () => {
   const narrow = pageHeadStyles({ narrow: true });
   assert.match(narrow.root(), /\bflex-col\b/);
