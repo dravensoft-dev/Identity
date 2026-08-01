@@ -10,28 +10,40 @@ export type { CatSlot };
 
 export interface CalendarProps {
 
+  /** One CalendarEvent per event. Calendar reads each one's start, end and colorId and settles where the chip goes, what colour it takes and how the keyboard reaches it; the chip itself is CalendarEvent's. */
   children?: React.ReactNode;
 
+  /** IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs — a Madrid timetable read from Tokyo — and when server-rendering, where the reader's zone is not knowable. */
   timeZone?: string;
 
+  /** ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. */
   anchorDate?: string;
 
+  /** Omit to derive from the CONTAINER width: day below --bp-md, else week. */
   view?: CalendarView;
 
+  /** HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. */
   dayStart?: string;
 
+  /** HH:MM the grid ends at. */
   dayEnd?: string;
 
+  /** 0 = Sunday … 6 = Saturday. */
   weekStartsOn?: number;
 
+  /** Drop Sunday from the week unless an event falls on it. */
   hideEmptyWeekend?: boolean;
 
+  /** Whether a day can be activated. A boolean rather than "is `dateClick` bound?" — R6, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> — the keyboard's route to the date, and the one element that already names it — and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. */
   dayInteractive?: boolean;
 
+  /** A day header or column background was activated; carries the ISO date. Never emitted unless `dayInteractive`. */
   onDateClick?: (isoDate: string) => void;
 
+  /** The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta. */
   onRangeChange?: (isoDate: string) => void;
 
+  /** Right-aligned in the toolbar, beside the range title. */
   actions?: React.ReactNode;
 }
 

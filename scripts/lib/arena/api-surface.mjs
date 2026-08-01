@@ -186,6 +186,22 @@ function splitTopLevel(text, sep, { brackets = '(){}[]<>', closeBrace = false } 
   return parts;
 }
 
+export function normaliseDoc(text) {
+  return text
+    .split('\n')
+    .map((line) => line.replace(/^\s*\*/, ''))
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function memberDocs(body) {
+  const docs = new Map();
+  const re = /\/\*\*([\s\S]*?)\*\/\s*(?:readonly\s+|protected\s+|public\s+)*([A-Za-z_$][\w$]*)/g;
+  for (const match of body.matchAll(re)) docs.set(match[2], normaliseDoc(match[1]));
+  return docs;
+}
+
 export function reactSurface(source, interfaceName) {
   const decl = new RegExp(`export\\s+interface\\s+${interfaceName}\\b([^{]*)\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export interface ${interfaceName}" in this source`);
@@ -194,6 +210,7 @@ export function reactSurface(source, interfaceName) {
   return {
     heritage: heritage ? splitTopLevel(heritage[1], ',').map((h) => h.trim()).filter(Boolean) : [],
     members: interfaceMembers(body),
+    docs: memberDocs(body),
   };
 }
 
@@ -287,7 +304,7 @@ export function angularSurface(source, className) {
     if (!m) throw new UnrecognisedShape(`unreadable class member: ${text}`);
     members.push(classMember(m[1], m[2]));
   }
-  return { members: [...members, ...templateSlots(componentTemplate(source))] };
+  return { members: [...members, ...templateSlots(componentTemplate(source))], docs: memberDocs(body) };
 }
 
 function classMember(name, initialiser) {

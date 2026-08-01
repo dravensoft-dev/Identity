@@ -10,20 +10,28 @@ export type { OnboardingStep };
 
 export interface OnboardingProps {
 
+  /** Whether the tour is shown. Closed renders nothing, scrim included. */
   open: boolean;
 
+  /** The tour, in order. An empty tour renders nothing. */
   steps: OnboardingStep[];
 
+  /** Which step is current. The host owns it and answers next/back. */
   index?: number;
 
+  /** Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. */
   anchor?: OnboardingAnchor;
 
+  /** Next was activated on a step that is not the last. */
   onNext?: () => void;
 
+  /** Back was activated on a step that is not the first. */
   onBack?: () => void;
 
+  /** Skip was activated, or the scrim was clicked. */
   onSkip?: () => void;
 
+  /** The final step's confirming control was activated. */
   onDone?: () => void;
 }
 

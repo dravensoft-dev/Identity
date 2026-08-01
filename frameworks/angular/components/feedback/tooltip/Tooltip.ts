@@ -46,6 +46,7 @@ export function stripDescribedBy(current: string | null, bubbleId: string): stri
   `,
 })
 export class Tooltip {
+  /** The bubble's text. Arena draws the bubble; the consumer names it. */
   readonly label = input.required<string>();
 
   protected readonly bubbleId = `arena-tooltip-${nextId++}`;

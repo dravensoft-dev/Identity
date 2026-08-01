@@ -3,10 +3,22 @@ import React from 'react';
 import type { AlertTone } from '../../../Api.generated';
 
 export interface AlertProps {
+  /** The severity — colour, default icon, and (for danger) the alert role. */
   tone?: AlertTone;
-  title?: string; children?: React.ReactNode; icon?: string;
-  actionLabel?: string; onAction?: () => void;
-  dismissible?: boolean; onClose?: () => void;
+  /** An optional bold lead line above the message. */
+  title?: string;
+  /** The message body. */
+  children?: React.ReactNode;
+  /** A Phosphor class name overriding the tone's default glyph. Arena draws it. */
+  icon?: string;
+  /** The label of a single inline action button. Absent renders no action. */
+  actionLabel?: string;
+  /** The inline action button was activated. */
+  onAction?: () => void;
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6. */
+  dismissible?: boolean;
+  /** The × was activated. */
+  onClose?: () => void;
 }
 
 const TONES = {

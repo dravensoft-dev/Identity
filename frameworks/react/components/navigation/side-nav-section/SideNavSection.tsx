@@ -4,8 +4,10 @@ import { injectInto, indentFor, COLUMN } from '../side-nav/SideNavInject.tsx';
 
 export interface SideNavSectionProps {
 
+  /** Names the group, both on screen and to assistive technology. Required, and guarded at runtime: a blank label leaves the group with no accessible name, which is the defect the guard exists to prevent arriving through a value that is present, so the guard trims before it decides. */
   label: string;
 
+  /** The items in the group -- SideNavItems, further SideNavSections, SideNavCollapsibles. Each sits one nesting level deeper than the section itself. Required, and guarded at runtime: a section with no children is not a legal shape, and the guard counts the way the render path counts, so a child that is a false conditional counts as absent rather than as one. The AppLogo.mark shape -- a slot that is both declared required and enforced -- and not the Tooltip.content one, which is declared required and deliberately left unguarded. */
   children: React.ReactNode;
 }
 

@@ -136,10 +136,15 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
   `,
 })
 export class DoughnutChart {
+  /** One label per slice, in the same order as `values`. A label with no value at its index is dropped. */
   readonly labels = input.required<string[]>();
+  /** The parts, which are read as shares of their own total. A negative value floors at zero; a total of zero paints nothing. */
   readonly values = input.required<number[]>();
+  /** Names the chart for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a chart is about is editorial, the same reason Table.label is required. */
   readonly seriesLabel = input.required<string>();
+  /** Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point. */
   readonly slots = input<number[]>();
+  /** Appended verbatim to every number the chart draws — the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
   readonly valueSuffix = input<string>();
 
   protected readonly height = CHART_HEIGHT;

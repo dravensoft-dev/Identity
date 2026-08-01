@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
 import {
-  reactSurface, angularSurface, reactImplementation, defaultProblems, UnrecognisedShape,
+  reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
 } from '../../lib/arena/api-surface.mjs';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -30,6 +30,46 @@ export function bindingName(name, form, layer) {
   if (form === 'slot') return name === 'content' ? 'children' : name;
   if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
   return name;
+}
+
+export function docProblems(contract, docs, layer) {
+  const problems = [];
+  const where = `${layer}/${contract.component}`;
+  const wanted = new Map();
+
+  for (const [name, spec] of Object.entries(contract.api ?? {})) {
+    if (!spec.description) continue;
+
+    if (layer === 'angular' && spec.form === 'slot') continue;
+    wanted.set(bindingName(name, spec.form, layer), { member: name, text: normaliseDoc(spec.description) });
+  }
+
+  for (const [bound, { member, text }] of wanted) {
+    const found = docs.get(bound);
+    if (found === undefined) {
+      problems.push(
+        `${where}.${bound}: carries no /** */ doc, so the contract's description for "${member}" never reaches `
+        + 'a consumer\'s editor. Run bun run generate:api',
+      );
+      continue;
+    }
+    if (found !== text) {
+      problems.push(
+        `${where}.${bound}: its doc has drifted from the contract's description for "${member}" -- the contract `
+        + 'is the authority. Run bun run generate:api',
+      );
+    }
+  }
+
+  for (const bound of docs.keys()) {
+    if (wanted.has(bound)) continue;
+    problems.push(
+      `${where}.${bound}: carries a /** */ doc and is no contracted member. Only a contract-derived doc is `
+      + 'allowed here, because only that one is held equal to something',
+    );
+  }
+
+  return problems;
 }
 
 export function validateTypes(types) {
@@ -440,6 +480,7 @@ function main() {
         problems.push(`${layer}/${contract.component}: extends "${base}" — the {...rest} escape is none of the nine forms, R4`);
       }
       problems.push(...compareSurface(contract, surface.members, layer, typesByName));
+      problems.push(...docProblems(contract, surface.docs ?? new Map(), layer));
       if (layer === 'react') problems.push(...reactImplementationProblems(contract, path));
     }
   }

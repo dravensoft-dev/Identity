@@ -5,24 +5,34 @@ import type { CatSlot } from '../../../Api.generated';
 
 export interface CalendarEventProps {
 
+  /** Stable identity, so a host can switch on it rather than on the title. */
   id: string;
 
+  /** What the chip reads. */
   title: string;
 
+  /** ISO datetime the event begins. */
   start: string;
 
+  /** ISO datetime the event ends. */
   end: string;
 
+  /** Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. */
   colorId?: CatSlot;
 
+  /** Whether the chip can be activated. A boolean rather than "is `click` bound?" — R6, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. */
   interactive?: boolean;
 
+  /** Whether the chip is drawn but cannot be activated — an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. */
   disabled?: boolean;
 
+  /** Whether the chip shows its action button. A boolean rather than "is the actions slot filled?" — R6: projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. */
   actionsEnabled?: boolean;
 
+  /** The action panel's content, revealed by the chip's action button. Rendered only while the panel is open, so a consumer's own controls never sit permanently in the grid's Tab sequence. */
   actions?: React.ReactNode;
 
+  /** The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about. Never emitted while `disabled`. */
   onClick?: () => void;
 }
 

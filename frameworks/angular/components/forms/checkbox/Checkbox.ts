@@ -34,12 +34,19 @@ export const CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
   `,
 })
 export class Checkbox {
+  /** Whether it is ticked. */
   readonly checked = input(false, { transform: booleanAttribute });
+  /** Text beside the box. */
   readonly label = input<string>();
+  /** Blocks toggling and dims it. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Must be checked for the form to submit. */
   readonly required = input(false, { transform: booleanAttribute });
+  /** Submitted with the form. */
   readonly name = input<string>();
+  /** The value submitted under `name` when checked. */
   readonly value = input<string>();
+  /** Toggled; carries the new checked state. */
   readonly change = output<boolean>();
 
   protected readonly glyph = CHECK_GLYPH_STYLE;

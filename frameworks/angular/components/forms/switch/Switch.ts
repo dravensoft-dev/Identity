@@ -39,16 +39,27 @@ export function thumbFor(state: boolean, orientation: Orientation): SwitchThumb 
   `,
 })
 export class Switch {
+  /** The current on/off value. Controlled — the consumer owns it and pushes it each render. */
   readonly state = input(false, { transform: booleanAttribute });
+  /** Whether the switch lies horizontally or stands vertically. */
   readonly orientation = input<Orientation>('horizontal');
+  /** The switch's overall size. */
   readonly size = input<SwitchSize>('md');
+  /** A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`. */
   readonly iconOn = input<string>();
+  /** A Phosphor class name for the glyph shown while off. */
   readonly iconOff = input<string>();
+  /** The accessible name for the switch, also drawn beside it. */
   readonly label = input.required<string>();
+  /** Whether the switch is inoperable. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** When set, a change is not applied on the fly — it is requested through `requestChange` so the host can confirm it first. */
   readonly confirm = input(false, { transform: booleanAttribute });
+  /** The switch was turned on. */
   readonly funcOn = output<void>();
+  /** The switch was turned off. */
   readonly funcOff = output<void>();
+  /** A change was requested while `confirm` is set — the host opens a ConfirmDialog and, on confirmation, flips `state` (the requested value is always the negation of the current one). */
   readonly requestChange = output<void>();
 
   protected readonly glyph = computed(() => (this.state() ? this.iconOn() : this.iconOff()));

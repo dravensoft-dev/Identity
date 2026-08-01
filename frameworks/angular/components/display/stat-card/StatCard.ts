@@ -27,11 +27,17 @@ import type { Tone, StatDelta } from '../../../Api.generated';
   `,
 })
 export class StatCard {
+  /** Short uppercase microlabel, two words at most. */
   readonly label = input.required<string>();
+  /** Preformatted, e.g. "1,284" or "99.9%". StatCard never formats. */
   readonly value = input.required<string>();
+  /** What state the number IS in right now, as against how it moved. Badge's vocabulary. */
   readonly tone = input<Tone>('neutral');
+  /** How the number moved. Absent renders no pill. */
   readonly delta = input<StatDelta>();
+  /** Small muted line under the value — context, e.g. "vs last week". */
   readonly sub = input<string>();
+  /** A Phosphor class name for a small glyph beside the label, drawn muted. Arena renders the aria-hidden wrapper and the `<i>`. */
   readonly icon = input<string>();
 
   protected readonly styles = computed(() => statCardStyles({ tone: this.tone(), deltaTone: this.delta()?.tone ?? 'neutral' }));

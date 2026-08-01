@@ -3,14 +3,19 @@ import React, { useEffect } from 'react';
 import type { SkeletonVariant } from '../../../Api.generated';
 
 export interface SkeletonProps {
+  /** The shape the placeholder reserves. */
   variant?: SkeletonVariant;
 
+  /** CSS width, e.g. "100%" or "12rem". Defaults to full width. */
   width?: string;
 
+  /** CSS height. Defaults per variant. For the `circle` variant a single diameter is what is wanted, so `height` wins over `width` when both are set. */
   height?: string;
 
+  /** Number of rows when variant="text". The last runs short. */
   lines?: number;
 
+  /** CSS border radius. Defaults to a small token radius. */
   radius?: string;
 }
 

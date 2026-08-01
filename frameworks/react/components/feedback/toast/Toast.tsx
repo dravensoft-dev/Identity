@@ -5,20 +5,28 @@ import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js'
 
 export interface ToastProps {
 
+  /** The bold lead line. */
   title?: string;
 
+  /** The body. */
   message?: string;
 
+  /** The side bar's colour, and whether the toast announces assertively. */
   tone?: ToastTone;
 
+  /** The label of the single inline action — Undo, Retry, View logs. Absent renders no action. */
   actionLabel?: string;
 
+  /** The inline action was activated. */
   onAction?: () => void;
 
+  /** Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. */
   persist?: boolean;
 
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6. */
   dismissible?: boolean;
 
+  /** The × was activated. */
   onClose?: () => void;
 }
 

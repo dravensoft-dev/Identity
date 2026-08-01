@@ -2,9 +2,12 @@ import React from 'react';
 
 export interface ChartCardProps {
 
+  /** The card heading. Absent renders no head unless `actions` is present. */
   title?: string;
 
+  /** Controls in the head row, right-aligned beside the title. */
   actions?: React.ReactNode;
+  /** The chart (or any body) the card frames. */
   children?: React.ReactNode;
 }
 

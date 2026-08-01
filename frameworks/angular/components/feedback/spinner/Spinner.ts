@@ -15,8 +15,11 @@ import { spinnerStyles } from './Spinner.variants';
   template: `<span [class]="styles().circle()" aria-hidden="true"></span>`,
 })
 export class Spinner {
+  /** Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text. */
   readonly size = input<ControlSize>('md');
+  /** Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface. */
   readonly tone = input<SpinnerTone>('accent');
+  /** Accessible name, announced by the status role. Say what is loading when you can. */
   readonly label = input('Loading');
 
   protected readonly styles = computed(() => spinnerStyles({ tone: this.tone(), size: this.size() }));

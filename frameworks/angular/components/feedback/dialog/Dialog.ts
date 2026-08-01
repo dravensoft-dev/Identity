@@ -49,11 +49,16 @@ let nextId = 0;
   `,
 })
 export class Dialog {
+  /** Whether the dialog is shown. The host owns it. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
 
+  /** Names the dialog for assistive technology and heads it visually. Required: aria-labelledby points at it, and a modal with no name is worse than none at all. */
   readonly title = input.required<string>();
+  /** A short kicker above the title. */
   readonly eyebrow = input<string>();
+  /** A CSS width for the panel. It defaults to 480px, which each layer reaches in its own idiom, and the input overrides whichever. */
   readonly width = input<string>();
+  /** The dialog was dismissed -- by Escape or by a scrim click. No payload. */
   readonly close = output<void>();
 
   private readonly doc = inject(DOCUMENT);

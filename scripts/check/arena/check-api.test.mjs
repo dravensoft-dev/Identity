@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import {
-  bindingName, validateTypes, validateContract, compareSurface,
+  bindingName, validateTypes, validateContract, compareSurface, docProblems,
   resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.mjs';
 import { pascal } from '../../lib/arena/layers.mjs';
@@ -719,4 +719,56 @@ test('both empty are reported as two problems, not one', () => {
 
 test('a populated tree has no zero problems', () => {
   assert.deepEqual(zeroContractProblems({ contracts: 50, types: 40 }), []);
+});
+
+test('a contracted member with no doc fails, because the description would reach no consumer', () => {
+  const contract = {
+    component: 'X',
+    api: { floating: { form: 'primitive', type: 'boolean', description: 'The shadow.' } },
+  };
+  const problems = docProblems(contract, new Map(), 'react');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /carries no \/\*\* \*\/ doc/);
+});
+
+test('a doc that has drifted from its contract fails, which is what stops the copy rotting', () => {
+  const contract = {
+    component: 'X',
+    api: { floating: { form: 'primitive', type: 'boolean', description: 'The shadow.' } },
+  };
+  assert.deepEqual(docProblems(contract, new Map([['floating', 'The shadow.']]), 'react'), []);
+  const drifted = docProblems(contract, new Map([['floating', 'The shadows.']]), 'react');
+  assert.equal(drifted.length, 1);
+  assert.match(drifted[0], /drifted from the contract's description/);
+});
+
+test('a doc on something no contract names fails, so the shape check:docs allows is never wider than this', () => {
+  const contract = { component: 'X', api: {} };
+  const problems = docProblems(contract, new Map([['secretly', 'A hand-written note.']]), 'react');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /is no contracted member/);
+});
+
+test('a React event is looked for under its on- name, and a slot under children', () => {
+  const contract = {
+    component: 'X',
+    api: {
+      click: { form: 'event', description: 'It was activated.' },
+      content: { form: 'slot', description: 'The body.' },
+    },
+  };
+  const docs = new Map([['onClick', 'It was activated.'], ['children', 'The body.']]);
+  assert.deepEqual(docProblems(contract, docs, 'react'), []);
+});
+
+test('an Angular slot is exempt, because <ng-content> is not a declaration a doc can sit above', () => {
+  const contract = { component: 'X', api: { content: { form: 'slot', description: 'The body.' } } };
+  assert.deepEqual(docProblems(contract, new Map(), 'angular'), []);
+  assert.deepEqual(docProblems(contract, new Map(), 'react').length, 1);
+});
+
+test('a member the contract leaves undescribed demands no doc and permits none', () => {
+  const contract = { component: 'X', api: { quiet: { form: 'primitive', type: 'boolean' } } };
+  assert.deepEqual(docProblems(contract, new Map(), 'react'), []);
+  assert.match(docProblems(contract, new Map([['quiet', 'Invented.']]), 'react')[0], /is no contracted member/);
 });

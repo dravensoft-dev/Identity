@@ -5,29 +5,41 @@ import type { SelectOption } from '../../../Api.generated';
 export type { SelectOption };
 export interface SelectProps {
 
+  /** Field label above the control. */
   label?: string;
 
+  /** An empty-valued first option, drawn before the choices and unselectable once a real one is made -- "Choose a customer". It is an option rather than an attribute because a native select has no placeholder, and it is what makes "nothing chosen yet" distinguishable from "the first choice". */
   placeholder?: string;
 
+  /** The choices, drawn as native options. */
   options?: SelectOption[];
 
+  /** The selected option's value. */
   value?: string;
 
+  /** Blocks the control and dims it. */
   disabled?: boolean;
 
+  /** Must have a value for the form to submit. */
   required?: boolean;
 
+  /** A line of help under the field. */
   hint?: string;
 
+  /** Controlled error message. It is the whole validation surface here, unlike Input, which also takes a `validate` function: a native select offers a closed list, so there is no value to parse and nothing for a validator to reject that the options did not already prevent. */
   error?: string;
 
+  /** Force the valid (green check) state. */
   valid?: boolean;
 
+  /** Phosphor class name drawn at the field's start. */
   icon?: string;
 
+  /** Submitted with the form. */
   name?: string;
 
 
+  /** A different option was chosen; carries its value. */
   onChange?: (value: string) => void;
 }
 

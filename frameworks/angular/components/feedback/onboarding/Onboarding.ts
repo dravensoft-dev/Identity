@@ -64,13 +64,21 @@ import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
   `,
 })
 export class Onboarding {
+  /** Whether the tour is shown. Closed renders nothing, scrim included. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
+  /** The tour, in order. An empty tour renders nothing. */
   readonly steps = input.required<OnboardingStep[]>();
+  /** Which step is current. The host owns it and answers next/back. */
   readonly index = input(0);
+  /** Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. */
   readonly anchor = input<OnboardingAnchor>();
+  /** Next was activated on a step that is not the last. */
   readonly next = output<void>();
+  /** Back was activated on a step that is not the first. */
   readonly back = output<void>();
+  /** Skip was activated, or the scrim was clicked. */
   readonly skip = output<void>();
+  /** The final step's confirming control was activated. */
   readonly done = output<void>();
 
   private readonly doc = inject(DOCUMENT);

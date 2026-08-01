@@ -4,9 +4,12 @@ import type { Tone } from '../../../Api.generated';
 
 export interface BadgeProps {
 
+  /** The label text. Short — a badge is a chip, not a sentence. */
   children?: React.ReactNode;
+  /** System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight. */
   tone?: Tone;
 
+  /** Draws a filled dot in the tone colour before the label. */
   dot?: boolean;
 }
 

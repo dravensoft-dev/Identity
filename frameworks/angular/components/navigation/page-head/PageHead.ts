@@ -25,8 +25,11 @@ import type { PageHeadAlign } from '../../../Api.generated';
   `,
 })
 export class PageHead {
+  /** The page title. Required — a page head with no title is a bug, not a state. */
   readonly title = input.required<string>();
+  /** A muted line under the title. */
   readonly subtitle = input<string>();
+  /** Cross-axis alignment of the actions block against the title, wide layout only. */
   readonly align = input<PageHeadAlign>('start');
 
   protected readonly actions = contentChild(ArenaActions);

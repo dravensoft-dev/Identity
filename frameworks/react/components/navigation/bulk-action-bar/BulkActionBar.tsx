@@ -6,16 +6,22 @@ export type { BulkAction };
 
 export interface BulkActionBarProps {
 
+  /** How many rows are selected. Zero renders no bar at all. */
   count: number;
 
+  /** What is being counted, plural — "items", "projects". */
   noun?: string;
 
+  /** The actions offered for the current selection. */
   actions: BulkAction[];
 
+  /** An action was activated, carrying which one. */
   onRun?: (action: BulkAction) => void;
 
+  /** Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear` — R6. */
   clearable?: boolean;
 
+  /** The Clear control was activated. */
   onClear?: () => void;
 }
 

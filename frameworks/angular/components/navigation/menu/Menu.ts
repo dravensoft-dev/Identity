@@ -69,8 +69,11 @@ export function rowState(item: MenuItem): 'disabled' | 'destructive' | 'default'
   `,
 })
 export class Menu {
+  /** The entries, in order: activatable rows, dividers and group headers. */
   readonly items = input.required<readonly MenuItem[]>();
+  /** Which edge of the trigger the panel lines up with. */
   readonly align = input<MenuAlign>('start');
+  /** An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. */
   readonly select = output<MenuItem>();
 
   protected readonly styles = computed(() => menuStyles({ anchored: true }));

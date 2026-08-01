@@ -3,6 +3,7 @@ import type { TableColumn } from '../../../Api.generated';
 
 export interface TableCellProps {
 
+  /** What the cell shows: a value, or one of Arena's own components — a Badge for a status, a Button for an action. This is what the compound shape exists for. The consumer instantiates one element per cell, so nothing here is per-item projection. */
   children?: React.ReactNode;
 }
 

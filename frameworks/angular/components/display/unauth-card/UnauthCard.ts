@@ -31,7 +31,9 @@ import { unauthCardStyles } from './UnauthCard.variants';
   `,
 })
 export class UnauthCard {
+  /** Mono crimson microlabel — the product, not the task. */
   readonly eyebrow = input<string>();
+  /** The task. "Welcome back", "Check your inbox". */
   readonly title = input<string>();
 
   protected readonly brand = contentChild(ArenaBrand);

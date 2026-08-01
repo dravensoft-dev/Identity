@@ -3,8 +3,16 @@ import React from 'react';
 import type { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
 
 export interface AvatarProps {
-  src?: string; name?: string; size?: AvatarSize;
-  shape?: AvatarShape; status?: AvatarStatus;
+  /** Image URL. Absent renders initials from `name`. */
+  src?: string;
+  /** The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text. */
+  name?: string;
+  /** The avatar's diameter. */
+  size?: AvatarSize;
+  /** Circle for a person, rounded for a team. */
+  shape?: AvatarShape;
+  /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional — there is no invisible enum value. */
+  status?: AvatarStatus;
 }
 
 const SIZES = { xs: 'var(--avatar-xs)', sm: 'var(--avatar-sm)', md: 'var(--avatar-md)', lg: 'var(--avatar-lg)' };

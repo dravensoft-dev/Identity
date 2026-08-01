@@ -3,8 +3,10 @@ import { delayOpen, delayClose } from '../../../Tokens.generated.js';
 
 export interface TooltipProps {
 
+  /** The bubble's text. Arena draws the bubble; the consumer names it. */
   label: string;
 
+  /** The element the tooltip describes and attaches to. */
   children: React.ReactNode;
 }
 

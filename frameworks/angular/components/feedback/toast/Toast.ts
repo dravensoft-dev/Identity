@@ -38,13 +38,21 @@ export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActio
   `,
 })
 export class Toast {
+  /** The bold lead line. */
   readonly title = input<string>();
+  /** The body. */
   readonly message = input<string>();
+  /** The side bar's colour, and whether the toast announces assertively. */
   readonly tone = input<ToastTone>('neutral');
+  /** The label of the single inline action — Undo, Retry, View logs. Absent renders no action. */
   readonly actionLabel = input<string>();
+  /** The inline action was activated. */
   readonly action = output<void>();
+  /** Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. */
   readonly persist = input(false, { transform: booleanAttribute });
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6. */
   readonly dismissible = input(false, { transform: booleanAttribute });
+  /** The × was activated. */
   readonly close = output<void>();
 
   protected readonly pinned = computed(() => this.persist() || this.tone() === 'danger');

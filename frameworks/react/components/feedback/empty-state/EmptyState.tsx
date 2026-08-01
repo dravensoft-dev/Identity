@@ -2,10 +2,14 @@ import React from 'react';
 
 export interface EmptyStateProps {
 
+  /** A Phosphor class name for the glyph Arena draws, muted. */
   icon?: string;
 
+  /** The headline — what is empty. */
   title: string;
+  /** A sentence of guidance under the title. */
   message?: string;
+  /** A single call-to-action control, centred under the message. */
   action?: React.ReactNode;
 }
 

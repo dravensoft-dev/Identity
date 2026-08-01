@@ -18,7 +18,9 @@ import { tabStyles } from './Tab.variants';
   template: `<ng-content />`,
 })
 export class Tab {
+  /** What this tab selects, and what the parent's `change` carries. */
   readonly value = input.required<string>();
+  /** What the tab reads. Arena draws the button; the consumer names it. */
   readonly label = input.required<string>();
 
   private readonly tabs = inject(TabsState);

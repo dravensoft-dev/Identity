@@ -10,10 +10,13 @@ export interface TabInjected {
 
 export interface TabProps {
 
+  /** What this tab selects, and what the parent's `change` carries. */
   value: string;
 
+  /** What the tab reads. Arena draws the button; the consumer names it. */
   label: string;
 
+  /** What the panel shows while this tab is selected. Tabs places it; Tab never renders it, because a tabpanel may not sit inside a tablist. */
   children?: React.ReactNode;
 }
 

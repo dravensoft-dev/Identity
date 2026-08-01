@@ -27,10 +27,15 @@ export function skeletonRowSlot(row: number, total: number): 'line' | 'lastLine'
   `,
 })
 export class Skeleton {
+  /** The shape the placeholder reserves. */
   readonly variant = input<SkeletonVariant>('block');
+  /** Number of rows when variant="text". The last runs short. */
   readonly lines = input(3);
+  /** CSS width, e.g. "100%" or "12rem". Defaults to full width. */
   readonly width = input<string>();
+  /** CSS height. Defaults per variant. For the `circle` variant a single diameter is what is wanted, so `height` wins over `width` when both are set. */
   readonly height = input<string>();
+  /** CSS border radius. Defaults to a small token radius. */
   readonly radius = input<string>();
 
   protected readonly styles = computed(() => skeletonStyles({ variant: this.variant() }));

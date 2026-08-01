@@ -54,20 +54,35 @@ export function borderBoxSlack(element: HTMLElement): number {
   `,
 })
 export class Textarea {
+  /** Field label; the counter and error sit under the field. */
   readonly label = input<string>();
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `ta-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased — the derivation Input.id states, under this component's own prefix. */
   readonly id = input<string>();
+  /** A line of help under the field. */
   readonly hint = input<string>();
+  /** Error message; turns the border crimson and shows below. */
   readonly error = input<string>();
+  /** Marks the label and the control required. */
   readonly required = input(false, { transform: booleanAttribute });
+  /** Shows a live length/maxLength count, which warns once the length is STRICTLY past nine tenths of `maxLength` — exactly at the share is not yet near the limit. */
   readonly counter = input(false, { transform: booleanAttribute });
+  /** Grows with the content instead of scrolling. */
   readonly autoResize = input(false, { transform: booleanAttribute });
+  /** The controlled text. */
   readonly value = input<string>();
+  /** Blocks editing and dims it. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Shows the value but blocks editing. */
   readonly readOnly = input(false, { transform: booleanAttribute });
+  /** Shown when empty. */
   readonly placeholder = input<string>();
+  /** Submitted with the form. */
   readonly name = input<string>();
+  /** Caps the length; feeds the counter. */
   readonly maxLength = input<number>();
+  /** Initial visible rows. */
   readonly rows = input(4);
+  /** Edited; carries the new text. */
   readonly change = output<string>();
 
   protected readonly controlId = computed(() => textareaIdFor(this.id(), this.label()));

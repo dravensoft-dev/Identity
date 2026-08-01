@@ -142,6 +142,14 @@ the spelling above.
 contract that used it would already have chosen a layer. A contract declares *members*;
 each layer binds them in its own idiom.
 
+**Nor does a `description` name a layer**, and that one is machine-checked from an unexpected
+direction: `generate:api` copies every description into both layers' own source, so a
+description saying what React does and what Angular does lands inside each of them and
+`check:layer-independence` fails the layer file. The failure is reported where the copy is
+rather than where the prose is, so read it as an instruction about the contract. Say what the
+member does and let each layer's idiom go unnamed: "each layer reaches it in its own idiom" is
+the whole of what the reader needs.
+
 ## The six derived rules
 
 **R1. A predefined object is pure data with known fields.** No functions and no slots
@@ -526,17 +534,23 @@ so that hole is not reopened here.
 
 **A member's own `description`, the one written on a contract member in
 `contracts/api/components/<Component>.json` as `separator`'s is in the example above, is not one
-of those nodes, and nothing reads it for emission.** Nothing in `scripts/` reads
-`contracts/api/components/*.json` to generate anything; the contract exists to be read by
-`check:api` and by whoever migrates a component, not to be built from. So a member
-description lives in the contract only, and each layer's own doc comment
-(`AppLogoProps`'s JSDoc, `arena-app-logo`'s class comment) restates it by hand, and
-the component's `.prompt.md` restates it a third time. Nothing
-holds the three in step; a member description can drift from its layer's prose and
-nothing here will notice. This is a known limit rather than a gap left to close quietly, and
-`DOUBTS.md` says where such a limit belongs.
+of those nodes: it is emitted a second way.** `bun run generate:api` writes it into each layer's
+own source, as a `/** … */` block above the member it describes, so `tsc` and `ng-packagr` carry
+it into what a consumer's editor shows on hover. **That is the only route it has.** A published
+package ships no `contracts/` and no `.prompt.md`, by the decision `frameworks/PACKAGING.md`
+records, so a description left in the contract alone reaches nobody who installs Arena, and the
+member is discoverable only by whoever reads this repository.
 
-`bun run generate:api` emits `frameworks/react/Api.generated.ts` and
+`check:api` then holds every block equal to its contract, in both directions: a contracted member
+with no doc fails, a doc whose text has drifted fails, and a `/** … */` on something no contract
+names fails too. So the copy cannot rot, which is what earns it the one carve-out in the comment
+rule `CLAUDE.md` states. **Two shapes cannot carry one and are exempt rather than missing:** a
+member the contract leaves undescribed, and an Angular slot, which is an `<ng-content>` in a
+template with no declaration for a doc to sit above. **The component's `.prompt.md` is still a
+third statement and is still held by nobody**: it is prose about how to use a component rather
+than a copy of a member's description, which is why it is left to a reader instead of gated.
+
+`bun run generate:api` also emits `frameworks/react/Api.generated.ts` and
 `frameworks/angular/Api.generated.ts` from these files. Both carry
 the same body; emission is **per layer** so a component's import never crosses the
 `contracts/api/` ↔ `frameworks/` boundary, which is the same rule the script-readable token
@@ -544,8 +558,8 @@ target holds to, for the same reason.
 
 ## What the gate asserts, and what it cannot
 
-`bun run check:api` makes five assertions: coverage, form, agreement, the derived rules,
-and generated drift. See `scripts/check/arena/check-api.mjs`.
+`bun run check:api` makes six assertions: coverage, form, agreement, the derived rules,
+generated drift, and that every member's description reached both layers' own source. See `scripts/check/arena/check-api.mjs`.
 
 **Three of the six derived rules are authoring rules the audit applies, and no gate asserts
 them.** R2, "who draws it", is a fact about intent and markup ownership rather than about

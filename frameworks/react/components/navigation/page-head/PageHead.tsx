@@ -5,12 +5,16 @@ import type { PageHeadAlign } from '../../../Api.generated';
 
 export interface PageHeadProps {
 
+  /** The page title. Required — a page head with no title is a bug, not a state. */
   title: string;
 
+  /** A muted line under the title. */
   subtitle?: string;
 
+  /** Page-level controls, right-aligned in the head. */
   actions?: React.ReactNode;
 
+  /** Cross-axis alignment of the actions block against the title, wide layout only. */
   align?: PageHeadAlign;
 }
 
