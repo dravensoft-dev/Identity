@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readBreakpoint } from '../UseContainerWidth.ts';
+import React, { useRef } from 'react';
+import { mount, cleanup } from './Harness.tsx';
+import { readBreakpoint, useContainerWidth } from '../UseContainerWidth.ts';
 
 function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
   const messages: string[] = [];
@@ -36,4 +38,33 @@ test('a failed read is not cached -- a later call for the same name recovers the
 test('a resolved breakpoint is read once per name -- a later document value does not change what was cached', () => {
   root().setProperty('--bp-lg', '1px');
   assert.equal(readBreakpoint('lg'), 1024, 'the cached value must win; breakpoints are constants for the life of the document');
+});
+
+test('useContainerWidth measures the element it is handed, not one of its own', () => {
+  let handed: React.RefObject<HTMLDivElement> | null = null;
+  function Probe() {
+    const outer = useRef<HTMLDivElement>(null);
+    const [ref] = useContainerWidth<HTMLDivElement>(outer);
+    handed = ref;
+    return <div ref={outer} data-role="outer"><div data-role="inner" /></div>;
+  }
+  const container = mount(<Probe />);
+  assert.equal(
+    handed!.current,
+    container.querySelector('[data-role="outer"]'),
+    'a caller who already holds the box to measure must not be forced to move its own ref',
+  );
+  cleanup();
+});
+
+test('useContainerWidth still owns a ref when it is handed none', () => {
+  let own: React.RefObject<HTMLDivElement> | null = null;
+  function Probe() {
+    const [ref] = useContainerWidth<HTMLDivElement>();
+    own = ref;
+    return <div ref={ref} data-role="own" />;
+  }
+  const container = mount(<Probe />);
+  assert.equal(own!.current, container.querySelector('[data-role="own"]'));
+  cleanup();
 });

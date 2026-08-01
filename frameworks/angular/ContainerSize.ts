@@ -2,8 +2,8 @@ import { afterNextRender, DestroyRef, DOCUMENT, ElementRef, inject, signal, Sign
 
 const breakpoints = new Map<string, number>();
 
-export function containerWidth(): Signal<number | null> {
-  const host = inject<ElementRef<HTMLElement>>(ElementRef);
+export function containerWidth(target?: ElementRef<HTMLElement>): Signal<number | null> {
+  const host = target ?? inject<ElementRef<HTMLElement>>(ElementRef);
   const destroyRef = inject(DestroyRef);
   const width = signal<number | null>(null);
 

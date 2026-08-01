@@ -1,9 +1,10 @@
 import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-export function useContainerWidth<T extends Element = HTMLDivElement>():
+export function useContainerWidth<T extends Element = HTMLDivElement>(target?: React.RefObject<T | null>):
 [React.RefObject<T>, number | null] {
-  const ref = useRef<T>(null);
+  const own = useRef<T>(null);
+  const ref = (target ?? own) as React.RefObject<T>;
   const [width, setWidth] = useState<number | null>(null);
 
   useEffect(() => {

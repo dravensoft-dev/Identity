@@ -31,6 +31,14 @@ their own responsive component: call both from an injection context (a field
 initializer or the constructor), render the wide layout while the width is still
 `null`, and compare against the breakpoint token rather than writing a media query.
 
+`containerWidth()` measures the caller's own host by default and takes an `ElementRef` when
+the box to measure is a different one, so a component whose responsive question is about an
+inner panel does not have to make that panel a component of its own. The injection context is
+required either way, and not because of the element: `DestroyRef` disconnects the observer and
+`afterNextRender` decides when there is a box to measure at all. For page CSS rather than a
+component, name the threshold with Tailwind's `sm:`, `md:` and `lg:`, which Arena emits from
+the same tokens.
+
 **Do / Don't**
 - Exactly one `arena-page-head` per screen. It emits the `h1`, and a page with two
   `h1`s has no outline.

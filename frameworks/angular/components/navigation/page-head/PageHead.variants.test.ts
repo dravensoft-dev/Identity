@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DOCUMENT, Injector, runInInjectionContext } from '@angular/core';
+import { DOCUMENT, ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
 import { pageHeadStyles } from './PageHead.variants';
 
@@ -142,6 +142,14 @@ test('the injection-context contract holds on a cache hit too, not only on the f
   );
 });
 
-test('containerWidth also requires an injection context -- it measures the caller\'s own host element', () => {
+test('containerWidth requires an injection context whether or not it is handed an element to measure', () => {
+
   assert.throws(() => containerWidth(), /NG0203|injection context/i);
+  const elsewhere = new ElementRef(null as unknown as HTMLElement);
+  assert.throws(
+    () => containerWidth(elsewhere),
+    /NG0203|injection context/i,
+    'the element is optional and the context is not: DestroyRef disconnects the observer and '
+    + 'afterNextRender decides when there is a box to measure, and neither is reachable outside one',
+  );
 });
