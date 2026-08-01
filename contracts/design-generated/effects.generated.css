@@ -58,6 +58,28 @@
      property directly, and the flag is only for a value JS must consume to produce a position.
    */
   --press-scale:0.98;
+
+  /*
+     How much of a colour a tinted surface keeps, as the percentage a color-mix()
+     keeps of it. A number carrying a % render hint rather than a dimension, because
+     DTCG admits only px and rem in a dimension, the same reason tracking is a number
+     carrying an em hint. Script-readable: both layers build the color-mix() as a
+     string in JS, so the ratio has to arrive as a number rather than as a custom
+     property. These are the tints of an IDENTITY, a colour that stands for a thing;
+     the per-hue -soft aliases in colors.css are a different family and stay there,
+     because each is tuned to its own hue rather than shared across all eight.
+   */
+  --tint-area:18%; /* Fill under a line chart's series. A tint, never a gradient. */
+  /*
+     The surface an identity colour stands on: light enough that text at the
+     body contrast keeps its ratio over it, which is why it is well under area.
+   */
+  --tint-soft:12%;
+  /*
+     The hairline around that surface. It reads as the same colour only because
+     it is roughly twice soft: a border at the surface's own ratio disappears.
+   */
+  --tint-edge:26%;
   --ease-out:cubic-bezier(.2,.7,.3,1);
   --ease-in-out:cubic-bezier(.4,0,.2,1);
   --ease-emphatic:cubic-bezier(.2,.9,.1,1); /* the "rotor" flourish */

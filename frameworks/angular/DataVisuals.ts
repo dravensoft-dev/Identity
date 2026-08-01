@@ -1,7 +1,8 @@
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
+  tintArea, tintSoft, tintEdge,
 } from './Tokens.generated';
-import type { SeriesTone } from './Api.generated';
+import type { SeriesTone, Tone } from './Api.generated';
 
 export const CAT_SLOTS = catSlots;
 
@@ -21,14 +22,40 @@ export function catColor(slot: number): string {
   return `var(--color-cat-${n})`;
 }
 
-const TONE_VARS: Record<SeriesTone, string> = {
+export function catSlotFor(key: string): number {
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return (hash % CAT_SLOTS) + 1;
+}
+
+export interface CatSurface {
+  fill: string;
+  border: string;
+}
+
+export function catSurface(slot: number): CatSurface {
+  const colour = catColor(slot);
+  return {
+    fill: `color-mix(in oklab, ${colour} ${tintSoft}%, var(--color-base-100))`,
+    border: `color-mix(in oklab, ${colour} ${tintEdge}%, transparent)`,
+  };
+}
+
+export function areaFill(colour: string): string {
+  return `color-mix(in oklab, ${colour} ${tintArea}%, transparent)`;
+}
+
+const TONE_VARS: Record<Tone, string> = {
+  neutral: 'var(--text-body)',
+  accent: 'var(--accent)',
+  gold: 'var(--gold)',
   success: 'var(--success)',
   warning: 'var(--warning)',
   danger: 'var(--danger)',
   info: 'var(--info)',
 };
 
-export function toneColor(tone: SeriesTone): string {
+export function toneColor(tone: Tone): string {
   return TONE_VARS[tone];
 }
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
-import { CHART_HEIGHT, PAD, SR_ONLY, niceMax, resolveColors, ticks } from '../../../DataVisuals';
+import { CHART_HEIGHT, PAD, SR_ONLY, areaFill, niceMax, resolveColors, ticks } from '../../../DataVisuals';
 import type { SeriesTone } from '../../../Api.generated';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
 
@@ -178,7 +178,7 @@ export class LineChart {
 
   protected readonly color = computed(() => resolveColors({ slot: this.slot(), tone: this.tone(), count: 1 })[0]);
 
-  protected readonly areaFill = computed(() => `color-mix(in oklab, ${this.color()} 18%, transparent)`);
+  protected readonly areaFill = computed(() => areaFill(this.color()));
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();

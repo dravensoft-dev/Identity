@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useContainerWidth } from '../../../UseContainerWidth.ts';
-import { resolveColors, niceMax, ticks, srOnly, PAD, CHART_HEIGHT } from '../../../DataVisuals.ts';
+import {
+  resolveColors, catColor, niceMax, ticks, srOnly, areaFill, PAD, CHART_HEIGHT,
+} from '../../../DataVisuals.ts';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
 
 import type { SeriesTone } from '../../../Api.generated';
@@ -46,7 +48,7 @@ export function LineChart({
   const n = values.length;
   const fmt = (v: number) => `${v}${valueSuffix ?? ''}`;
 
-  const color = resolveColors({ slot, tone, count: 1 })[0];
+  const [color = catColor(1)] = resolveColors({ slot, tone, count: 1 });
 
   const max = niceMax(Math.max(0, ...values));
   const iw = Math.max(1, width - PAD.l - PAD.r);
@@ -86,7 +88,7 @@ export function LineChart({
 
         {}
         {area && n > 0 && (
-          <path d={areaPath} fill={`color-mix(in oklab, ${color} 18%, transparent)`} stroke="none" />
+          <path d={areaPath} fill={areaFill(color)} stroke="none" />
         )}
 
         {hover !== null && (

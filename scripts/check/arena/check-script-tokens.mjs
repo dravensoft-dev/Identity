@@ -9,7 +9,7 @@ import { numericConstants } from './check-duplicate-constants.mjs';
 const LAYERS_WITH_MODULES = ['react', 'angular'];
 
 export function cssCounterpart(value) {
-  const m = /^(-?\d+(?:\.\d+)?)(px|ms)?$/.exec(value.trim());
+  const m = /^(-?\d+(?:\.\d+)?)(px|ms|%)?$/.exec(value.trim());
   return m ? Number(m[1]) : null;
 }
 

@@ -18,6 +18,10 @@ test('cssCounterpart strips the unit from an ms declaration', () => {
   assert.equal(cssCounterpart('4200ms'), 4200);
 });
 
+test('cssCounterpart strips the unit from a percentage, which is how a ratio renders', () => {
+  assert.equal(cssCounterpart('18%'), 18);
+});
+
 test('cssCounterpart reads a bare zero, which is how a dimension renders at 0', () => {
   assert.equal(cssCounterpart('0'), 0);
 });

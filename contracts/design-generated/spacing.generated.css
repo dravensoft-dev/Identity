@@ -26,7 +26,7 @@
   /*
      Breakpoints — SHARED VALUES READ BY JS, not media queries.
      Components style themselves with inline style objects, which cannot hold a
-     media query, so responsive branches are JS (see UseContainerWidth.js).
+     media query, so responsive branches are JS (see UseContainerWidth.ts).
      These live here anyway so the thresholds stay a token, not a magic number
      retyped in four components. 768px is what DAMA hardcodes.
    */

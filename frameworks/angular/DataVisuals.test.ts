@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
-  catColor, toneColor, resolveColors, niceMax, ticks, barPath, arcPath,
+  catColor, catSlotFor, catSurface, areaFill, toneColor, resolveColors, niceMax, ticks,
+  barPath, arcPath,
 } from './DataVisuals';
-import type { SeriesTone } from './Api.generated';
+import type { SeriesTone, Tone } from './Api.generated';
 
 test('niceMax returns 1 for every input that is not a positive number', () => {
 
@@ -72,9 +73,46 @@ test('catColor rounds a fractional slot rather than truncating it', () => {
 });
 
 test('every tone in the union resolves to a token reference', () => {
-  const tones: SeriesTone[] = ['success', 'warning', 'danger', 'info'];
-  for (const tone of tones) assert.match(toneColor(tone), /^var\(--[a-z]+\)$/);
+  const tones: Tone[] = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
+  for (const tone of tones) assert.match(toneColor(tone), /^var\(--[a-z-]+\)$/);
   assert.equal(new Set(tones.map(toneColor)).size, tones.length, 'tones must not share a colour');
+});
+
+test('every SeriesTone is a Tone, so a chart keeps reaching the same colour it always did', () => {
+  const series: SeriesTone[] = ['success', 'warning', 'danger', 'info'];
+  for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as Tone));
+});
+
+test('catSlotFor lands inside the ramp for every key, including an empty one', () => {
+  for (const key of ['', 'a', 'arena', 'SKU-1042', 'ñ', '日本', 'x'.repeat(500)]) {
+    const slot = catSlotFor(key);
+    assert.ok(Number.isInteger(slot) && slot >= 1 && slot <= CAT_SLOTS, `catSlotFor(${key}) = ${slot}`);
+  }
+});
+
+test('catSlotFor gives the same key the same slot every time', () => {
+  assert.equal(catSlotFor('SKU-1042'), catSlotFor('SKU-1042'));
+});
+
+test('catSlotFor spreads over the ramp by these pinned vectors', () => {
+
+  assert.deepEqual(
+    ['a', 'arena', 'SKU-1042', 'SKU-1043', 'cliente-7'].map(catSlotFor),
+    [2, 8, 6, 7, 5],
+    'the numbers are pinned rather than derived because the point of the function is that one key '
+    + 'always draws the same colour: a ninth slot in the --color-cat-* ramp moves every one of them, '
+    + 'and re-deriving them here would assert nothing at all',
+  );
+});
+
+test('catSurface tints from the slot colour, and the edge is the stronger of the two', () => {
+  const surface = catSurface(3);
+  assert.match(surface.fill, /^color-mix\(in oklab, var\(--color-cat-3\) 12%, var\(--color-base-100\)\)$/);
+  assert.match(surface.border, /^color-mix\(in oklab, var\(--color-cat-3\) 26%, transparent\)$/);
+});
+
+test('areaFill is the tint LineChart draws under its series', () => {
+  assert.equal(areaFill('var(--success)'), 'color-mix(in oklab, var(--success) 18%, transparent)');
 });
 
 function captureWarnings(body: () => void): string[] {
