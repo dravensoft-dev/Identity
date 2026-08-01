@@ -48,7 +48,6 @@ export const GATES = [
   { name: 'check:demos', file: 'react/check-demos-generated.mjs' },
   { name: 'check:react-barrel', file: 'react/check-react-barrel.mjs' },
   { name: 'check:react-types', file: 'react/check-react-types.mjs' },
-  { name: 'check:kit', file: 'react/check-kit-generated.mjs' },
   { name: 'check:cards', file: 'arena/check-card-viewports.mjs' },
   { name: 'check:focus-trap', file: 'arena/check-focus-trap.mjs' },
   { name: 'check:packages', file: 'arena/check-packages.mjs' },

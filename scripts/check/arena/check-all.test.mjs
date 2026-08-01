@@ -7,10 +7,10 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { testStep, summarize, stepStatus, GATES, DOMAINS, testFilesUnder } from './check-all.mjs';
 
 test('GATES lists every check gate', () => {
-  assert.equal(GATES.length, 35);
+  assert.equal(GATES.length, 34);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:kit', 'check:cards', 'check:focus-trap', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 

@@ -5,7 +5,7 @@
  * not reach declaration output, so an unrewritten one names a file the package lacks. */
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import { tscBin } from '../../check/react/check-react-types.mjs';
@@ -56,16 +56,7 @@ export function rewriteSourceSpecifiers(code) {
   return code.replace(/(from\s*['"])(\.[^'"]+?)\.[jt]sx?(['"])/g, '$1$2.js$3');
 }
 
-export function kitSpecifiers(code, infix) {
-  return code.replace(/(from\s*['"])(\.[^'"]+?)(\.[jt]sx?)?(['"])/g, (whole, lead, path, ext, quote) => (
-    path.endsWith(infix) ? whole : `${lead}${path}${infix}.js${quote}`
-  ));
-}
-
-export function assembleModules(root, dir, opts = {}) {
-  const infix = opts.infix ?? '';
-  const outName = (rel) => (infix ? rel.replace(/(\.generated)?\.js$/, `${infix}.js`) : rel);
-  const rewrite = infix ? (code) => kitSpecifiers(code, infix) : rewriteSourceSpecifiers;
+export function assembleModules(root, dir) {
   const layer = join(root, LAYER);
   const written = [];
   const compiled = [];
@@ -76,9 +67,8 @@ export function assembleModules(root, dir, opts = {}) {
   if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
 
   const emit = (from, rel) => {
-    const out = outName(rel);
-    written.push(write(dir, out, rewrite(transpilers.get('tsx').transformSync(readFileSync(from, 'utf8')))));
-    compiled.push(out);
+    written.push(write(dir, rel, rewriteSourceSpecifiers(transpilers.get('tsx').transformSync(readFileSync(from, 'utf8')))));
+    compiled.push(rel);
   };
 
   for (const source of sources) {
@@ -93,15 +83,12 @@ export function assembleModules(root, dir, opts = {}) {
   for (const name of [...ROOT_JS, ...ROOT_TYPES, 'Index.generated.d.ts']) {
     const from = join(layer, name);
     if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
-    written.push(write(dir, name, rewrite(readFileSync(from, 'utf8'))));
+    written.push(write(dir, name, rewriteSourceSpecifiers(readFileSync(from, 'utf8'))));
   }
 
   emitDeclarations(root, dir);
-  for (const path of distFiles(dir, (p) => p.endsWith('.d.ts'))) {
-    const out = infix && !path.endsWith('.generated.d.ts') ? path.replace(/\.d\.ts$/, `${infix}.d.ts`) : path;
-    writeFileSync(out, rewrite(readFileSync(path, 'utf8')));
-    if (out !== path) rmSync(path);
-  }
+  for (const path of distFiles(dir, (p) => p.endsWith('.d.ts')))
+    writeFileSync(path, rewriteSourceSpecifiers(readFileSync(path, 'utf8')));
   const declarations = distFiles(dir, (p) => p.endsWith('.d.ts'));
 
   const untyped = untypedProblems(compiled, dir);

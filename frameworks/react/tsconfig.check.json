@@ -25,5 +25,5 @@
     "noEmit": true
   },
   "include": ["./**/*.ts", "./**/*.tsx"],
-  "exclude": ["./dist", "./kit", "./vendor", "./node_modules"]
+  "exclude": ["./dist", "./vendor", "./node_modules"]
 }
