@@ -14,6 +14,17 @@ function injectorWith(properties: Record<string, string>): Injector {
   return Injector.create({ providers: [{ provide: DOCUMENT, useValue: doc }] });
 }
 
+function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
+  const messages: string[] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => { messages.push(args.map(String).join(' ')); };
+  try {
+    return { result: fn(), messages };
+  } finally {
+    console.warn = original;
+  }
+}
+
 test('the root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
   assert.match(pageHeadStyles().root(), /(?:^|\s)flex(?=\s|$)/);
 });
@@ -99,10 +110,15 @@ test('readBreakpoint reads --bp-<name> off the document root and returns it as a
 });
 
 test('an absent breakpoint token is NaN, and every comparison against NaN is false -- which lands on the wide layout', () => {
-  const value = runInInjectionContext(injectorWith({}), () => readBreakpoint('lg'));
-  assert.ok(Number.isNaN(value), `expected NaN for an absent token, got ${value}`);
-  assert.equal(1 < value, false, 'a NaN breakpoint must never select the narrow branch');
-  assert.equal(9999 < value, false, 'a NaN breakpoint must never select the narrow branch');
+  const { result, messages } = captureWarn(() => runInInjectionContext(injectorWith({}), () => readBreakpoint('lg')));
+  assert.ok(Number.isNaN(result), `expected NaN for an absent token, got ${result}`);
+  assert.equal(1 < result, false, 'a NaN breakpoint must never select the narrow branch');
+  assert.equal(9999 < result, false, 'a NaN breakpoint must never select the narrow branch');
+
+  assert.equal(messages.length, 1, 'an unresolved breakpoint must say so: NaN is silent, and every comparison against it is false');
+  assert.match(messages[0], /--bp-lg/);
+  const again = captureWarn(() => runInInjectionContext(injectorWith({}), () => readBreakpoint('lg')));
+  assert.deepEqual(again.messages, [], 'the warning is once per name, not once per read');
 });
 
 test('a failed read is not cached -- a later call for the same name that succeeds returns the real value, not a pinned NaN', () => {

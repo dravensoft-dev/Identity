@@ -68,7 +68,10 @@ tile with a microlabel, so it has a manifest like every other expressible compon
 
 Four shared files are not components, and each sits at the narrowest level that contains
 all of its consumers rather than in one shared bucket:
-`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`),
+`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
+once per name when a breakpoint token does not resolve and never caches the failure**: every
+comparison against `NaN` is false, so a silent one leaves `Table`, `Calendar` and `PageHead` on
+their wide branch on a phone with nothing reported),
 `FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
 used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
