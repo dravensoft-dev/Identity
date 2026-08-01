@@ -75,13 +75,14 @@ also runs these suites under plain node, which cannot resolve the extensionless 
 toolchains expect.
 
 **A file a script writes is named `<stem>.generated.<ext>`**, so the name says so and no
-reader has to open it. Whether it is tracked is the separate question `.gitignore` answers: a
-generated file is tracked when the git tag has to serve it to a browser directly, which is
-`contracts/design-generated/`, the `assets/fonts/` binaries and the manifest recording them,
-because the Claude Code plugin is served from that tag, and everything a script writes under
-`frameworks/` is ignored. `check:generated` holds
-both halves, and records the one generated output that can carry neither the infix nor a
-header: the font binaries under `assets/fonts/`.
+reader has to open it. Whether it is tracked is the separate question `.gitignore` answers,
+for one of two reasons: the git tag has to serve it to a browser directly, true of
+`contracts/design-generated/` and the `assets/fonts/` binaries, because the Claude Code plugin
+is served from that tag; or a clone cannot reproduce it, true of
+`assets/fonts/Fonts.generated.json`, whose rebuild needs the network. Everything a script
+writes under `frameworks/` is ignored. `check:generated` holds both halves, and records the
+two generated outputs that can carry neither the infix nor a header: the font binaries under
+`assets/fonts/` and `intro/support.js`.
 
 ## Adding a gate
 

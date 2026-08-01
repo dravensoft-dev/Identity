@@ -20,10 +20,12 @@ node_modules/
 # writes the file; this block says which of those are untracked. Rebuild them with
 # `bun run build` -- see scripts/build/README.md.
 #
-# A generated file is tracked when the git tag has to serve it to a browser directly:
-# contracts/design-generated/, the assets/fonts/ binaries and the manifest recording them,
-# because the Claude Code plugin is served from the tag and ignoring them would ship one
-# whose intro/styles.css @imports resolve to nothing, unstyled and with no console error.
+# A generated file is tracked for one of two reasons. The git tag has to serve it to a
+# browser directly: contracts/design-generated/ and the assets/fonts/ binaries, because the
+# Claude Code plugin is served from the tag and ignoring them would ship one whose
+# intro/styles.css @imports resolve to nothing, unstyled and with no console error. Or a
+# clone cannot reproduce it: assets/fonts/Fonts.generated.json, whose rebuild needs the
+# network, the same reason UNMARKED already gives the .woff2 binaries themselves.
 # Everything a script writes under frameworks/ is read by Arena's own tooling or assembled
 # into a package, and is ignored. Each reason lives beside its pattern in UNTRACKED, in
 # scripts/check/arena/check-generated.mjs.

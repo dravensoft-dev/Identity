@@ -6,11 +6,11 @@ the same thing in a form a browser or a test runner can load. Nothing here decid
 that is [`../generate/`](../generate/README.md).
 
 Every output is named `<stem>.generated.<ext>`, so the name says a script writes it. Which of
-those are tracked and which are not is the separate question `.gitignore` answers: a generated
-file is tracked when the git tag has to serve it to a browser directly, which is
-`contracts/design-generated/`, the `assets/fonts/` binaries and the manifest recording them,
-and everything a script writes under `frameworks/` is ignored. `check:generated` holds both
-halves.
+those are tracked and which are not is the separate question `.gitignore` answers, for one of
+two reasons: the git tag has to serve it to a browser directly, true of
+`contracts/design-generated/` and the `assets/fonts/` binaries; or a clone cannot reproduce
+it, true of `assets/fonts/Fonts.generated.json`, whose rebuild needs the network. Everything a
+script writes under `frameworks/` is ignored. `check:generated` holds both halves.
 
 ## Compile Arena for the first time
 
