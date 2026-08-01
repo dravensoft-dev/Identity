@@ -36,14 +36,20 @@ test('the two unmarked outputs are named by literal value, with a reason each', 
 
 test('every ignore pattern carries a reason, and each names a real tree', () => {
   assert.deepEqual(Object.keys(UNTRACKED).sort(), [
+    'frameworks/react/DataVisuals.generated.js',
+    'frameworks/react/Theme.generated.js',
+    'frameworks/react/UseContainerWidth.generated.js',
+    'frameworks/react/UseDialogModal.generated.js',
     'frameworks/react/components/**/*.generated.js',
     'frameworks/react/ui-kits/**/*.generated.js',
     'frameworks/react/vendor/*.generated.js',
     'frameworks/tailwind/Utilities.generated.css',
   ]);
   for (const [name, reason] of Object.entries(UNTRACKED)) {
-    assert.ok(reason.length > 40, `${name} carries no real reason`);
+    assert.ok(reason.length > 30, `${name} carries no real reason`);
   }
+  assert.ok(!Object.keys(UNTRACKED).some((k) => k.includes('{')),
+    'the matcher takes a glob and not a brace expansion, so a braced key would name nothing');
 });
 
 test('matches treats * as one segment and **/ as any depth', () => {

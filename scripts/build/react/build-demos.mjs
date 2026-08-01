@@ -1,3 +1,8 @@
+/* A demo page loads the compiled sibling, and a browser cannot execute TypeScript, so
+ * every module a component reaches is compiled here: the components themselves, the demo
+ * entries, and the layer-root helpers in ROOT_MODULES. One left out is a module that 404s
+ * on the page with every suite still green, because a suite imports the source. */
+
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
@@ -9,7 +14,13 @@ export const BANNER =
 
 export const ROOTS = ['frameworks/react/components', 'frameworks/react/ui-kits/console'];
 
+export const ROOT_MODULES = [
+  'frameworks/react/DataVisuals.ts', 'frameworks/react/Theme.ts',
+  'frameworks/react/UseContainerWidth.ts', 'frameworks/react/UseDialogModal.ts',
+];
+
 export const SOURCE_EXTENSIONS = ['.jsx', '.tsx'];
+export const COMPILED_EXTENSIONS = ['.jsx', '.tsx', '.ts'];
 
 export function loaderFor(path) {
   return path.endsWith('.tsx') || path.endsWith('.ts') ? 'tsx' : 'jsx';
@@ -21,7 +32,8 @@ export function findSourceFiles(dir) {
     for (const entry of readdirSync(d, { withFileTypes: true })) {
       const path = join(d, entry.name);
       if (entry.isDirectory()) walk(path);
-      else if (SOURCE_EXTENSIONS.some((e) => entry.name.endsWith(e)) && !entry.name.includes('.test.')) found.push(path);
+      else if (COMPILED_EXTENSIONS.some((e) => entry.name.endsWith(e))
+        && !entry.name.includes('.test.') && !entry.name.endsWith('.d.ts')) found.push(path);
     }
   };
   walk(dir);
@@ -29,11 +41,11 @@ export function findSourceFiles(dir) {
 }
 
 export function rewriteRelativeSourceImports(code) {
-  return code.replace(/(from\s*")(\.\.?\/[^"]+?)\.[jt]sx"/g, '$1$2.generated.js"');
+  return code.replace(/(from\s*")(\.\.?\/[^"]+?)\.(?:jsx|tsx|ts)"/g, '$1$2.generated.js"');
 }
 
 export function outputPathFor(relPath) {
-  return relPath.replace(/\.[jt]sx$/, '.generated.js');
+  return relPath.replace(/\.(?:jsx|tsx|ts)$/, '.generated.js');
 }
 
 export async function buildDemos(opts = {}) {
@@ -44,8 +56,12 @@ export async function buildDemos(opts = {}) {
   );
 
   const files = new Map();
-  for (const treeRoot of ROOTS) {
-    for (const absPath of findSourceFiles(join(root, treeRoot))) {
+  {
+    const targets = [
+      ...ROOTS.flatMap((treeRoot) => findSourceFiles(join(root, treeRoot))),
+      ...ROOT_MODULES.map((rel) => join(root, rel)),
+    ];
+    for (const absPath of targets) {
       const source = readFileSync(absPath, 'utf8');
       const compiled = transpilers.get(loaderFor(absPath)).transformSync(source);
       const rewritten = rewriteRelativeSourceImports(compiled);

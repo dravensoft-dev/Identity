@@ -31,6 +31,12 @@ node_modules/
 /frameworks/react/vendor/*.generated.js
 /frameworks/react/components/**/*.generated.js
 /frameworks/react/ui-kits/**/*.generated.js
+# The layer-root helpers a demo page loads: compiled for the browser, which cannot run
+# TypeScript. Named one by one for the same reason the note above gives.
+/frameworks/react/DataVisuals.generated.js
+/frameworks/react/Theme.generated.js
+/frameworks/react/UseContainerWidth.generated.js
+/frameworks/react/UseDialogModal.generated.js
 /frameworks/tailwind/Utilities.generated.css
 
 # Logs

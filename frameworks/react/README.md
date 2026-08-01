@@ -104,7 +104,7 @@ examples) and an entry in a `*.card.html` demo. Adding a component means adding 
 **There is no hand-written `.d.ts`, and that is the point.** The interface sits in the file
 it describes, so it cannot disagree with the implementation beside it, and the declaration a
 consumer installs is emitted from that source at assembly time rather than maintained by
-hand. Angular's quartet is the analogue with one more file, because its recipe is separate.
+hand. The layer whose recipe is a separate file carries one more.
 
 **The demo page is one of two shapes.** `<Name>.card.html` sits in the component's own
 directory when the card is about that component alone; a page one level up, beside the

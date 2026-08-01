@@ -32,6 +32,13 @@ export const UNTRACKED = {
     + 'copies is frameworks/react/kit/, which is tracked.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
+  'frameworks/react/DataVisuals.generated.js':
+    'a compiled layer-root helper a demo page loads. A browser cannot execute TypeScript, so a '
+    + 'page importing one needs it compiled; the four are named one by one because a pattern '
+    + 'wide enough to catch them would swallow the tracked Tokens.generated.js beside them.',
+  'frameworks/react/Theme.generated.js': 'the same, for the theme helper.',
+  'frameworks/react/UseContainerWidth.generated.js': 'the same, for the container-width hook.',
+  'frameworks/react/UseDialogModal.generated.js': 'the same, for the modal focus helper.',
   'frameworks/tailwind/Utilities.generated.css':
     'the compiled utility layer, read only by the specimen pages. An adopter imports '
     + 'frameworks/angular/theme/arena-tailwind.css and compiles their own.',
