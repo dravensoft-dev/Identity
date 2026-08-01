@@ -18,6 +18,7 @@ import { iconButtonStyles } from './IconButton.variants';
             [attr.name]="name()" [attr.value]="value()" [attr.form]="form()"
             [attr.tabindex]="tabStop() ? null : -1"
             [attr.aria-label]="label()" [attr.title]="showLabel() ? null : label()"
+            [attr.aria-pressed]="pressed() === undefined ? null : pressed()"
             (click)="onClick($event)">
       <i [class]="icon()" aria-hidden="true"></i>
       @if (showLabel()) {
@@ -31,6 +32,7 @@ export class IconButton {
   readonly label = input.required<string>();
   readonly size = input<ControlSize>('md');
   readonly variant = input<IconButtonVariant>('ghost');
+  readonly pressed = input<boolean | undefined>();
   readonly showLabel = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly type = input<ButtonType>('button');
@@ -43,6 +45,7 @@ export class IconButton {
 
   protected readonly styles = computed(() => iconButtonStyles({
     variant: this.variant(), size: this.size(), showLabel: this.showLabel(),
+    pressed: this.pressed() === true,
   }));
 
   private readonly control = viewChild<ElementRef<HTMLButtonElement>>('control');

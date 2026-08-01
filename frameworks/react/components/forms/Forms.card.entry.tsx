@@ -28,6 +28,8 @@ function Demo(){
         <Button size="lg" variant="secondary">lg</Button>
         <IconButton label="New" variant="solid" icon="ph-bold ph-plus" />
         <IconButton label="New" icon="ph-bold ph-plus" />
+        <IconButton label="Pin this view" pressed icon="ph-bold ph-push-pin" />
+        <IconButton label="Pin this view" pressed={false} icon="ph-bold ph-push-pin" />
       </div>
       <div className="sub">Input · Select</div>
       <div className="row" style={{alignItems:'flex-start'}}>
