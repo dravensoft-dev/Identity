@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.check.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": [
+    "./dist",
+    "./kit",
+    "./vendor",
+    "./node_modules",
+    "./test",
+    "./ui-kits",
+    "./**/*.test.ts",
+    "./**/*.test.tsx",
+    "./**/*.card.entry.tsx"
+  ]
+}

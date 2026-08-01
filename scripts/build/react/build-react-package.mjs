@@ -1,13 +1,14 @@
 /* Assembles @dravensoft/arena-react into frameworks/react/dist/. A component source goes
- * through Bun.Transpiler, the same path build-demos.mjs uses, and each hand-written .d.ts is
- * copied rather than re-emitted, because those are the layer's real type contract. Every
- * relative source specifier becomes .js, which is the one rewrite: inside the package there is
- * no JSX and no TypeScript left to resolve. Nothing else here transforms anything. */
+ * through Bun.Transpiler, the same path build-demos.mjs uses, and its declaration is EMITTED
+ * by tsc rather than copied, so it cannot disagree with the implementation. Every relative
+ * source specifier becomes .js, in the emitted declarations too: rewriteRelativeImportExtensions
+ * does not reach declaration output, so an unrewritten one names a file the package lacks. */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
-import { SOURCE_EXTENSIONS, loaderFor } from './build-demos.mjs';
+import { tscBin } from '../../check/react/check-react-types.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
@@ -17,13 +18,95 @@ import {
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
 
-export const ROOT_MODULES = [
-  'Index.generated.js', 'Api.generated.d.ts', 'Tokens.generated.js',
-  'DataVisuals.js', 'UseContainerWidth.js', 'UseDialogModal.js', 'Theme.js',
-];
+export const ROOT_JS = ['Index.generated.js', 'Tokens.generated.js'];
+export const ROOT_TS = ['DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts'];
+export const ROOT_TYPES = ['Api.generated.d.ts'];
+export const DIST_PROJECT = 'frameworks/react/tsconfig.dist.json';
+
+export function isSource(path) {
+  return (path.endsWith('.ts') || path.endsWith('.tsx')) && !path.endsWith('.d.ts');
+}
+
+export function distFiles(dir, keep, found = []) {
+  if (!existsSync(dir)) return found;
+  for (const entry of readdirSync(dir).sort()) {
+    const p = join(dir, entry);
+    if (statSync(p).isDirectory()) { distFiles(p, keep, found); continue; }
+    if (keep(p)) found.push(p);
+  }
+  return found;
+}
+
+export function emitDeclarations(root, outDir) {
+  const args = [tscBin(root), '-p', join(root, DIST_PROJECT)];
+  if (outDir) args.push('--outDir', outDir);
+  const r = spawnSync(process.execPath, args, { encoding: 'utf8' });
+  if (r.error) throw new Error(`build-react-package: tsc failed to spawn: ${r.error.message || r.error}`);
+  if ((r.status ?? 1) !== 0)
+    throw new Error(`build-react-package: the declaration emit did not typecheck\n${r.stdout || ''}${r.stderr || ''}`);
+}
+
+export function untypedProblems(compiled, dir) {
+  return compiled
+    .filter((rel) => !existsSync(join(dir, rel.replace(/\.js$/, '.d.ts'))))
+    .map((rel) => `${rel} ships with no declaration beside it, so the package would ship it untyped`);
+}
 
 export function rewriteSourceSpecifiers(code) {
   return code.replace(/(from\s*['"])(\.[^'"]+?)\.[jt]sx(['"])/g, '$1$2.js$3');
+}
+
+export function kitSpecifiers(code, infix) {
+  return code.replace(/(from\s*['"])(\.[^'"]+?)(\.[jt]sx?)?(['"])/g, (whole, lead, path, ext, quote) => (
+    path.endsWith(infix) ? whole : `${lead}${path}${infix}.js${quote}`
+  ));
+}
+
+export function assembleModules(root, dir, opts = {}) {
+  const infix = opts.infix ?? '';
+  const outName = (rel) => (infix ? rel.replace(/(\.generated)?\.js$/, `${infix}.js`) : rel);
+  const rewrite = infix ? (code) => kitSpecifiers(code, infix) : rewriteSourceSpecifiers;
+  const layer = join(root, LAYER);
+  const written = [];
+  const compiled = [];
+  const tsconfig = JSON.stringify({ compilerOptions: { jsx: 'react' } });
+  const transpilers = new Map([['tsx', new Bun.Transpiler({ loader: 'tsx', tsconfig })]]);
+
+  const sources = collectFiles(join(layer, 'components'), isSource);
+  if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
+
+  const emit = (from, rel) => {
+    const out = outName(rel);
+    written.push(write(dir, out, rewrite(transpilers.get('tsx').transformSync(readFileSync(from, 'utf8')))));
+    compiled.push(out);
+  };
+
+  for (const source of sources) {
+    const rel = join('components', relative(join(layer, 'components'), source)).split(sep).join('/');
+    emit(source, rel.replace(/\.tsx?$/, '.js'));
+  }
+  for (const name of ROOT_TS) {
+    const from = join(layer, name);
+    if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
+    emit(from, name.replace(/\.ts$/, '.js'));
+  }
+  for (const name of [...ROOT_JS, ...ROOT_TYPES, 'Index.generated.d.ts']) {
+    const from = join(layer, name);
+    if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
+    written.push(write(dir, name, rewrite(readFileSync(from, 'utf8'))));
+  }
+
+  emitDeclarations(root, dir);
+  for (const path of distFiles(dir, (p) => p.endsWith('.d.ts'))) {
+    const out = infix && !path.endsWith('.generated.d.ts') ? path.replace(/\.d\.ts$/, `${infix}.d.ts`) : path;
+    writeFileSync(out, rewrite(readFileSync(path, 'utf8')));
+    if (out !== path) rmSync(path);
+  }
+  const declarations = distFiles(dir, (p) => p.endsWith('.d.ts'));
+
+  const untyped = untypedProblems(compiled, dir);
+  if (untyped.length) throw new Error(`build-react-package:\n  ${untyped.join('\n  ')}`);
+  return { written, compiled, declarations };
 }
 
 export function manifest(root = repoRoot) {
@@ -56,32 +139,10 @@ export async function buildReactPackage(root = repoRoot) {
 
   reset(dir);
 
-  const tsconfig = JSON.stringify({ compilerOptions: { jsx: 'react' } });
-  const transpilers = new Map(
-    SOURCE_EXTENSIONS.map((e) => [loaderFor(e), new Bun.Transpiler({ loader: loaderFor(e), tsconfig })]),
-  );
-
-  const sources = collectFiles(join(layer, 'components'), (p) => SOURCE_EXTENSIONS.some((e) => p.endsWith(e)));
-  if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
-
-  for (const source of sources) {
-    const rel = join('components', relative(join(layer, 'components'), source)).split(sep).join('/');
-    const compiled = transpilers.get(loaderFor(source)).transformSync(readFileSync(source, 'utf8'));
-    written.push(write(dir, rel.replace(/\.[jt]sx$/, '.js'), rewriteSourceSpecifiers(compiled)));
-  }
-  const carried = collectFiles(join(layer, 'components'), (p) => p.endsWith('.d.ts') || p.endsWith('.js'));
-  for (const file of carried) {
-    written.push(copy(file, dir, join('components', relative(join(layer, 'components'), file)).split(sep).join('/')));
-  }
-
-  for (const name of ROOT_MODULES) {
-    const from = join(layer, name);
-    if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
-    written.push(write(dir, name, rewriteSourceSpecifiers(readFileSync(from, 'utf8'))));
-  }
-  for (const name of ['Index.generated.d.ts', 'Theme.d.ts', 'DataVisuals.d.ts', 'UseContainerWidth.d.ts', 'UseDialogModal.d.ts']) {
-    written.push(copy(join(layer, name), dir, name));
-  }
+  const { written: modules, compiled, declarations } = assembleModules(root, dir);
+  written.push(...modules);
+  const sources = { length: compiled.length };
+  const carried = declarations;
 
   for (const to of writeCssChain(dir, NAME, [], root)) written.push(join(dir, to));
   written.push(join(dir, 'arena.css'));
@@ -103,7 +164,7 @@ async function main() {
   }
   const { dir, written, sources, carried } = await buildReactPackage();
   console.log(report('build-react-package', dir, written));
-  console.log(`build-react-package: ${sources} source(s) compiled, ${carried} .js and .d.ts carried across`);
+  console.log(`build-react-package: ${sources} source(s) compiled, ${carried} declaration(s) emitted`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

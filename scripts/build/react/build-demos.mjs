@@ -12,7 +12,7 @@ export const ROOTS = ['frameworks/react/components', 'frameworks/react/ui-kits/c
 export const SOURCE_EXTENSIONS = ['.jsx', '.tsx'];
 
 export function loaderFor(path) {
-  return path.endsWith('.tsx') ? 'tsx' : 'jsx';
+  return path.endsWith('.tsx') || path.endsWith('.ts') ? 'tsx' : 'jsx';
 }
 
 export function findSourceFiles(dir) {

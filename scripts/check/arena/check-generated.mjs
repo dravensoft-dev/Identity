@@ -28,8 +28,8 @@ export const UNTRACKED = {
   'frameworks/react/vendor/*.generated.js':
     'a 975 KB CommonJS->ESM bundle of a devDependency, read only by the demo pages\' importmap.',
   'frameworks/react/components/**/*.generated.js':
-    'the compiled sibling of a .jsx, read only by a demo page. The .jsx is the source a '
-    + 'consumer copies.',
+    'the compiled sibling of a component source, read only by a demo page. What a consumer '
+    + 'copies is frameworks/react/kit/, which is tracked.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
   'frameworks/tailwind/Utilities.generated.css':
