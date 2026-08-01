@@ -89,7 +89,8 @@ test('every contract MANIFEST_COVERS names exists, so no entry is stale', () => 
 test('the affordance union is what licenses a slot, which is the whole point of covering several', () => {
   assert.deepEqual([...affordancesFor(['Table', 'TableRow', 'TableCell'])].sort(), ['focus', 'hover']);
   assert.deepEqual([...affordancesFor(['Table'])], ['focus']);
-  assert.deepEqual([...affordancesFor(['Card'])], []);
+  assert.deepEqual([...affordancesFor(['PageHead'])], []);
+  assert.deepEqual([...affordancesFor(['Card'])].sort(), ['focus', 'hover']);
 });
 
 test('a contract with no affordances array throws rather than reading as none', () => {

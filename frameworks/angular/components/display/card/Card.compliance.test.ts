@@ -1,7 +1,10 @@
-/* `none` requires nothing, so assertPattern alone would pass over a card that had
- * grown a role or a tab stop of its own. What this suite states instead is the
- * claim the binding makes: everything pressable inside a card came from the
- * caller, and the header appears exactly when there is something to put in it. */
+/* The root slot is NOT host-bound here, and that is forced rather than chosen: `click` is an
+ * output whose name is also a native DOM event, and Angular installs both a DOM listener and an
+ * output subscription for such a name. On a host that both listens and emits, each emission
+ * re-enters the listener, so one real press was measured at 7609. The recipe therefore lands on
+ * an inner <div> that stopPropagation()s, which is the shape SideNavItem and TableRow already
+ * take, and the host goes display: contents. `activated` counts what a CONSUMER hears, and one
+ * is the only passing number. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();
@@ -14,7 +17,7 @@ import { TestBed } from '@angular/core/testing';
 import { assertNoNode } from '../../../test/NodeAssert';
 import { ArenaAction } from '../../../ProjectionMarkers';
 import { Card } from './Card';
-import { assertPattern, isFocusable, ANGULAR_COMPONENTS } from '../../../test/Compliance';
+import { assertPatternCases, isFocusable, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'display/card/Card.behaviour.json');
 
@@ -22,7 +25,8 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/card/Card.behaviour.json');
   standalone: true,
   imports: [Card, ArenaAction],
   template: `
-    <arena-card [title]="title" [eyebrow]="eyebrow" [accent]="accent" [floating]="floating">
+    <arena-card [title]="title" [eyebrow]="eyebrow" [accent]="accent" [floating]="floating"
+                [interactive]="interactive" [disabled]="disabled" (click)="activated = activated + 1">
       @if (withAction) {
         <button action type="button">Open</button>
       }
@@ -35,7 +39,10 @@ class CardHost {
   eyebrow: string | undefined = 'Delivery';
   accent = false;
   floating = false;
+  interactive = false;
+  disabled = false;
   withAction = false;
+  activated = 0;
 }
 
 function render(patch: Partial<CardHost> = {}) {
@@ -45,22 +52,98 @@ function render(patch: Partial<CardHost> = {}) {
   return fixture;
 }
 
-test('arena-card is a surface: no role of its own, and nothing focusable it did not receive', () => {
-  const fixture = render();
+function rootOf(fixture: ReturnType<typeof render>): HTMLElement {
+  const host = fixture.nativeElement.querySelector('arena-card') as HTMLElement;
+  return host.firstElementChild as HTMLElement;
+}
+
+function press(el: HTMLElement, key: string): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  el.dispatchEvent(event);
+  return event;
+}
+
+test('arena-card meets both of its declared shapes', () => {
+  const surface = render();
+  const live = render({ interactive: true, title: 'checkout-api', eyebrow: undefined });
+  const off = render({ interactive: true, disabled: true, title: 'checkout-api', eyebrow: undefined });
   try {
-    const card = fixture.nativeElement.querySelector('arena-card') as HTMLElement;
-
-    assert.equal(card.getAttribute('role'), null, 'a surface that claims a role claims an affordance it does not have');
-    for (const el of [card, ...Array.from(card.querySelectorAll('*'))]) {
-      assert.equal(isFocusable(el as Element), false,
-        `<${el.tagName.toLowerCase()}> is reachable by keyboard, and the caller put nothing focusable in this card`);
-    }
-
-    assertPattern({
-      root: card,
+    assertPatternCases({
       bindingPath: BINDING,
-      subjects: { default: card },
+      cases: {
+        surface: () => {
+          const el = rootOf(surface);
+          assert.equal(el.getAttribute('role'), null,
+            'a surface that claims a role claims an affordance it does not have');
+          assert.equal(el.hasAttribute('tabindex'), false,
+            'an inert card must not be a tab stop, or every card of every list becomes a dead one');
+          for (const node of [el, ...Array.from(el.querySelectorAll('*'))]) {
+            assert.equal(isFocusable(node as Element), false,
+              `<${node.tagName.toLowerCase()}> is reachable by keyboard, and the caller put nothing focusable here`);
+          }
+          return { root: el, subjects: { default: el } };
+        },
+
+        interactive: () => {
+          const el = rootOf(live);
+          assert.equal(el.tagName, 'DIV', 'the card is a div, which is why it CAN take role="button"');
+          assert.equal(el.getAttribute('role'), 'button');
+          assert.equal(el.getAttribute('tabindex'), '0', 'an interactive card is reached by Tab');
+          assert.match(el.textContent ?? '', /checkout-api/,
+            'the button pattern accepts text content as its name, and the title is that text');
+
+          el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          live.detectChanges();
+          assert.equal(live.componentInstance.activated, 1,
+            'a consumer binding (click) must hear one press exactly once -- two would be the emit plus '
+            + 'the native event reaching them as well, and a runaway count would be the emission re-entering');
+
+          const enter = press(el, 'Enter');
+          live.detectChanges();
+          assert.equal(live.componentInstance.activated, 2, 'Enter did not activate the card');
+          assert.equal(enter.defaultPrevented, true, 'Enter was not claimed by the card');
+
+          const space = press(el, ' ');
+          live.detectChanges();
+          assert.equal(live.componentInstance.activated, 3, 'Space did not activate the card');
+          assert.equal(space.defaultPrevented, true,
+            'Space must be prevented, or the page scrolls under the card the user just pressed');
+
+          const dead = rootOf(off);
+          assert.equal(dead.getAttribute('aria-disabled'), 'true',
+            'a disabled card must announce itself rather than leave the tab order');
+          assert.equal(dead.getAttribute('role'), 'button',
+            'it is still a button -- a disabled control that stops being one cannot be found at all');
+          assert.equal(dead.getAttribute('tabindex'), '0',
+            'a disabled control nobody can reach is a control nobody knows exists');
+          press(dead, 'Enter');
+          dead.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          off.detectChanges();
+          assert.equal(off.componentInstance.activated, 0, 'a disabled card activated anyway');
+
+          return {
+            root: el,
+            subjects: { default: el },
+            behavioural: { 'keyboard.Enter': true, 'keyboard.Space': true, 'states.disabled': true },
+          };
+        },
+      },
     });
+  } finally {
+    surface.destroy();
+    live.destroy();
+    off.destroy();
+  }
+});
+
+test('a keypress on a control inside the card does not activate the card as well', () => {
+  const fixture = render({ interactive: true, withAction: true });
+  try {
+    const action = rootOf(fixture).querySelector('button') as HTMLElement;
+    press(action, 'Enter');
+    fixture.detectChanges();
+    assert.equal(fixture.componentInstance.activated, 0,
+      'Enter on a control inside the card activated the card, so no card can ever hold one');
   } finally {
     fixture.destroy();
   }
@@ -69,10 +152,11 @@ test('arena-card is a surface: no role of its own, and nothing focusable it did 
 test('a control the caller projects stays reachable -- the card adds no affordance and takes none away', () => {
   const fixture = render({ withAction: true });
   try {
-    const card = fixture.nativeElement.querySelector('arena-card') as HTMLElement;
-    const action = card.querySelector('button');
+    const action = rootOf(fixture).querySelector('button');
     assert.ok(action, 'the [action] slot did not project the caller\'s button');
     assert.equal(isFocusable(action), true, 'the projected control lost its tab stop inside the card');
+    assert.equal(rootOf(fixture).getAttribute('role'), null,
+      'projecting an action must not turn the surface into a control of its own');
   } finally {
     fixture.destroy();
   }
@@ -87,8 +171,7 @@ test('the header renders for a title, for an eyebrow, or for an action alone, an
   for (const patch of headed) {
     const fixture = render(patch);
     try {
-      const card = fixture.nativeElement.querySelector('arena-card') as HTMLElement;
-      assert.ok(card.children.length > 1,
+      assert.ok(rootOf(fixture).children.length > 1,
         `${JSON.stringify(patch)}: the header block did not render, so its content has nowhere to go`);
     } finally {
       fixture.destroy();
@@ -97,21 +180,26 @@ test('the header renders for a title, for an eyebrow, or for an action alone, an
 
   const bare = render({ title: undefined, eyebrow: undefined });
   try {
-    const card = bare.nativeElement.querySelector('arena-card') as HTMLElement;
-    assert.equal(card.children.length, 1, 'a card with nothing to head still drew a header block');
-    assertNoNode(card.querySelector('arena-card > div > div'), 'the empty header survived as a nested block');
+    const root = rootOf(bare);
+    assert.equal(root.children.length, 1, 'a card with nothing to head still drew a header block');
+    assertNoNode(root.querySelector(':scope > div > div'), 'the empty header survived as a nested block');
   } finally {
     bare.destroy();
   }
 });
 
-test('accent and floating reach the host, which is the styled element because the root slot is host-bound', () => {
+test('accent and floating reach the styled root, and the host itself stays out of layout', () => {
   const plain = render();
   const marked = render({ accent: true, floating: true });
   try {
-    const plainClass = (plain.nativeElement.querySelector('arena-card') as HTMLElement).getAttribute('class') ?? '';
-    const markedClass = (marked.nativeElement.querySelector('arena-card') as HTMLElement).getAttribute('class') ?? '';
-    assert.notEqual(plainClass, markedClass, 'accent and floating changed nothing on the host');
+    const host = plain.nativeElement.querySelector('arena-card') as HTMLElement;
+    assert.equal(host.getAttribute('class'), null, 'the host carries no recipe classes of its own');
+    assert.match(host.getAttribute('style') ?? '', /display:\s*contents/,
+      'a bare host must leave layout, or as a flex item it shrinks to fit around the card');
+
+    const plainClass = rootOf(plain).getAttribute('class') ?? '';
+    const markedClass = rootOf(marked).getAttribute('class') ?? '';
+    assert.notEqual(plainClass, markedClass, 'accent and floating changed nothing on the root');
     assert.match(markedClass, /\bborder-primary\b/, 'accent did not draw the border in the accent colour');
     assert.match(markedClass, /\bshadow-2\b/, 'floating did not cast the warm shadow');
     assert.doesNotMatch(plainClass, /\bshadow-2\b/);

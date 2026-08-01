@@ -59,7 +59,7 @@ export const COVERED = {
   'AppLogo:react': 'InertComponents.dom.test.tsx',
   'Avatar:react': 'InertComponents.dom.test.tsx',
   'Badge:react': 'InertComponents.dom.test.tsx',
-  'Card:react': 'InertComponents.dom.test.tsx',
+  'Card:react': 'Card.cases.dom.test.tsx',
   'StatCard:react': 'InertComponents.dom.test.tsx',
   'UnauthCard:react': 'InertComponents.dom.test.tsx',
   'ChartCard:react': 'InertComponents.dom.test.tsx',

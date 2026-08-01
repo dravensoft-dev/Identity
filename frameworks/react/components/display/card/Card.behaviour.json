@@ -1,5 +1,13 @@
 {
-  "pattern": "none",
-  "reason": "Card renders a bordered surface with an optional eyebrow/title header and an `action` slot; it manages no state, adds no role, and owns no interactive element of its own -- any button or control inside comes from `children` or `action`, both caller-supplied content, not from Card itself.",
-  "exceptions": []
+  "cases": [
+    { "name": "surface",
+      "when": "`interactive` is false -- the default, and nothing obliges a consumer to change it",
+      "pattern": "none",
+      "reason": "Card renders a bordered surface with an optional eyebrow/title header and an `action` slot; it manages no state, adds no role, and owns no interactive element of its own -- any button or control inside comes from `children` or `action`, both caller-supplied content, not from Card itself. This is the shape that keeps a dead tab stop off every card of every list.",
+      "exceptions": [] },
+    { "name": "interactive",
+      "when": "`interactive` is true -- the whole card is one activation target, the ordinary shape of a list on a phone",
+      "pattern": "button",
+      "exceptions": [] }
+  ]
 }
