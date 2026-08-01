@@ -64,7 +64,7 @@ Each column picks its card-mode layout with `mobileLayout`:
 
 The wide layout is a `role="grid"` with **one** tab stop. Tab reaches the grid, arrows move by cell (the header row is row 0 and is navigable, as APG prescribes), `Home` and `End` go to the first and last cell of the **current row**, and `Enter` activates the cursor's row by calling that `TableRow`'s `onClick`. There is no step-in: a control you drew inside a cell keeps its own place in the page Tab sequence, so nothing you own is silenced.
 
-The grid is **not assumed rectangular**. A row may carry fewer or more cells than there are columns, and the empty state is a single cell spanning the width; the cursor is clamped against the row it is actually in.
+The grid is **not assumed rectangular**. A row may carry fewer or more cells than there are columns, and the cursor is clamped against the row it is actually in. With no rows there is no grid at all: no header row, no `role="grid"`, only the `empty` block, because a column head standing over a "no results" sentence describes a table that is not there.
 
 Card mode answers none of this. A card is a list item, and a list is traversed with Tab, and a card whose row has `onClick` becomes a `role="button"` tab stop of its own, which is `TableRow`'s `card-interactive` case, not a clause of this component's binding, which carries no exception in either shape.
 
@@ -113,3 +113,30 @@ Serve the tree with `bun run demos`, open
    that announces itself as a button and activates on Enter and Space, and that a card
    whose row has none took no `role`, `tabindex` or key handler by accident. `interactive`
    is what decides that, never whether `onClick` was passed -- R6.
+
+### Sorting and paging
+
+Both are **controlled**, and for the same reason: `Table` does not hold the rows, so it
+cannot order them and cannot cut them. It draws the affordance and tells you what was asked.
+
+```html
+<Table label="Recent deployments" [columns]="columns"
+             [sort]="sort()" (sortChange)="sort.set($event)"
+             [page]="page()" (pageChange)="goTo($event)">
+```
+
+Mark a column `sortable: true` and pass `sort`. Without `sort` no header is a target however
+many columns declare it, because a control drawing a direction it does not know is worse than
+no control. Activating the sorted column flips it; activating a different one starts it
+ascending. It costs **no tab stop**: the header row is already row 0 of the grid's roving
+cursor, so Enter and Space act on the cell the reader is already on, and `aria-sort` says which
+column and which way.
+
+`page` is `{ index, size, total }`. `total` is the count across every page and is required,
+because the rows you project are one page and nothing about the whole list can be read from
+them. Table draws its own `Pagination` below the grid and names it from `label`, which is
+what makes two paged tables on one dashboard tellable apart.
+
+The one thing Table emits on its own is `pageChange` with 1, when the total drops far enough
+that the current page is past the end. That is the reset otherwise written by hand beside every
+filter, and it is bounded: a filter that leaves the page valid is silent, so nothing loops.

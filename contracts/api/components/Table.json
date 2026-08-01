@@ -2,7 +2,8 @@
   "component": "Table",
   "description": "Data table on the density tokens. Table draws the header row from `columns`, owns the grid and its keyboard, and decides where each row sits; the consumer writes one TableRow per row and one TableCell per cell, so a cell's content is a value or one of Arena's own components rather than something returned from a per-item render function. Below --bp-md it becomes one card per row, measured on its own container rather than the viewport.",
   "affordances": [
-    "focus"
+    "focus",
+    "hover"
   ],
   "api": {
     "label": {
@@ -23,7 +24,27 @@
     },
     "empty": {
       "form": "slot",
-      "description": "What shows when no row is written. Every layer falls back to the string 'No data.' when nothing is given, each in its own idiom for a default. Unlike Table.label this one IS derivable: 'No data.' states what happened rather than what the component is, which is the distinction that makes a fallback useful here and useless there. A consumer with a better sentence, what to do next or why the list is empty, projects it."
+      "description": "What shows when no row is written. In that state NO grid is drawn at all, header row included: a column head over a \"no results\" sentence describes a table that is not there, and a role=\"grid\" holding neither a header nor a row is a degenerate render, the same judgement Tabs makes when it draws no panel for a tab that does not exist. Every layer falls back to the string 'No data.' when nothing is given, each in its own idiom for a default. Unlike Table.label this one IS derivable: 'No data.' states what happened rather than what the component is, which is the distinction that makes a fallback useful here and useless there. A consumer with a better sentence, what to do next or why the list is empty, projects it."
+    },
+    "sort": {
+      "form": "object",
+      "type": "TableSort",
+      "description": "Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target."
+    },
+    "sortChange": {
+      "form": "event",
+      "payload": "TableSort",
+      "description": "A sortable header was activated, carrying the column and the direction it should become: the same column flips, a different one starts ascending. Table never reorders anything itself, so a consumer who ignores this event gets a caret that moves and rows that do not, which is why the member is controlled rather than a starting value."
+    },
+    "page": {
+      "form": "object",
+      "type": "TablePage",
+      "description": "Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`, which is what gives that required name its uniqueness on a page with two paged tables. Absent, no pager is drawn and the projected rows are the whole list."
+    },
+    "pageChange": {
+      "form": "event",
+      "payload": "number",
+      "description": "A page was chosen, carrying the new 1-based page. It also fires with 1 when the total row count drops far enough that the current page is past the end, which is the reset a consumer otherwise writes by hand beside every filter; it fires only when the page has actually gone out of range, so a filter that leaves it valid is silent."
     },
     "responsive": {
       "form": "primitive",

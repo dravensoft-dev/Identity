@@ -134,6 +134,18 @@ test('Table meets both of its declared shapes', () => {
           'no cells means no roving tab stop to claim -- the requirement does not apply rather than going unmet');
         return { root, subjects: { default: root.firstElementChild } };
       }),
+
+      empty: () => {
+        const root = mount(<Table label={LABEL} columns={COLUMNS} responsive={false} empty="Nothing shipped." />);
+        assert.equal(root.querySelector<HTMLElement>('[role="grid"]')!, null,
+          'with no rows there is no grid at all, which is why this case binds `none`');
+        assert.equal(root.querySelector<HTMLElement>('[role="columnheader"]')!, null,
+          'and no orphan header standing over the sentence that says there is nothing');
+        assert.equal(root.querySelectorAll<HTMLElement>('[tabindex]').length, 0,
+          'nothing to rove over means no tab stop to claim');
+        assert.match(root.textContent, /Nothing shipped\./, 'the empty slot did not render');
+        return { root, subjects: { default: root.firstElementChild } };
+      },
     },
   });
 });

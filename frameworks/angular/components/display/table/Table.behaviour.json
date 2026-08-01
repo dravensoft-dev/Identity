@@ -1,14 +1,25 @@
 {
   "component": "Table",
   "cases": [
-    { "name": "wide",
+    {
+      "name": "wide",
       "when": "responsive is false, or the container is at least --bp-md -- the default shape, a real role=\"grid\" the arrow keys walk",
       "pattern": "grid",
-      "exceptions": [] },
-    { "name": "card",
+      "exceptions": []
+    },
+    {
+      "name": "card",
       "when": "responsive is true and the container is below --bp-md -- one card per row, no grid, row or cell role anywhere",
       "pattern": "none",
       "reason": "Below the breakpoint there is no grid: the rows become stacked cards and nothing carries a grid, row or cell role. The grid pattern's requirements do not go unmet in this shape, they do not APPLY to it -- there is no grid for a roving tab stop to live in. Whether a card a consumer made clickable is reachable by keyboard is TableRow's question, not a clause of this one, and that binding records where this layer stands on it.",
-      "exceptions": [] }
+      "exceptions": []
+    },
+    {
+      "name": "empty",
+      "when": "no TableRow is written -- the [empty] slot alone, with no grid drawn at all",
+      "pattern": "none",
+      "reason": "There is no grid in this shape, so the grid pattern's requirements do not go unmet, they do not APPLY. A role=\"grid\" holding neither a header row nor a data row is a degenerate render, the same judgement Tabs makes when it draws no tabpanel for a tab that does not exist, and a column head standing over a \"no results\" sentence describes a table that is not there. The measurement that settled it: across sixteen tables in a real consumer the slot had zero uses and was replaced every time by an @if that removed the table entirely.",
+      "exceptions": []
+    }
   ]
 }

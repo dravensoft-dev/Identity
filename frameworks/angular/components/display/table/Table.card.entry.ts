@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy, Component, provideZonelessChangeDetection, signal,
 } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import type { TableColumn } from '../../../Api.generated';
+import type { TableColumn, TablePage, TableSort } from '../../../Api.generated';
 import { Badge } from '../badge/Badge';
 import { Button } from '../../forms/button/Button';
 import { Table } from './Table';
@@ -18,7 +18,9 @@ import { TableCell } from '../table-cell/TableCell';
   template: `
     <p class="sub">Wide — Tab once into the grid, then walk it with the arrows, Home and End</p>
     <div class="box">
-      <arena-table [label]="'Recent deployments'" [columns]="columns">
+      <arena-table [label]="'Recent deployments'" [columns]="columns"
+                   [sort]="sort()" (sortChange)="sort.set($event)"
+                   [page]="page()" (pageChange)="goTo($event)">
         <arena-table-row interactive (click)="opened.set('checkout-api')">
           <arena-table-cell>checkout-api</arena-table-cell>
           <arena-table-cell>4f2a1c9</arena-table-cell>
@@ -94,11 +96,19 @@ import { TableCell } from '../table-cell/TableCell';
 })
 class TableCard {
   protected readonly columns: TableColumn[] = [
-    { header: 'Service' },
+    { header: 'Service', sortable: true },
     { header: 'Commit', mono: true },
-    { header: 'Status', align: 'right' },
+    { header: 'Status', align: 'right', sortable: true },
     { header: '', mobileLayout: 'block' },
   ];
+
+  protected readonly sort = signal<TableSort>({ column: 0, direction: 'asc' });
+
+  protected readonly page = signal<TablePage>({ index: 1, size: 3, total: 12 });
+
+  protected goTo(index: number): void {
+    this.page.update((current) => ({ ...current, index }));
+  }
 
   protected readonly opened = signal('');
 

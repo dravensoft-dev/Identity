@@ -69,11 +69,13 @@ matching one, so a `wide` branch and a `card` branch cannot each carry their own
 once, into a box whose display and role change with the shape, and the wide box is a
 `display: table` with `role="grid"` rather than a `<table>`. A native `<table>` would carry
 `role="table"` and have to be overridden to `grid` anyway, so nothing is lost there; what a
-non-element table costs is `colspan`. Two real costs follow: `colspan` has no CSS equivalent, so the
-empty state is a block **beside** the grid box rather than a cell spanning it, and the grid in
-that state holds only its header row; and `display: table` on the host means the measured
-`contentRect` excludes the frame border, so the narrow threshold trips a couple of pixels
-earlier than the declared breakpoint.
+non-element table costs is `colspan`, so the empty state is a block **beside** the grid box
+rather than a cell spanning it. That stopped being a visible cost when the empty state stopped
+drawing a grid at all: with no rows there is no header row and no `role="grid"`, only the
+block, which is what `Table.json` contracts for the state and `Table.cases.test.ts` asserts.
+The other cost stands: `display: table` on the host means the measured `contentRect` excludes the
+frame border, so the narrow threshold trips a couple of pixels earlier than the declared
+breakpoint.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
 `frameworks/angular/components/display/table/Table.card.html`). Steps 1–5 were checked in real
@@ -92,3 +94,30 @@ it *looks* were not, and are why this list stays:
    role, a tabindex or a key handler by accident.
 6. The measured width does not oscillate between the two shapes. Narrow the window slowly
    across the threshold and watch it settle rather than flicker.
+
+### Sorting and paging
+
+Both are **controlled**, and for the same reason: `arena-table` does not hold the rows, so it
+cannot order them and cannot cut them. It draws the affordance and tells you what was asked.
+
+```html
+<arena-table label="Recent deployments" [columns]="columns"
+             [sort]="sort()" (sortChange)="sort.set($event)"
+             [page]="page()" (pageChange)="goTo($event)">
+```
+
+Mark a column `sortable: true` and pass `sort`. Without `sort` no header is a target however
+many columns declare it, because a control drawing a direction it does not know is worse than
+no control. Activating the sorted column flips it; activating a different one starts it
+ascending. It costs **no tab stop**: the header row is already row 0 of the grid's roving
+cursor, so Enter and Space act on the cell the reader is already on, and `aria-sort` says which
+column and which way.
+
+`page` is `{ index, size, total }`. `total` is the count across every page and is required,
+because the rows you project are one page and nothing about the whole list can be read from
+them. Table draws its own `arena-pagination` below the grid and names it from `label`, which is
+what makes two paged tables on one dashboard tellable apart.
+
+The one thing Table emits on its own is `pageChange` with 1, when the total drops far enough
+that the current page is past the end. That is the reset otherwise written by hand beside every
+filter, and it is bounded: a filter that leaves the page valid is silent, so nothing loops.

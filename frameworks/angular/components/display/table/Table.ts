@@ -1,9 +1,10 @@
 import {
   ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, booleanAttribute, computed,
-  contentChildren, inject, input,
+  contentChildren, effect, inject, input, output, untracked,
 } from '@angular/core';
-import type { TableColumn } from '../../../Api.generated';
+import type { TableColumn, TablePage, TableSort } from '../../../Api.generated';
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { Pagination } from '../../navigation/pagination/Pagination';
 import { TableRow } from '../table-row/TableRow';
 import { TableState } from './TableState';
 import { tableStyles } from './Table.variants';
@@ -13,23 +14,32 @@ import { tableStyles } from './Table.variants';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TableState],
+  imports: [Pagination],
   host: { '[class]': 'styles().root()' },
   template: `
-    <div [class]="styles().grid()" [attr.role]="narrow() ? null : 'grid'"
-         [attr.aria-label]="gridLabel()" (keydown)="onKeydown($event)">
-      @if (!narrow()) {
+    <div [class]="styles().grid()" [attr.role]="gridRole()"
+         [attr.aria-label]="empty() ? null : gridLabel()" (keydown)="onKeydown($event)">
+      @if (!narrow() && !empty()) {
         <div role="row" [class]="styles().headRow()">
           @for (column of columns(); track $index; let i = $index) {
             <div role="columnheader" [class]="headerClass(column)" [style.width]="column.width"
                  [attr.tabindex]="state.isStop(0, i) ? 0 : -1"
-                 (focus)="moveTo(0, i)">{{ column.header }}</div>
+                 [attr.aria-sort]="sortStateOf(i)"
+                 (focus)="moveTo(0, i)" (click)="onHeader(i)">{{ column.header }}@if (sortStateOf(i) !== null && sortStateOf(i) !== 'none') {
+              <i [class]="styles().sortCaret() + ' ' + caretOf(i)" aria-hidden="true"></i>
+            }</div>
           }
         </div>
       }
       <ng-content />
     </div>
-    @if (rows().length === 0) {
+    @if (empty()) {
       <div [class]="styles().empty()"><ng-content select="[empty]">No data.</ng-content></div>
+    } @else if (page(); as paging) {
+      <div [class]="styles().pager()">
+        <arena-pagination [page]="paging.index" [pageCount]="pageCount()"
+                          [ariaLabel]="gridLabel()" (change)="pageChange.emit($event)" />
+      </div>
     }
   `,
 })
@@ -40,6 +50,14 @@ export class Table {
   readonly columns = input.required<TableColumn[]>();
   /** Card mode below --bp-md. Set false only when the columns are meaningless apart. */
   readonly responsive = input(true, { transform: booleanAttribute });
+  /** Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target. */
+  readonly sort = input<TableSort>();
+  /** Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`, which is what gives that required name its uniqueness on a page with two paged tables. Absent, no pager is drawn and the projected rows are the whole list. */
+  readonly page = input<TablePage>();
+  /** A sortable header was activated, carrying the column and the direction it should become: the same column flips, a different one starts ascending. Table never reorders anything itself, so a consumer who ignores this event gets a caret that moves and rows that do not, which is why the member is controlled rather than a starting value. */
+  readonly sortChange = output<TableSort>();
+  /** A page was chosen, carrying the new 1-based page. It also fires with 1 when the total row count drops far enough that the current page is past the end, which is the reset a consumer otherwise writes by hand beside every filter; it fires only when the page has actually gone out of range, so a filter that leaves it valid is silent. */
+  readonly pageChange = output<number>();
 
   protected readonly state = inject(TableState);
 
@@ -62,12 +80,54 @@ export class Table {
     return name;
   });
 
+  protected readonly empty = computed(() => this.rows().length === 0);
+
+  protected readonly gridRole = computed(() => (this.narrow() || this.empty() ? null : 'grid'));
+
+  protected readonly pageCount = computed(() => {
+    const paging = this.page();
+    if (!paging) return 1;
+    return Math.max(1, Math.ceil(paging.total / Math.max(1, paging.size)));
+  });
+
   protected readonly styles = computed(() => tableStyles({ narrow: this.narrow() }));
+
+  protected sortStateOf(column: number): string | null {
+    if (!this.columns()[column]?.sortable || !this.sort()) return null;
+    const current = this.sort();
+    if (current?.column !== column) return 'none';
+    return current.direction === 'asc' ? 'ascending' : 'descending';
+  }
+
+  protected caretOf(column: number): string {
+    return this.sort()?.direction === 'asc' ? 'ph-bold ph-caret-up' : 'ph-bold ph-caret-down';
+  }
+
+  protected headerClass(column: TableColumn): string {
+    const base = tableStyles({ narrow: false, align: column.align ?? 'left' }).th();
+    return column.sortable && this.sort() ? `${base} ${this.styles().thSortable()}` : base;
+  }
+
+  protected onHeader(column: number): void {
+    if (!this.columns()[column]?.sortable) return;
+    const current = this.sort();
+    if (!current) return;
+    this.sortChange.emit(current.column === column
+      ? { column, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+      : { column, direction: 'asc' });
+  }
 
   constructor() {
     this.state.columns = this.columns;
     this.state.narrow = this.narrow;
     this.state.rows = this.rows;
+
+    effect(() => {
+      const paging = this.page();
+      const pages = this.pageCount();
+      if (!paging || paging.index <= pages) return;
+      untracked(() => this.pageChange.emit(1));
+    });
 
     afterRenderEffect(() => {
       this.state.clamped();
@@ -84,10 +144,6 @@ export class Table {
     });
   }
 
-  protected headerClass(column: TableColumn): string {
-    return tableStyles({ narrow: false, align: column.align ?? 'left' }).th();
-  }
-
   protected moveTo(row: number, col: number): void {
     if (!this.state.isStop(row, col)) this.state.cursor.set({ row, col });
   }
@@ -101,6 +157,16 @@ export class Table {
     const at = this.state.clamped();
     let { row, col } = at;
 
+    if (event.key === 'Enter' && at.row === 0) {
+      event.preventDefault();
+      this.onHeader(at.col);
+      return;
+    }
+    if (event.key === ' ' && at.row === 0) {
+      event.preventDefault();
+      this.onHeader(at.col);
+      return;
+    }
     if (event.key === 'ArrowUp') row = Math.max(0, row - 1);
     else if (event.key === 'ArrowDown') row = Math.min(lengths.length - 1, row + 1);
     else if (event.key === 'ArrowLeft') col = Math.max(0, col - 1);

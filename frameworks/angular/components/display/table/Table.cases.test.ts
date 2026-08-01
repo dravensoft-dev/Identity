@@ -138,6 +138,7 @@ test('arena-table meets both of its declared shapes', async () => {
   const restore = stubResize(NARROW_WIDTH);
   let wide: ComponentFixture<TableHost> | null = null;
   let card: ComponentFixture<TableHost> | null = null;
+  let bare: ComponentFixture<EmptyTableHost> | null = null;
 
   try {
     wide = await render({ responsive: false });
@@ -193,6 +194,10 @@ test('arena-table meets both of its declared shapes', async () => {
     card = await render({ responsive: true });
     const cardTable = tableOf(card);
 
+    bare = TestBed.createComponent(EmptyTableHost);
+    bare.detectChanges();
+    await bare.whenStable();
+
     assertPatternCases({
       bindingPath: BINDING,
       cases: {
@@ -221,11 +226,22 @@ test('arena-table meets both of its declared shapes', async () => {
             + 'every row of every table that is not clickable');
           return { root: cardTable, subjects: { default: cardTable } };
         },
+        empty: () => {
+          const emptyTable = tableOf(bare!);
+          assertNoNode(emptyTable.querySelector('[role="grid"]'),
+            'with no rows there is no grid at all, which is why this case binds `none`');
+          assertNoNode(emptyTable.querySelector('[role="columnheader"]'),
+            'and no orphan header standing over the sentence that says there is nothing');
+          assert.equal(emptyTable.querySelectorAll('[tabindex]').length, 0,
+            'nothing to rove over means no tab stop to claim');
+          return { root: emptyTable, subjects: { default: emptyTable } };
+        },
       },
     });
   } finally {
     wide?.destroy();
     card?.destroy();
+    bare?.destroy();
     restore();
     document.documentElement.style.removeProperty('--bp-md');
   }
@@ -328,15 +344,20 @@ test('the cursor is clamped against the cells that are really there, not against
   }
 });
 
-test('an empty table draws its [empty] slot and still names its grid', async () => {
+test('an empty table draws its [empty] slot and NO grid at all', async () => {
   const fixture = TestBed.createComponent(EmptyTableHost);
   fixture.detectChanges();
   await fixture.whenStable();
   try {
     const table = fixture.nativeElement.querySelector('arena-table') as HTMLElement;
-    const grid = table.querySelector('[role="grid"]') as HTMLElement;
-    assert.equal(grid.getAttribute('aria-label'), LABEL);
+    assertNoNode(table.querySelector('[role="grid"]'),
+      'a grid holding neither a header row nor a data row is a degenerate render, the same '
+      + 'judgement Tabs makes when it draws no panel for a tab that does not exist');
+    assertNoNode(table.querySelector('[role="columnheader"]'),
+      'a column head over a "no results" sentence describes a table that is not there, which is '
+      + 'why 16 tables in a real consumer replaced the slot with an @if that removed the table');
     assert.equal(table.querySelectorAll('[role="gridcell"]').length, 0, 'an empty table renders no data cell');
+    assert.equal(table.querySelectorAll('[role="row"]').length, 0, 'and no row either');
     assert.match(table.textContent ?? '', /No deployments in this range\./,
       'the [empty] slot did not project');
   } finally {
