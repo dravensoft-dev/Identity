@@ -270,17 +270,21 @@ export function compareSurface(contract, members, layer, types = new Map()) {
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
+export const REACT_SURFACE_EXTENSIONS = ['.tsx', '.d.ts'];
+
 export function resolveReactImplementations(tree, exists) {
   const implementations = new Map();
   const problems = [];
   for (const [category, dirs] of Object.entries(tree))
     for (const dir of dirs) {
       const name = pascal(dir);
-      const path = `frameworks/react/components/${category}/${dir}/${name}.d.ts`;
-      if (exists(path)) { implementations.set(name, path); continue; }
+      const base = `frameworks/react/components/${category}/${dir}/${name}`;
+      const found = REACT_SURFACE_EXTENSIONS.map((e) => `${base}${e}`).find((p) => exists(p));
+      if (found) { implementations.set(name, found); continue; }
       problems.push(
-        `frameworks/react/components/${category}/${dir}/: is a component directory with no ${name}.d.ts — `
-        + 'this gate cannot read a surface it cannot find, and skipping it would report a clean pass over an unchecked layer');
+        `frameworks/react/components/${category}/${dir}/: is a component directory with no ${name}.tsx and no `
+        + `${name}.d.ts — this gate cannot read a surface it cannot find, and skipping it would report a clean `
+        + 'pass over an unchecked layer');
     }
   if (implementations.size === 0)
     problems.push('found 0 React component implementations — an empty result set is a failure, not a clean pass; check the discovery path');
@@ -292,9 +296,17 @@ export const COMPARABLE_DEFAULT = new Set(['primitive', 'enum']);
 export const REACT_SOURCE_EXTENSIONS = ['.tsx', '.jsx'];
 
 export function reactSourceFor(declarationPath, readFile = readFileSync) {
-  for (const ext of REACT_SOURCE_EXTENSIONS) {
+  if (declarationPath.endsWith('.tsx')) {
     try {
-      return { path: declarationPath.replace(/\.d\.ts$/, ext), source: readFile(declarationPath.replace(/\.d\.ts$/, ext), 'utf8') };
+      return { path: declarationPath, source: readFile(declarationPath, 'utf8') };
+    } catch {
+      return null;
+    }
+  }
+  for (const ext of REACT_SOURCE_EXTENSIONS) {
+    const candidate = declarationPath.replace(/\.d\.ts$/, ext);
+    try {
+      return { path: candidate, source: readFile(candidate, 'utf8') };
     } catch {
       continue;
     }

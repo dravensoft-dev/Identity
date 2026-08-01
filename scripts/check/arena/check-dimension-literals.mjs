@@ -33,18 +33,24 @@ const PROPS = new Set([
 ]);
 
 export const EXEMPT = new Map([
-  ['frameworks/react/components/display/calendar/Calendar.jsx:zIndex:1',
+  ['frameworks/react/components/display/calendar/Calendar.tsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/display/calendar-event/CalendarEvent.jsx:zIndex:1',
+  ['frameworks/react/components/display/calendar-event/CalendarEvent.tsx:zIndex:1',
    'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/charts/bar-chart/BarChart.jsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
+  ['frameworks/react/components/charts/bar-chart/BarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
    'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
-  ['frameworks/react/components/charts/line-chart/LineChart.jsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
+  ['frameworks/react/components/charts/line-chart/LineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
    'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
-  ['frameworks/react/components/display/calendar/Calendar.jsx:top:`calc(${y(m)}px - var(--sp-1))`',
+  ['frameworks/react/components/display/calendar/Calendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`',
    'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
-  ['frameworks/react/components/display/calendar/Calendar.jsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
+  ['frameworks/react/components/display/calendar/Calendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 6.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
+  ['frameworks/react/DataVisuals.ts:width:1',
+   'srOnly is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in contracts/design/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
+  ['frameworks/react/DataVisuals.ts:height:1',
+   'the other axis of the same 1px visually-hidden box as the width entry above'],
+  ['frameworks/react/DataVisuals.ts:margin:-1',
+   'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
   ['frameworks/angular/DataVisuals.ts:width:\'1px\'',
    'SR_ONLY is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in contracts/design/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
   ['frameworks/angular/DataVisuals.ts:height:\'1px\'',
@@ -52,9 +58,9 @@ export const EXEMPT = new Map([
   ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
 
-  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:11px',
+  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:11px',
    'Skeleton.card.entry.jsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
-  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.jsx:height:90px',
+  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:90px',
    'Skeleton.card.entry.jsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
 ]);
 

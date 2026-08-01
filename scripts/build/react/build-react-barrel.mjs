@@ -27,7 +27,7 @@ export const ROOT_PRIVATE = new Map([
 ]);
 
 export function sourceExtension(base) {
-  return SOURCE_EXTENSIONS.find((e) => existsSync(`${base}${e}`)) ?? null;
+  return [...SOURCE_EXTENSIONS, '.ts', '.js'].find((e) => existsSync(`${base}${e}`)) ?? null;
 }
 
 export function componentModules(root = repoRoot) {
@@ -87,12 +87,12 @@ export function duplicateExportProblems(modules, root = repoRoot) {
 
 const reExport = (specifier) => `export * from '${specifier}';`;
 
-export function barrelJs(modules) {
+export function barrelJs(modules, root = repoRoot) {
   const lines = [
     BANNER,
     ...modules.map(({ path, ext }) => reExport(`${path}${ext ?? '.jsx'}`)),
     '',
-    ...HELPERS.map((h) => reExport(`./${h}.js`)),
+    ...HELPERS.map((h) => reExport(`./${h}${sourceExtension(join(root, 'frameworks', 'react', h)) ?? '.js'}`)),
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -117,7 +117,7 @@ export function buildBarrel(root = repoRoot) {
     ...duplicateExportProblems(modules, root),
   ];
   const files = new Map([
-    ['frameworks/react/Index.generated.js', barrelJs(modules)],
+    ['frameworks/react/Index.generated.js', barrelJs(modules, root)],
     ['frameworks/react/Index.generated.d.ts', barrelTypes(modules)],
   ]);
   return { files, problems, count: modules.length };

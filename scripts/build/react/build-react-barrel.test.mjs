@@ -58,7 +58,7 @@ test('the JS barrel keeps whichever source extension the component is written in
   assert.match(js, /export \* from '\.\/components\/display\/tag\/Tag\.jsx';/);
   const tsx = barrelJs([{ component: 'Badge', path: './components/display/badge/Badge', ext: '.tsx' }]);
   assert.match(tsx, /export \* from '\.\/components\/display\/badge\/Badge\.tsx';/);
-  for (const helper of HELPERS) assert.match(js, new RegExp(`export \\* from '\\./${helper}\\.js';`));
+  for (const helper of HELPERS) assert.match(js, new RegExp(`export \\* from '\\./${helper}\\.(js|ts)';`));
 });
 
 test('the type barrel drops every extension and leads with the contract types', () => {

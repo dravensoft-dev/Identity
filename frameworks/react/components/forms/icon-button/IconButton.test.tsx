@@ -1,0 +1,65 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { renderToStaticMarkup } from 'react-dom/server';
+import React from 'react';
+import { IconButton } from './IconButton.tsx';
+
+test('IconButton draws the Phosphor class it is given and hides it from assistive technology', () => {
+  const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="New" />);
+  assert.match(html, /class="ph-bold ph-plus"/);
+  assert.match(html, /aria-hidden="true"/);
+});
+
+test('IconButton names itself with label, and drops the title once the label is visible', () => {
+  const hidden = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="New" />);
+  assert.match(hidden, /aria-label="New"/);
+  assert.match(hidden, /title="New"/);
+  const shown = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="New" showLabel />);
+  assert.match(shown, /aria-label="New"/);
+  assert.doesNotMatch(shown, /title="New"/);
+});
+
+test('IconButton defaults its native type to button and honours an override', () => {
+  assert.match(renderToStaticMarkup(<IconButton icon="ph-x" label="L" />), /type="button"/);
+  assert.match(renderToStaticMarkup(<IconButton icon="ph-x" label="L" type="submit" />), /type="submit"/);
+});
+
+test('IconButton throws when icon is absent, matching the contract required flag', () => {
+  assert.throws(
+    // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
+    () => renderToStaticMarkup(<IconButton label="New" />),
+    /IconButton: `icon` is required/,
+  );
+});
+
+test('IconButton throws when label is absent, matching the contract required flag', () => {
+  assert.throws(
+    // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
+    () => renderToStaticMarkup(<IconButton icon="ph-x" />),
+    /IconButton: `label` is required/,
+  );
+});
+
+test('IconButton drops a consumer style object and a consumer attribute, each independently', () => {
+  const html = renderToStaticMarkup(
+    // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
+    <IconButton icon="ph-x" label="L" style={{ color: '#ff00ff' }} data-stray="x" />
+  );
+  assert.doesNotMatch(html, /#ff00ff/, 'a consumer style reached the rendered root -- the R4 escape is back');
+  assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
+});
+
+test('tabStop defaults to true and emits no tabindex at all', () => {
+  const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="Add" />);
+  assert.doesNotMatch(html, /tabindex/i, 'a default IconButton wrote a tabindex it does not need');
+});
+
+test('tabStop={false} takes the control out of the page Tab sequence', () => {
+  const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="Add" tabStop={false} />);
+  assert.match(html, /tabindex="-1"/, 'tabStop={false} did not write tabindex="-1"');
+});
+
+test('tabStop is not forwarded to the DOM as an unknown attribute', () => {
+  const html = renderToStaticMarkup(<IconButton icon="ph-bold ph-plus" label="Add" tabStop={false} />);
+  assert.doesNotMatch(html, /tabstop/i, 'the tabStop prop leaked into the markup');
+});

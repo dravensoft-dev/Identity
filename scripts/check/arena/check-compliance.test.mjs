@@ -9,8 +9,8 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({
     bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
-    suites: { 'dialog-modal.test.jsx': { source: "assertPattern for join(R, 'feedback/dialog/Dialog.behaviour.json')", layer: 'react' } },
+    covered: { 'Dialog:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: "assertPattern for join(R, 'feedback/dialog/Dialog.behaviour.json')", layer: 'react' } },
   });
   assert.deepEqual(problems, []);
 });
@@ -18,8 +18,8 @@ test('validateCoverage is clean when a composite key names the layer its suite v
 test('validateCoverage fails a COVERED entry naming a binding that no longer exists', () => {
   const problems = validateCoverage({
     bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'dialog-modal.test.jsx', 'Ghost:react': 'dialog-modal.test.jsx' },
-    suites: { 'dialog-modal.test.jsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    covered: { 'Dialog:react': 'dialog-modal.test.tsx', 'Ghost:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Ghost/);
@@ -29,8 +29,8 @@ test('validateCoverage fails a COVERED entry naming a binding that no longer exi
 test('validateCoverage fails a COVERED entry whose suite never mentions the component', () => {
   const problems = validateCoverage({
     bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
-    suites: { 'dialog-modal.test.jsx': { source: 'assertPattern for Menu.behaviour.json', layer: 'react' } },
+    covered: { 'Dialog:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'assertPattern for Menu.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Dialog/);
@@ -40,11 +40,11 @@ test('validateCoverage fails a COVERED entry whose suite never mentions the comp
 test('validateCoverage fails a COVERED entry naming a suite file that does not exist', () => {
   const problems = validateCoverage({
     bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'gone.test.jsx' },
+    covered: { 'Dialog:react': 'gone.test.tsx' },
     suites: {},
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /gone\.test\.jsx/);
+  assert.match(problems[0], /gone\.test\.tsx/);
 });
 
 test('validateCoverage says nothing about an uncovered binding', () => {
@@ -54,8 +54,8 @@ test('validateCoverage says nothing about an uncovered binding', () => {
       { name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' },
       { name: 'Table', patterns: ['grid'], layer: 'react', tail: 'display/table/Table.behaviour.json' },
     ],
-    covered: { 'Dialog:react': 'dialog-modal.test.jsx' },
-    suites: { 'dialog-modal.test.jsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    covered: { 'Dialog:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
   });
   assert.deepEqual(problems, []);
 });
@@ -81,13 +81,13 @@ test('a suite from the sibling layer cannot satisfy a coverage claim', () => {
   ];
 
   assert.deepEqual(
-    validateCoverage({ bindings, covered: { 'Alert:react': 'AlertTones.dom.test.jsx' },
-      suites: { 'AlertTones.dom.test.jsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } }),
+    validateCoverage({ bindings, covered: { 'Alert:react': 'AlertTones.dom.test.tsx' },
+      suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } }),
     [],
   );
 
-  const stale = validateCoverage({ bindings, covered: { 'Alert:angular': 'AlertTones.dom.test.jsx' },
-    suites: { 'AlertTones.dom.test.jsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } });
+  const stale = validateCoverage({ bindings, covered: { 'Alert:angular': 'AlertTones.dom.test.tsx' },
+    suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } });
   assert.equal(stale.length, 1);
   assert.match(stale[0], /react layer/);
 
@@ -104,17 +104,17 @@ test('a suite from the wrong layer cannot satisfy a claim when the tails collide
     { name: 'Tag', patterns: ['none'], layer: 'angular', tail: 'display/tag/Tag.behaviour.json' },
   ];
   const suites = {
-    'TagAndChipCases.dom.test.jsx': {
+    'TagAndChipCases.dom.test.tsx': {
       source: "join(R, 'display/tag/Tag.behaviour.json')", layer: 'react',
     },
   };
 
   assert.deepEqual(validateCoverage({
-    bindings, covered: { 'Tag:react': 'TagAndChipCases.dom.test.jsx' }, suites,
+    bindings, covered: { 'Tag:react': 'TagAndChipCases.dom.test.tsx' }, suites,
   }), []);
 
   const problems = validateCoverage({
-    bindings, covered: { 'Tag:angular': 'TagAndChipCases.dom.test.jsx' }, suites,
+    bindings, covered: { 'Tag:angular': 'TagAndChipCases.dom.test.tsx' }, suites,
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /react layer/);
@@ -124,20 +124,20 @@ test('collectSuites tags each suite with the layer of the directory it came from
   const root = mkdtempSync(join(tmpdir(), 'arena-suite-layer-'));
   const a = join(root, 'a'); const b = join(root, 'b');
   mkdirSync(a); mkdirSync(b);
-  writeFileSync(join(a, 'One.test.jsx'), 'x');
+  writeFileSync(join(a, 'One.test.tsx'), 'x');
   writeFileSync(join(b, 'Two.test.ts'), 'y');
   const out = collectSuites([{ layer: 'react', dir: a }, { layer: 'angular', dir: b }]);
-  assert.equal(out['One.test.jsx'].layer, 'react');
+  assert.equal(out['One.test.tsx'].layer, 'react');
   assert.equal(out['Two.test.ts'].layer, 'angular');
-  assert.equal(out['One.test.jsx'].source, 'x');
+  assert.equal(out['One.test.tsx'].source, 'x');
   rmSync(root, { recursive: true, force: true });
 });
 
 test('a composite key naming a layer the component is not bound in fails', () => {
   const problems = validateCoverage({
     bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:angular': 'dialog-modal.test.jsx' },
-    suites: { 'dialog-modal.test.jsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    covered: { 'Dialog:angular': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Dialog/);
@@ -147,8 +147,8 @@ test('a composite key naming a layer the component is not bound in fails', () =>
 test('a COVERED key without a :layer suffix is rejected -- the shape is mandatory', () => {
   const problems = validateCoverage({
     bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { Dialog: 'dialog-modal.test.jsx' },
-    suites: { 'dialog-modal.test.jsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    covered: { Dialog: 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Dialog/);

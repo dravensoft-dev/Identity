@@ -1,0 +1,71 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { renderToStaticMarkup } from 'react-dom/server';
+import React from 'react';
+import { UnauthCard } from './UnauthCard.tsx';
+
+test('it renders its slots and its children', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard brand={<span>BRAND</span>} eyebrow="Delivery console" title="Welcome back"
+      footer={<a href="/reset">Forgot your password?</a>}>
+      <span>FIELDS</span>
+    </UnauthCard>);
+  assert.match(html, /BRAND/);
+  assert.match(html, /Delivery console/);
+  assert.match(html, /Welcome back/);
+  assert.match(html, /FIELDS/);
+  assert.match(html, /Forgot your password\?/);
+});
+
+test('every slot is optional — a bare panel of children still renders', () => {
+  const html = renderToStaticMarkup(<UnauthCard><span>FIELDS</span></UnauthCard>);
+  assert.match(html, /FIELDS/);
+});
+
+test('it constrains its own width and does not centre itself', () => {
+  const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
+
+  assert.match(
+    html,
+    /max-width:calc\(var\(--sp-1\) \* 95 \+ var\(--sp-1\) \* 18 \+ var\(--bw\) \* 2\)/
+  );
+  assert.doesNotMatch(html, /justify-content/);
+  assert.doesNotMatch(html, /min-height/);
+});
+
+test('eyebrow and title render as plain text', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard eyebrow="ARENA" title="Welcome back">
+      <span>fields</span>
+    </UnauthCard>,
+  );
+  assert.ok(html.includes('ARENA'), 'the eyebrow string is rendered');
+  assert.ok(html.includes('Welcome back'), 'the title string is rendered');
+  assert.ok(html.includes('fields'), 'children are rendered');
+});
+
+test('a consumer style prop and stray attributes are dropped, not spread onto the root', () => {
+  const html = renderToStaticMarkup(
+    <UnauthCard
+      eyebrow="ARENA"
+      title="Welcome back"
+      // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
+      style={{ color: 'rgb(255, 0, 0)' }}
+      data-escape="leaked"
+    >
+      <span>fields</span>
+    </UnauthCard>,
+  );
+
+  assert.ok(!html.includes('rgb(255, 0, 0)'), 'the consumer style value is not rendered anywhere');
+  assert.ok(!html.includes('data-escape'), 'the stray attribute is not rendered anywhere');
+});
+
+test('it renders Card rather than a second panel definition', () => {
+  const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
+
+  assert.match(
+    html,
+    /overflow:hidden"><div style="padding:calc\(var\(--sp-1\) \* 5\)"><div style="padding:calc\(var\(--sp-1\) \* 4\)"/
+  );
+});

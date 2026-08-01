@@ -41,8 +41,10 @@ export const MANIFEST_COVERS = new Map([
   }],
   ['ConfirmDialog', {
     covers: ['ConfirmDialog', 'Button'],
-    reason: 'The dialog renders its confirm and cancel actions as Arena Buttons. A manifest has no '
-      + 'composition, so it types those buttons out as its own slots and needs Button\'s affordance.',
+    reason: 'The dialog draws the confirm action itself, because that action carries Arena\'s one '
+      + 'filled danger surface and a Button forwards no style. The cancel action is still an Arena '
+      + 'Button, and a manifest has no composition, so it types that button out as its own slot and '
+      + 'needs Button\'s affordance.',
   }],
   ['ErrorState', {
     covers: ['ErrorState', 'Button'],

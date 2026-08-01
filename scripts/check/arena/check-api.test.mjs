@@ -87,11 +87,11 @@ test('a complete React layer resolves every component to its own .d.ts and repor
   assert.equal(implementations.get('UnauthCard'), 'frameworks/react/components/display/unauth-card/UnauthCard.d.ts');
 });
 
-test('a React component directory whose .d.ts is missing is a problem, not a skip -- and the rest of the layer still resolves', () => {
+test('a React component directory declaring no surface at all is a problem, not a skip -- and the rest of the layer still resolves', () => {
 
   const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE, ['tag']));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/react\/components\/display\/tag\/: is a component directory with no Tag\.d\.ts/);
+  assert.match(problems[0], /frameworks\/react\/components\/display\/tag\/: is a component directory with no Tag\.tsx and no Tag\.d\.ts/);
   assert.match(problems[0], /clean pass over an unchecked layer/);
   assert.equal(implementations.size, 2);
   assert.ok(!implementations.has('Tag'));

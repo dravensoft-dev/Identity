@@ -1,0 +1,18 @@
+/* The one filled danger surface in Arena, and it once reached npm unrendered: the dialog
+ * handed Button a `style`, and Button forwards nothing, so `destructive` changed no markup
+ * here at all. The dialog now draws that action itself. */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { ConfirmDialog } from './ConfirmDialog.tsx';
+
+test('destructive paints the filled danger surface, and nothing else does', () => {
+  const html = renderToStaticMarkup(<ConfirmDialog open destructive title="Delete" onConfirm={() => {}} />);
+  assert.match(html, /var\(--danger-fill\)/, 'the filled danger surface does not render');
+  assert.match(html, /var\(--color-error-content\)/, 'the filled surface carries no readable ink');
+
+  const plain = renderToStaticMarkup(<ConfirmDialog open title="Save" onConfirm={() => {}} />);
+  assert.doesNotMatch(plain, /var\(--danger-fill\)/, 'an ordinary confirm must not be filled with danger');
+  assert.match(plain, /var\(--crimson\)/, 'the ordinary confirm lost its primary surface');
+});
