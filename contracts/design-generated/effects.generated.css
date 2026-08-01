@@ -71,9 +71,10 @@
      Dialog and ConfirmDialog both sat at 1000, and ConfirmDialog opens from a
      Dialog, so it worked only by accident of mount order; Toast, the one thing
      that must float above everything, declared nothing at all. The order, least
-     to most interruptible: dropdown < tooltip < modal < modal-nested < palette <
-     onboarding < toast.
+     to most interruptible: nav < dropdown < tooltip < modal < modal-nested <
+     palette < onboarding < toast.
    */
+  --z-nav:800; /* Fixed page navigation — a bottom bar, a sticky top bar. Arena draws none of these; the slot exists because the invariant is system-wide and a consumer's own shell is part of the system. Below dropdown, so a Menu opened from the bar covers it rather than resolving by DOM order, which is the failure this family was created to end */
   --z-dropdown:900; /* Menu's panel — a dropdown anchored to its trigger */
   --z-tooltip:950; /* above dropdown, so a tooltip on a menu item wins */
   --z-modal:1000; /* Dialog */

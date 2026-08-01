@@ -241,6 +241,7 @@
      embedding Arena in an app with its own stacking context reads these
      rather than guessing at a magic number. */
   --z-index-*: initial;
+  --z-index-nav: var(--z-nav);
   --z-index-dropdown: var(--z-dropdown);
   --z-index-tooltip: var(--z-tooltip);
   --z-index-modal: var(--z-modal);
