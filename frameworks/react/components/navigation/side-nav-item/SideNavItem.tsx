@@ -1,17 +1,20 @@
 import React from 'react';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
-import { rowStyle, rowGlyph } from '../side-nav/SideNavInject.tsx';
+import { rowStyle, rowGlyph, rowBadge } from '../side-nav/SideNavInject.tsx';
 
 export interface SideNavItemProps {
 
   /** Identifies the destination. SideNav.active names one of these, and the item whose id matches is the one marked aria-current="page". Required, and guarded with a falsy check rather than an absence check: a blank id can never match and is an omission wearing a value. */
   id: string;
 
-  /** What the item reads, and its whole accessible name. Required and falsy-guarded for the same reason. */
+  /** What the item reads, and the whole of its accessible name unless a badge adds a count to it. Required and falsy-guarded for the same reason. */
   label: string;
 
   /** A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph. */
   icon?: string;
+
+  /** A count drawn at the row's trailing edge -- pending orders, unread notices. Zero draws nothing, because a badge reading 0 is a mark that says there is nothing to mark; above 99 it reads "99+", so a four-digit count cannot widen the column. A number rather than a string, because the two rules above are arithmetic and a caller who has already formatted the value has taken them away. It is NOT hidden from assistive technology, so the row announces "Orders 12": a count a screen-reader user cannot hear is a count that is not there, and aria-hidden on it would trade a real loss for a tidier name. What the 12 counts stays unsaid, because nothing can derive it and no member states it -- say it in the label where it matters. */
+  badge?: number;
 
   /** Present => the item renders an <a>; absent => a <button>. A control that navigates must be a link -- openable in a new tab, address copyable, announced as a link. An item that only changes local state is a button. */
   href?: string;
@@ -22,7 +25,7 @@ export interface SideNavItemProps {
 
 
 export function SideNavItem({
-  id, label, icon, href, disabled = false,
+  id, label, icon, badge, href, disabled = false,
   depth = 0, activeId, indentStep = 3, onActivate,
 }: SideNavItemProps & Partial<SideNavInjected>) {
 
@@ -50,7 +53,8 @@ export function SideNavItem({
   };
 
   const glyph = rowGlyph(icon);
+  const tally = rowBadge(badge, on);
   return href
-    ? <a href={href} {...shared}>{glyph}{label}</a>
-    : <button type="button" {...shared}>{glyph}{label}</button>;
+    ? <a href={href} {...shared}>{glyph}{label}{tally}</a>
+    : <button type="button" {...shared}>{glyph}{label}{tally}</button>;
 }

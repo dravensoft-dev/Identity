@@ -44,13 +44,13 @@ function Demo(){const[v,setV]=React.useState('Overview');const[range,setRange]=R
 
 }
     <SideNav ariaLabel="Primary" active="prod">
-      <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="#projects"/>
+      <SideNavItem id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="#projects" badge={12}/>
       <SideNavSection label="Workspace">
         <SideNavCollapsible id="deploys" icon="ph-bold ph-rocket-launch" label="Deployments">
           <SideNavItem id="prod" label="Production" href="#prod"/>
           <SideNavItem id="staging" label="Staging" href="#staging"/>
         </SideNavCollapsible>
-        <SideNavItem id="settings" icon="ph-bold ph-gear-six" label="Settings"/>
+        <SideNavItem id="settings" icon="ph-bold ph-gear-six" label="Settings" badge={248}/>
       </SideNavSection>
     </SideNav>
   </div>

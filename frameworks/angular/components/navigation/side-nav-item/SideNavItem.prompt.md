@@ -29,8 +29,11 @@ Arena draws as an `aria-hidden` `<i>`, the single-icon convention, never a proje
   cannot be opened in a new tab.
 - **Don't** wrap it in anything expecting the indent to survive, it will, because depth is pulled
   through DI rather than pushed, but a wrapper still changes the flex layout of the column.
-- **Don't** put a badge or a count inside it. The item takes no projected content; a row that needs
-  one is a change to the contract, not to a caller.
+- **Do** pass a count as `badge`, not as markup. The item takes no projected content, so the
+  count is a number Arena draws at the trailing edge: zero draws nothing, and above 99 reads
+  `99+`. Pass the raw number, because both of those rules are arithmetic and a string has
+  already taken them away. Anything else a row might want, an avatar or a second line, is
+  still a change to the contract rather than to a caller.
 
 - **`disabled` draws the destination and refuses it.** It reflects through `aria-disabled` rather
   than by not rendering the item: an unavailable destination a user can see, and hear announced as

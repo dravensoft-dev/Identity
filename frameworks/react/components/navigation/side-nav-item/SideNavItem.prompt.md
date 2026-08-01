@@ -25,9 +25,12 @@ is active, the indent step and the handler that reports `nav`, is injected by
   item that only changes local state is correctly a `<button>`.
 - **Do** name the glyph, not the markup. `icon` is a Phosphor class name and Arena
   draws the `<i>`.
+- **Do** pass a count as `badge`, a number rather than a string. Arena draws it at the
+  trailing edge, draws nothing at zero, and reads `99+` above ninety-nine; a value you
+  have already formatted takes both rules away.
 - **Don't** expect to put your own markup inside one. The single-icon convention's
-  stated price is exactly this: an item is an icon and a label, so a row with an
-  avatar, a badge or a two-line body has no expression here.
+  stated price is exactly this: an item is an icon, a label and a count, so a row with
+  an avatar or a two-line body has no expression here.
 - **Don't** wrap items in a fragment. Arena injects into the children it is handed,
   and `React.Children.toArray` does not see through a `<>…</>`; write them as
   siblings, or in an array. A wrapper component of your own has the same effect, and

@@ -46,6 +46,27 @@ reports through `nav` as well; a router-driven app usually wants one or the othe
   roving tab stop, no arrow navigation, and that is refused rather than missing;
   `SideNavCollapsible.behaviour.json` states the cost.
 
+### `active` is an id, and there is no route matcher
+
+`active` names one of the ids you gave the items, and the item whose id matches is the one
+marked `aria-current="page"`. It is **not** a path, and there is no `activeMatch` to say
+whether it should be compared against each `href` whole or by prefix.
+
+That was asked for and refused, and the reason is not that Arena would have to import
+`@angular/router`: it would not, since a prefix comparison is arithmetic over data you pass
+in. The reason is that the member would change what a *different* member means depending on
+its own value, so `active` would name an id under one setting and a path under another, and
+nothing could check which one a caller meant. A member that redefines its neighbour is a
+member that cannot be read in isolation.
+
+Compute the active id yourself. The `NavigationEnd` bridge that turns `router.url` into a
+signal is yours in either design, because `router.url` is a property rather than a signal;
+what is left is one comparison:
+
+```ts
+readonly active = computed(() => DESTINATIONS.find((d) => this.url().startsWith(d.href))?.id);
+```
+
 **By hand, in real Chromium**: run `bun run demos` and open
 `/frameworks/angular/components/navigation/side-nav/SideNav.card.html`:
 - Each level steps in by exactly one `--sp-1 * indentStep`, and a row's icon stays aligned with its

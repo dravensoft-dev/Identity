@@ -49,6 +49,27 @@ export function rowStyle({
   };
 }
 
+export function rowCount(badge: number | undefined): string | null {
+  if (badge === undefined || !(badge > 0)) return null;
+  return badge > 99 ? '99+' : String(Math.floor(badge));
+}
+
+export function rowBadge(badge: number | undefined, active: boolean): React.ReactElement | null {
+  const tally = rowCount(badge);
+  if (tally === null) return null;
+  return (
+    <span style={{
+      marginInlineStart: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: 'calc(var(--sp-1) * 5)', paddingInline: 'calc(var(--sp-1) * 1.5)',
+      borderRadius: 'var(--r-pill)',
+      background: active ? 'var(--crimson)' : 'var(--bg-raised)',
+      color: active ? 'var(--color-primary-content)' : 'var(--text-body)',
+      fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)',
+      fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-badge)',
+    }}>{tally}</span>
+  );
+}
+
 export function rowGlyph(icon: string | undefined): React.ReactElement | null {
   return icon
     ? <i className={icon} aria-hidden="true" style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }} />

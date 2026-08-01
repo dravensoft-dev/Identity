@@ -19,7 +19,7 @@ import { SideNav } from './SideNav';
         <arena-side-nav ariaLabel="Primary" [active]="active()" (nav)="active.set($event)">
           <arena-side-nav-item id="projects" icon="ph-bold ph-squares-four" label="Projects" href="#projects" />
           <arena-side-nav-section label="Workspace">
-            <arena-side-nav-item id="members" icon="ph-bold ph-users-three" label="Members" href="#members" />
+            <arena-side-nav-item id="members" icon="ph-bold ph-users-three" label="Members" href="#members" [badge]="12" />
             <arena-side-nav-collapsible id="deploys" icon="ph-bold ph-rocket-launch" label="Deployments"
                                         (toggle)="note('deploys', $event)">
               <arena-side-nav-item id="prod" label="Production" href="#prod" />
@@ -29,7 +29,7 @@ import { SideNav } from './SideNav';
                 <arena-side-nav-item id="us" label="United States" href="#us" />
               </arena-side-nav-collapsible>
             </arena-side-nav-collapsible>
-            <arena-side-nav-item id="settings" icon="ph-bold ph-gear-six" label="Settings" />
+            <arena-side-nav-item id="settings" icon="ph-bold ph-gear-six" label="Settings" [badge]="248" />
           </arena-side-nav-section>
         </arena-side-nav>
       </div>
