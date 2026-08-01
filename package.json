@@ -12,6 +12,8 @@
     "@happy-dom/global-registrator": "^20.11.0",
     "@phosphor-icons/web": "2.1.2",
     "@tailwindcss/cli": "4.3.3",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "happy-dom": "^20.11.0",
     "ng-packagr": "22.0.1",
     "react": "18",
