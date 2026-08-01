@@ -36,14 +36,20 @@ test('the two unmarked outputs are named by literal value, with a reason each', 
 
 test('every ignore pattern carries a reason, and each names a real tree', () => {
   assert.deepEqual(Object.keys(UNTRACKED).sort(), [
+    'frameworks/angular/Api.generated.ts',
+    'frameworks/angular/Tokens.generated.ts',
+    'frameworks/react/Api.generated.ts',
     'frameworks/react/DataVisuals.generated.js',
+    'frameworks/react/Index.generated.ts',
     'frameworks/react/Theme.generated.js',
+    'frameworks/react/Tokens.generated.js',
     'frameworks/react/UseContainerWidth.generated.js',
     'frameworks/react/UseDialogModal.generated.js',
     'frameworks/react/components/**/*.generated.js',
     'frameworks/react/ui-kits/**/*.generated.js',
     'frameworks/react/vendor/*.generated.js',
     'frameworks/tailwind/Utilities.generated.css',
+    'frameworks/tailwind/components/**/*.manifest.generated.ts',
   ]);
   for (const [name, reason] of Object.entries(UNTRACKED)) {
     assert.ok(reason.length > 30, `${name} carries no real reason`);

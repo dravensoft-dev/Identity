@@ -28,17 +28,29 @@ export const UNTRACKED = {
   'frameworks/react/vendor/*.generated.js':
     'a 975 KB CommonJS->ESM bundle of a devDependency, read only by the demo pages\' importmap.',
   'frameworks/react/components/**/*.generated.js':
-    'the compiled sibling of a component source, read only by a demo page. What a consumer '
-    + 'copies is frameworks/react/kit/, which is tracked.',
+    'the compiled sibling of a component source, read only by a demo page.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
   'frameworks/react/DataVisuals.generated.js':
     'a compiled layer-root helper a demo page loads. A browser cannot execute TypeScript, so a '
-    + 'page importing one needs it compiled; the four are named one by one because a pattern '
-    + 'wide enough to catch them would swallow the tracked Tokens.generated.js beside them.',
+    + 'page importing one needs it compiled.',
   'frameworks/react/Theme.generated.js': 'the same, for the theme helper.',
   'frameworks/react/UseContainerWidth.generated.js': 'the same, for the container-width hook.',
   'frameworks/react/UseDialogModal.generated.js': 'the same, for the modal focus helper.',
+  'frameworks/react/Index.generated.ts':
+    'the layer entry point, derived from the component directories. The package build compiles '
+    + 'it and emits its declaration, so the only reader outside this repository is a tarball.',
+  'frameworks/react/Api.generated.ts':
+    'the contract types, emitted per layer from contracts/api/types/ so a component\'s import '
+    + 'never crosses the boundary. check:api holds it to the contracts.',
+  'frameworks/angular/Api.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/Tokens.generated.js':
+    'the design values JavaScript reads as numbers rather than through CSS, emitted from '
+    + 'contracts/design/. check:script-tokens holds it to the source and to the CSS.',
+  'frameworks/angular/Tokens.generated.ts': 'the same values, emitted into the other layer.',
+  'frameworks/tailwind/components/**/*.manifest.generated.ts':
+    'a manifest re-emitted as a typed module, which is the form a variants recipe imports. '
+    + 'check:tailwind-generated holds each to a fresh compile of its .manifest.json.',
   'frameworks/tailwind/Utilities.generated.css':
     'the compiled utility layer, read only by the specimen pages. An adopter imports '
     + 'frameworks/angular/theme/arena-tailwind.css and compiles their own.',

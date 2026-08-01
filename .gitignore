@@ -20,24 +20,13 @@ node_modules/
 # writes the file; this block says which of those are untracked. Rebuild them with
 # `bun run build` -- see scripts/build/README.md.
 #
-# Only what Arena's own tooling reads is here. The consumer payload stays tracked --
-# contracts/design-generated/, assets/fonts/, Tokens.generated.*, Api.generated.* and
-# frameworks/tailwind/components/**/*.manifest.generated.ts -- because the Claude Code
-# plugin is served from the git tag. Ignoring those would ship a tag whose
-# intro/styles.css @imports resolve to nothing, and the page renders unstyled with no
-# console error. Each pattern is anchored for the same reason /build/ above is:
-# frameworks/react/ holds a TRACKED Tokens.generated.js at its layer root, so a bare
-# frameworks/react/**/*.generated.js would swallow it silently.
-/frameworks/react/vendor/*.generated.js
-/frameworks/react/components/**/*.generated.js
-/frameworks/react/ui-kits/**/*.generated.js
-# The layer-root helpers a demo page loads: compiled for the browser, which cannot run
-# TypeScript. Named one by one for the same reason the note above gives.
-/frameworks/react/DataVisuals.generated.js
-/frameworks/react/Theme.generated.js
-/frameworks/react/UseContainerWidth.generated.js
-/frameworks/react/UseDialogModal.generated.js
-/frameworks/tailwind/Utilities.generated.css
+# A generated file is tracked when the git tag has to serve it to a browser directly:
+# contracts/design-generated/ and assets/fonts/, because the Claude Code plugin is served
+# from the tag and ignoring them would ship one whose intro/styles.css @imports resolve to
+# nothing, unstyled and with no console error. Everything a script writes under frameworks/
+# is read by Arena's own tooling or assembled into a package, and is ignored. Each reason
+# lives beside its pattern in UNTRACKED, in scripts/check/arena/check-generated.mjs.
+/frameworks/**/*.generated.*
 
 # Logs
 *.log
