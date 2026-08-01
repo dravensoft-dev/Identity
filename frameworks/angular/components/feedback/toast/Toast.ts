@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
 import type { ToastTone } from '../../../Api.generated';
+import { dismissDefault, dismissActionable } from '../../../Tokens.generated';
 import { toastStyles } from './Toast.variants';
+
+export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
 
 @Component({
   selector: 'arena-toast',

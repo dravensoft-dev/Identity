@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { ToastTone } from '../../../Api.generated';
+import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js';
 
 export interface ToastProps {
 
@@ -20,6 +21,8 @@ export interface ToastProps {
 
   onClose?: () => void;
 }
+
+export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
 
 const TOAST_TONES = { neutral: 'var(--line-strong)', success: 'var(--success)', danger: 'var(--danger)', gold: 'var(--gold)' };
 
