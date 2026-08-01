@@ -25,6 +25,38 @@ export function filterCommands(commands: readonly Command[], query: string): Com
   return commands.filter((command) => `${command.label} ${command.hint ?? ''}`.toLowerCase().includes(needle));
 }
 
+export function orderCommands(commands: readonly Command[]): Command[] {
+  const names: string[] = [];
+  for (const command of commands) {
+    if (command.group && !names.includes(command.group)) names.push(command.group);
+  }
+  return [
+    ...commands.filter((command) => !command.group),
+    ...names.flatMap((name) => commands.filter((command) => command.group === name)),
+  ];
+}
+
+export interface CommandRow {
+  command: Command;
+  index: number;
+}
+
+export interface CommandGroup {
+  name: string | null;
+  rows: CommandRow[];
+}
+
+export function commandGroups(ordered: readonly Command[]): CommandGroup[] {
+  const groups: CommandGroup[] = [];
+  ordered.forEach((command, index) => {
+    const name = command.group ?? null;
+    const last = groups[groups.length - 1];
+    if (last && last.name === name) last.rows.push({ command, index });
+    else groups.push({ name, rows: [{ command, index }] });
+  });
+  return groups;
+}
+
 export function nextActiveIndex(current: number, key: 'ArrowDown' | 'ArrowUp', count: number): number {
   if (count === 0) return 0;
   const last = count - 1;
@@ -66,7 +98,29 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
           <span [class]="styles().esc()">ESC</span>
         </div>
         <div #list [class]="styles().list()" [id]="listboxId" role="listbox" aria-label="Commands">
-          @for (command of filtered(); track command.id ?? command.label; let i = $index) {
+          @for (group of groups(); track group.name ?? '') {
+          <div [class]="styles().group()" [attr.role]="group.name ? 'group' : null"
+               [attr.aria-label]="group.name">
+            @if (group.name; as heading) {
+              <span [class]="styles().groupLabel()" aria-hidden="true">{{ heading }}</span>
+            }
+            @for (row of group.rows; track row.command.id ?? row.command.label) {
+            @let i = row.index;
+            @let command = row.command;
+            @if (command.route; as target) {
+              <a [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
+                 [href]="target"
+                 [class]="styles().row() + ' ' + (i === active() ? styles().rowActive() : styles().rowDefault())"
+                 (mouseenter)="onHover(i)" (click)="onRun(command)">
+                @if (command.icon; as glyph) {
+                  <span [class]="styles().rowIcon()"><i [class]="glyph" aria-hidden="true"></i></span>
+                }
+                <span [class]="styles().rowLabel() + ' ' + (i === active() ? styles().rowLabelActive() : styles().rowLabelDefault())">{{ command.label }}</span>
+                @if (command.shortcut; as shortcut) {
+                  <span [class]="styles().shortcut()">{{ shortcut }}</span>
+                }
+              </a>
+            } @else {
             <button type="button" [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
                     [class]="styles().row() + ' ' + (i === active() ? styles().rowActive() : styles().rowDefault())"
                     (mouseenter)="onHover(i)" (click)="onRun(command)">
@@ -78,6 +132,9 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
                 <span [class]="styles().shortcut()">{{ shortcut }}</span>
               }
             </button>
+            }
+            }
+          </div>
           }
         </div>
         @if (filtered().length === 0) {
@@ -102,7 +159,9 @@ export class CommandPalette {
   protected readonly query = signal('');
   protected readonly active = signal(0);
   protected readonly styles = computed(() => commandPaletteStyles({ open: this.open() }));
-  protected readonly filtered = computed(() => filterCommands(this.commands(), this.query()));
+  protected readonly filtered = computed(() => orderCommands(filterCommands(this.commands(), this.query())));
+
+  protected readonly groups = computed(() => commandGroups(this.filtered()));
 
   private readonly doc = inject(DOCUMENT);
   private readonly uid = `arena-command-palette-${nextId++}`;

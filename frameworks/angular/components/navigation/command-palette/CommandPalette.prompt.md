@@ -29,3 +29,23 @@ active as you arrow through it.
   mean true, and the one literal string `"false"` means false. Every *other* string is
   true, `"0"`, `"off"` and `"no"` all leave the palette open. Bind the expression
   (`[open]="paletteOpen()"`) rather than relying on the literal.
+
+### Groups and routes
+
+`group` heads a command's section. Commands with no group list first and ungrouped, then each
+group in the order its first command appears, so a palette built by concatenating four
+collections gets its headings back without the caller reordering anything. The heading is
+drawn and also announced as the group's name, so it carries `aria-hidden` on the visible copy
+rather than being read twice.
+
+`route` says where running a command goes. With it the row renders an `<a href>`, so
+ctrl-click, middle-click and open-in-new-tab work, which is what an accelerator over a list of
+destinations owes a keyboard user. It keeps `role="option"`, because the listbox pattern
+requires that of every row and losing it would break the arrow walk for the whole list: a
+screen reader announces the row as an option rather than as a link, and that is the trade.
+`(run)` still fires, so a host that routes in TypeScript needs no change.
+
+There is no `maxResults`. Trimming the list before passing it throws away matches the query
+would have found, and a better ranking is an improvement inside the component rather than a
+member; a scoring function would be a `functionInput` in a contract that declares no
+`kind: "input"`.

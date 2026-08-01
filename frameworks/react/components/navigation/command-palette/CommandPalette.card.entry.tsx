@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { CommandPalette } from './CommandPalette.tsx';
 import { Button } from '../../forms/button/Button.tsx';
 const commands = [
-  {id:'deploy',label:'Deploy to production',hint:'client portal',icon:'ph-bold ph-rocket-launch',shortcut:'⌘D'},
-  {id:'logs',label:'View build logs',hint:'build 4821',icon:'ph-bold ph-terminal-window'},
-  {id:'new',label:'New project',icon:'ph-bold ph-plus-circle',shortcut:'⌘N'},
+  {id:'deploy',label:'Deploy to production',hint:'client portal',icon:'ph-bold ph-rocket-launch',shortcut:'⌘D',group:'Actions'},
+  {id:'logs',label:'View build logs',hint:'build 4821',icon:'ph-bold ph-terminal-window',group:'Actions'},
+  {id:'new',label:'New project',icon:'ph-bold ph-plus-circle',shortcut:'⌘N',group:'Actions'},
   {id:'invite',label:'Invite teammate',hint:'members settings',icon:'ph-bold ph-user-plus'},
   {id:'theme',label:'Toggle theme',icon:'ph-bold ph-moon'},
-  {id:'docs',label:'Open documentation',hint:'arena design system',icon:'ph-bold ph-book-open'},
+  {id:'docs',label:'Open documentation',hint:'arena design system',icon:'ph-bold ph-book-open',group:'Destinations',route:'#docs'},
 ];
 function Demo(){
   const[open,setOpen]=React.useState(true);

@@ -26,6 +26,33 @@ export interface CommandPaletteProps {
 
 let nextId = 0;
 
+export function orderCommands(commands: readonly Command[]): Command[] {
+  const names: string[] = [];
+  for (const command of commands) {
+    if (command.group && !names.includes(command.group)) names.push(command.group);
+  }
+  return [
+    ...commands.filter((command) => !command.group),
+    ...names.flatMap((name) => commands.filter((command) => command.group === name)),
+  ];
+}
+
+export interface CommandGroup {
+  name: string | null;
+  rows: { command: Command; index: number }[];
+}
+
+export function commandGroups(ordered: readonly Command[]): CommandGroup[] {
+  const groups: CommandGroup[] = [];
+  ordered.forEach((command, index) => {
+    const name = command.group ?? null;
+    const last = groups[groups.length - 1];
+    if (last && last.name === name) last.rows.push({ command, index });
+    else groups.push({ name, rows: [{ command, index }] });
+  });
+  return groups;
+}
+
 export function CommandPalette({ open, commands, placeholder = 'Search for an action or project…', onClose, onRun }: CommandPaletteProps) {
   if (open == null) throw new Error('CommandPalette: `open` is required');
   if (commands == null) throw new Error('CommandPalette: `commands` is required');
@@ -37,7 +64,10 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   if (uid.current === null) uid.current = `arena-command-palette-${nextId++}`;
   const listboxId = `${uid.current}-listbox`;
   const optionId = (index: number) => `${uid.current}-option-${index}`;
-  const filtered = commands.filter((c) => (c.label + ' ' + (c.hint || '')).toLowerCase().includes(q.toLowerCase()));
+  const filtered = orderCommands(
+    commands.filter((c) => (c.label + ' ' + (c.hint || '')).toLowerCase().includes(q.toLowerCase())),
+  );
+  const groups = commandGroups(filtered);
   useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => inputRef.current && inputRef.current.focus(), 0); } }, [open]);
   useEffect(() => { setI(0); }, [q]);
   if (!open) return null;
@@ -69,15 +99,39 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
         <div id={listboxId} role="listbox" aria-label="Commands"
           style={{ maxHeight: 'calc(var(--sp-1) * 80)', overflow: 'auto', padding: 'calc(var(--sp-1) * 1.5)' }}>
           {filtered.length === 0 && <div style={{ padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)', fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', color: 'var(--mute)' }}>No results for "{q}".</div>}
-          {filtered.map((c, idx) => (
-            <button key={c.id} id={optionId(idx)} role="option" aria-selected={idx === i} tabIndex={-1}
-              onMouseEnter={() => setI(idx)} onClick={() => run(c)}
-              style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left', padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer',
-                background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' }}>
-              {c.icon && <span style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }}><i className={c.icon} aria-hidden="true" /></span>}
-              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 'var(--fw-semibold)' : 'var(--fw-medium)' }}>{c.label}</span>
-              {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{c.shortcut}</span>}
-            </button>
+          {groups.map((group) => (
+            <div key={group.name ?? ''} style={{ display: 'flex', flexDirection: 'column' }}
+              role={group.name ? 'group' : undefined} aria-label={group.name ?? undefined}>
+              {group.name && (
+                <span aria-hidden="true" style={{
+                  padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 3) calc(var(--sp-1) * 1.5)',
+                  fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', fontWeight: 'var(--fw-bold)',
+                  letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)',
+                }}>{group.name}</span>
+              )}
+              {group.rows.map(({ command: c, index: idx }) => {
+                const rowProps = {
+                  id: optionId(idx),
+                  role: 'option' as const,
+                  'aria-selected': idx === i,
+                  tabIndex: -1,
+                  onMouseEnter: () => setI(idx),
+                  onClick: () => run(c),
+                  style: { display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left' as const, padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer', textDecoration: 'none',
+                    background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' },
+                };
+                const body = (
+                  <>
+                    {c.icon && <span style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }}><i className={c.icon} aria-hidden="true" /></span>}
+                    <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 'var(--fw-semibold)' : 'var(--fw-medium)' }}>{c.label}</span>
+                    {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{c.shortcut}</span>}
+                  </>
+                );
+                return c.route
+                  ? <a key={c.id} href={c.route} {...rowProps}>{body}</a>
+                  : <button key={c.id} type="button" {...rowProps}>{body}</button>;
+              })}
+            </div>
           ))}
         </div>
       </div>
