@@ -6,9 +6,9 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],
-  ['bp-sm', 'read by JS through getComputedStyle, never a media query'],
-  ['bp-md', 'read by JS through getComputedStyle, never a media query'],
-  ['bp-lg', 'read by JS through getComputedStyle, never a media query'],
+  ['bp-sm', 'reaches the utility surface as --breakpoint-sm, a literal Breakpoints.generated.css emits from this token, because a media query condition holds no var()'],
+  ['bp-md', 'the same, as --breakpoint-md'],
+  ['bp-lg', 'the same, as --breakpoint-lg'],
   ['dur-fast', 'v4 has no duration namespace; wired as --default-transition-duration'],
   ['dur-mid', 'v4 has no duration namespace; reached as duration-[var(--dur-mid)]'],
   ['dur-slow', 'v4 has no duration namespace; no consumer today, available as duration-[var(--dur-slow)]'],
@@ -22,6 +22,9 @@ export const EXCLUDED = new Map([
   ['bw-strong', 'v4 has no border-width namespace; no consumer today, available as border-[length:var(--bw-strong)]'],
   ['focus-width', 'no namespace — the focus ring is composed, not a single utility'],
   ['focus-offset', 'no namespace — the focus ring is composed, not a single utility'],
+  ['tint-area', 'script-readable: a ratio JS interpolates into a color-mix() string, and v4 has no namespace for one'],
+  ['tint-soft', 'the same, for the surface of an identity colour'],
+  ['tint-edge', 'the same, for its hairline'],
   ['chart-height', 'script-readable: JS computes SVG positions from it, never a utility'],
   ['chart-pad-top', 'script-readable: JS computes SVG positions from it, never a utility'],
   ['chart-pad-right', 'script-readable: JS computes SVG positions from it, never a utility'],

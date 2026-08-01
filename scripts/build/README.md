@@ -37,6 +37,7 @@ clone has none of them:
 | `frameworks/react/vendor/*.generated.js` | every React `*.card.html`; `check:vendor` |
 | `frameworks/react/**/*.generated.js`, one per component and demo entry source | every React demo page; `check:demos` |
 | `frameworks/tailwind/components/**/*.manifest.generated.ts`, one per `<Name>.manifest.json` | every Angular `<Component>.variants.ts`; `check:tailwind-generated` |
+| `frameworks/tailwind/Breakpoints.generated.css` | `Theme.css` imports it, so `build:tailwind` fails outright without it; `check:tokens` |
 | `frameworks/tailwind/Utilities.generated.css` | every Tailwind and Angular specimen; `check:tailwind-generated` |
 | `build/angular-demo/` | the Angular `*.card.html` pages; `check:angular-demos` |
 

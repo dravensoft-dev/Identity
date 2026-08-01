@@ -51,6 +51,10 @@ export const UNTRACKED = {
   'frameworks/tailwind/components/**/*.manifest.generated.ts':
     'a manifest re-emitted as a typed module, which is the form a variants recipe imports. '
     + 'check:tailwind-generated holds each to a fresh compile of its .manifest.json.',
+  'frameworks/tailwind/Breakpoints.generated.css':
+    'the bp tokens as Tailwind breakpoint literals, which is the only form a media query can '
+    + 'hold, since its condition takes no var(). Theme.css imports it and an adopter compiles '
+    + 'their own utilities from that preset, so nothing outside this repository reads the file.',
   'frameworks/tailwind/Utilities.generated.css':
     'the compiled utility layer, read only by the specimen pages. An adopter imports '
     + 'frameworks/angular/theme/arena-tailwind.css and compiles their own.',

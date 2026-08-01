@@ -21,12 +21,14 @@ new hex and no new value in this folder. Re-skin Arena by swapping
 ## What the preset exposes
 
 Every token in `contracts/design-generated/palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and
-`effects.generated.css` reaches a utility, except seventeen that cannot: `--sp-0` (`p-0`
-is a literal `0px` in v4), the three `--bp-*` (read by JS, never a media
-query), the three `--dur-*`, the six `--loop-*`, and the two `--bw-*` and the
-two `--focus-*` (v4 has no namespace for any of the five). Those seventeen are
-listed with their reason in `EXCLUDED` in `scripts/check/tailwind/check-tailwind-coverage.mjs`,
-and that gate fails the build if a token is added and reaches nothing.
+`effects.generated.css` reaches a utility, except the ones that cannot. Each of those is
+listed with its own reason in `EXCLUDED` in
+`scripts/check/tailwind/check-tailwind-coverage.mjs`, and the gate fails the build if a
+token is added and reaches nothing, so **run `bun run check:coverage` for the count rather
+than trusting one here**. The reasons fall into three kinds: v4 has no namespace for that
+property (`--dur-*`, `--loop-*`, `--bw-*`, `--focus-*`), the token is script-readable and JS
+consumes it as a number (`--chart-*`, `--tint-*`), or the utility v4 would emit is a literal
+that ignores the theme (`--sp-0`, where `p-0` compiles to `0px`).
 
 `contracts/design/colors.css` is excluded as a category. Its aliases (`--crimson`,
 `--mute`, `--danger-soft`, `--text-strong`…) alias tokens the preset already
@@ -43,6 +45,24 @@ key, so it reaches `h-ctl-h` **and** `w-ctl-h` / `min-w-ctl-h`, so an icon-only 
 combine all three to come out exactly square at the control height. That is one
 token reaching three utilities, not a new value; the coverage gate counts the token,
 not the utilities it reaches.
+
+## The breakpoints are the one value spelled twice, and a script spells both
+
+`--bp-sm`, `--bp-md` and `--bp-lg` are read by JS through `getComputedStyle`, which is what
+a component needs, because a component styles itself with an inline style object and an
+inline style holds no media query. A consumer writing their own page CSS needs the other
+half: a threshold they can name instead of inventing one.
+
+They cannot be the same custom property. **A media query condition holds no `var()`**, and
+Tailwind resolves a `--breakpoint-*` key at build time to write the variant's `@media`, so
+`--breakpoint-md: var(--bp-md)` compiles to nothing. So the value is spelled twice, and
+`Breakpoints.generated.css` is generated from the `bp` group by `bun run generate:tokens` so
+the two cannot drift; `check:tokens` fails a stale one. `Theme.css` imports it, and a
+consumer writes `sm:`, `md:` and `lg:`.
+
+Tailwind's own breakpoint defaults are cleared first, the way every namespace in `Theme.css`
+clears its own. Arena has three thresholds, so there is no `xl:` and no `2xl:`: a fourth
+would be a value Arena never chose.
 
 ## The animations that live in CSS, and why
 

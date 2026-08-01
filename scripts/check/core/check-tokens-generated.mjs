@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildAll } from '../../generate/arena/generate-tokens.mjs';
+import { buildAll, buildBreakpointTheme, BREAKPOINT_TARGET } from '../../generate/arena/generate-tokens.mjs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -31,10 +31,18 @@ for (const [name, css] of built) {
     if (!expected.has(selector)) drift.push(`contracts/design-generated/${name}: committed selector ${selector} is no longer generated`);
 }
 
+const breakpoints = await buildBreakpointTheme();
+try {
+  if (readFileSync(join(root, BREAKPOINT_TARGET), 'utf8') !== breakpoints)
+    drift.push(`${BREAKPOINT_TARGET}: stale — the Tailwind breakpoint literals no longer match the bp tokens`);
+} catch {
+  drift.push(`${BREAKPOINT_TARGET}: missing — Theme.css imports it, so the preset compiles to nothing without it`);
+}
+
 if (drift.length) {
-  console.error(`check-tokens-generated: ${drift.length} drift(s) between contracts/design/ and the committed CSS\n`);
+  console.error(`check-tokens-generated: ${drift.length} drift(s) between contracts/design/ and the generated CSS\n`);
   for (const d of drift) console.error(`  ${d}`);
-  console.error('\nRun: bun run build:tokens');
+  console.error('\nRun: bun run generate:tokens');
   process.exit(1);
 }
-console.log(`check-tokens-generated: ${built.size} file(s) in sync with contracts/design/`);
+console.log(`check-tokens-generated: ${built.size + 1} file(s) in sync with contracts/design/`);

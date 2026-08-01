@@ -2,7 +2,7 @@
 
 | script | emits | why it exists |
 | --- | --- | --- |
-| `generate-tokens.mjs` | `contracts/design-generated/*.generated.css` and `Tokens.generated.*` in both framework layers | DTCG JSON is the only place a design value is authored. This turns it into the four CSS files `intro/styles.css` imports, and, for a token flagged `$extensions["com.dravensoft.arena"].script`, into a bare number each layer can do arithmetic with. It also derives `catSlots` from the `--color-cat-*` ramp, which is the count `contracts/api/types/cat-slot.json` must agree with. |
+| `generate-tokens.mjs` | `contracts/design-generated/*.generated.css`, `Tokens.generated.*` in both framework layers, and `frameworks/tailwind/Breakpoints.generated.css` | DTCG JSON is the only place a design value is authored. This turns it into the four CSS files `intro/styles.css` imports, and, for a token flagged `$extensions["com.dravensoft.arena"].script`, into a bare number each layer can do arithmetic with. The breakpoints go a third way, as Tailwind `--breakpoint-*` literals, because a media query condition holds no `var()`. It also derives `catSlots` from the `--color-cat-*` ramp, which is the count `contracts/api/types/cat-slot.json` must agree with. |
 | `generate-api-types.mjs` | `Api.generated.*` in both framework layers | A shared object or enum is declared once in `contracts/api/types/` and emitted per layer, so a component's import never crosses the `contracts/api/` ↔ `frameworks/` boundary. |
 
 Both are `arena` rather than `core` because both **write into two framework layers**, however

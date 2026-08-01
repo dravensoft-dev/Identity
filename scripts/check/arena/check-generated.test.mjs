@@ -48,6 +48,7 @@ test('every ignore pattern carries a reason, and each names a real tree', () => 
     'frameworks/react/components/**/*.generated.js',
     'frameworks/react/ui-kits/**/*.generated.js',
     'frameworks/react/vendor/*.generated.js',
+    'frameworks/tailwind/Breakpoints.generated.css',
     'frameworks/tailwind/Utilities.generated.css',
     'frameworks/tailwind/components/**/*.manifest.generated.ts',
   ]);
