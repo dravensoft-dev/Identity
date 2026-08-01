@@ -536,8 +536,8 @@ holds the three in step; a member description can drift from its layer's prose a
 nothing here will notice. This is a known limit rather than a gap left to close quietly, and
 `DOUBTS.md` says where such a limit belongs.
 
-`bun run generate:api` emits `frameworks/react/Api.generated.d.ts` and
-`frameworks/angular/Api.generated.ts` from these files. Both are committed and both carry
+`bun run generate:api` emits `frameworks/react/Api.generated.ts` and
+`frameworks/angular/Api.generated.ts` from these files. Both carry
 the same body; emission is **per layer** so a component's import never crosses the
 `contracts/api/` ↔ `frameworks/` boundary, which is the same rule the script-readable token
 target holds to, for the same reason.

@@ -127,7 +127,7 @@ test('polarity is what a palette answers prefers-color-scheme with', () => {
   clean();
 });
 
-test('the shipped default is two palettes, which is what an adopter on the copy-in kit has', () => {
+test('the shipped default is two palettes, which is what the package carries', () => {
   assert.deepEqual(DEFAULT_THEMES.palettes, [
     { name: 'dark', polarity: 'dark' },
     { name: 'light', polarity: 'light' },

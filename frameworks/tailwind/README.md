@@ -208,9 +208,9 @@ compiles the preset with the manifests as content, and `bun run check:tailwind-g
 when the file on disk and the source disagree, or when it is missing because the clone has not
 been built. Only the specimen pages link it; an adopter compiles their own against this
 preset. The same build also emits a `<Component>.manifest.generated.ts` (`as const`) beside
-each `<Component>.manifest.json`, and **that half stays tracked**, because a consuming
-layer's recipe imports it and a typed build needs it on disk before it will compile at all.
-The JSON stays the single source of truth either
+each `<Component>.manifest.json`, git-ignored the same way, and a consuming layer's recipe
+imports it, so a typed build needs it on disk before it will compile at all. The JSON stays
+the single source of truth either
 way, so a new manifest needs a `bun run build:tailwind` before the gates pass.
 
 **A variant name is scanned as a class name.** Tailwind reads a manifest as raw text, so

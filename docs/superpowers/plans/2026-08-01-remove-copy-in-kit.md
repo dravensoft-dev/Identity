@@ -8,7 +8,7 @@
 
 **Tech Stack:** Bun (build, test), Node (portable gates), TypeScript 6.0.3, `node:test` with `node:assert/strict` for every suite under `scripts/`.
 
-**Spec:** [`../specs/2026-08-01-remove-copy-in-kit-design-pending-1.md`](../specs/2026-08-01-remove-copy-in-kit-design-pending-1.md). Rename that file to drop `-pending-1` in the final task.
+**Spec:** [`../specs/2026-08-01-remove-copy-in-kit-design.md`](../specs/2026-08-01-remove-copy-in-kit-design.md).
 
 ## Global Constraints
 

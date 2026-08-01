@@ -12,10 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   suite. It is the first `tsc` this repository has ever run, and the only thing that can catch a
   component disagreeing with the interface declared beside it. It runs under plain node, so it
   has no skip path.
-- **`frameworks/react/kit/` is the copy-in payload, built rather than maintained.** `build:kit`
-  derives it from the layer as plain JavaScript with an emitted declaration per module, so a
-  consumer copies a component without a TypeScript toolchain of their own; `check:kit` holds it
-  to a fresh build in both directions.
 
 ### Changed
 
@@ -27,8 +23,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The two-invocation React test split stops naming an extension.** The filter is `.dom.test.`
   and the ignore pattern `**/*.dom.test.*`, so the split survives a rename of the layer's sources.
 
+### Removed
+
+- **Breaking: the copy-in kit is no longer a channel.** Arena ships three ways: the Claude Code
+  plugin served from the git tag, the two npm packages, and the Agent Skill. A project that took
+  Arena by copying its token files and its React sources into its own tree installs
+  `@dravensoft/arena-react` or `@dravensoft/arena-angular` instead, and declares its palettes and
+  fonts in an `arena.config.json` that each package's `arena-theme` turns into the one stylesheet
+  a package cannot carry.
+- **Nothing a script writes under `frameworks/` is tracked.** A generated file is tracked when
+  the git tag has to serve it to a browser directly, which leaves `contracts/design-generated/`
+  and the `assets/fonts/` binaries; both layers' `Api.generated.*` and `Tokens.generated.*`, the
+  React barrel and the Tailwind manifest modules are git-ignored, and `.gitignore` holds one
+  pattern where it held eight. **A fresh clone runs `bun run build` before a page, a gate or a
+  type-check resolves anything**, and `build` gains `build:react-barrel` for that reason.
+- **The React layer's two hand-emitted declarations are ordinary sources.** `Api.generated.d.ts`
+  is `Api.generated.ts`, the name the Angular layer already uses, and the barrel is one
+  `Index.generated.ts`. The package is unchanged: it still exports `Index.generated.js` with
+  `Index.generated.d.ts` beside it, compiled at assembly rather than copied.
+
 ### Fixed
 
+- **`@dravensoft/arena-react`'s entry point resolved nothing.** The assembly rewrote a relative
+  `.jsx` or `.tsx` specifier to `.js` and left `.ts` alone, so fourteen modules in the tarball,
+  the barrel among them, named a TypeScript file no package holds, and an import of the package
+  ended in `ERR_MODULE_NOT_FOUND`. All four extensions are rewritten now.
 - **`ConfirmDialog`'s `destructive` renders again.** The dialog handed `Button` a `style`, and
   `Button` forwards nothing, so Arena's one filled danger surface changed no markup in React
   while Angular and the Tailwind manifest both drew it. The dialog now draws that action itself,

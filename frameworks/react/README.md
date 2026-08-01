@@ -66,7 +66,7 @@ BarChart, LineChart, DoughnutChart, all dependency-free SVG) and `brand/` (AppLo
 
 A file that is not one component's rises to the narrowest level containing all of its
 consumers, and a compound family counts as its parent rather than as the category. The
-layer root holds the generated `Api.generated.d.ts` and `Tokens.generated.js` plus four
+layer root holds the generated `Api.generated.ts` and `Tokens.generated.js` plus four
 shared internals: `DataVisuals.ts`, `UseContainerWidth.ts`, `Theme.ts` and `UseDialogModal.ts`,
 that last one because its suite counts as a consumer: its three component consumers are all in
 `feedback/`, but `test/UseDialogModal.dom.test.tsx` is one too.
@@ -91,7 +91,7 @@ would pass identically against a perfect trap and against none. `bun run check:f
 what covers it: real Chromium over each declared page, one real Tab press per stop.
 
 - `ui-kits/console/`: the Delivery Console example app (login → dashboard → project).
-- `vendor/`: a committed, generated CommonJS→ESM bundle of React for the demo pages'
+- `vendor/`: a generated CommonJS→ESM bundle of React for the demo pages'
   importmap (`build-vendor.mjs`, guarded by `check:vendor`).
 - `test/`: the harness (`Harness.tsx`, `Preload.js`, `AssertPattern.tsx`) and the suites
   that belong to no one component.
@@ -142,18 +142,6 @@ also expires by itself: when the error stops happening the directive becomes the
 the claim cannot go stale. `check:docs` reads it as a directive rather than as the file's
 one allowed comment.
 
-## The copy-in kit is built, not maintained
-
-`bun run build:kit` writes `kit/`: the same modules the npm package ships, as plain
-JavaScript with an emitted declaration each, **tracked**, so a consumer who clones the tag
-copies a component without a TypeScript toolchain of their own. It is derived from this
-layer, so it cannot drift from it the way a second hand-maintained copy would, and
-`check:kit` compares it against a fresh build in a temporary directory.
-
-Every file in it carries the `.generated.` infix. That is this repository's rule for a file
-a script writes, and here it earns its keep twice: it tells the consumer which file is not
-the one to edit.
-
 ## Demos are compiled ahead of time
 
 Each demo page's script is a real sibling source file (`<page>.entry.tsx`, e.g.
@@ -164,8 +152,7 @@ Bun's own transpiler and rewrites each relative import's `.tsx` extension to `.g
 `check:demos` guards drift and orphaned output.
 
 **Those siblings are git-ignored**, along with the `vendor/` bundles: only demo pages read
-them. What a consumer copies is `kit/`, which is tracked and which `build:kit` derives from
-this layer. A fresh clone runs `bun run build` once; see
+them. A fresh clone runs `bun run build` once; see
 [`../../scripts/build/README.md`](../../scripts/build/README.md).
 
 **Editing a component `.tsx` means running `bun run build:demos` in the same tree.** The

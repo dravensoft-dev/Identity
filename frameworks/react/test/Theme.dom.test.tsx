@@ -23,7 +23,7 @@ function clean() {
   localStorage.removeItem('arena-theme');
 }
 
-test('the shipped default is dark and light, which is what the copy-in kit has', () => {
+test('the shipped default is dark and light, which is what the package carries', () => {
   clean();
   initArenaTheme();
   assert.deepEqual(arenaPalettes(), DEFAULT_THEMES.palettes);

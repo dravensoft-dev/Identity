@@ -30,11 +30,10 @@ the extensionless imports those toolchains expect. A property worth asserting ag
 recipe or component is asserted from that layer's own suites, which in both layers sit beside
 the component they cover.
 
-It ships as four things at once from the same tree:
+It ships as three things at once from the same tree:
 
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
 - two **npm packages**, `@dravensoft/arena-react` and `@dravensoft/arena-angular`, assembled by `bun run build:packages` into `frameworks/<layer>/dist/`;
-- a **copy-in kit** (`contracts/design/`, `contracts/design-generated/`, `assets/`, `intro/styles.css` and `frameworks/react/kit/`, which `build:kit` derives);
 - a standalone **Agent Skill** (`SKILL.md`).
 
 **A published Arena carries the language and never the skin**, which is the decision the
@@ -393,9 +392,8 @@ suites sit beside their components, with the run target the whole emitted layer
 [`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full,
 why one process forces the split, and what `scripts/` adds to it.
 
-**`check:react-types` compiles the layer and `check:kit` holds the tracked copy-in payload to a
-fresh build.** That README says what each reaches, and which two compiler options are
-load-bearing rather than stylistic.
+**`check:react-types` compiles the layer.** That README says what it reaches, and which two
+compiler options are load-bearing rather than stylistic.
 
 **A grid is verified by walking its cells, one key press per step.** `Calendar` and `Table` have
 suites in both layers. A grid suite
@@ -563,11 +561,12 @@ with its own scroll area, not a card.
 
 **A file a script under `scripts/` writes is named `<stem>.generated.<ext>`, and that name is
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
-separate question `.gitignore` answers, and the line is audience, not provenance: what only
-Arena's tooling reads is ignored (`frameworks/react/vendor/`, the compiled `.tsx` siblings,
-`Utilities.generated.css`), and the payload a consumer copies stays committed, because **the
-plugin is served from the git tag**: ignoring `contracts/design-generated/` would ship a tag
-whose `intro/styles.css` `@import`s resolve to nothing, unstyled and silent. So a fresh clone
+separate question `.gitignore` answers, and the line is audience, not provenance: **a
+generated file is tracked when the git tag the plugin is served from has to hand it to a
+browser directly**, which is `contracts/design-generated/` and the `assets/fonts/` binaries:
+ignoring the token CSS would ship a tag whose `intro/styles.css` `@import`s resolve to nothing,
+unstyled and silent. Everything a script writes under `frameworks/` is ignored, by one pattern,
+with a reason per family in `UNTRACKED`. So a fresh clone
 runs `bun run build` first; [`scripts/build/README.md`](./scripts/build/README.md) is the
 first-compile document, linked from the root README. `check:generated` holds both halves and
 names the two outputs that can hold neither infix nor header: the `assets/fonts/` binaries, and
@@ -609,7 +608,7 @@ Each layer has its own README; read it for the layer's shape.
 `frameworks/react/` puts components under `components/<category>/<component-kebab>/`, the
 Delivery Console under `ui-kits/console/`, the vendor bundles under `vendor/`, and the
 harness plus the suites belonging to no one component under `test/`. Its layer root holds the
-generated `Api.generated.d.ts` and `Tokens.generated.js` plus `DataVisuals.ts`, `Theme.ts`,
+generated `Api.generated.ts` and `Tokens.generated.js` plus `DataVisuals.ts`, `Theme.ts`,
 `UseContainerWidth.ts` and `UseDialogModal.ts`, that last one **because its suite counts as a
 consumer**: its three component consumers are all in `feedback/`, but
 `test/UseDialogModal.dom.test.tsx` is a consumer too, and the narrowest level containing that

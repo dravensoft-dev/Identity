@@ -33,7 +33,7 @@ halves: that edge is `ALLOWED` with its reason, and everything else fails.
   consumer's `arena.config.json` declares as many as they like: the default palette sits on
   `:root` and wears no class, and every other one wears `.arena-<name>`. Declare them with
   `provideArenaThemes({palettes, default})`; with no providers it answers `dark` and
-  `light`, which is what an adopter on the copy-in kit has. `set()` **throws** on a name no
+  `light`, which is what an adopter on the package has. `set()` **throws** on a name no
   palette declares, since a silently ignored theme switch looks like a broken toggle.
 
 **Primitives are Arena's own token-styled components**, and the whole of this layer's

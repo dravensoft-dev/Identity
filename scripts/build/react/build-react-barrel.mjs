@@ -2,7 +2,7 @@
  * Derived from the tree rather than hand-listed, because a hand-listed barrel is how the
  * Angular layer shipped five primitives nobody could import. Tokens.generated is left out
  * for the reason its Angular counterpart is: a value bound at import time cannot re-theme
- * and cannot re-densify, and nobody types data with it. The output is tracked, and
+ * and cannot re-densify, and nobody types data with it. The output is git-ignored, and
  * check-react-barrel.mjs holds it to a fresh run. */
 
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';

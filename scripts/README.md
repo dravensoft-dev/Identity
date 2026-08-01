@@ -75,9 +75,10 @@ also runs these suites under plain node, which cannot resolve the extensionless 
 toolchains expect.
 
 **A file a script writes is named `<stem>.generated.<ext>`**, so the name says so and no
-reader has to open it. Whether it is tracked is the separate question `.gitignore` answers:
-what only Arena's own tooling reads is ignored, and the payload a consumer copies stays
-committed, because the Claude Code plugin is served from the git tag. `check:generated` holds
+reader has to open it. Whether it is tracked is the separate question `.gitignore` answers: a
+generated file is tracked when the git tag has to serve it to a browser directly, because the
+Claude Code plugin is served from that tag, and everything a script writes under `frameworks/`
+is ignored. `check:generated` holds
 both halves, and records the one generated output that can carry neither the infix nor a
 header: the font binaries under `assets/fonts/`.
 

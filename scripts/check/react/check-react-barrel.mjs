@@ -1,8 +1,8 @@
-/* The committed barrel is what a package consumer imports, so a component added without
- * regenerating it exists everywhere except where anyone can reach it. That is the failure
- * the Angular layer had for five primitives, found by a suite rather than by a person. This
- * gate is the React half: the committed file equals a fresh run, and the run itself found
- * something to export. Pure node, no Bun API. */
+/* The barrel is what a package consumer imports, so a component added without regenerating
+ * it exists everywhere except where anyone can reach it. That is the failure the Angular
+ * layer had for five primitives, found by a suite rather than by a person. This gate is the
+ * React half: the file on disk equals a fresh run, and the run itself found something to
+ * export. Pure node, no Bun API. */
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

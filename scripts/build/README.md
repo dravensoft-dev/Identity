@@ -6,8 +6,10 @@ the same thing in a form a browser or a test runner can load. Nothing here decid
 that is [`../generate/`](../generate/README.md).
 
 Every output is named `<stem>.generated.<ext>`, so the name says a script writes it. Which of
-those are tracked and which are not is the separate question `.gitignore` answers, and
-`check:generated` holds both halves.
+those are tracked and which are not is the separate question `.gitignore` answers: a generated
+file is tracked when the git tag has to serve it to a browser directly, which is
+`contracts/design-generated/` and the `assets/fonts/` binaries, and everything a script writes
+under `frameworks/` is ignored. `check:generated` holds both halves.
 
 ## Compile Arena for the first time
 
@@ -16,11 +18,11 @@ bun install
 bun run build
 ```
 
-That runs the six steps in order, the token layer first, because the Tailwind preset compiles
+That runs the seven steps in order, the token layer first, because the Tailwind preset compiles
 against the token CSS:
 
 ```
-generate:tokens → generate:api → build:tailwind → build:vendor → build:demos → build:angular-demo
+generate:tokens → generate:api → build:react-barrel → build:tailwind → build:vendor → build:demos → build:angular-demo
 ```
 
 **Until it has run once, part of the tree does not exist.** These are git-ignored, so a fresh
@@ -28,14 +30,20 @@ clone has none of them:
 
 | missing until you build | what notices |
 | --- | --- |
+| `frameworks/react/Api.generated.ts` and `frameworks/angular/Api.generated.ts` | every component importing a contract type; `check:api` |
+| `frameworks/react/Tokens.generated.js` and `frameworks/angular/Tokens.generated.ts` | every component doing arithmetic on a token; `check:script-tokens` |
+| `frameworks/react/Index.generated.ts` | the layer's entry point, which the package build compiles; `check:react-barrel` |
 | `frameworks/react/vendor/*.generated.js` | every React `*.card.html`; `check:vendor` |
-| `frameworks/react/**/*.generated.js` (74 compiled siblings) | every React demo page; `check:demos` |
+| `frameworks/react/**/*.generated.js`, one per component and demo entry source | every React demo page; `check:demos` |
+| `frameworks/tailwind/components/**/*.manifest.generated.ts`, one per `<Name>.manifest.json` | every Angular `<Component>.variants.ts`; `check:tailwind-generated` |
 | `frameworks/tailwind/Utilities.generated.css` | every Tailwind and Angular specimen; `check:tailwind-generated` |
 | `build/angular-demo/` | the Angular `*.card.html` pages; `check:angular-demos` |
 
-So on a clone with no build, `bun run demos` serves unstyled or blank pages and three gates
-report their subject missing. **That is the intended signal, not a failure**: the message each
-prints names the command to run. `bun run demos` builds first for exactly this reason.
+So on a clone with no build, `bun run demos` serves unstyled or blank pages, neither framework
+layer compiles, because a component's import of `Api.generated` or `Tokens.generated` resolves
+to nothing, and every gate in that table reports its subject missing. **That is the intended
+signal, not a failure**: the message each prints names the command to run. `bun run demos`
+builds first for exactly this reason.
 
 `bun run build` is idempotent: running it on a clean tree leaves `git status` empty. If it does
 not, a generator and a committed file disagree, which is what `check:tokens`, `check:fonts` and

@@ -1,9 +1,8 @@
 # Packaging Arena for npm
 
-Arena ships four ways from one tree. Three of them assume the consumer has this repository:
-the Claude Code plugin, served from the git tag; the copy-in kit; and the Agent Skill. The
-fourth does not, and this document is that one: **two npm packages a project installs with
-`bun add`**.
+Arena ships three ways from one tree. Two of them assume the consumer has this repository:
+the Claude Code plugin, served from the git tag, and the Agent Skill. The third does not,
+and this document is that one: **two npm packages a project installs with `bun add`**.
 
 | package | assembled into | from |
 | --- | --- | --- |
@@ -52,7 +51,7 @@ font the consumer may already have and cannot swap.
 ## Assembly, not restructuring
 
 Nothing moves. `bun run build:packages` reads the tree as it stands and writes two
-directories that were not there before. The three older channels keep working on the same
+directories that were not there before. The two other channels keep working on the same
 files, byte for byte.
 
 The shared half is [`scripts/lib/arena/package-assembly.mjs`](../scripts/lib/arena/package-assembly.mjs):
@@ -63,7 +62,9 @@ Neither half compiles anything, because the two layers need different compilers.
 each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
 implementation it describes. There is exactly one rewrite: a relative `.tsx` specifier becomes `.js`,
 because inside the package there is no JSX left to resolve. The entry point is
-`Index.generated.js`, which `build:react-barrel` derives from the component directories.
+`Index.generated.ts`, the barrel `build:react-barrel` derives from the component
+directories, and it goes through that same compile, so the package exports
+`Index.generated.js` beside the declaration `tsc` emits for it.
 
 **Angular** goes through `ng-packagr` into Angular Package Format. That needs a staging tree,
 and the reason is worth stating because it is not obvious: ng-packagr infers `rootDir` from
