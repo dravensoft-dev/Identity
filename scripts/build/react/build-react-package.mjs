@@ -1,12 +1,13 @@
-/* Assembles @dravensoft/arena-react into frameworks/react/dist/. The .jsx goes through
- * Bun.Transpiler, the same path build-demos.mjs uses, and each hand-written .d.ts is copied
- * rather than re-emitted, because those are the layer's real type contract. Every relative
- * .jsx specifier becomes .js, which is the one rewrite: inside the package there is no JSX
- * left to resolve. Nothing else here transforms anything. */
+/* Assembles @dravensoft/arena-react into frameworks/react/dist/. A component source goes
+ * through Bun.Transpiler, the same path build-demos.mjs uses, and each hand-written .d.ts is
+ * copied rather than re-emitted, because those are the layer's real type contract. Every
+ * relative source specifier becomes .js, which is the one rewrite: inside the package there is
+ * no JSX and no TypeScript left to resolve. Nothing else here transforms anything. */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { SOURCE_EXTENSIONS, loaderFor } from './build-demos.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
@@ -21,8 +22,8 @@ export const ROOT_MODULES = [
   'DataVisuals.js', 'UseContainerWidth.js', 'UseDialogModal.js', 'Theme.js',
 ];
 
-export function rewriteJsxSpecifiers(code) {
-  return code.replace(/(from\s*['"])(\.[^'"]+?)\.jsx(['"])/g, '$1$2.js$3');
+export function rewriteSourceSpecifiers(code) {
+  return code.replace(/(from\s*['"])(\.[^'"]+?)\.[jt]sx(['"])/g, '$1$2.js$3');
 }
 
 export function manifest(root = repoRoot) {
@@ -55,17 +56,18 @@ export async function buildReactPackage(root = repoRoot) {
 
   reset(dir);
 
-  const transpiler = new Bun.Transpiler({
-    loader: 'jsx',
-    tsconfig: JSON.stringify({ compilerOptions: { jsx: 'react' } }),
-  });
+  const tsconfig = JSON.stringify({ compilerOptions: { jsx: 'react' } });
+  const transpilers = new Map(
+    SOURCE_EXTENSIONS.map((e) => [loaderFor(e), new Bun.Transpiler({ loader: loaderFor(e), tsconfig })]),
+  );
 
-  const sources = collectFiles(join(layer, 'components'), (p) => p.endsWith('.jsx'));
+  const sources = collectFiles(join(layer, 'components'), (p) => SOURCE_EXTENSIONS.some((e) => p.endsWith(e)));
   if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
 
   for (const source of sources) {
     const rel = join('components', relative(join(layer, 'components'), source)).split(sep).join('/');
-    written.push(write(dir, rel.replace(/\.jsx$/, '.js'), rewriteJsxSpecifiers(transpiler.transformSync(readFileSync(source, 'utf8')))));
+    const compiled = transpilers.get(loaderFor(source)).transformSync(readFileSync(source, 'utf8'));
+    written.push(write(dir, rel.replace(/\.[jt]sx$/, '.js'), rewriteSourceSpecifiers(compiled)));
   }
   const carried = collectFiles(join(layer, 'components'), (p) => p.endsWith('.d.ts') || p.endsWith('.js'));
   for (const file of carried) {
@@ -75,7 +77,7 @@ export async function buildReactPackage(root = repoRoot) {
   for (const name of ROOT_MODULES) {
     const from = join(layer, name);
     if (!existsSync(from)) throw new Error(`build-react-package: ${name} is missing from the layer root`);
-    written.push(write(dir, name, rewriteJsxSpecifiers(readFileSync(from, 'utf8'))));
+    written.push(write(dir, name, rewriteSourceSpecifiers(readFileSync(from, 'utf8'))));
   }
   for (const name of ['Index.generated.d.ts', 'Theme.d.ts', 'DataVisuals.d.ts', 'UseContainerWidth.d.ts', 'UseDialogModal.d.ts']) {
     written.push(copy(join(layer, name), dir, name));
@@ -101,7 +103,7 @@ async function main() {
   }
   const { dir, written, sources, carried } = await buildReactPackage();
   console.log(report('build-react-package', dir, written));
-  console.log(`build-react-package: ${sources} .jsx compiled, ${carried} .js and .d.ts carried across`);
+  console.log(`build-react-package: ${sources} source(s) compiled, ${carried} .js and .d.ts carried across`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

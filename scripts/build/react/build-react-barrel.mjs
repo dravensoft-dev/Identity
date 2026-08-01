@@ -8,6 +8,7 @@
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { SOURCE_EXTENSIONS } from './build-demos.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { pascal } from '../../lib/arena/layers.mjs';
 
@@ -25,6 +26,10 @@ export const ROOT_PRIVATE = new Map([
     + 'nobody types data with calendarHourH.'],
 ]);
 
+export function sourceExtension(base) {
+  return SOURCE_EXTENSIONS.find((e) => existsSync(`${base}${e}`)) ?? null;
+}
+
 export function componentModules(root = repoRoot) {
   const base = join(root, 'frameworks', 'react', 'components');
   const found = [];
@@ -33,9 +38,11 @@ export function componentModules(root = repoRoot) {
     const categoryDir = join(base, category.name);
     for (const dir of readdirSync(categoryDir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (!dir.isDirectory()) continue;
+      const component = pascal(dir.name);
       found.push({
-        component: pascal(dir.name),
-        path: `./components/${category.name}/${dir.name}/${pascal(dir.name)}`,
+        component,
+        path: `./components/${category.name}/${dir.name}/${component}`,
+        ext: sourceExtension(join(categoryDir, dir.name, component)),
       });
     }
   }
@@ -49,10 +56,14 @@ export function zeroComponentProblems(count) {
 
 export function missingSourceProblems(modules, root = repoRoot) {
   const problems = [];
-  for (const { component, path } of modules) {
+  for (const { component, path, ext } of modules) {
     const base = join(root, 'frameworks', 'react', path.slice(2));
-    if (!existsSync(`${base}.jsx`)) problems.push(`${component}: no ${path}.jsx, so the barrel would export nothing`);
-    if (!existsSync(`${base}.d.ts`)) problems.push(`${component}: no ${path}.d.ts, so the package would ship it untyped`);
+    if (!ext) {
+      problems.push(`${component}: no ${path}.jsx and no ${path}.tsx, so the barrel would export nothing`);
+      continue;
+    }
+    if (ext === '.jsx' && !existsSync(`${base}.d.ts`))
+      problems.push(`${component}: no ${path}.d.ts beside the .jsx, so the package would ship it untyped`);
   }
   return problems;
 }
@@ -60,8 +71,9 @@ export function missingSourceProblems(modules, root = repoRoot) {
 export function duplicateExportProblems(modules, root = repoRoot) {
   const seen = new Map();
   const problems = [];
-  for (const { component, path } of modules) {
-    const source = readFileSync(join(root, 'frameworks', 'react', `${path.slice(2)}.jsx`), 'utf8');
+  for (const { component, path, ext } of modules) {
+    if (!ext) continue;
+    const source = readFileSync(join(root, 'frameworks', 'react', `${path.slice(2)}${ext}`), 'utf8');
     for (const match of source.matchAll(/^export\s+(?:function|const|class)\s+([A-Za-z0-9_$]+)/gm)) {
       const name = match[1];
       if (seen.has(name)) {
@@ -78,7 +90,7 @@ const reExport = (specifier) => `export * from '${specifier}';`;
 export function barrelJs(modules) {
   const lines = [
     BANNER,
-    ...modules.map(({ path }) => reExport(`${path}.jsx`)),
+    ...modules.map(({ path, ext }) => reExport(`${path}${ext ?? '.jsx'}`)),
     '',
     ...HELPERS.map((h) => reExport(`./${h}.js`)),
   ];

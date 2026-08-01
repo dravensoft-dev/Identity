@@ -56,12 +56,12 @@ async function main() {
       } catch {
         continue;
       }
-      if (content.startsWith(BANNER)) drift.push(`${outRel}: orphaned — no .jsx sibling produces it anymore; remove it or run bun run build:demos`);
+      if (content.startsWith(BANNER)) drift.push(`${outRel}: orphaned — no source sibling produces it anymore; remove it or run bun run build:demos`);
     }
   }
 
   if (drift.length) {
-    console.error(`check-demos-generated: ${drift.length} drift(s) between a *.jsx source and its committed *.js sibling\n`);
+    console.error(`check-demos-generated: ${drift.length} drift(s) between a component source and its committed *.js sibling\n`);
     for (const d of drift) console.error(`  ${d}`);
     console.error('\nRun: bun run build:demos');
     process.exit(1);

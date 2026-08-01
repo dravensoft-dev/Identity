@@ -235,7 +235,7 @@ export function walkSuites(dir) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
       out.push(...walkSuites(path));
-    } else if (/\.test\.(jsx|ts|mjs)$/.test(entry.name)) {
+    } else if (/\.test\.(jsx|tsx|ts|mjs)$/.test(entry.name)) {
       out.push(path);
     }
   }

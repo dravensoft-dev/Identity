@@ -75,9 +75,9 @@
     "check:packages": "bun scripts/check/arena/check-packages.mjs",
     "check": "bun scripts/check/arena/check-all.mjs",
     "test:scripts": "bun test scripts",
-    "test:react": "bun test frameworks/react --path-ignore-patterns='**/*.dom.test.jsx'",
-    "test:react-dom": "bun test --preload ./frameworks/react/test/Preload.js '.dom.test.jsx'",
+    "test:react": "bun test frameworks/react --path-ignore-patterns='**/*.dom.test.*'",
+    "test:react-dom": "bun test --preload ./frameworks/react/test/Preload.js '.dom.test.'",
     "test:angular": "bun run build:angular-tests && bun test build/angular-test/angular",
-    "test": "bun run build:angular-tests && bun test scripts frameworks/react build/angular-test/angular --path-ignore-patterns='**/*.dom.test.jsx' && bun test --preload ./frameworks/react/test/Preload.js '.dom.test.jsx'"
+    "test": "bun run build:angular-tests && bun test scripts frameworks/react build/angular-test/angular --path-ignore-patterns='**/*.dom.test.*' && bun test --preload ./frameworks/react/test/Preload.js '.dom.test.'"
   }
 }

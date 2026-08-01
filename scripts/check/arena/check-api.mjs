@@ -289,15 +289,26 @@ export function resolveReactImplementations(tree, exists) {
 
 export const COMPARABLE_DEFAULT = new Set(['primitive', 'enum']);
 
-export function reactImplementationProblems(contract, declarationPath, readFile = readFileSync) {
-  const sourcePath = declarationPath.replace(/\.d\.ts$/, '.jsx');
-  const where = `react/${contract.component}`;
-  let source;
-  try {
-    source = readFile(sourcePath, 'utf8');
-  } catch {
-    return [`${where}: no .jsx beside ${relative(root, declarationPath)}. check:api reads the declaration; without the implementation it can only check what the .d.ts agrees to.`];
+export const REACT_SOURCE_EXTENSIONS = ['.tsx', '.jsx'];
+
+export function reactSourceFor(declarationPath, readFile = readFileSync) {
+  for (const ext of REACT_SOURCE_EXTENSIONS) {
+    try {
+      return { path: declarationPath.replace(/\.d\.ts$/, ext), source: readFile(declarationPath.replace(/\.d\.ts$/, ext), 'utf8') };
+    } catch {
+      continue;
+    }
   }
+  return null;
+}
+
+export function reactImplementationProblems(contract, declarationPath, readFile = readFileSync) {
+  const where = `react/${contract.component}`;
+  const found = reactSourceFor(declarationPath, readFile);
+  if (!found) {
+    return [`${where}: no ${REACT_SOURCE_EXTENSIONS.join(' and no ')} beside ${relative(root, declarationPath)}. check:api reads the declaration; without the implementation it can only check what the declaration agrees to.`];
+  }
+  const source = found.source;
   let impl;
   try {
     impl = reactImplementation(source, contract.component);
@@ -310,7 +321,7 @@ export function reactImplementationProblems(contract, declarationPath, readFile 
     problems.push(
       `${where}: the implementation spreads {...${impl.rest}} onto its element. Flattening a component's heritage `
       + `dropped every global and ARIA attribute a spread forwards, and the .d.ts agreeing with the contract is `
-      + `what let a restored spread pass — this gate now reads the .jsx so it cannot.`,
+      + `what let a restored spread pass — this gate now reads the implementation so it cannot.`,
     );
   }
   if (!impl.destructures) return problems;

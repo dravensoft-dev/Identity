@@ -1,33 +1,33 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rewriteJsxSpecifiers, manifest, NAME, ROOT_MODULES, LAYER } from './build-react-package.mjs';
+import { rewriteSourceSpecifiers, manifest, NAME, ROOT_MODULES, LAYER } from './build-react-package.mjs';
 import { version } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
-test('a relative .jsx specifier becomes .js, because the package holds no JSX', () => {
+test('a relative source specifier becomes .js, because the package holds no JSX and no TypeScript', () => {
   assert.equal(
-    rewriteJsxSpecifiers("import { Button } from '../../forms/button/Button.jsx';"),
+    rewriteSourceSpecifiers("import { Button } from '../../forms/button/Button.jsx';"),
     "import { Button } from '../../forms/button/Button.js';",
   );
   assert.equal(
-    rewriteJsxSpecifiers("export * from './components/display/tag/Tag.jsx';"),
+    rewriteSourceSpecifiers("export * from './components/display/tag/Tag.jsx';"),
     "export * from './components/display/tag/Tag.js';",
   );
 });
 
 test('a bare specifier is untouched, so react stays react', () => {
   const source = "import React from 'react';\nimport { render } from 'react-dom/client';";
-  assert.equal(rewriteJsxSpecifiers(source), source);
+  assert.equal(rewriteSourceSpecifiers(source), source);
 });
 
 test('a .js specifier is already right and is left alone', () => {
   const source = "import { catColor } from '../../../DataVisuals.js';";
-  assert.equal(rewriteJsxSpecifiers(source), source);
+  assert.equal(rewriteSourceSpecifiers(source), source);
 });
 
 test('the word jsx inside a path is not an extension', () => {
   const source = "import x from './jsx-loader.js';";
-  assert.equal(rewriteJsxSpecifiers(source), source);
+  assert.equal(rewriteSourceSpecifiers(source), source);
 });
 
 test('the manifest names the package, its entry and its types', () => {
@@ -63,4 +63,15 @@ test('every layer-root module the package needs is named, and Tokens is among th
     'DataVisuals imports it, so it ships even though the barrel does not export it');
   assert.ok(ROOT_MODULES.includes('Index.generated.js'));
   assert.equal(LAYER, 'frameworks/react');
+});
+
+test('a relative .tsx specifier becomes .js too, so both extensions land on one package layout', () => {
+  assert.equal(
+    rewriteSourceSpecifiers("import { Badge } from '../../display/badge/Badge.tsx';"),
+    "import { Badge } from '../../display/badge/Badge.js';",
+  );
+  assert.equal(
+    rewriteSourceSpecifiers("import { sp1 } from '../../../Tokens.generated.js';"),
+    "import { sp1 } from '../../../Tokens.generated.js';",
+  );
 });

@@ -1,8 +1,8 @@
 if (!globalThis.document) {
   throw new Error(
-    'A .dom.test.jsx suite needs its DOM installed before react-dom is evaluated. '
+    'A .dom.test. suite needs its DOM installed before react-dom is evaluated. '
     + 'Run these suites as `bun test --preload ./frameworks/react/test/Preload.js '
-    + '\'.dom.test.jsx\'` (or `bun run test:react-dom`).',
+    + '\'.dom.test.\'` (or `bun run test:react-dom`).',
   );
 }
 

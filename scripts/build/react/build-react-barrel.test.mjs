@@ -25,7 +25,7 @@ test('a component directory becomes one export, named from its kebab directory',
     'components/forms/icon-button/IconButton.d.ts': 'export declare function IconButton(): JSX.Element;',
   });
   assert.deepEqual(componentModules(root), [
-    { component: 'IconButton', path: './components/forms/icon-button/IconButton' },
+    { component: 'IconButton', path: './components/forms/icon-button/IconButton', ext: '.jsx' },
   ]);
   rmSync(root, { recursive: true });
 });
@@ -53,21 +53,23 @@ test('a helper that is not a component is never exported, because it is not a di
   rmSync(root, { recursive: true });
 });
 
-test('the JS barrel keeps the .jsx extension the layer imports with', () => {
-  const js = barrelJs([{ component: 'Tag', path: './components/display/tag/Tag' }]);
+test('the JS barrel keeps whichever source extension the component is written in', () => {
+  const js = barrelJs([{ component: 'Tag', path: './components/display/tag/Tag', ext: '.jsx' }]);
   assert.match(js, /export \* from '\.\/components\/display\/tag\/Tag\.jsx';/);
+  const tsx = barrelJs([{ component: 'Badge', path: './components/display/badge/Badge', ext: '.tsx' }]);
+  assert.match(tsx, /export \* from '\.\/components\/display\/badge\/Badge\.tsx';/);
   for (const helper of HELPERS) assert.match(js, new RegExp(`export \\* from '\\./${helper}\\.js';`));
 });
 
 test('the type barrel drops every extension and leads with the contract types', () => {
-  const types = barrelTypes([{ component: 'Tag', path: './components/display/tag/Tag' }]);
+  const types = barrelTypes([{ component: 'Tag', path: './components/display/tag/Tag', ext: '.tsx' }]);
   assert.match(types, /export \* from '\.\/components\/display\/tag\/Tag';/);
   assert.doesNotMatch(types, /\.jsx'/);
   for (const t of TYPE_ONLY) assert.ok(types.indexOf(`'./${t}'`) < types.indexOf('/tag/Tag'));
 });
 
 test('both files carry the banner naming the generator', () => {
-  const modules = [{ component: 'Tag', path: './components/display/tag/Tag' }];
+  const modules = [{ component: 'Tag', path: './components/display/tag/Tag', ext: '.jsx' }];
   assert.ok(barrelJs(modules).startsWith(BANNER));
   assert.ok(barrelTypes(modules).startsWith(BANNER));
 });
@@ -82,7 +84,24 @@ test('a component with no source, or no types, is named rather than skipped', ()
   const root = layer({ 'components/display/tag/Tag.jsx': 'export function Tag() {}' });
   const problems = missingSourceProblems(componentModules(root), root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Tag: no .*Tag\.d\.ts, so the package would ship it untyped/);
+  assert.match(problems[0], /Tag: no .*Tag\.d\.ts beside the \.jsx, so the package would ship it untyped/);
+  rmSync(root, { recursive: true });
+});
+
+test('a .tsx carries its own types, so it is not asked for a hand-written .d.ts', () => {
+  const root = layer({ 'components/display/badge/Badge.tsx': 'export function Badge() {}' });
+  assert.deepEqual(componentModules(root), [
+    { component: 'Badge', path: './components/display/badge/Badge', ext: '.tsx' },
+  ]);
+  assert.deepEqual(missingSourceProblems(componentModules(root), root), []);
+  rmSync(root, { recursive: true });
+});
+
+test('a directory holding neither extension is named, rather than exporting nothing quietly', () => {
+  const root = layer({ 'components/display/tag/Tag.prompt.md': '# Tag\n' });
+  const problems = missingSourceProblems(componentModules(root), root);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /no .*Tag\.jsx and no .*Tag\.tsx, so the barrel would export nothing/);
   rmSync(root, { recursive: true });
 });
 

@@ -148,16 +148,22 @@ export function manifestProblems(manifest, declared) {
   return { findings, matchedKeys, sites };
 }
 
+export const SOURCE_EXTENSIONS = ['.tsx', '.jsx'];
+
 export function reactSourceFor(name, category) {
-  const path = join(REACT_COMPONENTS_DIR, category, kebab(name), `${name}.jsx`);
-  return existsSync(path) ? path : null;
+  const dir = join(REACT_COMPONENTS_DIR, category, kebab(name));
+  for (const ext of SOURCE_EXTENSIONS) {
+    const path = join(dir, `${name}${ext}`);
+    if (existsSync(path)) return path;
+  }
+  return null;
 }
 
 export function missingReactSource(name, category) {
   const dir = join(REACT_COMPONENTS_DIR, category, kebab(name));
   if (!existsSync(dir) || reactSourceFor(name, category)) return null;
-  return `${name}: frameworks/react/components/${category}/${kebab(name)}/ holds no ${name}.jsx, so `
-    + 'its affordances were never read and this half reported clean over nothing';
+  return `${name}: frameworks/react/components/${category}/${kebab(name)}/ holds no ${name}.tsx and `
+    + `no ${name}.jsx, so its affordances were never read and this half reported clean over nothing`;
 }
 
 export function zeroReactSourceProblems(count) {
@@ -253,7 +259,7 @@ function main() {
         console.error(`  ${f.component}:${f.slot} carries a ${f.family}: modifier, and no contract this `
           + `manifest covers (${coveredContracts(f.component).join(', ')}) declares a ${f.family} affordance`);
       } else {
-        console.error(`  ${f.component}.jsx implements ${f.family}, and contracts/api/components/${f.component}.json `
+        console.error(`  ${f.component} implements ${f.family}, and contracts/api/components/${f.component}.json `
           + `declares no ${f.family} affordance`);
       }
     }

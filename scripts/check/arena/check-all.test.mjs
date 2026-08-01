@@ -56,8 +56,8 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
     ['test', 'scripts', 'frameworks/react', 'build/angular-test/angular',
-     '--path-ignore-patterns=**/*.dom.test.jsx'],
-    ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.jsx'],
+     '--path-ignore-patterns=**/*.dom.test.*'],
+    ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.'],
   ]);
 });
 
