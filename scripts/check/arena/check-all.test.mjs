@@ -14,10 +14,10 @@ const CI_JOBS = {
 };
 
 test('GATES lists every check gate', () => {
-  assert.equal(GATES.length, 38);
+  assert.equal(GATES.length, 39);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:catalog', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:icons', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:parity', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:catalog', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:icons', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:parity', 'check:shared-arithmetic', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 
@@ -60,7 +60,7 @@ test('a domain that does not exist is refused rather than answered with an empty
 test('the arena domain is where the cross-layer gates are, which is why the core job carries it', () => {
   const arena = gatesFor(['arena']).map((g) => g.name);
   for (const name of ['check:api', 'check:behaviour', 'check:compliance', 'check:structure',
-    'check:dimensions', 'check:layer-independence', 'check:cards', 'check:focus-trap', 'check:parity', 'check:packages',
+    'check:dimensions', 'check:layer-independence', 'check:cards', 'check:focus-trap', 'check:parity', 'check:shared-arithmetic', 'check:packages',
     'check:playgrounds']) {
     assert.ok(arena.includes(name), `${name} is not in the arena domain`);
   }
