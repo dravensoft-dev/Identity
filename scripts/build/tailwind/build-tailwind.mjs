@@ -1,6 +1,6 @@
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { compileLayer } from '../../lib/tailwind/tailwind-compile.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -23,12 +23,34 @@ export function manifestModule(manifest, jsonFile) {
   return `${manifestBanner(jsonFile)}export default ${JSON.stringify(manifest, null, 2)} as const;\n`;
 }
 
+export const CONSUMING_LAYERS = ['react'];
+
+export function consumerCopies(manifestFile, root) {
+  return CONSUMING_LAYERS
+    .map((layer) => manifestFile.replace('frameworks/tailwind/', `frameworks/${layer}/`))
+    .filter((rel) => existsSync(dirname(join(root, rel))))
+    .map((rel) => join(root, rel));
+}
+
 export function buildManifestModules(opts = {}) {
   const { manifests } = compileLayer(opts);
   const root = opts.root ?? repoRoot;
   const out = new Map();
-  for (const [file, manifest] of manifests)
-    out.set(join(root, file.replace(/\.json$/, '.generated.ts')), manifestModule(manifest, basename(file)));
+  for (const [file, manifest] of manifests) {
+    const rel = file.replace(/\.json$/, '.generated.ts');
+    const body = manifestModule(manifest, basename(file));
+    out.set(join(root, rel), body);
+    for (const copy of consumerCopies(rel, root)) out.set(copy, body);
+  }
+  return out;
+}
+
+export function buildRecipeRuntime(opts = {}) {
+  const root = opts.root ?? repoRoot;
+  const source = readFileSync(join(root, 'frameworks/tailwind/Tv.ts'), 'utf8');
+  const out = new Map();
+  for (const layer of CONSUMING_LAYERS)
+    out.set(join(root, `frameworks/${layer}/Tv.generated.ts`), manifestBanner('frameworks/tailwind/Tv.ts') + source);
   return out;
 }
 
@@ -38,7 +60,7 @@ function main() {
   writeFileSync(path, text);
   console.log(`build-tailwind: wrote ${path} (${text.length} bytes)`);
 
-  for (const [tsPath, content] of buildManifestModules()) {
+  for (const [tsPath, content] of [...buildManifestModules(), ...buildRecipeRuntime()]) {
     writeFileSync(tsPath, content);
     console.log(`build-tailwind: wrote ${tsPath}`);
   }

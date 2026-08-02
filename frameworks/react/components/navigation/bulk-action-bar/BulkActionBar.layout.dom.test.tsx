@@ -52,8 +52,8 @@ function labels(root: Element): string[] {
 
 test('the narrow shape stacks and reorders NOTHING, so focus order still matches reading order', () => {
   const narrow = narrowWidths(NARROW_WIDTH, () => render());
-  assert.equal(bar(narrow).style.flexDirection, 'column', 'the narrow shape must stack');
-  assert.equal(bar(narrow).style.alignItems, 'stretch');
+  assert.match(bar(narrow).className, /\bflex-col\b/, 'the narrow shape must stack');
+  assert.match(bar(narrow).className, /\bitems-stretch\b/);
   const stacked = labels(narrow);
 
   cleanup();
@@ -66,12 +66,12 @@ test('the narrow shape stacks and reorders NOTHING, so focus order still matches
 
 test('layout="inline" keeps the one row at every width', () => {
   const root = narrowWidths(NARROW_WIDTH, () => render('inline'));
-  assert.equal(bar(root).style.flexDirection, 'row',
+  assert.doesNotMatch(bar(root).className, /\bflex-col\b/,
     'inline is the opt-out for a bar in a place the consumer knows is wide');
 });
 
 test('the wide shape is the single row it always was', () => {
   const root = render();
-  assert.equal(bar(root).style.flexDirection, 'row');
+  assert.doesNotMatch(bar(root).className, /\bflex-col\b/);
   assert.deepEqual(labels(root), ['Export', 'Archive', 'Delete', 'Clear']);
 });

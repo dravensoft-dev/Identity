@@ -2,6 +2,8 @@ import React from 'react';
 import { focusableElements } from '../../../UseDialogModal.ts';
 
 import type { ActivityItem } from '../../../Api.generated';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './ActivityFeed.manifest.generated.ts';
 
 export type { ActivityItem };
 
@@ -18,10 +20,11 @@ export interface ActivityFeedProps {
 }
 
 
-const TONES = {
-  neutral: 'var(--bone-dim)', accent: 'var(--crimson)', gold: 'var(--gold)',
-  success: 'var(--success)', warning: 'var(--warning)', danger: 'var(--danger)', info: 'var(--info)',
-};
+const feedStyles = tv(manifest);
+const TONES = Object.keys(manifest.variants.tone);
+type Tone = NonNullable<ActivityItem['tone']>;
+const toneOf = (tone: string | undefined): Tone | undefined =>
+  (tone && TONES.includes(tone) ? tone as Tone : undefined);
 
 export function ActivityFeed({ items, label, busy = false }: ActivityFeedProps) {
   if (!label?.trim()) throw new Error('ActivityFeed: `label` is required');
@@ -59,22 +62,19 @@ export function ActivityFeed({ items, label, busy = false }: ActivityFeedProps) 
   return (
     <ul ref={feedRef} role="feed" aria-label={label} aria-busy={busy ? 'true' : 'false'}
       onKeyDown={onKeyDown}
-      style={{ display: 'flex', flexDirection: 'column', listStyle: 'none', margin: 0, padding: 0 }}>
+      className={feedStyles({}).root()}>
       {items.map((item, i) => (
         <li key={item.id != null ? item.id : i}
           role="article" tabIndex={0}
           aria-posinset={i + 1} aria-setsize={items.length}
-          style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)',
-            padding: 'calc(var(--sp-1) * 3.5) 0',
-            borderTop: i ? 'var(--bw) solid var(--color-base-300)' : 'none' }}>
-          <span aria-hidden="true" style={{ flex: 'none', width: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 2)',
-            borderRadius: 'var(--r-pill)', background: (item.tone && TONES[item.tone]) || TONES.accent }} />
-          <span style={{ fontSize: 'var(--dz-text)', color: 'var(--bone-dim)' }}>
-            <b style={{ color: 'var(--bone)' }}>{item.actor}</b> {item.action}
-            {item.target && ' '}
-            {item.target && <span style={{ color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)' }}>{item.target}</span>}
+          className={feedStyles({ tone: toneOf(item.tone), divided: i > 0 }).item()}>
+          <span aria-hidden="true" className={feedStyles({ tone: toneOf(item.tone) }).dot()} />
+          <span className={feedStyles({}).text()}>
+            <b className={feedStyles({}).actor()}>{item.actor}</b>
+            {` ${item.action}${item.target ? ' ' : ''}`}
+            {item.target && <span className={feedStyles({}).target()}>{item.target}</span>}
           </span>
-          {item.time && <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{item.time}</span>}
+          {item.time && <span className={feedStyles({}).time()}>{item.time}</span>}
         </li>
       ))}
     </ul>

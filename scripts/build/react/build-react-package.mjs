@@ -23,7 +23,7 @@ export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
 
 export const ROOT_JS = ['Tokens.generated.js'];
-export const ROOT_TS = ['AnchorActivation.ts', 'DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'WarnOnce.ts', 'Api.generated.ts', 'Index.generated.ts'];
+export const ROOT_TS = ['AnchorActivation.ts', 'DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'WarnOnce.ts', 'Api.generated.ts', 'Tv.generated.ts', 'Index.generated.ts'];
 export const DIST_PROJECT = 'frameworks/react/tsconfig.dist.json';
 
 export function isSource(path) {
@@ -136,6 +136,10 @@ export function manifest(root = repoRoot) {
       './css/*': './css/*',
       './arena.config.example.json': './arena.config.example.json',
       './package.json': './package.json',
+    },
+    dependencies: {
+      'tailwind-variants': '^3.2.2',
+      'tailwind-merge': '^3.6.0',
     },
     peerDependencies: {
       react: '^18 || ^19',

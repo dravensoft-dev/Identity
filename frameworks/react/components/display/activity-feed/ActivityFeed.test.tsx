@@ -22,19 +22,19 @@ test('each part of the grammar takes its own ink', () => {
   const html = renderToStaticMarkup(<ActivityFeed label={LABEL} items={[ITEMS[0]!]} />);
   assert.match(html, /ana@/);
   assert.match(html, /approved the release/);
-  assert.match(html, /var\(--gold\)/);
-  assert.match(html, /var\(--mute\)/);
+  assert.match(html, /\btext-secondary\b/, 'the target reads in the secondary ink');
+  assert.match(html, /\btext-base-content\/62\b/, 'the time reads muted');
 });
 
 test('tone drives the dot and defaults to accent', () => {
-  assert.match(renderToStaticMarkup(<ActivityFeed label={LABEL} items={[ITEMS[0]!]} />), /var\(--crimson\)/);
-  assert.match(renderToStaticMarkup(<ActivityFeed label={LABEL} items={[ITEMS[1]!]} />), /var\(--danger\)/);
+  assert.match(renderToStaticMarkup(<ActivityFeed label={LABEL} items={[ITEMS[0]!]} />), /\btext-primary\b/);
+  assert.match(renderToStaticMarkup(<ActivityFeed label={LABEL} items={[ITEMS[1]!]} />), /\btext-error\b/);
 });
 
 test('an unknown tone falls back to accent rather than rendering nothing', () => {
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
   const html = renderToStaticMarkup(<ActivityFeed label={LABEL} items={[{ id: '3', actor: 'a', action: 'b', tone: 'chartreuse' }]} />);
-  assert.match(html, /var\(--crimson\)/);
+  assert.match(html, /\btext-primary\b/);
 });
 
 test('an item missing a target or a time still renders', () => {

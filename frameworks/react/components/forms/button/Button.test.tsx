@@ -32,8 +32,11 @@ test('Button defaults its native type to button and honours an override', () => 
 
 test('Button renders danger as outline, never filled', () => {
   const html = renderToStaticMarkup(<Button variant="danger">Delete</Button>);
-  assert.match(html, /background:transparent/);
-  assert.match(html, /var\(--danger\)/);
+  assert.match(html, /\bbg-transparent\b/, 'the danger surface is filled, and the convention is that it never is');
+  assert.match(html, /\bborder-error\b/);
+  assert.match(html, /\btext-error\b/);
+  assert.doesNotMatch(html, /(?<!:)\bbg-error\b/,
+    'an unmodified bg-error fills the danger surface; only the hover: form may tint it');
 });
 
 test('Button drops a consumer style object and a consumer attribute, each independently', () => {

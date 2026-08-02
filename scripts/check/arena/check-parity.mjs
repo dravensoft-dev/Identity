@@ -25,32 +25,18 @@ const AUTHORED_TWICE = 'React authors this component\'s appearance as inline sty
   + 'renders the shared manifest, so the two copies are only equal by hand and have drifted. It goes when '
   + 'the component renders the manifest.';
 
-const BUTTON_CORNERS = 'the whole of the difference is the four rounded corners of one Button: React draws '
-  + 'its border transparent and the manifest paints that border in the fill colour, which is invisible along '
-  + 'a straight edge and not along a curve, because the antialiased border curve and the antialiased '
-  + 'background curve under it are not the same curve. Every differing box measures 39px tall, which is the '
-  + 'button. It goes when Button renders the manifest.';
-
 export const DIVERGENT = new Map([
-  ['ActivityFeed', `309 pixels over the feed's own rows. ${AUTHORED_TWICE}`],
-  ['BulkActionBar', `136 pixels across the bar's row of controls. ${AUTHORED_TWICE}`],
-  ['Button', `41 pixels, and ${BUTTON_CORNERS}`],
   ['Calendar', `3331 pixels across the grid. ${AUTHORED_TWICE}`],
   ['CalendarEvent', `3294 pixels across the grid it is drawn into. ${AUTHORED_TWICE}`],
   ['DoughnutChart', '2 pixels on the ring, worst channel 46, at a single point of one arc. The three SVG '
     + 'charts carry no manifest by design and are outside the migration, so this one is measured and not '
     + 'yet explained: it is most likely a rounding difference in a path coordinate, and it is declared here '
     + 'rather than tolerated silently, because a threshold that hid it would hide a real one-pixel defect too.'],
-  ['EmptyState', `41 pixels, and ${BUTTON_CORNERS}`],
-  ['ErrorState', `40 pixels, and ${BUTTON_CORNERS}`],
-  ['PageHead', `43 pixels, and ${BUTTON_CORNERS}`],
   ['Table', '3427 pixels, all of them below y 145, which is the footer: the two layers put the frame in '
     + 'different places. React gives the border, the radius and the `overflow: hidden` to a wrapper around '
     + 'the grid alone, so the pager sits OUTSIDE the rounded card under a rule that runs past its corners, '
     + 'while the manifest gives them to the root and the pager sits inside. The rows above agree to the '
     + `pixel. ${AUTHORED_TWICE}`],
-  ['Tag', '976 pixels over the tag itself, which is 13px text with 4px 10px padding in React and 11px with '
-    + `2px 8px in the manifest Angular renders. This one is a genuine disagreement rather than an accident. ${AUTHORED_TWICE}`],
 ]);
 
 export function pairPages(pages = pagePaths()) {
