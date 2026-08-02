@@ -41,3 +41,13 @@ test('the eyebrow is text only -- no filled surface, on the outline rule danger 
   assert.ok(eyebrow.includes('text-primary'));
   assert.ok(!eyebrow.some((cls) => cls.startsWith('bg-')));
 });
+
+test('the footer wraps, because the slot projects one control per element', () => {
+  assert.match(
+    dialogStyles({ open: true }).foot(),
+    /\bflex-wrap\b/,
+    'three buttons at 390px overflow the panel without it, and the row is what has to wrap '
+    + 'because the consumer projects siblings rather than a wrapper of their own; PageHead and '
+    + 'ChartCard already do this, and a third action row behaving differently is worse than none',
+  );
+});

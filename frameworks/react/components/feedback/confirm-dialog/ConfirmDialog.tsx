@@ -101,7 +101,7 @@ export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Con
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'calc(var(--sp-1) * 2.5)', padding: '0 calc(var(--sp-1) * 6) calc(var(--sp-1) * 5.5)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 'calc(var(--sp-1) * 2.5)', padding: '0 calc(var(--sp-1) * 6) calc(var(--sp-1) * 5.5)' }}>
           <Button variant="ghost" onClick={onCancel}>{cancelLabel}</Button>
           {
 

@@ -51,7 +51,29 @@ the reader activated the row. Ctrl-click, meta-click, shift-click and a middle c
 browser's: they open the destination themselves, fire nothing, and leave the palette open,
 because a reader who asked for a second tab did not ask to leave this one.
 
-There is no `maxResults`. Trimming the list before passing it throws away matches the query
-would have found, and a better ranking is an improvement inside the component rather than a
-member; a scoring function would be a `functionInput` in a contract that declares no
-`kind: "input"`.
+`maxResults` caps how many matches the list shows. **Reach for it instead of trimming
+`commands` before you pass them**, which is the thing that does not work: a list cut to the
+forty most recent invoices cannot match the one from March, and the query never gets the
+chance. The cap runs after the search, so the rows are still the best the whole set has.
+
+There is still no ranking member. A scoring function would be a `functionInput` in a contract
+that declares no `kind: "input"`, and a better order is an improvement inside the component
+rather than something a caller supplies; `maxResults` changes how many rows are shown and
+never which ones come first.
+
+### The shortcut is yours, and that is deliberate
+
+The palette is named after Cmd/Ctrl+K and binds nothing. A global key binding belongs to the
+application: it has to know which other surface owns the key, whether a dialog is already up,
+and whether the reader is typing in a field. A component that took the key would fight the
+host for it and win by accident of load order. Three lines in the shell:
+
+```ts
+@HostListener('document:keydown', ['$event'])
+onKey(event: KeyboardEvent): void {
+  if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+    event.preventDefault();
+    this.paletteOpen.set(true);
+  }
+}
+```

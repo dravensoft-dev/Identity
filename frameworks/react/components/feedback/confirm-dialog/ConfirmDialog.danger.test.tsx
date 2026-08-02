@@ -16,3 +16,10 @@ test('destructive paints the filled danger surface, and nothing else does', () =
   assert.doesNotMatch(plain, /var\(--danger-fill\)/, 'an ordinary confirm must not be filled with danger');
   assert.match(plain, /var\(--crimson\)/, 'the ordinary confirm lost its primary surface');
 });
+
+test('the footer wraps, the way Dialog, PageHead and ChartCard all do', () => {
+  const html = renderToStaticMarkup(<ConfirmDialog open title="Delete" onConfirm={() => {}} />);
+  assert.match(html, /flex-wrap:\s*wrap/,
+    'the system has one action row, and a confirmation that overflows at 390px is the worst '
+    + 'place for it, since the reader is being asked to decide');
+});

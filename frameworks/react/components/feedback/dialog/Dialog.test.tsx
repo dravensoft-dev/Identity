@@ -113,3 +113,16 @@ test('open is required and its absence throws, while false renders nothing and d
     () => renderToStaticMarkup(<Dialog open={false} title={TITLE}><p>b</p></Dialog>),
   );
 });
+
+test('the footer wraps, because the slot takes one control per element', () => {
+  const html = renderToStaticMarkup(
+    <Dialog open title={TITLE} onClose={() => {}}
+      footer={<><button type="button">Cancel</button><button type="button">Charge in full</button><button type="button">Record</button></>}>
+      <p>b</p>
+    </Dialog>,
+  );
+  assert.match(html, /flex-wrap:\s*wrap/,
+    'three buttons at 390px overflow the panel without it, and the row is what has to wrap '
+    + 'because the consumer passes siblings rather than a wrapper of their own; PageHead and '
+    + 'ChartCard already do this, and a third action row behaving differently is worse than none');
+});

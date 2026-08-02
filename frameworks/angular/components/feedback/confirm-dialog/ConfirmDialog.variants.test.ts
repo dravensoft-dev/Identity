@@ -74,3 +74,12 @@ test('the root slot carries a display utility in its own base string, independen
 
   assert.match(confirmDialogStyles({ open: true }).root(), /\bflex\b/);
 });
+
+test('the footer wraps, the way Dialog, PageHead and ChartCard all do', () => {
+  assert.match(
+    confirmDialogStyles().foot(),
+    /\bflex-wrap\b/,
+    'the system has one action row, and a confirmation that overflows at 390px is the worst '
+    + 'place for it, since the reader is being asked to decide',
+  );
+});

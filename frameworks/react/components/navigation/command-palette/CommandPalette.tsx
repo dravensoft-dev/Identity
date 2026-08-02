@@ -17,6 +17,9 @@ export interface CommandPaletteProps {
   /** The search field's placeholder. */
   placeholder?: string;
 
+  /** How many matches the list shows at most. Absent, all of them. The ceiling applies AFTER the query has run over every command, which is what makes it different from the caller trimming `commands` before passing them: a trimmed list cannot match what was cut, and a capped one can, so the first rows are still the best the whole set has. It is the palette's rather than the domain's, because how many rows help before the list stops being an accelerator is a property of this control; a caller who caps their own collection has guessed at it once, for one collection, with no query in hand. It is not ranking: the order stays the order the caller passed, ungrouped first and then each group as it first appears. */
+  maxResults?: number;
+
   /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   onClose?: () => void;
 
@@ -26,6 +29,10 @@ export interface CommandPaletteProps {
 
 
 let nextId = 0;
+
+export function capCommands(commands: readonly Command[], max: number | undefined): readonly Command[] {
+  return max === undefined || max < 0 ? commands : commands.slice(0, max);
+}
 
 export function orderCommands(commands: readonly Command[]): Command[] {
   const names: string[] = [];
@@ -54,7 +61,7 @@ export function commandGroups(ordered: readonly Command[]): CommandGroup[] {
   return groups;
 }
 
-export function CommandPalette({ open, commands, placeholder = 'Search for an action or project…', onClose, onRun }: CommandPaletteProps) {
+export function CommandPalette({ open, commands, placeholder = 'Search for an action or project…', maxResults, onClose, onRun }: CommandPaletteProps) {
   if (open == null) throw new Error('CommandPalette: `open` is required');
   if (commands == null) throw new Error('CommandPalette: `commands` is required');
   const [q, setQ] = useState('');
@@ -65,9 +72,10 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   if (uid.current === null) uid.current = `arena-command-palette-${nextId++}`;
   const listboxId = `${uid.current}-listbox`;
   const optionId = (index: number) => `${uid.current}-option-${index}`;
-  const filtered = orderCommands(
+  const filtered = orderCommands(capCommands(
     commands.filter((c) => (c.label + ' ' + (c.hint || '')).toLowerCase().includes(q.toLowerCase())),
-  );
+    maxResults,
+  ));
   const groups = commandGroups(filtered);
   useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => inputRef.current && inputRef.current.focus(), 0); } }, [open]);
   useEffect(() => { setI(0); }, [q]);
