@@ -19,11 +19,12 @@ bun install
 bun run build
 ```
 
-That runs the seven steps in order, the token layer first, because the Tailwind preset compiles
+That runs the nine steps in order, the token layer first, because the Tailwind preset compiles
 against the token CSS:
 
 ```
-generate:tokens → generate:api → build:react-barrel → build:tailwind → build:vendor → build:demos → build:angular-demo
+generate:tokens → generate:api → generate:playgrounds → generate:catalog → build:react-barrel →
+build:tailwind → build:vendor → build:demos → build:angular-demo
 ```
 
 **Until it has run once, part of the tree does not exist.** These are git-ignored, so a fresh
@@ -34,12 +35,13 @@ clone has none of them:
 | `frameworks/react/Api.generated.ts` and `frameworks/angular/Api.generated.ts` | every component importing a contract type; `check:api` |
 | `frameworks/react/Tokens.generated.js` and `frameworks/angular/Tokens.generated.ts` | every component doing arithmetic on a token; `check:script-tokens` |
 | `frameworks/react/Index.generated.ts` | the layer's entry point, which the package build compiles; `check:react-barrel` |
-| `frameworks/react/vendor/*.generated.js` | every React `*.card.html`; `check:vendor` |
+| `frameworks/react/vendor/*.generated.js` | every React demo page's importmap; `check:vendor` |
 | `frameworks/react/**/*.generated.js`, one per component and demo entry source | every React demo page; `check:demos` |
 | `frameworks/tailwind/components/**/*.manifest.generated.ts`, one per `<Name>.manifest.json` | every Angular `<Component>.variants.ts`; `check:tailwind-generated` |
 | `frameworks/tailwind/Breakpoints.generated.css` | `Theme.css` imports it, so `build:tailwind` fails outright without it; `check:tokens` |
 | `frameworks/tailwind/Utilities.generated.css` | every Tailwind and Angular specimen; `check:tailwind-generated` |
-| `frameworks/angular/build/demo/` | the Angular `*.card.html` pages; `check:angular-demos` |
+| `frameworks/angular/build/demo/` | the Angular demo pages; `check:angular-demos` |
+| `frameworks/**/*.demo.generated.html` and its entry, one per component per layer | the demo pages themselves; `check:playgrounds`, and `check:angular-demos` for the Angular half |
 
 So on a clone with no build, `bun run demos` serves unstyled or blank pages, neither framework
 layer compiles, because a component's import of `Api.generated` or `Tokens.generated` resolves

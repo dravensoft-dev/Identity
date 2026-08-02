@@ -509,18 +509,16 @@ motion means. [`contracts/design/README.md`](./contracts/design/README.md) state
 cases and the reason for each. It is stated there rather than per layer because it is a design
 decision, and a layer that disagrees with it is wrong.
 
-**Every React component is a trio, and the three files live in the component's own directory**,
+**Every React component is a trio, in the component's own directory**,
 `frameworks/react/components/<category>/<component-kebab>/`: `X.tsx` (implementation and its
 exported `XProps`), `X.prompt.md` (usage, examples, Do/Don't) and a fixture at
 `frameworks/demos/X.demo.json`. **The layer carries no hand-written `.d.ts`**: the published one
 is emitted from the source, so the two cannot disagree. **The demo page is not one of the
-three**: `bun run generate:playgrounds` emits `X.demo.generated.html` and its entry into the
-component's own directory in **every** layer, from the one contract and the one fixture, which
-is why the two layers' pages can be compared at all. Adding a component means adding the three
+three** and is generated into every layer; see below. Adding a component means adding the three
 and running the generator.
 
-**A new React component also moves a literal count outside its own layer, and the React suite
-alone cannot see it move.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts
+**A new React component moves a literal count outside its own layer, and the React suite alone
+cannot see it move.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts
 `reactComponents('.').length` by literal value; a new component **directory** moves it by one
 and the assertion must be updated **in the same commit**. **Verify with the merged process**,
 the args array in `testStep()`, because `bun test frameworks/react` never matches `scripts/`,
@@ -530,19 +528,17 @@ two-invocation rule above: this one is about a path a narrowed invocation never 
 **A new component in either layer also moves `frameworks/Catalog.generated.md`**, the index
 every consumer reads before reaching for anything. It is generated, so nothing is written by
 hand: run `bun run generate:catalog`, which `bun run build` already does, and commit the
-result. It is **tracked**, unlike everything else a generator writes under `frameworks/`,
-because the plugin is served from the git tag where nothing runs a build, so an uncommitted
-catalog is a wrong answer handed to every reader of that tag. `check:catalog` fails a stale one.
+result. It is **tracked**, unlike everything else a generator writes under `frameworks/`, because the
+plugin is served from the git tag where nothing runs a build, so an uncommitted catalog is a
+wrong answer handed to every reader of that tag. `check:catalog` fails a stale one.
 
 **The Angular layer's shape is a quartet**, the same three plus its recipe, in
 `frameworks/angular/components/<category>/<component-kebab>/`: a standalone `OnPush` component
-with an `arena-` selector and no component `styles`, its `tailwind-variants` recipe, its prompt
-and an `index.ts` barrel, plus its behaviour binding and its own suites in the same directory.
-**A primitive binds its root slot to the host rather than rendering a wrapper div**, with a
-growing carve-out set. [`frameworks/angular/README.md`](./frameworks/angular/README.md) names
-each file, gives the command for which components carry no recipe and the two reasons they do
-not, and states the four carve-out groups and the display-utility requirement
-`HostClassBinding.test.ts` guards.
+with an `arena-` selector and no component `styles`, its recipe, its prompt and an `index.ts`
+barrel, plus its behaviour binding and its own suites beside them. **A primitive binds its root
+slot to the host rather than rendering a wrapper div**, with a growing carve-out set.
+[`frameworks/angular/README.md`](./frameworks/angular/README.md) carries every file, the
+command for which components carry no recipe, and the carve-outs.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
@@ -553,15 +549,17 @@ document and one `TestBed` for the whole layer, so **state written onto that sha
 outlives the file that wrote it** and every directly-created fixture must be `destroy()`-ed.
 [`frameworks/angular/README.md`](./frameworks/angular/README.md) carries all of it.
 
-**Specimen/demo pages** start with an HTML comment
+**A specimen page** starts with an HTML comment
 `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card
 rendering. Keep it as the first line, the only line `check:cards` reads. **That viewport is
-machine-checked**: the gate loads every declaring page at its declared width in headless
+machine-checked**: the gate loads each declaring page at its declared width in headless
 Chromium and fails when the content over-runs the box in either axis, because the card is
 cropped to it and the overflow is lost silently. Declaring it by arithmetic does not work, so
-measure by running the gate. A page declaring far *more* height than it renders only warns.
-`frameworks/react/ui-kits/console/index.html` carries no `@dsCard` on purpose: it is an app
-with its own scroll area, not a card.
+measure by running the gate. Declaring far *more* height than it renders only warns.
+**A page nobody crops declares none**: the Console is an app with its own scroll area, and a
+playground's height moves with every knob, so there is no fixed box to measure it against.
+What that costs is bought back by `check:playgrounds`, which loads all of them in a real
+browser and fails one that mounts nothing, draws no panel or says anything on the console.
 
 **A file a script under `scripts/` writes is named `<stem>.generated.<ext>`, and that name is
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
@@ -581,18 +579,22 @@ names the two outputs that can hold neither infix nor header: the `assets/fonts/
 `intro/support.js`, whose generator (`dc-runtime`) is not here, so it can never be ignored,
 and must not be edited.
 
-Component demos load React from a local importmap pointing at
-`frameworks/react/vendor/*.generated.js`, an ESM bundle of the `react`/`react-dom`
-devDependencies, since React 18 ships CommonJS only (`build:vendor`, guarded by
-`check:vendor`), and pull `@phosphor-icons/web` straight from `node_modules/`.
+**A component is compiled ahead of time, not in the browser**, in every layer, so **editing a
+component means running `bun run build` in the same tree**. The suites import the source
+directly and stay green with the compiled sibling stale, but a demo page loads the sibling, so
+`bun run demos` shows the pre-fix component while the suites prove the fix, which is exactly
+the by-hand check every `.prompt.md` checklist depends on. How each layer compiles is its own
+README's.
 
-**A component is compiled ahead of time, not in the browser**, so every component `.tsx` and
-every demo `<page>.entry.tsx` has a `.generated.js` sibling the page loads directly
-(`build:demos`, guarded by `check:demos`). **So editing a `.tsx` means running
-`bun run build:demos` in the same tree.** The suites import the `.tsx` directly and stay green
-with the sibling stale, but the demo pages load the sibling, so **`bun run demos` shows the
-pre-fix component while the suites prove the fix**, which is exactly the by-hand check every
-`.prompt.md` checklist depends on.
+**A demo page is generated, one per component per layer, and never hand-written.** It is
+emitted by `bun run generate:playgrounds` from the component's API contract and the fixture
+beside it in [`frameworks/demos/`](./frameworks/demos/README.md), which is where the one thing
+a contract cannot supply lives: a seed for a required member, the content of a slot, the host a
+compound child needs, and which event writes back into which knob. The two layers' pages differ
+in one path segment and take the same query string, so **a difference between them is a
+difference in the component**, which is the whole reason to generate them rather than write
+them. `check:playgrounds` holds every fixture to its contract, every emitted file to a fresh
+run, and each layer's knob model to the other's.
 
 **The layers are peers, and no layer is any other's authority.** A file under
 `frameworks/<A>` may not name layer B nor any of B's source files, by import or in prose;

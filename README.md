@@ -76,4 +76,6 @@ everything below is reached through it.
   including how to adopt it.
 - [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md): the shared
   Tailwind layer.
+- [`frameworks/demos/README.md`](./frameworks/demos/README.md): the fixture behind every
+  component's playground page, which is the one part of that page anybody writes.
 - [`DOUBTS.md`](./DOUBTS.md): what counts as a debt in Arena, and where the records live.

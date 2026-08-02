@@ -1,7 +1,10 @@
 /* Fails when the same module-level named numeric constant is declared in BOTH
  * framework layers. Module-level-in-both is narrower than "duplicated": a design value declared
  * in ONE layer, and a constant declared inside a function body in EITHER, both escape. The two
- * layers do not share an idiom for where a design number lives, so that happens often. */
+ * layers do not share an idiom for where a design number lives, so that happens often.
+ * Generated output is out of scope, because it is one declaration rather than two: a file a
+ * script writes into every layer cannot drift between them, and the gate that holds it equal to
+ * its single source is the one that would notice if it did. */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -51,7 +54,7 @@ export function* sourceFiles(dir) {
     if (path === emittedTree()) continue;
     if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
     if (!SCAN_EXT.has(extname(entry))) continue;
-    if (/^tokens\.generated\./i.test(entry)) continue;
+    if (entry.includes('.generated.')) continue;
 
     if (extname(entry) === '.js' && readdirSync(dir).includes(`${entry.slice(0, -3)}.jsx`)) continue;
     yield path;
