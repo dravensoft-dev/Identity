@@ -8,7 +8,7 @@ const GENERIC_FAMILIES = new Set([
 
 const trim = (n) => String(n).replace(/^(-?)0\./, '$1.');
 
-const dim = (d) => (d.value === 0 ? '0' : `${d.value}${d.unit}`);
+const dim = (d) => `${d.value}${d.unit}`;
 
 const color = (c) => {
   if (c.hex) return c.hex;
@@ -26,8 +26,7 @@ export function serialize(token) {
       return `${v.value}${v.unit}`;
     case 'number': {
       const unit = token.$extensions?.[EXT]?.cssUnit;
-      if (!unit) return String(v);
-      return v === 0 ? '0' : `${v}${unit}`;
+      return unit ? `${v}${unit}` : String(v);
     }
     case 'fontWeight':
       return String(v);

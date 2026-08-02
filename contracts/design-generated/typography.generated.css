@@ -39,7 +39,7 @@
      headings.
    */
   --ls-tight:-0.02em; /* display: tight headings */
-  --ls-normal:0;
+  --ls-normal:0em;
   --ls-mono-nav:0.04em; /* mono navigation: breadcrumbs, bulk-action counts */
   --ls-uppercase-status:0.06em; /* uppercase status text: alerts, toasts, calendar hour labels */
   --ls-badge:0.1em; /* badge and pill text */
