@@ -55,7 +55,7 @@ is expensive, guard it inside the view rather than expecting the tab to defer it
 
 **By hand, in real Chromium**: the keyboard is asserted for real, but the ink and the ring are not.
 Run `bun run demos` and open
-`/frameworks/angular/components/navigation/tabs/Tabs.card.html`:
+`/frameworks/angular/components/navigation/tabs/Tabs.demo.generated.html`:
 - Tab into the strip **once**: the ring lands on the selected tab, and Tab again leaves the strip
   rather than walking the tabs.
 - Left and Right walk the strip and wrap at both ends, and the panel below changes with them.

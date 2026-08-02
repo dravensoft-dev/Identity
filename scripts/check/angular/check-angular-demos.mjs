@@ -1,9 +1,9 @@
 /* The Angular demo pages are the only place a person can exercise what happy-dom cannot:
- * motion, focus rings, layout. They cannot be gated the way React's *.card.html pages are,
- * because their script is git-ignored build output — on a fresh clone the page renders blank,
- * and a blank page passes a viewport-overflow check by having nothing to overflow. So this
- * gate is structural and portable: no browser, no bundler. PAGED is the coverage record, and
- * it carries the same bidirectional staleness rule COVERED does. */
+ * motion, focus rings, layout. This gate is structural and portable, no browser and no
+ * bundler, and it holds what only this layer can get wrong: the three lines without which a
+ * page mounts nothing and says nothing. There is no coverage list any more, because every
+ * component has a page: the inventory is the component tree, so a page cannot go missing
+ * and a list cannot go stale. Whether a page RENDERS is check:playgrounds', with a browser. */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -13,35 +13,11 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const BUNDLE_DIR = 'build/demo/js';
 
-export const PAGED = new Set([
-  'Button',
-  'Card',
-  'Tooltip',
-  'Dialog',
-  'Select',
-  'Toast',
-  'ToastHost',
-  'Sheet',
-  'Grid',
-  'BottomNav',
-  'Menu',
-  'ProgressBar',
-  'Spinner',
-  'SideNav',
-  'IconButton',
-  'Checkbox',
-  'Switch',
-  'Input',
-  'Textarea',
-  'RadioGroup',
-  'SegmentedControl',
-  'Tabs',
-  'Pagination',
-  'Table',
-  'Calendar',
-]);
 
-export function pageProblems(tree, read, paged = PAGED) {
+export const PAGE_SUFFIX = '.demo.generated.html';
+export const ENTRY_SUFFIX = '.demo.entry.generated.ts';
+
+export function pageProblems(tree, read) {
   const problems = [];
   const found = new Set();
 
@@ -49,39 +25,28 @@ export function pageProblems(tree, read, paged = PAGED) {
     for (const dir of dirs) {
       const name = pascal(dir);
       const base = `frameworks/angular/components/${category}/${dir}`;
-      const page = `${base}/${name}.card.html`;
-      const entry = `${base}/${name}.card.entry.ts`;
+      const page = `${base}/${name}${PAGE_SUFFIX}`;
+      const entry = `${base}/${name}${ENTRY_SUFFIX}`;
       const pageSource = read(page);
       const entrySource = read(entry);
-      const declared = paged.has(name);
-
-      if (!declared) {
-        if (pageSource !== null) {
-          problems.push(`${page}: exists but ${name} is not in PAGED — add it, so the record states what a person can open`);
-        }
-        if (entrySource !== null) {
-          problems.push(`${entry}: exists but ${name} is not in PAGED`);
-        }
-        continue;
-      }
 
       found.add(name);
 
       if (pageSource === null) {
-        problems.push(`${page}: PAGED names ${name} and the page is missing`);
+        problems.push(`${page}: missing — run bun run generate:playgrounds`);
       }
       if (entrySource === null) {
-        problems.push(`${entry}: PAGED names ${name} and its page has no application to bootstrap`);
+        problems.push(`${entry}: missing, so its page has no application to bootstrap`);
       }
       if (pageSource === null || entrySource === null) continue;
 
-      const src = /<script[^>]*\bsrc="([^"]+)"/.exec(pageSource);
+      const src = /<script[^>]*\btype="module"[^>]*\bsrc="([^"]+)"/.exec(pageSource);
       if (!src) {
         problems.push(`${page}: loads no module script, so it renders an empty document`);
-      } else if (!src[1].endsWith(`/${BUNDLE_DIR}/${name}.card.entry.js`)) {
+      } else if (!src[1].endsWith(`/${BUNDLE_DIR}/${name}${ENTRY_SUFFIX.replace(/\.ts$/, '.js')}`)) {
         problems.push(
           `${page}: loads "${src[1]}", which is not this component's bundled entry `
-          + `(…/${BUNDLE_DIR}/${name}.card.entry.js)`,
+          + `(…/${BUNDLE_DIR}/${name}${ENTRY_SUFFIX.replace(/\.ts$/, '.js')})`,
         );
       }
 
@@ -110,12 +75,6 @@ export function pageProblems(tree, read, paged = PAGED) {
           + 'the Angular test harness imports it.',
         );
       }
-    }
-  }
-
-  for (const name of paged) {
-    if (!found.has(name)) {
-      problems.push(`PAGED names "${name}", which is no Angular component directory — stale entry`);
     }
   }
 

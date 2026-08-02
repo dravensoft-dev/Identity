@@ -116,7 +116,7 @@ above is what it means for an adopter.
 
 ### What never ships
 
-Tests in any extension, demo pages, `.card.html` specimens, `.card.entry` scripts, behaviour
+Tests in any extension, demo pages, `.card.html` specimens, `.demo.` playgrounds, behaviour
 bindings, component prompts, the vendored React bundles, the test harnesses, the tsconfigs,
 and the font binaries. `EXCLUDED_NAMES` and `EXCLUDED_PATTERNS` are the record, and the
 suite beside them asserts both by name.

@@ -34,7 +34,7 @@ line of authored ARIA.
   contract, so a partially-selected parent row needs a different control, not this one.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/forms/checkbox/Checkbox.card.html`:
+open `/frameworks/angular/components/forms/checkbox/Checkbox.demo.generated.html`:
 - The tick's stroke reads cleanly on the crimson fill at 100% zoom, and its box is `--sp-3`
   inside an `--sp-5` square rather than filling it.
 - Clicking the label text toggles the box, and so does Space with the control focused.

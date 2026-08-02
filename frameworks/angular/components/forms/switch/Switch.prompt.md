@@ -45,7 +45,7 @@ supplies the state.
   by Tab and announces no reason; `confirm` is the affordance for a change that needs a gate.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/forms/switch/Switch.card.html`:
+open `/frameworks/angular/components/forms/switch/Switch.demo.generated.html`:
 - The knob **slides** across the track over `--dur-mid` rather than jumping, and the track's
   colour crossfades with it.
 - Under `prefers-reduced-motion: reduce`, forced in DevTools' Rendering pane, **the knob stops

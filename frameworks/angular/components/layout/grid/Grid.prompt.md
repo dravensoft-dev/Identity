@@ -38,7 +38,7 @@ is the page's own reading width.
   and the cells stop lining up; give the outer one the cells it actually has.
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/layout/grid/Grid.card.html`:
+`/frameworks/angular/components/layout/grid/Grid.demo.generated.html`:
 - Narrow the window from wide to 390px: the count falls one step at a time and never overflows.
 - At the narrowest, one column fills the width; the minimum is clamped rather than honoured.
 - The four gaps are visibly four steps, and both axes get the same one.

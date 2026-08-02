@@ -30,7 +30,7 @@ of authored ARIA.
   effect and `arena-checkbox` for a pending form value.
 
 **By hand, in real Chromium**: the option's own visuals, on the group's page (`bun run demos`,
-`/frameworks/angular/components/forms/radio-group/RadioGroup.card.html`):
+`/frameworks/angular/components/forms/radio-group/RadioGroup.demo.generated.html`):
 - Selecting changes **only** the ring's border colour and adds the dot; the ring's size and
   surface do not move, so the row does not shift by a pixel.
 - With a hint present, the ring stays level with the first line of the label rather than centring

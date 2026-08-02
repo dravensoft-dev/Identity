@@ -62,7 +62,7 @@ nothing.
 
 **By hand, in real Chromium**: none of this is provable in happy-dom, which has no layout and no
 platform activation. Run `bun run demos` and open
-`/frameworks/angular/components/navigation/menu/Menu.card.html`:
+`/frameworks/angular/components/navigation/menu/Menu.demo.generated.html`:
 - The panel escapes an `overflow: hidden` ancestor and a scroll container, and repositions while
   that container scrolls.
 - Near the bottom of the viewport it flips above its trigger; `align="end"` hangs it from the

@@ -61,7 +61,7 @@ Return the message, or the empty string when the value is good.
   in the consumer, where the interval is a decision about that query rather than about the field.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/forms/input/Input.card.html`:
+open `/frameworks/angular/components/forms/input/Input.demo.generated.html`:
 - `type="date"`: the picker indicator is **visible** on the dark field and brightens on hover.
   That is the shared manifest's `[&::-webkit-calendar-picker-indicator]:` block reading
   `--picker-invert`; without it the browser draws a black glyph on a dark surface. Toggle

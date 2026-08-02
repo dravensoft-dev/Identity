@@ -42,7 +42,7 @@ from `TOAST_DISMISS`, exported beside `arena-toast`:
   system, the CDK layer included; anything else parked there covers the whole app.
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/feedback/toast-host/ToastHost.card.html`:
+`/frameworks/angular/components/feedback/toast-host/ToastHost.demo.generated.html`:
 - Each of the four corners pins where it says, and the stack grows away from its own edge.
 - The gap between two notices is the same in all four, and the standoff from the edges is too.
 - With the browser emulating a device that reports a bottom inset, the bottom stack moves up by it

@@ -78,7 +78,7 @@ frame border, so the narrow threshold trips a couple of pixels earlier than the 
 breakpoint.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
-`frameworks/angular/components/display/table/Table.card.html`). Steps 1–5 were checked in real
+`frameworks/angular/components/display/table/Table.demo.generated.html`). Steps 1–5 were checked in real
 Chromium: one Tab in, the gold inset ring on the focused cell, the arrow walk,
 `Home`/`End` inside the row, `Enter` on a data row, one Tab out onto the actions button, and
 zero roles and zero tab stops in the squeezed card shape. Step 6 and every judgement about how

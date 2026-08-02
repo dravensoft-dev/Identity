@@ -41,7 +41,7 @@ Arena does not hand-roll here; focus and roles stay Arena's. The app must import
   name, so a bubble repeating the label just says everything twice.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/feedback/tooltip/Tooltip.card.html`, which lays out one
+open `/frameworks/angular/components/feedback/tooltip/Tooltip.demo.generated.html`, which lays out one
 section per item below:
 - The bubble sits centred above the trigger with a `--sp-2` gap, and **flips below** when the
   trigger is near the top of the viewport.

@@ -42,7 +42,7 @@ supply one for anything a user is waiting on.
 
 **By hand, in real Chromium**: the sweep is an animation and happy-dom has none. Run
 `bun run demos` and open
-`/frameworks/angular/components/feedback/progress-bar/ProgressBar.card.html`:
+`/frameworks/angular/components/feedback/progress-bar/ProgressBar.demo.generated.html`:
 - The indeterminate sweep travels left to right, continuously, and **slows** rather than stops
   under `prefers-reduced-motion`, motion that reports work in progress must keep reporting it.
 - The determinate fill animates its width on `--dur-mid` when the value changes, and does not

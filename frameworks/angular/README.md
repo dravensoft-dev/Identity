@@ -217,7 +217,7 @@ there. A primitive is inside all three the day it is written. The argument in fu
 **`@angular/cdk` is a declared dependency rather than an optional one**, and it is the only
 package a primitive's own source imports besides `@angular/core`; measure it rather than
 trusting this, with `grep -rho "from '@[a-z@/-]*'" --include='*.ts' --exclude='*.test.ts'
---exclude='*.card.entry.ts' frameworks/angular/components/ | sort -u`. A primitive that
+--exclude='*.demo.entry.generated.ts' frameworks/angular/components/ | sort -u`. A primitive that
 positions an overlay imports it, so it is pinned in the root `package.json` at an exact
 version, and the app must import `theme/arena-cdk.css` once.
 
@@ -232,7 +232,7 @@ so a bridge that has stopped being a bridge cannot pass by having nothing left t
 
 **What the gate does not cover** is whether an override's *value* is the right one for the
 class it lands on: the gate reads names and selectors, never paint, so only a real render
-catches that. `Tooltip.card.html` and `Menu.card.html` are that render: both open a real CDK
+catches that. `Tooltip.demo.generated.html` and `Menu.demo.generated.html` are that render: both open a real CDK
 overlay in a real browser, which is where a z-index that stacks wrongly is visible at all.
 `check:cdk` fails the moment the bridge and the installed package disagree.
 
@@ -253,9 +253,13 @@ never the *component*: it hand-builds the DOM from the manifest, so a component-
 bug can render correctly in the card while being broken in the primitive. The three SVG
 charts have no specimen at all, by the same exception that gives them no manifest.
 
-**What proves the component is a demo page, and there is one per primitive that has earned
-it.** `<Component>.card.html` beside the component runs the real primitive in a real browser,
-which is where motion, focus rings and layout live, none of them observable in happy-dom.
+**What proves the component is a demo page, and there is one per primitive rather than one per
+primitive that earned it.** `<Component>.demo.generated.html` beside the component runs the real
+primitive in a real browser, which is where motion, focus rings and layout live, none of them
+observable in happy-dom. It is generated from the component's API contract and its
+`frameworks/demos/` fixture into this layer and into every other, so the page for a component
+differs from another layer's by one path segment and takes the same query string. That is what
+makes a difference between two pages a difference in the component.
 `bun run demos` builds the pages and serves them; the build is `bun run build:angular-demo`,
 two steps because neither tool does the other's job: `ngc -p tsconfig.demo.json` compiles the
 templates AOT, and `Bun.build` bundles that output for a browser, one shared Angular chunk
@@ -265,8 +269,9 @@ compiled and its injectables need the JIT fallback; without it the page throws b
 The bundle is git-ignored build output, which is why **no Angular page declares `@dsCard`**: on
 a fresh clone the page renders blank, and `check:cards` would pass it for having nothing to
 overflow. `check:angular-demos` is the portable gate instead: it needs no browser and no
-bundler, and its `PAGED` set is the coverage record, so a page that exists undeclared and a
-declared page that is missing both fail. Coverage is partial and grows one component at a time.
+bundler, and it holds the three lines without which a page mounts nothing and says nothing. It
+carries **no coverage list**, because the inventory is the component tree: every component has
+a page, so a page cannot go missing and a list cannot go stale.
 
 **`check:angular-demos` is structural only**, and the distinction is what the pages are for: it
 proves a page exists, loads its own bundle and mounts a zoneless app, never that what it renders

@@ -33,5 +33,5 @@ style choice, a tabpanel may not sit inside a tablist, so the two cannot be one 
 
 **By hand, in real Chromium**: checked from the parent's page, since a tab alone renders nothing
 useful. Run `bun run demos` and open
-`/frameworks/angular/components/navigation/tabs/Tabs.card.html`, then walk the checklist in
+`/frameworks/angular/components/navigation/tabs/Tabs.demo.generated.html`, then walk the checklist in
 `Tabs.prompt.md`.

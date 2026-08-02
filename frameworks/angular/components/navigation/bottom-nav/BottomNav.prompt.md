@@ -43,7 +43,7 @@ share a page and each needs its own name.
   has a sidebar's room.
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/navigation/bottom-nav/BottomNav.card.html` at 390px:
+`/frameworks/angular/components/navigation/bottom-nav/BottomNav.demo.generated.html` at 390px:
 - Primary click, ctrl+click, middle click and Enter on the same destination: the first and the last
   report once and navigate once, the other two open a tab and report nothing.
 - The active destination's glyph is filled and its label takes the primary ink; the others do not.

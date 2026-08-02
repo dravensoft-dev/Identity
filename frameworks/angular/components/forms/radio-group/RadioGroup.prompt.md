@@ -38,7 +38,7 @@ than a silently inert control.
 
 **By hand, in real Chromium**: the platform behaviour above is exactly what happy-dom cannot show,
 so this is the only place it is checked at all. Run `bun run demos` and open
-`/frameworks/angular/components/forms/radio-group/RadioGroup.card.html`:
+`/frameworks/angular/components/forms/radio-group/RadioGroup.demo.generated.html`:
 - Tab into the group **once**: focus lands on the checked option, and Tab again leaves the group
   entirely rather than walking the other options.
 - Arrow Down/Right and Up/Left move the selection and wrap at both ends.

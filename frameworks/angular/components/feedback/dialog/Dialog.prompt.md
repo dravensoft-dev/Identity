@@ -58,7 +58,7 @@ third path is yours, a button in `[footer]` wired to the same handler, and it ad
 navigation, which Arena does not implement and happy-dom does not have, so a suite asserting it
 would pass identically against a perfect trap and against none. The boundary wrap is Arena's own
 `.focus()` call and is asserted for real; the rest is this list. Run `bun run demos` and open
-`/frameworks/angular/components/feedback/dialog/Dialog.card.html`:
+`/frameworks/angular/components/feedback/dialog/Dialog.demo.generated.html`:
 
 1. **Tab to "Promote build" and press Enter.** Focus lands on **Cancel**, the first focusable
    inside the panel, not on the trigger.

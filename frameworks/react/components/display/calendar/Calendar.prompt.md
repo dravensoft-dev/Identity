@@ -60,7 +60,7 @@ chip has a kebab. A chip without actions has a content box of its share less 18p
 has its share less 46px, because the kebab's 34px reserve comes out too. So the kebab-safe
 threshold is 124.02px where the plain one is 96.02px, and `--calendar-time-min-w` is set at the
 plain one. **In a band of roughly a 768px to an 800px container, in week view, a chip that has
-actions can still wrap its time label onto two lines**, measured on `Calendar.card.html` by
+actions can still wrap its time label onto two lines**, measured on `Calendar.demo.generated.html` by
 driving the viewport and reading the container beneath it, which is the viewport less the card's
 24px body padding a side, and `--bp-md` is compared against the *container*. At an 812px container
 the label fits on one line. Both alternatives are worse: the kebab-safe threshold suppresses the

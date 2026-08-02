@@ -49,7 +49,7 @@ activate and disable.
   because the default action is untouched and only propagation is.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/forms/icon-button/IconButton.card.html`:
+open `/frameworks/angular/components/forms/icon-button/IconButton.demo.generated.html`:
 - The focus ring is visible on keyboard focus for both variants, including `ghost`, whose
   background is transparent.
 - Without `showLabel` the control is square at every size, and the glyph is optically centred

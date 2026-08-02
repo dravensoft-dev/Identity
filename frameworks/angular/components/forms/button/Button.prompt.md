@@ -44,7 +44,7 @@ already knows how to focus, activate and disable.
   default action is untouched, only propagation is.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/forms/button/Button.card.html`:
+open `/frameworks/angular/components/forms/button/Button.demo.generated.html`:
 - With `loading` set, the spinner turns; with `prefers-reduced-motion: reduce` forced in
   DevTools' Rendering pane, it keeps turning and only slows.
 - `active:scale-98` gives a real press response, and the focus ring is visible on keyboard

@@ -57,7 +57,7 @@ render, the card is a plain surface.
   one of them; a card on a card reads as a mistake rather than as depth.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
-`frameworks/angular/components/display/card/Card.card.html`):
+`frameworks/angular/components/display/card/Card.demo.generated.html`):
 - An interactive card takes the hover surface, and one Tab reaches it and shows the focus ring.
   Enter and Space both open it, and Space does not scroll the page underneath.
 - The disabled card is still reached by Tab and still announces itself, and neither key nor

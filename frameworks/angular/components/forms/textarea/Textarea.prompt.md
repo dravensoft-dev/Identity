@@ -53,7 +53,7 @@ a real `<textarea>`, named by a real `<label for>`.
 **By hand, in real Chromium**: none of these is provable in happy-dom, and the first one cannot
 be: happy-dom has no layout, so `scrollHeight` is `0` and a growing box and a broken one look
 identical to any suite. Run `bun run demos` and open
-`/frameworks/angular/components/forms/textarea/Textarea.card.html`:
+`/frameworks/angular/components/forms/textarea/Textarea.demo.generated.html`:
 - **`autoResize`**: the box grows line by line as you type and shrinks again when you delete, with
   no scrollbar ever appearing. The one seeded with a long value is already tall on load; that is
   the `afterRenderEffect` at work: the box is sized before the first paint, not on first keystroke.

@@ -73,7 +73,7 @@ readonly active = computed(() => DESTINATIONS.find((d) => this.url().startsWith(
 ```
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/navigation/side-nav/SideNav.card.html`:
+`/frameworks/angular/components/navigation/side-nav/SideNav.demo.generated.html`:
 - Each level steps in by exactly one `--sp-1 * indentStep`, and a row's icon stays aligned with its
   siblings' rather than with its parent's.
 - Switching the active destination moves the ink and the weight, and opens the group holding it.

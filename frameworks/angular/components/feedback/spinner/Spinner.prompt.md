@@ -34,7 +34,7 @@ button, on a crimson banner, where the accent ink would disappear into its own b
   state `arena-error-state` is for.
 
 **By hand, in real Chromium**: the rotation is an animation and happy-dom has none. Run
-`bun run demos` and open `/frameworks/angular/components/feedback/spinner/Spinner.card.html`:
+`bun run demos` and open `/frameworks/angular/components/feedback/spinner/Spinner.demo.generated.html`:
 - The ring rotates continuously on `--loop-spin`, and **slows** to `--loop-reduced` under
   `prefers-reduced-motion` rather than stopping, motion reporting work in progress keeps
   reporting it.

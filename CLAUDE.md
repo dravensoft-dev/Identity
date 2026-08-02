@@ -622,8 +622,8 @@ harness plus the suites belonging to no one component under `test/`.
 and standalone `OnPush` primitives styled by the shared `frameworks/tailwind/` recipes through
 the configured `tv`. Count the components with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
-behaviour only a browser can show also has a `<Component>.card.html` demo beside it, and those
-pages carry **no** `@dsCard`. [`frameworks/angular/README.md`](./frameworks/angular/README.md)
+behaviour only a browser can show is opened through its generated `<Component>.demo.generated.html`,
+and those pages carry **no** `@dsCard`. [`frameworks/angular/README.md`](./frameworks/angular/README.md)
 says why, and names what sits at the layer root.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component

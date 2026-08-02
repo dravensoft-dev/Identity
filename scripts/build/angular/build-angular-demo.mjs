@@ -16,7 +16,7 @@ const JS_DIR = join(OUT_DIR, 'js');
 const SRC_ROOT = join(repoRoot, 'frameworks');
 const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
-export const ENTRY_SUFFIXES = ['.card.entry.js', '.demo.entry.generated.js'];
+export const ENTRY_SUFFIXES = ['.demo.entry.generated.js'];
 
 export const isEntry = (name, ext = '.js') => ENTRY_SUFFIXES.some((s) => name.endsWith(s.replace('.js', ext)));
 

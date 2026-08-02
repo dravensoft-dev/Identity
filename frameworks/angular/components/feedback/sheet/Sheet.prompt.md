@@ -50,7 +50,7 @@ a panel that swallowed Escape from across the page would break a dialog open som
   is the whole point of a non-modal panel and the whole reason a confirmation is not one.
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/feedback/sheet/Sheet.card.html`:
+`/frameworks/angular/components/feedback/sheet/Sheet.demo.generated.html`:
 - The page behind the panel still scrolls and its buttons still take a click, at every placement.
 - Folding leaves the header and the footer in place and moves nothing else; the caret turns with it.
 - A `Menu` opened from inside the panel paints over the panel, and the panel paints over a fixed

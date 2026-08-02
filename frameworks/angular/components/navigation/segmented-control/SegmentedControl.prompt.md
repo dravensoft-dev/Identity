@@ -48,7 +48,7 @@ asserts the role by name rather than by pattern so that a regression reads as wh
 
 **By hand, in real Chromium**: the platform behaviour above is what happy-dom cannot show. Run
 `bun run demos` and open
-`/frameworks/angular/components/navigation/segmented-control/SegmentedControl.card.html`:
+`/frameworks/angular/components/navigation/segmented-control/SegmentedControl.demo.generated.html`:
 - Tab into the track **once**: the ring appears around the whole track, not around a segment, and
   Tab again leaves it rather than walking the segments.
 - Arrow keys move the selection along the track and wrap at both ends.

@@ -34,7 +34,7 @@ derived from it at the point of use. Both layers read the same token.
 - Don't hide the arrows at the ends. They are disabled there, which keeps the strip's width
   from changing as a consumer pages through it.
 
-**By hand, in real Chromium**: `frameworks/angular/components/navigation/pagination/Pagination.card.html`,
+**By hand, in real Chromium**: `frameworks/angular/components/navigation/pagination/Pagination.demo.generated.html`,
 served with `bun run demos`:
 - Walk the 20-page strip to the middle and watch the window elide on **both** sides, then to
   each end and watch it elide on one side only.

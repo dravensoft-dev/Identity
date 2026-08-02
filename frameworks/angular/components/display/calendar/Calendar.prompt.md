@@ -51,7 +51,7 @@ The boolean is not ceremony. What a component draws may never be derived from wh
 
 happy-dom does no layout, so the geometry below is checked in a real browser and
 nowhere else. `bun run build:angular-demo && bun run demos`, then open
-`frameworks/angular/components/display/calendar/Calendar.card.html`:
+`frameworks/angular/components/display/calendar/Calendar.demo.generated.html`:
 
 1. Tab reaches the schedule ONCE, and one more Tab leaves it. No chip and no
    kebab is a stop of its own. An OPEN panel is the exception and is meant to be.

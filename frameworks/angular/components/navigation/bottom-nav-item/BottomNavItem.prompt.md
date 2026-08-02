@@ -34,7 +34,7 @@ attribute, so a reader still hears that it exists.
   provider and Angular throws rather than rendering a destination that can never be current.
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/navigation/bottom-nav/BottomNav.card.html` at 390px:
+`/frameworks/angular/components/navigation/bottom-nav/BottomNav.demo.generated.html` at 390px:
 - A destination with a badge of 0 shows none, one of 4821 shows `99+`, and neither widens its column.
 - Tab reaches every destination once, in source order, and the disabled one announces itself as
   disabled rather than being skipped.

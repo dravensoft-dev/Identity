@@ -47,7 +47,7 @@ it from a `close` listener.
 
 **By hand, in real Chromium**: the announcement is a screen reader's, not a browser's, so what
 this page shows is the rest. Run `bun run demos` and open
-`/frameworks/angular/components/feedback/toast/Toast.card.html`:
+`/frameworks/angular/components/feedback/toast/Toast.demo.generated.html`:
 - Each tone's left bar takes its own colour and the card surface never does; danger is
   **outline**, never a filled red panel.
 - A danger toast shows `Pinned` even when the host passed `persist="false"`, and the demo's
