@@ -37,7 +37,7 @@ test('a shared entry naming a file matches that file and not a directory it pref
 
 test('a path outside every input routes nowhere', () => {
   assert.deepEqual(
-    layersChanged(['README.md', 'CHANGELOG.md', 'intro/guidelines/type.html', 'docs/superpowers/specs/x.md']),
+    layersChanged(['README.md', 'DOUBTS.md', 'intro/guidelines/type.html', 'docs/superpowers/specs/x.md']),
     { react: false, angular: false, tailwind: false },
   );
 });

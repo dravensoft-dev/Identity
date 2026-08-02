@@ -37,15 +37,19 @@ if (!check('marketplace entry', !!entry, entry ? `"${plugin.name}" found` : `no 
 
 check('marketplace version', entry.version === version, `${entry.version ?? '(unset)'} — plugin.json says ${version}`);
 
-const readme = read('README.md').match(/^#\s+.*\bv(\d+\.\d+\.\d+)\s*$/m);
-check('README header', readme?.[1] === version, readme ? `${readme[1]}` : 'no "# … vX.Y.Z" title found');
+const readme = read('README.md');
+const artifact = (label) => readme.match(new RegExp(`^-\\s+\\*\\*${label}\\*\\*:\\s*(\\S+)`, 'm'))?.[1];
 
-const headings = [...read('CHANGELOG.md').matchAll(/^## \[([^\]]+)\]/gm)].map((m) => m[1]);
-const released = headings.find((h) => h.toLowerCase() !== 'unreleased');
-check('CHANGELOG top entry', released === version,
-  released
-    ? `[${released}]${headings[0] !== released ? ` — [${headings[0]}] sits above it, which is fine` : ''}`
-    : 'no "## [X.Y.Z]" entry found');
+for (const label of ['Repo', 'Claude Code plugin']) {
+  const found = artifact(label);
+  check(`README ${label}`, found === version, found ?? `no "- **${label}**: X.Y.Z" line found`);
+}
+
+for (const label of ['npm package - React', 'npm package - Angular']) {
+  check(`README ${label}`, true,
+    `${artifact(label) ?? '(unset)'} — a package keeps its version until something it carries moves, so this one trails ${version} whenever a release left its layer alone`,
+    false);
+}
 
 const source = entry.source;
 const pinned = source && typeof source === 'object';
@@ -60,7 +64,7 @@ if (pinned) {
 const commit = git('rev-list', '-n1', tag);
 if (check('tag exists', !!commit, commit ? `${tag} -> ${commit.slice(0, 7)}` : `${tag} not found — the release commit is not tagged yet`)) {
   const type = git('cat-file', '-t', git('rev-parse', tag) ?? '');
-  check('tag is annotated', type === 'tag', `${type ?? 'unknown'} — v1.0.0 set the convention: git tag -a ${tag} -m "Arena ${tag}"`, false);
+  check('tag is annotated', type === 'tag', `${type ?? 'unknown'}; the convention is annotated: git tag -a ${tag} -m "Arena ${tag}"`, false);
 
   const atTag = git('show', `${tag}:.claude-plugin/plugin.json`);
   if (check('plugin.json at the tag', !!atTag, atTag ? '' : `cannot read .claude-plugin/plugin.json at ${tag}`)) {

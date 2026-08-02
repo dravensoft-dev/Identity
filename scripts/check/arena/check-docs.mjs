@@ -16,11 +16,9 @@ export const HEADER_MAX_LINES = 10;
 export const QUOTED_RUN_CHARS = 90;
 
 export const EXPLANATORY_BY_CHARTER = 'DOUBTS.md';
-export const HISTORICAL_BY_CHARTER = 'CHANGELOG.md';
 export const DATED_PROCESS_DOCUMENTS = join('docs', '');
 export const SIZE_EXEMPT = [
   EXPLANATORY_BY_CHARTER,
-  HISTORICAL_BY_CHARTER,
   DATED_PROCESS_DOCUMENTS,
 ];
 

@@ -113,7 +113,7 @@ let ok = true;
 for (const { token, use } of REMOVED) {
   if (resolvePercent(token) === null) continue;
   ok = false;
-  console.log(`\n[FAIL] --${token} is declared in contracts/design/colors.css. It was removed in 2.0.0 — use ${use}.`);
+  console.log(`\n[FAIL] --${token} is declared in contracts/design/colors.css. It is not a token Arena has; use ${use}.`);
 }
 for (const t of THEMES) {
   const body = block(palette, t.selector, 'palette.generated.css');

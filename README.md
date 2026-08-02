@@ -1,8 +1,14 @@
-# Arena, the Dravensoft Design System, v5.1.0
+# Arena, the Dravensoft Design System
 
-MIT License · Token-driven design system for React, Angular and Tailwind. See [`CHANGELOG.md`](./CHANGELOG.md).
+MIT License · Token-driven design system for React, Angular and Tailwind.
 
 **Arena** is the single interface language under which every Dravensoft software product is built.
+
+## Latest project artifacts
+- **Repo**: 5.1.0 
+- **Claude Code plugin**: 5.1.0
+- **npm package - React**: 5.1.0
+- **npm package - Angular**: 5.1.0
 
 ## Getting started
 Arena ships three ways: as a **Claude Code plugin**, as two **npm packages**, and as a downloadable **Agent Skill** (`SKILL.md`).

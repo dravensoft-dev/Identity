@@ -55,15 +55,15 @@ test('both document rules report how many documents they actually read', () => {
   rmSync(root, { recursive: true });
 });
 
-test('DOUBTS.md, CHANGELOG.md and docs/ are exempt from the size limit', () => {
+test('DOUBTS.md and docs/ are exempt from the size limit, and nothing else is', () => {
   const over = 'x'.repeat(MAX_DOCUMENT_CHARS + 1);
   const root = tree({
     'DOUBTS.md': over,
-    'CHANGELOG.md': over,
     'docs/superpowers/specs/a.md': over,
+    'README.md': over,
   });
-  assert.deepEqual(documentSizeProblems(root).problems, []);
-  assert.deepEqual(SIZE_EXEMPT, ['DOUBTS.md', 'CHANGELOG.md', join('docs', '')]);
+  assert.deepEqual(documentSizeProblems(root).problems.map((p) => p.split(':')[0]), ['README.md']);
+  assert.deepEqual(SIZE_EXEMPT, ['DOUBTS.md', join('docs', '')]);
   rmSync(root, { recursive: true });
 });
 
@@ -101,12 +101,12 @@ test('docs/ is exempt from the punctuation rule and DOUBTS.md is not', () => {
   const root = tree({
     'docs/superpowers/plans/a.md': 'a — b\n',
     'DOUBTS.md': 'a — b\n',
-    'CHANGELOG.md': 'a — b\n',
+    'README.md': 'a — b\n',
   });
   const { problems } = punctuationProblems(root);
   assert.equal(problems.length, 2);
   assert.ok(problems.some((p) => p.startsWith('DOUBTS.md')));
-  assert.ok(problems.some((p) => p.startsWith('CHANGELOG.md')));
+  assert.ok(problems.some((p) => p.startsWith('README.md')));
   rmSync(root, { recursive: true });
 });
 
