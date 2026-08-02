@@ -233,8 +233,9 @@ test('a chip is border-box, so the injected edges are its outer edges', () => {
   const html = render({});
   assert.match(html, /\bbox-border\b/,
     'the chip is still content-box -- its padding and border are added past the edges Calendar injected, and a full-width chip overruns its day column');
-  assert.match(html, /right:0%/,
-    'the chip is placed by width again, which a margin shifts without shrinking');
+  assert.match(html, /left:0%;right:8[36]\.[0-9]+%/,
+    'the chip is placed by width again, or its share stopped being of the whole grid: a chip is not '
+    + 'a DOM child of its day, so its edges are percentages of every day track, not of one');
 });
 
 test('the chip height floor clears the title line once the height is an outer height', () => {

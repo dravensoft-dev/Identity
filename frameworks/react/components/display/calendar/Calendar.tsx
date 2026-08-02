@@ -132,6 +132,13 @@ export function Calendar({
   const activateDay = (iso: string) =>
     (dayInteractive ? () => { onDateClick && onDateClick(iso); } : undefined);
 
+  const idBase = React.useId().replace(/:/g, '');
+  const chips = useMemo(
+    () => byDay.flatMap((day, di) => day.map((p, i) => ({ p, di, domId: `${idBase}-chip-${di}-${i}` }))),
+    [byDay, idBase],
+  );
+  const ownedIds = (di: number) => chips.filter((c) => c.di === di).map((c) => c.domId).join(' ');
+
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   const eventRefs = useRef(new Map<string, HTMLElement>());
@@ -262,12 +269,9 @@ export function Calendar({
             {days.map((d, di) => (
               <div key={d} role="row"
                 aria-label={formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
+                aria-owns={ownedIds(di) || undefined}
                 onClick={activateDay(d)}
                 className={calendarStyles({ firstColumn: di === 0, dayInteractive }).column()}>
-
-                {
-
-}
                 {slots.map((s, si) => {
                   const isCursor = di === curDay && si === curHour;
                   return (
@@ -281,39 +285,36 @@ export function Calendar({
                           ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined }} />
                   );
                 })}
-
-                {
-
-}
-                {(byDay[di] ?? []).map((p) => {
-                  const color = catColor(p.ev.colorId ?? 1);
-                  const top = y(p.startMin);
-                  const rawH = y(p.endMin) - top;
-
-                  const h = `max(calc(var(--sp-1) * 6.5), ${rawH}px)`;
-                  const element = elementOf.get(p.ev);
-                  if (!element) return null;
-                  return React.cloneElement(element, {
-                    ref: (node: HTMLElement | null) => {
-                      const id = p.ev.id;
-                      if (id === undefined) return;
-                      if (node) eventRefs.current.set(id, node);
-                      else eventRefs.current.delete(id);
-                    },
-
-                    tabIndex: -1,
-                    box: { top, height: h,
-                      left: `${(p.col / p.cols) * 100}%`,
-                      right: `${100 - ((p.col + 1) / p.cols) * 100}%` },
-                    color,
-                    timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
-                    dateLabel: formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }),
-                    showTime: showsTime(rawH, slotFor(p.cols)),
-                    actionsBelow: stacksActions(rawH, slotFor(p.cols)),
-                  });
-                })}
               </div>
             ))}
+
+            {chips.map(({ p, di, domId }) => {
+              const top = y(p.startMin);
+              const rawH = y(p.endMin) - top;
+              const element = elementOf.get(p.ev);
+              if (!element) return null;
+              const leftShare = ((di + p.col / p.cols) / days.length) * 100;
+              const widthShare = (1 / (p.cols * days.length)) * 100;
+              return React.cloneElement(element, {
+                ref: (node: HTMLElement | null) => {
+                  const id = p.ev.id;
+                  if (id === undefined) return;
+                  if (node) eventRefs.current.set(id, node);
+                  else eventRefs.current.delete(id);
+                },
+
+                domId,
+                tabIndex: -1,
+                box: { top, height: `max(calc(var(--sp-1) * 6.5), ${rawH}px)`,
+                  left: `${leftShare}%`,
+                  right: `${100 - leftShare - widthShare}%` },
+                color: catColor(p.ev.colorId ?? 1),
+                timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
+                dateLabel: formatDate(days[di] ?? '', { weekday: 'long', day: 'numeric', month: 'long' }),
+                showTime: showsTime(rawH, slotFor(p.cols)),
+                actionsBelow: stacksActions(rawH, slotFor(p.cols)),
+              });
+            })}
 
             {showNow && (
               <div aria-hidden="true" className={styles.now()} style={{ top: y(nowMin) }}>

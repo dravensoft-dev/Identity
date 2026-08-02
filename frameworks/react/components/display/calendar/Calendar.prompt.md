@@ -68,12 +68,12 @@ label on every ordinary chip through that band and well past it, and a kebab-awa
 `CalendarEvent`'s 34px reserve back inside `Calendar`, laundered through a second token but still
 a number that silently goes wrong if the reserve changes.
 
-**A chip is a DOM child of its day's `role="row"` here**, distributed with `cloneElement`, so
-its `left`/`width` are percentages of its own column. The `grid` pattern constrains the
-accessibility tree and not the DOM, so a layer that cannot distribute children may put every chip
-in the grid and have each column claim its own through `aria-owns` and meet the same pattern,
-which is worth knowing before assuming this component's DOM shape is the contracted one. Two
-things follow from the shape here: `flex: 1` columns may differ by one border width without
-consequence, because a chip's percentages are of its own column; and anything projected that is
-not a chip is silently skipped by the placement lookup. **No gate sees either**: `check:dimensions` is blind to `[style.x]` and
-the grid suite asserts the keyboard rather than the geometry.
+**A chip is NOT a DOM child of its day's `role="row"`**: every chip is a child of the grid, and
+each day claims its own through `aria-owns`. The `grid` pattern constrains the accessibility tree
+and not the DOM, which is what makes that legitimate, and it is the only shape available to a
+layer that cannot distribute projected children into a per-day loop, so both layers use it and a
+difference between them stops being a difference in the DOM. Two things follow. A chip's
+`left`/`right` are percentages of **every** day track rather than of one, so the day tracks must
+be equal for a chip to land on its own day. And a click on a chip does not reach its day, so it
+reports no date: activate the day from its header or its background. Anything projected that is
+not a chip is still silently skipped by the placement lookup.

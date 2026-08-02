@@ -41,6 +41,7 @@ export interface CalendarEventProps {
 
 export interface CalendarEventInjected {
   box: React.CSSProperties;
+  domId: string;
   color: string;
   timeLabel: string;
   dateLabel: string;
@@ -57,7 +58,7 @@ HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
 >(function CalendarEvent({
   id, title, start, end, colorId, onClick, interactive = false, disabled = false,
   actionsEnabled = false, actions,
-  box, color, timeLabel, dateLabel, showTime, actionsBelow, tabIndex, defaultPanelOpen,
+  box, domId, color, timeLabel, dateLabel, showTime, actionsBelow, tabIndex, defaultPanelOpen,
 }, ref) {
 
   if (!id) throw new Error('CalendarEvent: `id` is required');
@@ -142,6 +143,7 @@ HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
           e.preventDefault(); e.stopPropagation(); focusableRef.current.focus();
         }
       } : undefined}
+      id={domId}
       className={styles.chip()}
       style={{ ...box,
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
