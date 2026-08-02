@@ -1,6 +1,8 @@
 import type { CalendarEventProps, CalendarEventInjected } from '../calendar-event/CalendarEvent.tsx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Calendar.manifest.generated.ts';
 import { catColor } from '../../../DataVisuals.ts';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 
@@ -52,7 +54,9 @@ import {
   placeEvents, rangeTitle, showsTime, stacksActions, startOfWeek, todayIso, weekdayOf, formatDate,
 } from './CalendarInternals.ts';
 
-const GUTTER = 'var(--calendar-gutter-w)';
+const TRACKS = (n: number) => `repeat(${n}, minmax(0, 1fr))`;
+
+const calendarStyles = tv(manifest);
 
 export function Calendar({
   children, timeZone, anchorDate, view,
@@ -187,35 +191,31 @@ export function Calendar({
     }
   };
 
-  const label: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)' };
+  const styles = calendarStyles({ dayInteractive });
   const navBtn = (dir: number) => (
     <button type="button" aria-label={dir < 0 ? 'Previous' : 'Next'}
       onClick={() => goto(addDays(anchor, dir * step))}
-      style={{ height: 'calc(var(--sp-1) * 8.5)', minWidth: 'calc(var(--sp-1) * 8.5)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        background: 'transparent', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
-        color: 'var(--bone-dim)', cursor: 'pointer', fontSize: 'var(--icon-md)' }}>
-      <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} />
+      className={styles.nav()}>
+      <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} aria-hidden="true" />
     </button>
   );
 
   return (
     <section ref={ref} aria-label={`Schedule, ${rangeTitle(days)}`}
-      style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'var(--font-body)' }}>
+      className={styles.root()}>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', marginBottom: 'calc(var(--sp-1) * 3)', flexWrap: 'wrap' }}>
+      <div className={styles.toolbar()}>
         {navBtn(-1)}
         <button type="button" onClick={() => goto(today)}
-          style={{ height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 3)', background: 'transparent', border: 'var(--bw) solid var(--color-base-300)',
-            borderRadius: 'var(--r-sm)', color: 'var(--bone-dim)', cursor: 'pointer',
-            fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', fontWeight: 'var(--fw-semibold)' }}>Today</button>
+          className={styles.today()}>Today</button>
         {navBtn(1)}
-        <h2 style={{ margin: '0 0 0 calc(var(--sp-1) * 1)', fontSize: 'var(--fs-md)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)' }}>
+        <h2 className={styles.heading()}>
           {rangeTitle(days)}
         </h2>
-        {actions && <div style={{ marginLeft: 'auto', display: 'flex', gap: 'calc(var(--sp-1) * 2)', flexWrap: 'wrap' }}>{actions}</div>}
+        {actions && <div className={styles.actions()}>{actions}</div>}
       </div>
 
-      <div style={{ display: 'flex', paddingLeft: GUTTER, borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
+      <div className={styles.headStrip()} style={{ gridTemplateColumns: TRACKS(days.length) }}>
         {days.map((d) => {
           const isToday = d === today;
           const DayHead = dayInteractive ? 'button' : 'div';
@@ -223,12 +223,9 @@ export function Calendar({
             <DayHead key={d} onClick={activateDay(d)}
               type={dayInteractive ? 'button' : undefined}
               aria-label={dayInteractive ? formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }) : undefined}
-              style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0', textAlign: 'center',
-                background: 'transparent', border: 'none', font: 'inherit',
-                cursor: dayInteractive ? 'pointer' : 'default' }}>
-              <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-bold)', marginTop: 'calc(var(--sp-1) * 0.5)',
-                color: isToday ? 'var(--crimson)' : 'var(--bone-dim)' }}>
+              className={styles.dayHead()}>
+              <div className={styles.weekday()}>{formatDate(d, { weekday: 'short' })}</div>
+              <div className={calendarStyles({ today: isToday }).dayNumber()}>
                 {formatDate(d, { day: 'numeric' })}
               </div>
             </DayHead>
@@ -239,12 +236,12 @@ export function Calendar({
       {
 
 }
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 'calc(var(--sp-1) * 2)', paddingBottom: 'calc(var(--sp-1) * 2)' }}>
-        <div style={{ display: 'flex', position: 'relative', height: y(endMin) }}>
+      <div className={styles.scroll()}>
+        <div className={styles.body()} style={{ height: y(endMin) }}>
 
-          <div style={{ width: GUTTER, flexShrink: 0, position: 'relative' }}>
+          <div className={styles.gutter()}>
             {hours.map((m) => (
-              <div key={m} style={{ ...label, position: 'absolute', top: `calc(${y(m)}px - var(--sp-1))`, right: 'calc(var(--sp-1) * 2)', letterSpacing: 'var(--ls-uppercase-status)' }}>
+              <div key={m} className={styles.hourLabel()} style={{ top: y(m) }}>
                 {formatHM(m)}
               </div>
             ))}
@@ -257,19 +254,16 @@ export function Calendar({
             onKeyDown={onGridKeyDown}
             onFocus={() => setGridFocused(true)}
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
-            style={{ flex: 1, minWidth: 0, display: 'flex', position: 'relative' }}>
+            className={styles.grid()} style={{ gridTemplateColumns: TRACKS(days.length) }}>
             {hours.map((m) => (
-              <div key={m} aria-hidden="true" style={{ position: 'absolute', top: y(m), left: 0, right: 0,
-                borderTop: 'var(--bw) solid var(--color-base-300)', pointerEvents: 'none' }} />
+              <div key={m} aria-hidden="true" className={styles.rule()} style={{ top: y(m) }} />
             ))}
 
             {days.map((d, di) => (
               <div key={d} role="row"
                 aria-label={formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
                 onClick={activateDay(d)}
-                style={{ flex: 1, minWidth: 0, position: 'relative',
-                  borderLeft: di === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
-                  cursor: dayInteractive ? 'pointer' : 'default' }}>
+                className={calendarStyles({ firstColumn: di === 0, dayInteractive }).column()}>
 
                 {
 
@@ -281,8 +275,8 @@ export function Calendar({
                       tabIndex={isCursor ? 0 : -1}
 
                       onFocus={() => { if (di !== curDay || si !== curHour) setCursor({ day: di, hour: si }); }}
-                      style={{ position: 'absolute', top: y(s.start), left: 0, right: 0,
-                        height: y(s.end) - y(s.start), outline: 'none',
+                      className={styles.cell()}
+                      style={{ top: y(s.start), height: y(s.end) - y(s.start),
                         boxShadow: isCursor && gridFocused
                           ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined }} />
                   );
@@ -309,8 +303,8 @@ export function Calendar({
 
                     tabIndex: -1,
                     box: { top, height: h,
-                      left: `calc(${(p.col / p.cols) * 100}% + calc(var(--sp-1) * 0.5))`,
-                      width: `calc(${(1 / p.cols) * 100}% - var(--sp-1))` },
+                      left: `${(p.col / p.cols) * 100}%`,
+                      right: `${100 - ((p.col + 1) / p.cols) * 100}%` },
                     color,
                     timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
                     dateLabel: formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }),
@@ -322,10 +316,8 @@ export function Calendar({
             ))}
 
             {showNow && (
-              <div aria-hidden="true" style={{ position: 'absolute', top: y(nowMin), left: 0, right: 0,
-                borderTop: 'var(--bw-strong) solid var(--crimson)', pointerEvents: 'none', zIndex: 1 }}>
-                <span style={{ position: 'absolute', top: 'calc(var(--sp-1) * -1)', left: 'calc(var(--sp-1) * -1)', width: 'calc(var(--sp-1) * 1.5)', height: 'calc(var(--sp-1) * 1.5)',
-                  borderRadius: '50%', background: 'var(--crimson)' }} />
+              <div aria-hidden="true" className={styles.now()} style={{ top: y(nowMin) }}>
+                <span className={styles.nowDot()} />
               </div>
             )}
           </div>

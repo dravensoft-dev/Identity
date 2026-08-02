@@ -25,9 +25,18 @@ const AUTHORED_TWICE = 'React authors this component\'s appearance as inline sty
   + 'renders the shared manifest, so the two copies are only equal by hand and have drifted. It goes when '
   + 'the component renders the manifest.';
 
+const CHIP_PLACEMENT = 'around 985 pixels, all of them inside one event chip, and what is left is '
+  + 'structural rather than styling: React hangs each chip inside its day COLUMN and derives its left '
+  + 'and right from that column, while the other layer hangs every chip off the GRID, owns it back into '
+  + 'the row with aria-owns, and derives the same edges from the whole width. The column carries a 1px '
+  + 'left border, so the chip lands 1px later and 1px narrower, and the width each layer believes it has '
+  + 'is what showsTime() reads, so one draws the time label and the other does not. It goes when React '
+  + 'places chips the way the other layer does, which moves the row\'s accessible structure and is a '
+  + 'change with a behaviour contract to answer, not a class string.';
+
 export const DIVERGENT = new Map([
-  ['Calendar', `3331 pixels across the grid. ${AUTHORED_TWICE}`],
-  ['CalendarEvent', `3294 pixels across the grid it is drawn into. ${AUTHORED_TWICE}`],
+  ['Calendar', CHIP_PLACEMENT],
+  ['CalendarEvent', CHIP_PLACEMENT],
 ]);
 
 export function pairPages(pages = pagePaths()) {
