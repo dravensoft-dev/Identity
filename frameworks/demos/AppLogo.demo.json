@@ -1,0 +1,19 @@
+{
+  "component": "AppLogo",
+  "seed": {
+    "name": "Delivery Console",
+    "dim": "Dravensoft"
+  },
+  "slots": {
+    "mark": [
+      {
+        "element": "img",
+        "attrs": {
+          "src": "../../../../../assets/rotor-crimson.svg",
+          "alt": ""
+        }
+      }
+    ]
+  },
+  "note": "The lock-up is a mark the consumer supplies and a name Arena sets."
+}

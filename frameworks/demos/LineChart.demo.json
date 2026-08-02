@@ -1,0 +1,22 @@
+{
+  "component": "LineChart",
+  "seed": {
+    "labels": [
+      "Week 1",
+      "Week 2",
+      "Week 3",
+      "Week 4"
+    ],
+    "values": [
+      120,
+      148,
+      132,
+      176
+    ],
+    "seriesLabel": "Requests per minute",
+    "valueFormat": {
+      "grouping": true
+    }
+  },
+  "note": "One series, one axis."
+}

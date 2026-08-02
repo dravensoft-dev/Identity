@@ -1,0 +1,26 @@
+{
+  "component": "ToastHost",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "component": "Toast",
+        "members": {
+          "tone": "success",
+          "title": "Snapshot taken",
+          "message": "Restore points are kept for 30 days."
+        }
+      },
+      {
+        "component": "Toast",
+        "members": {
+          "tone": "gold",
+          "title": "Quota at 80%",
+          "message": "The region will start rejecting writes soon.",
+          "actionLabel": "Increase"
+        }
+      }
+    ]
+  },
+  "note": "The corner is the whole API: one host, four placements, and the stack grows in raise order."
+}

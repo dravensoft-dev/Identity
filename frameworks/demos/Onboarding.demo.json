@@ -1,0 +1,47 @@
+{
+  "component": "Onboarding",
+  "seed": {
+    "open": true,
+    "index": 0,
+    "steps": [
+      {
+        "eyebrow": "Step 1",
+        "title": "Pick a service",
+        "body": "Everything here is scoped to one service at a time."
+      },
+      {
+        "eyebrow": "Step 2",
+        "title": "Promote a build",
+        "body": "A promotion moves a build forward one environment."
+      },
+      {
+        "eyebrow": "Step 3",
+        "title": "Watch it land",
+        "body": "The activity feed records who did what, and when."
+      }
+    ],
+    "anchor": {
+      "left": 240,
+      "bottom": 180
+    }
+  },
+  "bind": {
+    "next": {
+      "index": {
+        "$delta": 1
+      }
+    },
+    "back": {
+      "index": {
+        "$delta": -1
+      }
+    },
+    "skip": {
+      "open": false
+    },
+    "done": {
+      "open": false
+    }
+  },
+  "note": "A coachmark with progress and a way out at every step."
+}

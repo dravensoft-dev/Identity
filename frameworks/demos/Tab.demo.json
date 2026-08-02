@@ -1,0 +1,40 @@
+{
+  "component": "Tab",
+  "seed": {
+    "value": "overview",
+    "label": "Overview"
+  },
+  "slots": {
+    "content": [
+      {
+        "text": "Build 4821 has been live in every region for two hours."
+      }
+    ]
+  },
+  "host": {
+    "component": "Tabs",
+    "members": {
+      "value": "overview"
+    },
+    "slots": {
+      "content": [
+        "$subject",
+        {
+          "component": "Tab",
+          "members": {
+            "value": "logs",
+            "label": "Logs"
+          },
+          "slots": {
+            "content": [
+              {
+                "text": "No entries in this window."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "note": "A tab owns its label and its panel; the group owns which one is shown."
+}

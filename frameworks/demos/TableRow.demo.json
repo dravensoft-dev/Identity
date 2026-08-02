@@ -1,0 +1,48 @@
+{
+  "component": "TableRow",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "component": "TableCell",
+        "slots": {
+          "content": [
+            {
+              "text": "checkout-api"
+            }
+          ]
+        }
+      },
+      {
+        "component": "TableCell",
+        "slots": {
+          "content": [
+            {
+              "text": "4f2a1c9"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "host": {
+    "component": "Table",
+    "members": {
+      "label": "Recent deployments",
+      "columns": [
+        {
+          "header": "Service"
+        },
+        {
+          "header": "Commit"
+        }
+      ]
+    },
+    "slots": {
+      "content": [
+        "$subject"
+      ]
+    }
+  },
+  "note": "With interactive the whole row becomes one activation target."
+}

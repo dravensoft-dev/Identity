@@ -10,6 +10,13 @@ export class UnrecognisedShape extends Error {
 
 const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
+export function bindingName(name, form, layer) {
+  if (layer !== 'react') return name;
+  if (form === 'slot') return name === 'content' ? 'children' : name;
+  if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
+  return name;
+}
+
 const isConsumerData = (ts) => ts.trim().replace(/\s+/g, ' ') === 'Record<string, unknown>';
 
 export const PLATFORM_TYPES = [

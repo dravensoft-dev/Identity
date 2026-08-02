@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
 import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
+  bindingName,
 } from '../../lib/arena/api-surface.mjs';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -25,12 +26,7 @@ export function zeroContractProblems({ contracts, types }) {
   return problems;
 }
 
-export function bindingName(name, form, layer) {
-  if (layer !== 'react') return name;
-  if (form === 'slot') return name === 'content' ? 'children' : name;
-  if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
-  return name;
-}
+export { bindingName };
 
 export function docProblems(contract, docs, layer) {
   const problems = [];

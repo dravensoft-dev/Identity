@@ -1,0 +1,17 @@
+{
+  "component": "Alert",
+  "seed": {
+    "tone": "warning",
+    "title": "Quota at 80%",
+    "actionLabel": "Increase",
+    "dismissible": true
+  },
+  "slots": {
+    "content": [
+      {
+        "text": "The region will start rejecting writes once the quota is reached."
+      }
+    ]
+  },
+  "note": "A persistent inline message. Danger is outline here, never filled."
+}

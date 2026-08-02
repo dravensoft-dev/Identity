@@ -36,7 +36,7 @@ are rules a new gate holds to:
   per-component probe silent.
 - **Make a zero-result count an explicit failure** rather than a vacuous pass. `check:tailwind`,
   `check:radius`, `check:structure`, `check:api`, `check:behaviour`, `check:dtcg`,
-  `check:icons`, `check:docs` and
+  `check:icons`, `check:docs`, `check:playgrounds` and
   `check:script-tokens` each carry one, as an exported pure function with a suite.
 - **A gate has two existences, the file and every place that invokes it, and only the second
   is worth anything.** Adding a gate means adding it to `package.json` **and** to `GATES`.
@@ -93,7 +93,7 @@ rather than a gate.
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 16 | two or more layers at once, or the repository root |
+| [`arena/`](./arena/README.md) | 17 | two or more layers at once, or the repository root |
 | [`tailwind/`](./tailwind/README.md) | 6 | the shared Tailwind layer |
 | [`angular/`](./angular/README.md) | 4 | the Angular layer |
 | [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |
@@ -105,7 +105,7 @@ rather than a gate.
 The domain is also what a narrowed run selects on. `check-all.mjs` takes `--domain=core,arena`
 and `--no-tests`, and `gatesFor()` refuses a name outside `DOMAINS` and a selection matching no
 gate, because a run of nothing reports nothing wrong with everything. CI is its only caller,
-and its four jobs partition this table: `core` takes `core/` and `arena/`, since the sixteen
+and its four jobs partition this table: `core` takes `core/` and `arena/`, since the seventeen
 cross-layer gates are questions no single layer can answer. That partition is asserted too, so
 a gate cannot join `GATES` and then run in no job.
 

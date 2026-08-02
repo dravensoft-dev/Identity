@@ -1,0 +1,32 @@
+{
+  "component": "Card",
+  "seed": {
+    "title": "checkout-api",
+    "eyebrow": "Delivery",
+    "href": "#checkout-api"
+  },
+  "slots": {
+    "content": [
+      {
+        "text": "Last published 2 h ago, build #4821."
+      }
+    ],
+    "action": [
+      {
+        "component": "Badge",
+        "members": {
+          "tone": "success",
+          "dot": true
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Live"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "note": "A surface. With interactive or href it becomes one activation target."
+}

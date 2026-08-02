@@ -1,0 +1,48 @@
+{
+  "component": "Grid",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "component": "Card",
+        "members": {
+          "title": "checkout-api"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build #4821"
+            }
+          ]
+        }
+      },
+      {
+        "component": "Card",
+        "members": {
+          "title": "billing-worker"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build #3190"
+            }
+          ]
+        }
+      },
+      {
+        "component": "Card",
+        "members": {
+          "title": "search-indexer"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build #2277"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "note": "The column count comes from the room, not from a breakpoint anyone picked."
+}
