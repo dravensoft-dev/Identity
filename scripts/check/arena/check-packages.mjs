@@ -2,7 +2,8 @@
  * emits: a second emitter exists, so something has to hold the two together, and without
  * this the sentence "the package emits what Arena emits" is only a sentence. Second, when
  * dist/ has been assembled, that each package is registry-standard: the version comes from
- * plugin.json, every exports target resolves to a file that is there, and no peer leaked
+ * plugin.json, every exports target resolves to a file that is there, the entry declaration
+ * is advertised at the root as well, and no peer leaked
  * into dependencies. dist/ is git-ignored, so the second half is skipped on a fresh clone
  * and says so; the first half runs anywhere. */
 
@@ -101,6 +102,12 @@ export function exportProblems(pkg, manifest, dir) {
   if (targets.length === 0) problems.push(`${pkg.name}: no exports target resolves to a file, so the package exposes nothing`);
   for (const target of targets.filter((t) => !t.includes('*'))) {
     if (!existsSync(join(dir, target))) problems.push(`${pkg.name}: exports ${target}, which was never emitted`);
+  }
+  const types = manifest.types ?? manifest.typings;
+  if (!types) {
+    problems.push(`${pkg.name}: no types and no typings at the root, so npm reads the package as untyped and a consumer on moduleResolution: node finds no declarations`);
+  } else if (!existsSync(join(dir, types))) {
+    problems.push(`${pkg.name}: types ${types}, which was never emitted`);
   }
   for (const [field, value] of Object.entries(manifest.bin ?? {})) {
     if (!existsSync(join(dir, value))) problems.push(`${pkg.name}: bin ${field} points at ${value}, which was never emitted`);

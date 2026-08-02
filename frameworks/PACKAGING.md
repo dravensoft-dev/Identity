@@ -61,9 +61,13 @@ Neither half compiles anything, because the two layers need different compilers.
 
 **React** goes through `Bun.Transpiler`, the same path `build-demos.mjs` already uses, and
 each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
-implementation it describes. There is exactly one rewrite: a relative source specifier, in any of `.ts`, `.tsx`, `.jsx`
-or `.js`, becomes `.js`, because inside the package none of those extensions resolves; only
-the compiled `.js` does. The entry point is
+implementation it describes. There is exactly one rewrite, and it normalises every relative
+specifier to `.js`: one carrying `.ts`, `.tsx`, `.jsx` or `.js` is retargeted, and one carrying
+no extension gains it. Inside the package only the compiled `.js` resolves, and a consumer on
+`node16` infers no extension from a declaration, where this layer's own `bundler` resolution
+makes it optional. Neither half is taken on trust: `unresolvedProblems` resolves every specifier
+in every emitted module and declaration against what the package holds, so one naming nothing
+fails the build rather than the consumer's editor. The entry point is
 `Index.generated.ts`, the barrel `build:react-barrel` derives from the component
 directories, and it goes through that same compile, so the package exports
 `Index.generated.js` beside the declaration `tsc` emits for it.

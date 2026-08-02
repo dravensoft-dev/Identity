@@ -60,6 +60,7 @@ test('an at-statement above the first block does not swallow the selector after 
 const manifest = (overrides = {}) => ({
   name: '@dravensoft/arena-react',
   version: '4.1.0',
+  types: './Index.d.ts',
   peerDependencies: { react: '>=18', '@phosphor-icons/web': '^2.1.2' },
   ...overrides,
 });
@@ -110,7 +111,7 @@ function assembled(files) {
 }
 
 test('every exports target must have been emitted', () => {
-  const dir = assembled({ 'README.md': '#', 'Index.js': '', 'css/reset.css': '' });
+  const dir = assembled({ 'README.md': '#', 'Index.js': '', 'Index.d.ts': '', 'css/reset.css': '' });
   const m = manifest({ exports: { '.': { import: './Index.js' }, './css/reset.css': './css/reset.css' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir), []);
 
@@ -121,14 +122,14 @@ test('every exports target must have been emitted', () => {
 });
 
 test('a wildcard target is not resolved, because it names a family rather than a file', () => {
-  const dir = assembled({ 'README.md': '#', 'css/a.css': '' });
+  const dir = assembled({ 'README.md': '#', 'Index.d.ts': '', 'css/a.css': '' });
   const m = manifest({ exports: { './css/*': './css/*' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir), []);
   rmSync(dir, { recursive: true });
 });
 
 test('a package exposing nothing is a problem, and so is a bin that was never emitted', () => {
-  const dir = assembled({ 'README.md': '#' });
+  const dir = assembled({ 'README.md': '#', 'Index.d.ts': '' });
   assert.match(exportProblems(PACKAGES[0], manifest(), dir)[0], /no exports target resolves/);
   const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-theme': './bin/arena-theme.mjs' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
@@ -137,9 +138,28 @@ test('a package exposing nothing is a problem, and so is a bin that was never em
 });
 
 test('a package with no README is a problem, because that is the page npm shows', () => {
-  const dir = assembled({ 'Index.js': '' });
+  const dir = assembled({ 'Index.js': '', 'Index.d.ts': '' });
   const m = manifest({ exports: { '.': './Index.js' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir), ['@dravensoft/arena-react: no README.md, which is the page npm shows']);
+  rmSync(dir, { recursive: true });
+});
+
+test('a package advertising no declaration at the root is untyped to npm and to moduleResolution: node', () => {
+  const dir = assembled({ 'README.md': '#', 'Index.js': '', 'Index.d.ts': '' });
+  const m = manifest({ types: undefined, exports: { '.': { types: './Index.d.ts', import: './Index.js' } } });
+  assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
+    ['@dravensoft/arena-react: no types and no typings at the root, so npm reads the package as untyped and a consumer on moduleResolution: node finds no declarations']);
+  rmSync(dir, { recursive: true });
+});
+
+test('typings is the other spelling of the same claim, and ng-packagr writes that one', () => {
+  const dir = assembled({ 'README.md': '#', 'Index.js': '', 'types/Index.d.ts': '' });
+  const named = manifest({ types: undefined, typings: 'types/Index.d.ts', exports: { '.': './Index.js' } });
+  assert.deepEqual(exportProblems(PACKAGES[1], named, dir), []);
+
+  const missing = manifest({ types: undefined, typings: 'types/Gone.d.ts', exports: { '.': './Index.js' } });
+  assert.deepEqual(exportProblems(PACKAGES[1], missing, dir),
+    ['@dravensoft/arena-angular: types types/Gone.d.ts, which was never emitted']);
   rmSync(dir, { recursive: true });
 });
 
