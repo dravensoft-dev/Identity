@@ -5,8 +5,9 @@
  * freedom as a defect -- measured, it flagged 30 of 55 pairs that paint identically. The
  * stage box alone is the opposite failure, because .pg-stage declares a min-height and any
  * component under it produces an identical box whatever it draws: the three SideNav members
- * each differ by ~12000 pixels behind an identical stage. Animations are frozen before the
- * shot, since a shimmer phase is not a divergence. */
+ * each differ by ~12000 pixels behind an identical stage. Animations are frozen and the text
+ * caret is hidden before the shot: neither a shimmer phase nor a blink is a difference, and a
+ * caret is not a CSS animation, so freezing alone leaves a 1px column flickering. */
 
 import { fileURLToPath } from 'node:url';
 import { startStaticServer } from '../../lib/arena/static-server.mjs';
@@ -43,10 +44,11 @@ export const DIVERGENT = new Map([
   ['EmptyState', `41 pixels, and ${BUTTON_CORNERS}`],
   ['ErrorState', `40 pixels, and ${BUTTON_CORNERS}`],
   ['PageHead', `43 pixels, and ${BUTTON_CORNERS}`],
-  ['Table', 'the stage is 1px shorter in Angular, and the height is the symptom rather than the defect: '
-    + 'Angular\'s grid is `border-separate border-spacing-0` and puts the separator on the table-row, which '
-    + 'the separated model ignores, so Angular draws NO rule between body rows. React\'s real table collapses '
-    + 'and draws one. It goes when the manifest\'s grid slot adopts the collapse model.'],
+  ['Table', '3427 pixels, all of them below y 145, which is the footer: the two layers put the frame in '
+    + 'different places. React gives the border, the radius and the `overflow: hidden` to a wrapper around '
+    + 'the grid alone, so the pager sits OUTSIDE the rounded card under a rule that runs past its corners, '
+    + 'while the manifest gives them to the root and the pager sits inside. The rows above agree to the '
+    + `pixel. ${AUTHORED_TWICE}`],
   ['Tag', '976 pixels over the tag itself, which is 13px text with 4px 10px padding in React and 11px with '
     + `2px 8px in the manifest Angular renders. This one is a genuine disagreement rather than an accident. ${AUTHORED_TWICE}`],
 ]);
@@ -121,7 +123,12 @@ const NAVIGATE_TIMEOUT_MS = 15_000;
 const EVALUATE_TIMEOUT_MS = 45_000;
 const READY_DEADLINE_MS = 20_000;
 
+const NO_CARET = 'html *, html *::before, html *::after { caret-color: transparent !important; }';
+
 const READY = `(async () => {
+  const hide = document.createElement('style');
+  hide.textContent = ${JSON.stringify(NO_CARET)};
+  document.head.appendChild(hide);
   const deadline = Date.now() + ${READY_DEADLINE_MS};
   const stage = () => document.querySelector('.pg-stage');
   while (Date.now() < deadline) {
