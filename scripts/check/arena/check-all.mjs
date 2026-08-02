@@ -54,6 +54,7 @@ export const GATES = [
   { name: 'check:react-types', file: 'react/check-react-types.mjs' },
   { name: 'check:cards', file: 'arena/check-card-viewports.mjs' },
   { name: 'check:focus-trap', file: 'arena/check-focus-trap.mjs' },
+  { name: 'check:parity', file: 'arena/check-parity.mjs' },
   { name: 'check:packages', file: 'arena/check-packages.mjs' },
   { name: 'check:angular', file: 'angular/check-angular.mjs' },
   { name: 'check:angular-demos', file: 'angular/check-angular-demos.mjs' },
