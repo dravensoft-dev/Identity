@@ -43,6 +43,8 @@
   ],
   "layout": ["Grid"],
   "navigation": [
+    "BottomNav",
+    "BottomNavItem",
     "Breadcrumbs",
     "BulkActionBar",
     "CommandPalette",

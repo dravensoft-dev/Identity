@@ -1,6 +1,6 @@
 # @dravensoft/arena-react
 
-Arena is Dravensoft's design system. This package is its React layer: 53 components styled
+Arena is Dravensoft's design system. This package is its React layer: 55 components styled
 entirely by design tokens, with no CSS classes, no stylesheet to override and no theme
 provider to wrap your tree in.
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, forwardRef, inject, input } from '@angular/core';
 import { isPrimaryActivation } from '../../../AnchorActivation';
-import { SideNavChild, SideNavState, activeWeight, indentFor } from '../side-nav/SideNavState';
+import { SideNavChild, SideNavState, indentFor } from '../side-nav/SideNavState';
+import { activeWeight, badgeCount } from '../../../NavRow';
 import { sideNavStyles } from '../side-nav/SideNav.variants';
 
 @Component({
@@ -84,11 +85,7 @@ export class SideNavItem {
 
   protected readonly off = computed(() => (this.disabled() ? 'true' : null));
 
-  protected readonly count = computed(() => {
-    const tally = this.badge();
-    if (tally === undefined || !(tally > 0)) return null;
-    return tally > 99 ? '99+' : String(Math.floor(tally));
-  });
+  protected readonly count = computed(() => badgeCount(this.badge()));
 
   protected activate(event: Event): void {
     if (this.disabled()) { event.preventDefault(); return; }

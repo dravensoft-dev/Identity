@@ -772,6 +772,7 @@ function findManifestFile(componentsDir: string, filename: string): string | und
 const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
 
 const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
+  'bottom-nav-item': { manifest: 'BottomNav.manifest.json', slot: 'item' },
   'calendar-event': { manifest: 'Calendar.manifest.json', slot: 'chip' },
   dialog: { slot: 'scrim' },
   'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },

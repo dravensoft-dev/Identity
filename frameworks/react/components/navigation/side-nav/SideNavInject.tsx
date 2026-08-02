@@ -1,4 +1,5 @@
 import React from 'react';
+import { activeWeight, badgeCount } from '../NavRow.ts';
 
 export interface SideNavInjected {
   depth: number;
@@ -49,13 +50,8 @@ export function rowStyle({
   };
 }
 
-export function rowCount(badge: number | undefined): string | null {
-  if (badge === undefined || !(badge > 0)) return null;
-  return badge > 99 ? '99+' : String(Math.floor(badge));
-}
-
 export function rowBadge(badge: number | undefined, active: boolean): React.ReactElement | null {
-  const tally = rowCount(badge);
+  const tally = badgeCount(badge);
   if (tally === null) return null;
   return (
     <span style={{
@@ -68,15 +64,6 @@ export function rowBadge(badge: number | undefined, active: boolean): React.Reac
       fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-badge)',
     }}>{tally}</span>
   );
-}
-
-export const WEIGHTS = ['ph-thin', 'ph-light', 'ph-bold', 'ph-duotone', 'ph-fill'];
-
-export function activeWeight(icon: string): string {
-  const parts = icon.split(/\s+/).filter(Boolean);
-  if (parts.includes('ph-fill')) return icon;
-  const replaced = parts.map((part) => (WEIGHTS.includes(part) ? 'ph-fill' : part));
-  return replaced.includes('ph-fill') ? replaced.join(' ') : ['ph-fill', ...replaced].join(' ');
 }
 
 export function rowGlyph(icon: string | undefined, active = false): React.ReactElement | null {

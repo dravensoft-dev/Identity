@@ -1,0 +1,17 @@
+{
+  "cases": [
+    {
+      "name": "link",
+      "when": "href is set -- the item renders an <a href>, which the platform makes a link",
+      "pattern": "none",
+      "reason": "There is no link pattern to bind, and that is not an omission: a link's role, its keyboard activation and its focusability all come from the platform the moment the element is an <a href>. Binding `button` here would name a role this element does not have. What the item adds on top of the anchor is `aria-current` for the active destination, which is a clause of the `navigation` pattern arena-bottom-nav binds, and it is recorded there. The same shape, and the same reason, as SideNavItem's own link case.",
+      "exceptions": []
+    },
+    {
+      "name": "button",
+      "when": "href is absent -- the item renders a <button type=\"button\">, which activates a handler rather than navigating",
+      "pattern": "button",
+      "exceptions": []
+    }
+  ]
+}

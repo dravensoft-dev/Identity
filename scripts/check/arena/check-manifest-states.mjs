@@ -29,6 +29,12 @@ export const MANIFEST_COVERS = new Map([
     reason: 'The tablist and its tab buttons are Tabs\'; the panel is Tab\'s. The roving stop that '
       + 'carries the focus ring sits on a tab, which is the member Tab contracts.',
   }],
+  ['BottomNav', {
+    covers: ['BottomNav', 'BottomNavItem'],
+    reason: 'One manifest draws the whole bar -- the fixed row is BottomNav\'s and the equal '
+      + 'column, its glyph, its label and its badge are BottomNavItem\'s. The item carries no '
+      + 'manifest of its own because it has no surface of its own: it IS a column of the bar.',
+  }],
   ['SideNav', {
     covers: ['SideNav', 'SideNavItem', 'SideNavSection', 'SideNavCollapsible'],
     reason: 'The family nests to any depth and one manifest holds every level of it -- the rail, a '

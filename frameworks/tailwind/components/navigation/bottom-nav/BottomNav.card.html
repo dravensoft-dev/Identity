@@ -1,0 +1,41 @@
+<!-- @dsCard group="Tailwind" viewport="420x320" name="BottomNav" subtitle="Five equal columns at a phone width, rendered from BottomNav.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../../intro/styles.css">
+<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+
+const manifest = await (await fetch('./BottomNav.manifest.json')).json();
+
+function column({ icon, label, active = false, badge = null }) {
+  const c = classesFor(manifest, { active });
+  const glyph = el('span', { class: c.glyph },
+    el('i', { class: `${active ? 'ph-fill' : 'ph-bold'} ${icon}`, 'aria-hidden': 'true' }));
+  if (badge) glyph.append(el('span', { class: c.badge, text: badge }));
+  return el('button', { class: c.item, type: 'button', 'aria-current': active ? 'page' : undefined },
+    glyph, el('span', { class: c.label, text: label }));
+}
+
+const DESTINATIONS = [
+  { icon: 'ph-house', label: 'Home', active: true },
+  { icon: 'ph-receipt', label: 'Orders', badge: '12' },
+  { icon: 'ph-users', label: 'Clients' },
+  { icon: 'ph-chart-bar', label: 'Reports' },
+  { icon: 'ph-dots-three', label: 'More' },
+];
+
+mountSpecimen({ sections: [
+  section('The bar as it sits, pinned to the bottom of the viewport', [
+    el('div', { class: 'font-body text-sm text-base-content/62' },
+      'Height is --layout-bar, the stacking slot is --z-nav, and the padding under the labels is '
+      + '--pad-safe-bottom. Only the ink changes for the current destination: a filled column would '
+      + 'read as a control rather than as a place.'),
+  ]),
+]});
+
+const bar = el('nav', { class: classesFor(manifest).root, 'aria-label': 'Primary' });
+for (const d of DESTINATIONS) bar.append(column(d));
+document.body.append(bar);
+</script></body></html>

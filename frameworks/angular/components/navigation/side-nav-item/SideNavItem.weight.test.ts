@@ -12,7 +12,7 @@ import { Component } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { SideNav } from '../side-nav/SideNav';
 import { SideNavItem } from './SideNavItem';
-import { activeWeight } from '../side-nav/SideNavState';
+import { activeWeight } from '../../../NavRow';
 
 @Component({
   standalone: true,

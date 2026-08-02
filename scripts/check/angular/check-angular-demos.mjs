@@ -23,6 +23,7 @@ export const PAGED = new Set([
   'ToastHost',
   'Sheet',
   'Grid',
+  'BottomNav',
   'Menu',
   'ProgressBar',
   'Spinner',

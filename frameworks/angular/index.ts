@@ -1,4 +1,5 @@
 export * from './AnchorActivation';
+export * from './NavRow';
 export * from './Api.generated';
 export * from './components';
 export * from './ContainerSize';

@@ -8,7 +8,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SideNav } from '../side-nav/SideNav.tsx';
 import { SideNavItem } from './SideNavItem.tsx';
-import { activeWeight } from '../side-nav/SideNavInject.tsx';
+import { activeWeight } from '../NavRow.ts';
 
 function markup(active: string): string {
   return renderToStaticMarkup(
