@@ -1,4 +1,4 @@
-# Arena, the Dravensoft Design System, v5.0.0
+# Arena, the Dravensoft Design System, v5.1.0
 
 MIT License · Token-driven design system for React, Angular and Tailwind. See [`CHANGELOG.md`](./CHANGELOG.md).
 

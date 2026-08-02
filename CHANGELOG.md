@@ -4,7 +4,7 @@ All notable changes to Arena, the Dravensoft Design System, are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.1.0] - 2026-08-01
 
 ### Added
 
@@ -121,6 +121,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   component source by name and found nothing to say when the probe missed; `check:dimensions`
   matched a parameter list with a regex that an annotation defeats; `check:layer-independence`
   identified a layer by tokens nothing held to the tree.
+- **`@dravensoft/arena-angular` assembled into a directory nobody reads.** ng-packagr resolves
+  `dest` against the directory its `ng-package.json` sits in, and that path was a literal written
+  for a staging tree two levels higher, so the package landed in
+  `frameworks/angular/frameworks/angular/dist`, a tree no `.gitignore` entry covers. ng-packagr
+  compiled it cleanly and exited 0; the failure surfaced two steps later as an `ENOENT` on the
+  `dist/package.json` the emitted manifest is read from, and only on a fresh clone, because a
+  working tree still holding the previous build had a file there to read. Both that path and the
+  `$schema` beside it are derived from `STAGING` now, and the suite resolves the value against it
+  rather than pinning the string a move invalidates.
+- **`check:release` could not read the version it gates.** It matched a `**Version X.Y.Z**` line
+  the shortened root README no longer carries, so the one check standing between a release and a
+  marketplace that advertises a version its pinned tag does not serve was failing on its own
+  regex. It reads the title, which is where the version is authored.
 
 ### Changed
 

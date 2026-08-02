@@ -37,8 +37,8 @@ if (!check('marketplace entry', !!entry, entry ? `"${plugin.name}" found` : `no 
 
 check('marketplace version', entry.version === version, `${entry.version ?? '(unset)'} — plugin.json says ${version}`);
 
-const readme = read('README.md').match(/^\*\*Version\s+(\S+)\*\*/m);
-check('README header', readme?.[1] === version, readme ? `${readme[1]}` : 'no "**Version X.Y.Z**" header found');
+const readme = read('README.md').match(/^#\s+.*\bv(\d+\.\d+\.\d+)\s*$/m);
+check('README header', readme?.[1] === version, readme ? `${readme[1]}` : 'no "# … vX.Y.Z" title found');
 
 const headings = [...read('CHANGELOG.md').matchAll(/^## \[([^\]]+)\]/gm)].map((m) => m[1]);
 const released = headings.find((h) => h.toLowerCase() !== 'unreleased');
