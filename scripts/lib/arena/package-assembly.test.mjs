@@ -27,6 +27,7 @@ test('a test never ships, whichever extension it takes', () => {
 
 test('a demo, a specimen, a binding and a prompt never ship either', () => {
   for (const name of ['Tag.card.html', 'Tag.card.entry.ts', 'Button.card.entry.jsx',
+    'Tag.demo.generated.html', 'Tag.demo.entry.generated.tsx', 'Tag.demo.entry.generated.ts',
     'Tag.behaviour.json', 'Tag.prompt.md', 'Button.generated.js', 'BehaviourDelegated.json',
     'tsconfig.test.json', 'tsconfig.check.json']) {
     assert.equal(excluded(name), true, name);

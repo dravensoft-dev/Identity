@@ -13,6 +13,8 @@ export const EXCLUDED_PATTERNS = [
   /\.test\.(mjs|[jt]sx?)$/,
   /\.card\.html$/,
   /\.card\.entry\.[jt]sx?$/,
+  /\.demo\.generated\.html$/,
+  /\.demo\.entry\.generated\.[jt]sx?$/,
   /\.behaviour\.json$/,
   /\.prompt\.md$/,
   /\.generated\.js$/,
