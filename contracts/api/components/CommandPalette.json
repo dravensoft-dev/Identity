@@ -1,6 +1,6 @@
 {
   "component": "CommandPalette",
-  "description": "Power-user accelerator (Cmd/Ctrl+K): search and run actions without a mouse. Controlled — the host owns whether it is open.",
+  "description": "Power-user accelerator (Cmd/Ctrl+K): search and run actions without a mouse. Controlled: the host owns whether it is open.",
   "affordances": ["hover"],
   "api": {
     "open": { "form": "primitive", "type": "boolean", "required": true,
@@ -10,7 +10,7 @@
     "placeholder": { "form": "primitive", "type": "string", "default": "Search for an action or project…",
                      "description": "The search field's placeholder." },
     "close": { "form": "event",
-               "description": "The palette asked to be closed — Escape, the scrim, or a command having been run." },
+               "description": "The palette asked to be closed: Escape, the scrim, or a command having been run." },
     "run": { "form": "event", "payload": "Command",
              "description": "A command was activated, carrying which one. Emitted after close." }
   }

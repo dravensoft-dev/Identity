@@ -10,7 +10,7 @@
       "form": "primitive",
       "type": "string",
       "required": true,
-      "description": "Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it \u2014 Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never \"Table\"."
+      "description": "Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it; Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never \"Table\"."
     },
     "columns": {
       "form": "array",

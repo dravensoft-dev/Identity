@@ -6,7 +6,7 @@
     "icon": { "form": "primitive", "type": "string",
               "description": "A Phosphor class name for the glyph Arena draws, muted." },
     "title": { "form": "primitive", "type": "string", "required": true,
-               "description": "The headline — what is empty." },
+               "description": "The headline: what is empty." },
     "message": { "form": "primitive", "type": "string",
                  "description": "A sentence of guidance under the title." },
     "action": { "form": "slot",

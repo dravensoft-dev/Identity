@@ -28,7 +28,7 @@ import { emptyStateStyles } from './EmptyState.variants';
 export class EmptyState {
   /** A Phosphor class name for the glyph Arena draws, muted. */
   readonly icon = input<string>();
-  /** The headline — what is empty. */
+  /** The headline: what is empty. */
   readonly title = input.required<string>();
   /** A sentence of guidance under the title. */
   readonly message = input<string>();

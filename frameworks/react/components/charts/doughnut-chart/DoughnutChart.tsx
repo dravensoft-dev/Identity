@@ -19,7 +19,7 @@ export interface DoughnutChartProps {
   /** Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point. */
   slots?: number[];
 
-  /** Appended verbatim to every number the chart draws — the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
+  /** Appended verbatim to every number the chart draws: the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
   valueSuffix?: string;
 
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */

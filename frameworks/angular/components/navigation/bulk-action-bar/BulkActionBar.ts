@@ -40,11 +40,11 @@ import type { BulkAction } from '../../../Api.generated';
 export class BulkActionBar {
   /** How many rows are selected. Zero renders no bar at all. */
   readonly count = input.required<number>();
-  /** What is being counted, plural — "items", "projects". */
+  /** What is being counted, plural: "items", "projects". */
   readonly noun = input('items');
   /** The actions offered for the current selection. */
   readonly actions = input.required<BulkAction[]>();
-  /** Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear` — R6. */
+  /** Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear`, per R6. */
   readonly clearable = input(true);
   /** An action was activated, carrying which one. */
   readonly run = output<BulkAction>();

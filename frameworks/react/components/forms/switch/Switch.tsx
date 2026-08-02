@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import type { Orientation, SwitchSize } from '../../../Api.generated';
 
 export interface SwitchProps {
-  /** The current on/off value. Controlled — the consumer owns it and pushes it each render. */
+  /** The current on/off value. Controlled: the consumer owns it and pushes it each render. */
   state?: boolean;
   /** Whether the switch lies horizontally or stands vertically. */
   orientation?: Orientation;
@@ -17,13 +17,13 @@ export interface SwitchProps {
   label: string;
   /** Whether the switch is inoperable. */
   disabled?: boolean;
-  /** When set, a change is not applied on the fly — it is requested through `requestChange` so the host can confirm it first. */
+  /** When set, a change is not applied on the fly; it is requested through `requestChange` so the host can confirm it first. */
   confirm?: boolean;
   /** The switch was turned on. */
   onFuncOn?: () => void;
   /** The switch was turned off. */
   onFuncOff?: () => void;
-  /** A change was requested while `confirm` is set — the host opens a ConfirmDialog and, on confirmation, flips `state` (the requested value is always the negation of the current one). */
+  /** A change was requested while `confirm` is set: the host opens a ConfirmDialog and, on confirmation, flips `state` (the requested value is always the negation of the current one). */
   onRequestChange?: () => void;
 }
 

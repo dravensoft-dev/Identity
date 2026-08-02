@@ -10,7 +10,7 @@ export type { TableColumn };
 
 export interface TableProps {
 
-  /** Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it — Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". */
+  /** Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it; Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". */
   label: string;
 
   /** The columns, in order. A column heads and sets its cells; it never says what goes in them. */

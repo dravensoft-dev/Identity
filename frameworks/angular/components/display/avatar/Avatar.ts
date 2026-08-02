@@ -32,7 +32,7 @@ export class Avatar {
   readonly size = input<AvatarSize>('md');
   /** Circle for a person, rounded for a team. */
   readonly shape = input<AvatarShape>('circle');
-  /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional — there is no invisible enum value. */
+  /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value. */
   readonly status = input<AvatarStatus>();
 
   protected readonly styles = computed(() =>

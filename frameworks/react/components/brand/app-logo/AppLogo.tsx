@@ -4,7 +4,7 @@ import type { LogoSize, Orientation } from '../../../Api.generated';
 
 export interface AppLogoProps {
 
-  /** Both halves at once — the mark's slot and the wordmark. */
+  /** Both halves at once: the mark's slot and the wordmark. */
   size?: LogoSize;
   /** Mark beside the name, or above it. */
   orientation?: Orientation;
@@ -15,7 +15,7 @@ export interface AppLogoProps {
   /** The product name, or its first half when `dim` carries the second. */
   name: string;
 
-  /** The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome — which is why there is no `variant` member: the mark's ink and this are the same two decisions. */
+  /** The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome, which is why there is no `variant` member: the mark's ink and this are the same two decisions. */
   dim?: string;
 }
 

@@ -9,7 +9,7 @@ export interface IconButtonProps {
 
   /** The accessible name, present in every state. Also the visible text when showLabel is set, and the title attribute when it is not. */
   label: string;
-  /** Height, from the density tokens — the same scale Button uses, so the two re-densify together in a toolbar. */
+  /** Height, from the density tokens: the same scale Button uses, so the two re-densify together in a toolbar. */
   size?: ControlSize;
   /** Visual treatment. */
   variant?: IconButtonVariant;
@@ -37,7 +37,7 @@ export interface IconButtonProps {
   /** The id of the form this button belongs to, when it is not a descendant of it. */
   form?: string;
 
-  /** Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus — a grid with a roving tab stop, a menu — where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. */
+  /** Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus (a grid with a roving tab stop, a menu), where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. */
   tabStop?: boolean;
 
   /** The button was activated, by pointer or by keyboard. */

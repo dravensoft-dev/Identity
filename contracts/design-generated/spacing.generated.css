@@ -18,13 +18,13 @@
   --gutter:88px;
 
   /*
-     Application frame. The width of the console shell's navigation column
-     — example code, and therefore the width a consumer copies.
+     Application frame. The width of the console shell's navigation column:
+     example code, and therefore the width a consumer copies.
    */
   --layout-sidebar:232px;
 
   /*
-     Breakpoints — SHARED VALUES READ BY JS, not media queries.
+     Breakpoints: SHARED VALUES READ BY JS, not media queries.
      Components style themselves with inline style objects, which cannot hold a
      media query, so responsive branches are JS (see UseContainerWidth.ts).
      These live here anyway so the thresholds stay a token, not a magic number
@@ -35,7 +35,7 @@
   --bp-lg:1024px;
 
   /*
-     Density (H7 rev.3) — comfortable by default. Data-dense surfaces read these
+     Density (H7 rev.3): comfortable by default. Data-dense surfaces read these
      instead of hard-coded px so a single scope switch re-densifies rows and controls.
    */
   --dz-ctl-h:40px; /* control height (buttons, inputs, switches row) */
@@ -44,19 +44,19 @@
   --dz-row-py:12px; /* table/list row vertical padding */
   --dz-row-px:16px; /* row horizontal padding */
   --dz-stack:12px; /* gap between stacked items */
-  --dz-text-lg:16px; /* the largest control text — a data readout inside a chart, where the number is the content rather than a label */
-  --dz-text:14px; /* control text — buttons, inputs, selects, menu items, table cells */
-  --dz-text-md:13px; /* secondary control text — tag chips, pagination, secondary buttons */
-  --dz-text-sm:12px; /* secondary control text — hints, validation errors, badges, legends */
-  --dz-text-xs:11px; /* micro control text — field labels, shortcuts, eyebrow labels */
+  --dz-text-lg:16px; /* the largest control text: a data readout inside a chart, where the number is the content rather than a label */
+  --dz-text:14px; /* control text: buttons, inputs, selects, menu items, table cells */
+  --dz-text-md:13px; /* secondary control text: tag chips, pagination, secondary buttons */
+  --dz-text-sm:12px; /* secondary control text: hints, validation errors, badges, legends */
+  --dz-text-xs:11px; /* micro control text: field labels, shortcuts, eyebrow labels */
   --dz-text-2xs:10px; /* column headers, row micro-labels */
-  --dz-lh:1; /* glyph-tight line height — the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph — an icon inside a button, a standalone icon, an icon-only close/remove control — so the line box never throws the surrounding control out of alignment. */
+  --dz-lh:1; /* glyph-tight line height: the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph (an icon inside a button, a standalone icon, an icon-only close/remove control), so the line box never throws the surrounding control out of alignment. */
 
   /*
      Avatar diameters. The first family named after a component rather
      than a role, and worth stating rather than glossing: dz and icon are named for
      roles. It earns its place because Avatar derives two values from its own
-     diameter — the initials at 0.4 and the presence dot at 0.28 — and a derivation
+     diameter (the initials at 0.4 and the presence dot at 0.28), and a derivation
      needs something to derive from. If a second component ever wants the same
      ladder, rename this for the role instead of duplicating it.
    */
@@ -66,7 +66,7 @@
   --avatar-lg:56px;
 
   /*
-     Brand lock-up scale — the mark's slot and the wordmark's size, in
+     Brand lock-up scale: the mark's slot and the wordmark's size, in
      four steps. These are tokens rather than an exemption for one reason: AppLogo
      takes the mark and the name from its consumer, so once they are the consumer's
      brand these numbers stop being Dravensoft's identity and become the system's
@@ -87,8 +87,8 @@
   --logo-mark-sm:30px; /* beside a product name in an application frame */
   --logo-mark-md:40px; /* a signed-out panel's lock-up */
   --logo-mark-lg:54px; /* the manual's Primary · horizontal */
-  --logo-mark-xl:124px; /* the hero case — the lock-up is the only thing on the screen */
-  --logo-text-sm:17px; /* the wordmark beside mark-sm — the smallest that still reads as a name rather than a label */
+  --logo-mark-xl:124px; /* the hero case: the lock-up is the only thing on the screen */
+  --logo-text-sm:17px; /* the wordmark beside mark-sm: the smallest that still reads as a name rather than a label */
   --logo-text-md:24px; /* the wordmark beside mark-md, in a signed-out panel */
   --logo-text-lg:34px; /* the wordmark beside mark-lg, in the manual's Primary · horizontal */
   --logo-text-xl:78px; /* the wordmark beside mark-xl, at hero size */
@@ -102,7 +102,7 @@
   --icon-sm:14px;
   --icon-md:16px;
   --icon-lg:18px;
-  --icon-xl:34px; /* Illustration-scale icon (EmptyState, ErrorState) — a distinct role from the 14/16/18 inline-control cluster. */
+  --icon-xl:34px; /* Illustration-scale icon (EmptyState, ErrorState): a distinct role from the 14/16/18 inline-control cluster. */
 }
 :root{
   /* Calendar time grid. */
@@ -165,7 +165,7 @@
 }
 .arena-compact{
   /*
-     Compact density — for expert/high-volume views. Apply on a container:
+     Compact density: for expert/high-volume views. Apply on a container:
      <div class="arena-compact"> … </div>  (composes with .arena-light)
    */
   --dz-ctl-h:32px;

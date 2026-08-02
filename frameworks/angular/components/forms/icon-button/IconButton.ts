@@ -32,7 +32,7 @@ export class IconButton {
   readonly icon = input.required<string>();
   /** The accessible name, present in every state. Also the visible text when showLabel is set, and the title attribute when it is not. */
   readonly label = input.required<string>();
-  /** Height, from the density tokens — the same scale Button uses, so the two re-densify together in a toolbar. */
+  /** Height, from the density tokens: the same scale Button uses, so the two re-densify together in a toolbar. */
   readonly size = input<ControlSize>('md');
   /** Visual treatment. */
   readonly variant = input<IconButtonVariant>('ghost');
@@ -52,7 +52,7 @@ export class IconButton {
   readonly autoFocus = input(false, { transform: booleanAttribute });
   /** The id of the form this button belongs to, when it is not a descendant of it. */
   readonly form = input<string>();
-  /** Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus — a grid with a roving tab stop, a menu — where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. */
+  /** Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus (a grid with a roving tab stop, a menu), where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. */
   readonly tabStop = input(true, { transform: booleanAttribute });
   /** The button was activated, by pointer or by keyboard. */
   readonly click = output<void>();

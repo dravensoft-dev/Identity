@@ -8,9 +8,9 @@
     "name": { "form": "primitive", "type": "string", "required": true,
               "description": "The product name, or its first half when `dim` carries the second." },
     "dim": { "form": "primitive", "type": "string",
-             "description": "The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome — which is why there is no `variant` member: the mark's ink and this are the same two decisions." },
+             "description": "The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome, which is why there is no `variant` member: the mark's ink and this are the same two decisions." },
     "size": { "form": "enum", "type": "LogoSize", "default": "md",
-              "description": "Both halves at once — the mark's slot and the wordmark." },
+              "description": "Both halves at once: the mark's slot and the wordmark." },
     "orientation": { "form": "enum", "type": "Orientation", "default": "horizontal",
                      "description": "Mark beside the name, or above it." }
   }

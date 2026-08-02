@@ -10,7 +10,7 @@
     "eyebrow": { "form": "primitive", "type": "string", "default": "Confirm",
                  "description": "Small uppercase label above the title." },
     "content": { "form": "slot",
-                 "description": "The dialog body — the question and any detail." },
+                 "description": "The dialog body: the question and any detail." },
     "confirmLabel": { "form": "primitive", "type": "string", "default": "Confirm",
                       "description": "The confirm button's label." },
     "cancelLabel": { "form": "primitive", "type": "string", "default": "Cancel",

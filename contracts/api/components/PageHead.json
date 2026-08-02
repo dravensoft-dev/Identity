@@ -4,7 +4,7 @@
   "affordances": [],
   "api": {
     "title": { "form": "primitive", "type": "string", "required": true,
-               "description": "The page title. Required — a page head with no title is a bug, not a state." },
+               "description": "The page title. Required: a page head with no title is a bug, not a state." },
     "subtitle": { "form": "primitive", "type": "string",
                   "description": "A muted line under the title." },
     "actions": { "form": "slot",

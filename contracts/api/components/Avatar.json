@@ -12,6 +12,6 @@
     "shape": { "form": "enum", "type": "AvatarShape", "default": "circle",
                "description": "Circle for a person, rounded for a team." },
     "status": { "form": "enum", "type": "AvatarStatus",
-                "description": "A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional — there is no invisible enum value." }
+                "description": "A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value." }
   }
 }

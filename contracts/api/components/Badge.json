@@ -4,7 +4,7 @@
   "affordances": [],
   "api": {
     "content": { "form": "slot",
-                 "description": "The label text. Short — a badge is a chip, not a sentence." },
+                 "description": "The label text. Short: a badge is a chip, not a sentence." },
     "tone": { "form": "enum", "type": "Tone", "default": "neutral",
               "description": "System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight." },
     "dot": { "form": "primitive", "type": "boolean", "default": false,

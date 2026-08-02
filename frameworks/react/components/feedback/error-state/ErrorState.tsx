@@ -4,7 +4,7 @@ import { Button } from '../../forms/button/Button.tsx';
 export interface ErrorStateProps {
   /** A Phosphor class name for the danger glyph Arena draws. */
   icon?: string;
-  /** The headline — what failed. */
+  /** The headline: what failed. */
   title?: string;
   /** A sentence of detail under the title. */
   message?: string;

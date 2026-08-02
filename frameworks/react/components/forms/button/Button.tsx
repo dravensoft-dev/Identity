@@ -14,10 +14,10 @@ export interface ButtonProps {
   /** Phosphor class name drawn before the label. Replaced by the spinner while loading. */
   icon?: string;
 
-  /** Phosphor class name drawn after the label — a caret on a menu trigger, an arrow on a next action. */
+  /** Phosphor class name drawn after the label: a caret on a menu trigger, an arrow on a next action. */
   iconRight?: string;
 
-  /** Replaces the leading icon with a spinner and blocks activation. The spin slows under reduced motion rather than stopping — a frozen spinner reads as a hung process. */
+  /** Replaces the leading icon with a spinner and blocks activation. The spin slows under reduced motion rather than stopping: a frozen spinner reads as a hung process. */
   loading?: boolean;
 
   /** Stretches to the container's width. */
@@ -40,7 +40,7 @@ export interface ButtonProps {
   /** The id of the form this button belongs to, when it is not a descendant of it. */
   form?: string;
 
-  /** Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus — a grid with a roving tab stop, a menu — where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. Table's actions column is where this one is needed: a Button inside a row of a grid. */
+  /** Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus (a grid with a roving tab stop, a menu), where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. Table's actions column is where this one is needed: a Button inside a row of a grid. */
   tabStop?: boolean;
 
   /** The button was activated, by pointer or by keyboard. */

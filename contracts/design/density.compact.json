@@ -1,7 +1,7 @@
 {
   "dz": {
     "$type": "dimension",
-    "$description": "Compact density — for expert/high-volume views. Apply on a container:\n<div class=\"arena-compact\"> … </div>  (composes with .arena-light)",
+    "$description": "Compact density: for expert/high-volume views. Apply on a container:\n<div class=\"arena-compact\"> … </div>  (composes with .arena-light)",
     "ctl-h": { "$value": { "value": 32, "unit": "px" } },
     "ctl-h-sm": { "$value": { "value": 26, "unit": "px" } },
     "ctl-h-lg": { "$value": { "value": 40, "unit": "px" } },

@@ -6,6 +6,6 @@
     "value": { "form": "primitive", "type": "string", "required": true,
                "description": "What the option selects, and what `change` carries." },
     "label": { "form": "primitive", "type": "string", "required": true,
-               "description": "What the option reads. One word — the track stops being compact past that." }
+               "description": "What the option reads. One word: the track stops being compact past that." }
   }
 }

@@ -4,7 +4,7 @@
   "affordances": [],
   "api": {
     "state": { "form": "primitive", "type": "boolean", "default": false,
-               "description": "The current on/off value. Controlled — the consumer owns it and pushes it each render." },
+               "description": "The current on/off value. Controlled: the consumer owns it and pushes it each render." },
     "orientation": { "form": "enum", "type": "Orientation", "default": "horizontal",
                      "description": "Whether the switch lies horizontally or stands vertically." },
     "size": { "form": "enum", "type": "SwitchSize", "default": "md",
@@ -18,12 +18,12 @@
     "disabled": { "form": "primitive", "type": "boolean", "default": false,
                   "description": "Whether the switch is inoperable." },
     "confirm": { "form": "primitive", "type": "boolean", "default": false,
-                 "description": "When set, a change is not applied on the fly — it is requested through `requestChange` so the host can confirm it first." },
+                 "description": "When set, a change is not applied on the fly; it is requested through `requestChange` so the host can confirm it first." },
     "funcOn": { "form": "event",
                 "description": "The switch was turned on." },
     "funcOff": { "form": "event",
                  "description": "The switch was turned off." },
     "requestChange": { "form": "event",
-                       "description": "A change was requested while `confirm` is set — the host opens a ConfirmDialog and, on confirmation, flips `state` (the requested value is always the negation of the current one)." }
+                       "description": "A change was requested while `confirm` is set: the host opens a ConfirmDialog and, on confirmation, flips `state` (the requested value is always the negation of the current one)." }
   }
 }
