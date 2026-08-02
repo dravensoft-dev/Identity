@@ -197,7 +197,7 @@ jobs:
         run: bun scripts/check/arena/check-all.mjs --domain=tailwind --no-tests
 
   pr-gate:
-    name: pr
+    name: pr-gate
     needs: [changes, build, test-core, test-react, test-angular, test-tailwind]
     if: always()
     runs-on: ubuntu-latest
