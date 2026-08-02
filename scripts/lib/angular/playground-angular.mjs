@@ -10,11 +10,18 @@ import { playgroundPage, UP } from '../arena/playground-page.mjs';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
-export const VALIDATORS = {
-  none: 'undefined',
-  nonEmpty: "(value: string) => (value.trim().length === 0 ? 'Required.' : '')",
-  alwaysInvalid: "() => 'Never valid, on purpose.'",
+export const VOID_ELEMENTS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
+
+export const VALIDATOR_TABLE = `
+const VALIDATORS: Record<string, (value: string) => string> = {
+  nonEmpty: (value: string) => (value.trim().length === 0 ? 'Required.' : ''),
+  alwaysInvalid: () => 'Never valid, on purpose.',
 };
+
+function validatorFor(name: string | undefined): ((value: string) => string) | undefined {
+  return name === undefined ? undefined : VALIDATORS[name];
+}
+`;
 
 export const MARKERS_SOURCE = 'frameworks/angular/ProjectionMarkers.ts';
 
@@ -59,11 +66,20 @@ export function fieldTypeFor(spec) {
   return 'unknown';
 }
 
+export function staticAttribute(value) {
+  return typeof value === 'string';
+}
+
+export function attributeText(value) {
+  return escapeText(String(value)).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
 export function collectFields(node, contracts, into, prefix) {
   if (node === '$subject' || node === null || typeof node !== 'object') return into;
   if (typeof node.component === 'string') {
     const api = contracts.get(node.component)?.api ?? {};
     for (const [member, value] of Object.entries(node.members ?? {})) {
+      if (staticAttribute(value)) continue;
       const name = `${prefix}${node.component}${member[0].toUpperCase()}${member.slice(1)}${into.length}`;
       into.push({ name, type: fieldTypeFor(api[member] ?? {}), value, member, node });
     }
@@ -78,12 +94,21 @@ export function fieldFor(fields, node, member) {
   return fields.find((one) => one.node === node && one.member === member)?.name;
 }
 
+export function nodeAttributes(node, fields) {
+  return Object.entries(node.members ?? {})
+    .map(([member, value]) => (staticAttribute(value)
+      ? ` ${member}="${attributeText(value)}"`
+      : ` [${member}]="${fieldFor(fields, node, member)}"`))
+    .join('');
+}
+
 export function renderNode(node, places, fields, markers, depth, imports) {
   const pad = '  '.repeat(depth);
   if (typeof node.text === 'string' && !node.element) return `${pad}${escapeText(node.text)}`;
   if (typeof node.element === 'string' || typeof node.text === 'string') {
     const tag = node.element ?? 'span';
     const attrs = Object.entries(node.attrs ?? {}).map(([name, value]) => ` ${name}="${String(value)}"`).join('');
+    if (VOID_ELEMENTS.has(tag)) return `${pad}<${tag}${attrs} />`;
     if (node.text === undefined) return `${pad}<${tag}${attrs}></${tag}>`;
     return `${pad}<${tag}${attrs}>${escapeText(node.text)}</${tag}>`;
   }
@@ -92,8 +117,7 @@ export function renderNode(node, places, fields, markers, depth, imports) {
   const tag = selector(place.name);
   imports.add(place.name);
   const slots = node.slots ?? {};
-  const attrs = Object.keys(node.members ?? {})
-    .map((member) => ` [${member}]="${fieldFor(fields, node, member)}"`).join('');
+  const attrs = nodeAttributes(node, fields);
   const children = [];
   for (const [name, list] of Object.entries(slots)) {
     for (const one of list) {
@@ -125,8 +149,9 @@ export function slotBlock(knob, places, fields, markers, depth, imports, marked)
     return `${pad}@if (k().${knob.member} !== undefined) {\n${pad}  ${body}\n${pad}}`;
   }
   const nodes = (knob.nodes ?? [])
-    .map((one) => projected(one, places, fields, markers, depth + 1, imports, marked)).join('\n');
-  return `${pad}@if (k().${knob.member}) {\n${nodes}\n${pad}}`;
+    .map((one) => projected(one, places, fields, markers, depth + 1, imports, marked));
+  if (!marked) return `${pad}@if (k().${knob.member}) {\n${nodes.join('\n')}\n${pad}}`;
+  return nodes.map((one) => `${pad}@if (k().${knob.member}) {\n${one}\n${pad}}`).join('\n');
 }
 
 export function renderSubject(model, places, fields, markers, depth, imports) {
@@ -138,7 +163,7 @@ export function renderSubject(model, places, fields, markers, depth, imports) {
   const attrs = model.knobs
     .filter((knob) => knob.form !== 'slot')
     .map((knob) => (knob.form === 'functionInput'
-      ? `\n${inner}[${knob.member}]="VALIDATORS[k().${knob.member}]"`
+      ? `\n${inner}[${knob.member}]="validatorFor(k().${knob.member})"`
       : `\n${inner}[${knob.member}]="k().${knob.member}"`))
     .concat(model.events.map((event) => (event.payload
       ? `\n${inner}(${event.name})="play.fire('${event.name}', $event)"`
@@ -150,10 +175,17 @@ export function renderSubject(model, places, fields, markers, depth, imports) {
 
   const blocks = slots.map((knob) => {
     const marked = knob.member === 'content' ? '' : ` ${knob.member}`;
-    if (marked && markers.has(knob.member)) imports.add(markers.get(knob.member));
+    const draws = knob.control === 'slotText' || (knob.nodes ?? []).length > 0;
+    if (marked && draws && markers.has(knob.member)) imports.add(markers.get(knob.member));
     return slotBlock(knob, places, fields, markers, depth + 1, imports, marked);
   });
   return `${pad}<${tag}${attrs}>\n${blocks.join('\n')}\n${pad}</${tag}>`;
+}
+
+export function holdsSubject(node) {
+  if (node === '$subject') return true;
+  if (node === null || typeof node !== 'object') return false;
+  return Object.values(node.slots ?? {}).some((list) => list.some((one) => holdsSubject(one)));
 }
 
 export function renderTree(model, places, fields, markers, depth, imports) {
@@ -161,17 +193,17 @@ export function renderTree(model, places, fields, markers, depth, imports) {
   const wrap = (node, level) => {
     const pad = '  '.repeat(level);
     if (node === '$subject') return renderSubject(model, places, fields, markers, level, imports);
+    if (!holdsSubject(node)) return renderNode(node, places, fields, markers, level, imports);
     const place = places.get(node.component);
     const tag = selector(place.name);
     imports.add(place.name);
-    const attrs = Object.keys(node.members ?? {})
-      .map((member) => ` [${member}]="${fieldFor(fields, node, member)}"`).join('');
+    const attrs = nodeAttributes(node, fields);
     const children = [];
     for (const [name, list] of Object.entries(node.slots ?? {})) {
       for (const one of list) {
         const marked = name === 'content' ? '' : ` ${name}`;
         if (marked && markers.has(name)) imports.add(markers.get(name));
-        children.push(one === '$subject'
+        children.push(holdsSubject(one)
           ? wrap(one, level + 1)
           : projected(one, places, fields, markers, level + 1, imports, marked));
       }
@@ -191,9 +223,7 @@ export function knobsInterface(model) {
 }
 
 export function validatorTable(model) {
-  if (!model.knobs.some((knob) => knob.form === 'functionInput')) return '';
-  const rows = Object.entries(VALIDATORS).map(([name, body]) => `  ${name}: ${body},`);
-  return `\nconst VALIDATORS: Record<string, ((value: string) => string) | undefined> = {\n${rows.join('\n')}\n};\n`;
+  return model.knobs.some((knob) => knob.form === 'functionInput') ? VALIDATOR_TABLE : '';
 }
 
 export function angularEntry(model, places, contracts, markersSource, banner) {
@@ -209,7 +239,7 @@ export function angularEntry(model, places, contracts, markersSource, banner) {
   const used = [...imports].sort();
   const types = contractTypes(model, fields);
 
-  const componentImports = used
+  const componentImports = [...new Set(used)]
     .filter((name) => places.has(name))
     .map((name) => `import { ${name} } from '${places.get(name).self ? `./${name}` : importPath(places.get(name))}';`);
   const markerImports = used.filter((name) => !places.has(name));
@@ -246,6 +276,7 @@ ${template}
 class Demo {
   protected readonly play = new PlaygroundStore(MODEL);
   protected readonly k = computed(() => this.play.values() as unknown as Knobs);
+${model.knobs.some((knob) => knob.form === 'functionInput') ? '  protected readonly validatorFor = validatorFor;\n' : ''}
 ${fieldRows.length > 0 ? `${fieldRows.join('\n')}\n` : ''}}
 
 bootstrapApplication(Demo, { providers: [provideZonelessChangeDetection()] });

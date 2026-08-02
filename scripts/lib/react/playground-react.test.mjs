@@ -130,3 +130,40 @@ test('the page mounts into the root the entry looks for and declares no card', (
   assert.doesNotMatch(page, /@dsCard/);
   assert.match(page, /importmap/);
 });
+
+test('a slot with several nodes becomes a keyed array, never a fragment', () => {
+  const many = {
+    ...model,
+    knobs: [{
+      member: 'content', form: 'slot', type: null, bind: 'optional', bound: true,
+      control: 'slotPresence', codec: 'flag', initial: true, doc: '',
+      nodes: [{ component: 'Badge', slots: {} }, { component: 'Badge', slots: {} }],
+    }],
+    events: [],
+  };
+  const out = renderSubject(many, places, 0);
+  assert.match(out, /\{k\.content \? \[/);
+  assert.match(out, /key=\{0\}/);
+  assert.match(out, /key=\{1\}/);
+  assert.doesNotMatch(out, /React\.Fragment/,
+    'Tabs, Table and RadioGroup read direct children through Children.toArray, which a fragment hides');
+});
+
+test('a host recurses only down the branch the subject sits in', () => {
+  const hosted = {
+    ...model,
+    host: {
+      component: 'Table',
+      slots: { content: ['$subject', { component: 'Badge', slots: { content: [{ text: 'other' }] } }] },
+    },
+  };
+  const out = renderTree(hosted, places, 0);
+  assert.match(out, /<Card/);
+  assert.match(out, /\{"other"\}/, 'a sibling that holds no subject is still rendered');
+});
+
+test('a component reached twice is imported once', () => {
+  const twice = { ...model, uses: ['Badge', 'Card'] };
+  const out = reactEntry(twice, places, '');
+  assert.equal(out.match(/import \{ Card \}/g).length, 1);
+});

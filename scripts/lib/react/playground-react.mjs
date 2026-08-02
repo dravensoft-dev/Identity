@@ -9,11 +9,16 @@ import { bindingName } from '../arena/api-surface.mjs';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
-export const VALIDATORS = {
-  none: 'undefined',
-  nonEmpty: "(value: string) => (value.trim().length === 0 ? 'Required.' : '')",
-  alwaysInvalid: "() => 'Never valid, on purpose.'",
+export const VALIDATOR_TABLE = `
+const VALIDATORS: Record<string, (value: string) => string> = {
+  nonEmpty: (value: string) => (value.trim().length === 0 ? 'Required.' : ''),
+  alwaysInvalid: () => 'Never valid, on purpose.',
 };
+
+function validatorFor(name: string | undefined): ((value: string) => string) | undefined {
+  return name === undefined ? undefined : VALIDATORS[name];
+}
+`;
 
 export function typeExpr(knob) {
   if (knob.form === 'slot') return knob.control === 'slotText' ? 'string' : 'boolean';
@@ -65,30 +70,38 @@ export function renderNode(node, places, depth) {
   return `${pad}<${place.name}${attrs}>\n${children.map((one) => renderNode(one, places, depth + 1)).join('\n')}\n${pad}</${place.name}>`;
 }
 
+export function keyed(rendered, index) {
+  return rendered.replace(/^(<[A-Za-z][\w.]*)/, `$1 key={${index}}`);
+}
+
 export function inlineList(list, places, depth) {
   const rendered = list.map((one) => renderNode(one, places, depth).trim());
-  return rendered.length === 1 ? rendered[0] : `<React.Fragment>${rendered.join('')}</React.Fragment>`;
+  if (rendered.length === 1) return rendered[0];
+  return `[${rendered.map((one, i) => keyed(one, i)).join(', ')}]`;
 }
 
 export function slotChildren(knob, places, depth) {
   const pad = '  '.repeat(depth);
   if (knob.control === 'slotText') return `${pad}{k.${knob.member}}`;
-  const nodes = (knob.nodes ?? []).map((one) => renderNode(one, places, depth + 1)).join('\n');
-  return `${pad}{k.${knob.member} ? (\n${nodes}\n${pad}) : undefined}`;
+  return `${pad}{k.${knob.member} ? ${listExpression(knob.nodes ?? [], places, depth)} : undefined}`;
+}
+
+export function listExpression(nodes, places, depth) {
+  const pad = '  '.repeat(depth);
+  const rendered = nodes.map((one) => renderNode(one, places, depth + 1));
+  if (rendered.length === 1) return `(\n${rendered[0]}\n${pad})`;
+  return `[\n${rendered.map((one, i) => keyed(one.trimStart(), i).split('\n').map((l, n) => (n === 0 ? `${pad}  ${l}` : l)).join('\n')).join(',\n')},\n${pad}]`;
 }
 
 export function slotAttribute(knob, places, pad, depth) {
   if (knob.control === 'slotText') {
     return `\n${pad}${knob.member}={k.${knob.member} === undefined ? undefined : <React.Fragment>{k.${knob.member}}</React.Fragment>}`;
   }
-  const nodes = (knob.nodes ?? []).map((one) => renderNode(one, places, depth + 1)).join('\n');
-  const open = (knob.nodes ?? []).length === 1 ? '' : `\n${pad}  <React.Fragment>`;
-  const close = (knob.nodes ?? []).length === 1 ? '' : `\n${pad}  </React.Fragment>`;
-  return `\n${pad}${knob.member}={k.${knob.member} ? (${open}\n${nodes}${close}\n${pad}) : undefined}`;
+  return `\n${pad}${knob.member}={k.${knob.member} ? ${listExpression(knob.nodes ?? [], places, depth)} : undefined}`;
 }
 
 export function memberAttribute(knob, pad) {
-  if (knob.form === 'functionInput') return `\n${pad}${knob.member}={VALIDATORS[k.${knob.member}]}`;
+  if (knob.form === 'functionInput') return `\n${pad}${knob.member}={validatorFor(k.${knob.member})}`;
   return `\n${pad}${knob.member}={k.${knob.member}}`;
 }
 
@@ -118,11 +131,18 @@ export function renderSubject(model, places, depth) {
   return `${pad}<${name}${attrs}>\n${slotChildren(content, places, depth + 1)}\n${pad}</${name}>`;
 }
 
+export function holdsSubject(node) {
+  if (node === '$subject') return true;
+  if (node === null || typeof node !== 'object') return false;
+  return Object.values(node.slots ?? {}).some((list) => list.some((one) => holdsSubject(one)));
+}
+
 export function renderTree(model, places, depth) {
   if (model.host === null) return renderSubject(model, places, depth);
   const wrap = (node, level) => {
     const pad = '  '.repeat(level);
     if (node === '$subject') return renderSubject(model, places, level);
+    if (!holdsSubject(node)) return renderNode(node, places, level);
     const place = places.get(node.component);
     const slots = node.slots ?? {};
     const named = Object.entries(slots).filter(([name]) => name !== 'content');
@@ -144,14 +164,12 @@ export function knobsInterface(model) {
 }
 
 export function validatorTable(model) {
-  if (!model.knobs.some((knob) => knob.form === 'functionInput')) return '';
-  const rows = Object.entries(VALIDATORS).map(([name, body]) => `  ${name}: ${body},`);
-  return `\nconst VALIDATORS: Record<string, ((value: string) => string) | undefined> = {\n${rows.join('\n')}\n};\n`;
+  return model.knobs.some((knob) => knob.form === 'functionInput') ? VALIDATOR_TABLE : '';
 }
 
 export function reactEntry(model, places, banner) {
   const types = contractTypes(model);
-  const components = [model.component, ...model.uses]
+  const components = [...new Set([model.component, ...model.uses])]
     .map((name) => `import { ${name} } from '${places.get(name).self ? `./${name}.tsx` : importPath(places.get(name))}';`);
 
   const imports = [

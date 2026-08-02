@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   selector, typeExpr, importPath, markerNames, collectFields, escapeText, renderSubject, renderTree,
-  knobsInterface, angularEntry, angularPage, MARKERS_SOURCE,
+  knobsInterface, angularEntry, angularPage, renderNode, slotBlock, attributeText, MARKERS_SOURCE,
 } from './playground-angular.mjs';
 import { repoRoot as root } from '../arena/repo-root.mjs';
 
@@ -79,13 +79,24 @@ test('a component is reached without an extension, which is what the layer\'s ow
   assert.equal(importPath(places.get('Badge')), '../../display/badge/Badge');
 });
 
-test('a literal becomes a typed field rather than template text, so nothing has to be escaped twice', () => {
+test('a string literal becomes a static attribute, because a bound one lands too late for a required input', () => {
   const node = { component: 'Badge', members: { tone: 'success' }, slots: {} };
-  const fields = collectFields(node, contracts, [], 'slot');
-  assert.equal(fields.length, 1);
-  assert.equal(fields[0].type, 'Tone');
-  assert.equal(fields[0].value, 'success');
-  assert.match(entry(), /protected readonly \w+: Tone = "success";/);
+  assert.deepEqual(collectFields(node, contracts, [], 'slot'), []);
+  assert.match(entry(), /<arena-badge action tone="success">/,
+    'SideNavCollapsible reads its projected items\' required id() from a constructor effect, '
+    + 'which runs before a property binding inside @if is applied');
+});
+
+test('a non-string literal stays a typed field, since an attribute would hand it a string', () => {
+  const node = { component: 'Badge', members: { dot: true, count: 3 }, slots: {} };
+  const contract = new Map([['Badge', { api: { dot: { form: 'primitive', type: 'boolean' }, count: { form: 'primitive', type: 'number' } } }]]);
+  const fields = collectFields(node, contract, [], 'slot');
+  assert.deepEqual(fields.map((f) => [f.member, f.type, f.value]), [['dot', 'boolean', true], ['count', 'number', 3]]);
+});
+
+test('an attribute value is escaped once, for the quote that ends it and the braces that would interpolate', () => {
+  assert.equal(attributeText('a "b" c'), 'a &quot;b&quot; c');
+  assert.equal(attributeText('{{ x }}'), '{{ &quot;{{&quot; }} x }}');
 });
 
 test('template syntax inside fixture copy is neutralised rather than executed', () => {
@@ -126,7 +137,7 @@ test('a host wraps the subject where the placeholder marks', () => {
   const hosted = { ...model, host: { component: 'Table', members: { label: 'L' }, slots: { content: ['$subject'] } } };
   const fields = collectFields(hosted.host, contracts, [], 'host');
   const out = renderTree(hosted, places, fields, new Map(), 0, new Set());
-  assert.match(out, /^<arena-table \[label\]="host\w+"/);
+  assert.match(out, /^<arena-table label="L"/);
   assert.match(out, /<arena-card/);
   assert.match(out, /<\/arena-table>$/);
 });
@@ -149,4 +160,38 @@ test('the page mounts demo-root, loads its bundle and declares no card', () => {
   assert.match(page, /build\/demo\/js\/Card\.demo\.entry\.generated\.js/);
   assert.doesNotMatch(page, /@dsCard/);
   assert.match(page, /Utilities\.generated\.css/);
+});
+
+test('a void element is self-closing, because this layer refuses an end tag on one', () => {
+  const node = { element: 'img', attrs: { src: 'x.svg', alt: '' } };
+  const out = renderNode(node, places, [], new Map(), 0, new Set());
+  assert.equal(out.trim(), '<img src="x.svg" alt="" />');
+});
+
+test('each projected node gets its own @if, because a block with two roots projects neither', () => {
+  const knob = {
+    member: 'footer', form: 'slot', type: null, bind: 'optional', bound: true,
+    control: 'slotPresence', codec: 'flag', initial: true, doc: '',
+    nodes: [{ component: 'Badge', slots: {} }, { component: 'Badge', slots: {} }],
+  };
+  const out = slotBlock(knob, places, [], new Map(), 0, new Set(), ' footer');
+  assert.equal(out.match(/@if \(k\(\)\.footer\) \{/g).length, 2);
+});
+
+test('an unfilled named slot pulls in no marker directive, which the compiler would call unused', () => {
+  const empty = {
+    ...model,
+    knobs: [{
+      member: 'action', form: 'slot', type: null, bind: 'optional', bound: false,
+      control: 'slotPresence', codec: 'flag', initial: false, nodes: null, doc: '',
+    }],
+    events: [], uses: [],
+  };
+  assert.doesNotMatch(angularEntry(empty, places, contracts, MARKERS, ''), /ArenaAction/);
+});
+
+test('a component reached twice is imported once', () => {
+  const twice = { ...model, uses: ['Badge', 'Card'] };
+  const out = angularEntry(twice, places, contracts, MARKERS, '');
+  assert.equal(out.match(/import \{ Card \}/g).length, 1);
 });
