@@ -1,5 +1,8 @@
 # Arena behaviour contracts
 
+> **For whoever writes or binds a behaviour pattern.** Using a component instead? What it must do is `contracts/behaviour/<pattern>.json` and
+> its own `<Name>.behaviour.json`, both of which read alone.
+
 `contracts/design/` answers *what is this value*. This directory answers *what must this
 component do*: which roles it carries, which keys it answers, where focus goes,
 what dismisses it.

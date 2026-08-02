@@ -1,5 +1,8 @@
 # Arena API capability contracts
 
+> **For whoever adds or changes a component contract.** Using a component instead? Its members are in `contracts/api/components/<Name>.json`, indexed by
+> [`frameworks/Catalog.generated.md`](../../frameworks/Catalog.generated.md), and how to use it is its own `.prompt.md`. None of that needs this document.
+
 Arena states three contracts. `contracts/design/` is the normative source for design values.
 `contracts/behaviour/` states what a kind of component must do. This directory holds the
 third: **the API capability contract**, one neutral statement per

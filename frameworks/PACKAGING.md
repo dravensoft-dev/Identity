@@ -1,5 +1,8 @@
 # Packaging Arena for npm
 
+> **For whoever builds or publishes a package.** Installing one instead? Read [`react/PACKAGE.md`](./react/PACKAGE.md) or
+> [`angular/PACKAGE.md`](./angular/PACKAGE.md), which is the page npm shows.
+
 Arena ships three ways from one tree. Two of them assume the consumer has this repository:
 the Claude Code plugin, served from the git tag, and the Agent Skill. The third does not,
 and this document is that one: **two npm packages a project installs with `bun add`**.
@@ -38,7 +41,8 @@ So the packages ship everything that is invariant, and the consumer declares the
 - **The consumer's, in `arena.config.json`**: the palettes and the fonts.
 
 A command in each package, `arena-theme`, turns that JSON into the missing stylesheet. Its
-source is [`scripts/generate/core/arena-theme/`](../scripts/generate/core/arena-theme/README.md),
+source is `scripts/generate/core/arena-theme/`, described in
+[`scripts/generate/core/README.md`](../scripts/generate/core/README.md),
 copied whole into `dist/bin/`.
 
 **Import order is what makes it work.** The consumer's generated file comes last, and its

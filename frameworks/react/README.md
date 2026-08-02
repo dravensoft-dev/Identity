@@ -1,5 +1,8 @@
 # Arena, the React layer
 
+> **For whoever works on this layer.** Building an app with it instead? Read [`PACKAGE.md`](./PACKAGE.md) to install it,
+> [`../Catalog.generated.md`](../Catalog.generated.md) to find a component, and that component's `.prompt.md` to use it.
+
 The React primitives, the example Console app, and the shared modules both of them read.
 Every value here comes from `contracts/design/`; this layer introduces no design decision
 of its own. For what those values mean, read

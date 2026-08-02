@@ -1,5 +1,8 @@
 # Arena, the Tailwind layer
 
+> **For whoever authors a manifest or a utility.** Styling an app instead? A component already carries its own appearance;
+> reach for the utilities only where you are drawing something Arena does not.
+
 A framework-neutral Tailwind v4 consumption layer for Arena. It is **shared**,
 not per-framework: the token→utility mapping is pure CSS and a component's
 Tailwind recipe is data, meaning slots, variants and class strings, so every consumer
