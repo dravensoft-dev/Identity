@@ -4,6 +4,7 @@ import {
   coverageProblems, shapeProblems, seedProblems, slotProblems, bindProblems, hostProblems,
   valueProblems, objectProblems, nodeProblems, fixtureProblems, citationProblems,
   loadContracts, loadFixtures, loadTypes, citingFiles, basenameIndex, emissionProblems,
+  pagePaths, smokeProblems,
 } from './check-playgrounds.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -223,4 +224,34 @@ test('copies that are not byte-identical fail, which is the claim the whole emis
 
 test('an emission of nothing is a failure rather than a clean pass', () => {
   assert.match(emissionProblems(root, new Map())[0], /an empty emit is a failure/);
+});
+
+test('the smoke phase walks every emitted page, in both layers', () => {
+  const pages = pagePaths(root);
+  assert.equal(pages.length, 110);
+  assert.equal(pages.filter((p) => p.startsWith('frameworks/react/')).length, 55);
+  assert.equal(pages.filter((p) => p.startsWith('frameworks/angular/')).length, 55);
+});
+
+test('a page that mounts nothing is named with the command that builds what it loads', () => {
+  const problems = smokeProblems('X.html', { mounted: false, knobs: 0, staged: false, errors: [] });
+  assert.equal(problems.length, 1, 'nothing mounted, so nothing else is worth saying');
+  assert.match(problems[0], /mounted nothing — run bun run build first/);
+});
+
+test('a page that mounts but draws no panel or no component fails, since compiling is not rendering', () => {
+  const problems = smokeProblems('X.html', { mounted: true, knobs: 0, staged: false, errors: [] });
+  assert.match(problems[0], /drew no knob row/);
+  assert.match(problems[1], /drew an empty stage/);
+});
+
+test('anything the console reports is a problem, because a component can render and still throw', () => {
+  const problems = smokeProblems('X.html', {
+    mounted: true, knobs: 3, staged: true, errors: ['threw: NG0950: Input "id" is required'],
+  });
+  assert.deepEqual(problems, ['X.html: threw: NG0950: Input "id" is required']);
+});
+
+test('a page that mounts, draws and says nothing is clean', () => {
+  assert.deepEqual(smokeProblems('X.html', { mounted: true, knobs: 3, staged: true, errors: [] }), []);
 });

@@ -5,7 +5,10 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { TRAPS, FOCUSABLE, walkProblems } from './check-focus-trap.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const inside = (n) => Array.from({ length: n }, (_, i) => ({ press: i + 1, inside: true }));
 
@@ -20,6 +23,22 @@ test('the trap table names both layers, or the walk proves half of what it claim
   assert.ok(TRAPS.length > 0);
   assert.ok(TRAPS.some((t) => t.name.endsWith(':react')));
   assert.ok(TRAPS.some((t) => t.name.endsWith(':angular')));
+});
+
+test('every declared page is there, since a walk of a page that 404s reports no trap and no defect', () => {
+  for (const trap of TRAPS) {
+    assert.ok(existsSync(join(repoRoot, trap.page)), `${trap.name} names ${trap.page}, and nothing is there`);
+  }
+});
+
+test('a trap opens from its own fixture, so no walk depends on finding a button by its copy', () => {
+  for (const trap of TRAPS) {
+    assert.equal(trap.open, undefined,
+      `${trap.name} still clicks something open: a page whose copy moved would walk with nothing open `
+      + 'and report a trap that holds');
+    const fixture = JSON.parse(readFileSync(join(repoRoot, 'frameworks/demos', `${trap.name.split(':')[0]}.demo.json`), 'utf8'));
+    assert.equal(fixture.seed.open, true, `${trap.name}'s fixture does not open it`);
+  }
 });
 
 test('a walk that stayed inside, reached everything and wrapped both ways is clean', () => {

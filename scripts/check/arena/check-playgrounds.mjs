@@ -3,13 +3,20 @@
  * wrong renders a page that lies while every other gate stays green. Type-checking a
  * seed is the whole point -- a component drawn from a bad seed still draws. The
  * citation check is here rather than in check:docs because it is the only mechanical
- * hold on a prompt naming a page path, and a moved page is exactly what this wave does. */
+ * hold on a prompt naming a page path, and a moved page is exactly what this wave does.
+ * The smoke phase needs a browser, because a page that mounts nothing is invisible to every
+ * portable check here: the emitted source is what they compare, and a source that compiles
+ * can still throw on the first render. */
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { LAYERS } from '../../lib/arena/layers.mjs';
+import { startStaticServer } from '../../lib/arena/static-server.mjs';
+import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
+import { connect } from '../../lib/arena/cdp.mjs';
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
 import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.mjs';
 import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.mjs';
 
@@ -367,7 +374,83 @@ export function citationProblems(base = root, files = citingFiles(base), names =
   return problems;
 }
 
-function main() {
+export const SMOKE_CONCURRENCY = 4;
+export const SMOKE_SETTLE_MS = 1_500;
+export const NAVIGATE_TIMEOUT_MS = 30_000;
+
+export function pagePaths(base = root, files = buildPlaygrounds(base).files) {
+  return [...files.keys()].filter((rel) => rel.endsWith('.demo.generated.html')).sort();
+}
+
+export function smokeProblems(page, seen) {
+  const problems = [];
+  if (!seen.mounted) {
+    problems.push(`${page}: mounted nothing — run bun run build first, since a page loads a generated sibling`);
+    return problems;
+  }
+  if (seen.knobs === 0) problems.push(`${page}: drew no knob row, so the panel never read its model`);
+  if (!seen.staged) problems.push(`${page}: drew an empty stage, so the component under test rendered nothing`);
+  for (const error of seen.errors) problems.push(`${page}: ${error}`);
+  return problems;
+}
+
+const PROBE = `(() => ({
+  mounted: Boolean(document.querySelector('.pg-title')),
+  knobs: document.querySelectorAll('.pg-knob-name').length,
+  staged: ((document.querySelector('.pg-stage')?.textContent ?? '').trim().length > 0)
+    || (document.querySelector('.pg-stage')?.children.length ?? 0) > 0,
+  errors: window.__arenaErrors ?? [],
+}))()`;
+
+const WATCH = "window.__arenaErrors=[];"
+  + "addEventListener('error',(e)=>window.__arenaErrors.push('threw: '+String(e.message)));"
+  + "addEventListener('unhandledrejection',(e)=>window.__arenaErrors.push('rejected: '+String(e.reason)));"
+  + "const ce=console.error;console.error=(...a)=>{"
+  + "window.__arenaErrors.push('console.error: '+a.map(String).join(' ').slice(0,200));ce(...a);};";
+
+async function visit(cdp, url, page) {
+  const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
+  try {
+    const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
+    await cdp.send('Page.enable', {}, sessionId);
+    await cdp.send('Runtime.enable', {}, sessionId);
+    await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: WATCH }, sessionId);
+    await cdp.send('Page.navigate', { url }, sessionId);
+    const ev = (expression) => cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
+    await ev(`new Promise((r) => setTimeout(r, ${SMOKE_SETTLE_MS}))`);
+    return smokeProblems(page, (await ev(PROBE)).result.value);
+  } finally {
+    try { await cdp.send('Target.closeTarget', { targetId }); } catch { void 0; }
+  }
+}
+
+async function smoke(pages) {
+  const server = await startStaticServer(root);
+  const chrome = await launchChromium(findChromium().path);
+  const cdp = await connect(chrome.wsUrl);
+  const problems = [];
+  try {
+    const queue = [...pages];
+    const workers = Array.from({ length: Math.min(SMOKE_CONCURRENCY, queue.length) }, async () => {
+      for (let page = queue.shift(); page !== undefined; page = queue.shift()) {
+        problems.push(...await visit(cdp, `http://127.0.0.1:${server.port}/${page}`, page));
+      }
+    });
+    await Promise.all(workers);
+  } finally {
+    chrome.kill?.();
+    server.close?.();
+  }
+  return problems.sort();
+}
+
+function skip(reason) {
+  const code = skipExitCode();
+  console.error(`check-playgrounds: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
+  process.exit(code);
+}
+
+async function main() {
   const contracts = loadContracts();
   const fixtures = loadFixtures();
   const types = loadTypes();
@@ -380,16 +463,25 @@ function main() {
   problems.push(...emissionProblems());
   problems.push(...citationProblems());
 
-  if (problems.length > 0) {
-    console.error(`check-playgrounds: ${problems.length} problem(s)\n`);
-    for (const p of problems) console.error(`  ${p}`);
+  const report = (found) => {
+    console.error(`check-playgrounds: ${found.length} problem(s)\n`);
+    for (const one of found) console.error(`  ${one}`);
     process.exit(1);
-  }
+  };
+  if (problems.length > 0) report(problems);
+
+  const pages = pagePaths();
+  const browser = findChromium();
+  if (!browser.path) skip(`${browser.reason}, so no page was loaded and nothing is known about whether one mounts`);
+  const smoked = await smoke(pages);
+  if (smoked.length > 0) report(smoked);
+
   console.log(
     `check-playgrounds: ${fixtures.size} fixture(s) seed every contracted member a contract cannot invent, `
     + `${buildPlaygrounds().files.size} emitted file(s) match a fresh run and every page pair carries one model, `
+    + `${pages.length} page(s) mount and draw with a clean console, `
     + 'and every path cited from a layer exists',
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

@@ -47,9 +47,11 @@ pass" but "how many things did it look at, and is that the number I expect".
 
 ## Exit 2 means SKIP, and a skip is never green
 
-**Four** gates need a runtime dependency that plain node does not have: `check:cards` and
-`check:focus-trap` need a headless browser, `check:vendor` needs `Bun.build`, `check:demos`
-needs `Bun.Transpiler`. Where the dependency is missing the gate exits **2**, `check-all` marks
+**Five** gates need a runtime dependency that plain node does not have: `check:cards`,
+`check:focus-trap` and `check:playgrounds` need a headless browser, `check:vendor` needs
+`Bun.build`, `check:demos` needs `Bun.Transpiler`. `check:playgrounds` runs its portable half
+first and reaches the browser only once that half is clean, so a fixture defect is reported on
+a machine with no browser at all. Where the dependency is missing the gate exits **2**, `check-all` marks
 it `SKIP`, and the whole run reports **INCOMPLETE** rather than passing.
 
 **The repository declares itself strict, so that is not the default here**: a gate that cannot
@@ -65,7 +67,7 @@ read, so a test run or a CI run needs no exports. There are four, and no gate re
 
 | variable | what it decides |
 | --- | --- |
-| `CHROME_PATH` | The browser `check:cards` and `check:focus-trap` drive. Declared, so a machine with Chromium anywhere else needs one export and nothing more. |
+| `CHROME_PATH` | The browser `check:cards`, `check:focus-trap` and `check:playgrounds` drive. Declared, so a machine with Chromium anywhere else needs one export and nothing more. |
 | `ARENA_CHECK_STRICT` | Whether a missing dependency fails or skips. Compared against the exact string `1`. |
 | `CI` | The same, compared against the exact string `true`. Recognised and never declared: claiming it would tell the scripts they run on a runner. Note that a runner setting `CI=1` rather than `CI=true` buys nothing here. |
 | `PORT` | The port `bun run demos` serves on. The gates' own server binds an ephemeral port and ignores it. |
