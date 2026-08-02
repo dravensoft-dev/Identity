@@ -51,8 +51,12 @@ about changing Arena belongs here**; a rule written into both goes stale in one 
 **A published Arena carries the language and never the skin**, which is the decision the
 whole npm channel follows from: the palettes and the fonts arrive as an `arena.config.json`
 the consuming project writes, and the `arena-theme` command each package ships turns it into
-the one stylesheet a package cannot carry. Phosphor is a peer dependency in both, never a
-bundled asset. **`dist/` is git-ignored and six gates skip a directory of that name**, because
+the one stylesheet a package cannot carry. **Two couplings are part of the adoption contract
+and are stated as such**: Phosphor for iconography, a peer dependency in both packages and
+never a bundled asset, and Tailwind for the Angular layer's appearance, whose
+`tailwind-variants` and `tailwind-merge` are runtime dependencies of that package because
+every component's look is a class string from the shared recipe layer. What the compiled
+utility sheet saves an adopter is the BUILD, not the coupling. **`dist/` is git-ignored and six gates skip a directory of that name**, because
 it puts a copy of each layer inside the tree they walk; the exclusion is asserted in each
 gate's own suite. Both packages are **live on npm**, **published by a workflow** over OIDC, one
 per layer that changed, so the two sit at different versions whenever a release left one alone;

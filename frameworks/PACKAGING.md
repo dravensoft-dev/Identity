@@ -53,6 +53,34 @@ equal specificity, so source order decides and the consumer's values win.
 renders, so the icons are a peer dependency in both packages. Bundling them would ship a
 font the consumer may already have and cannot swap.
 
+## Two couplings, and they are part of the contract
+
+**A package's appearance is Tailwind, the way its iconography is Phosphor.** Neither is an
+implementation detail a future version quietly swaps, and both are worth saying plainly,
+because an adopter budgets for a dependency they were told about and resents one they find.
+
+- **Phosphor** travels as a **peer dependency** of both packages. Every `icon` member is a
+  class name the consumer supplies and a component renders, so the font has to be installed
+  and the names have to be Phosphor's. `check:icons` holds the names Arena itself writes.
+- **Tailwind** travels as **two runtime dependencies of the Angular package**,
+  `tailwind-variants` and `tailwind-merge`, plus a slice of `frameworks/tailwind/` staged
+  beside the layer. Every Angular component's appearance is a class string resolved from the
+  shared recipe layer through the configured `tv`, so the recipes are not swappable for
+  another styling system without rewriting every component. The React layer styles itself
+  with inline style objects and carries neither dependency, which is the one place the two
+  packages genuinely differ.
+
+**What the compiled `Utilities.generated.css` saves is the BUILD, not the coupling.** It
+ships as `css/utilities.css`, so an adopter who does not run Tailwind never compiles
+anything and still gets the right rules; an adopter who does run Tailwind v4 imports the
+`@theme` preset beside it and compiles their own, which is smaller. Either way the class
+strings on the elements are Tailwind's, and a project that wants none of that wants a
+different design system.
+
+**The Tailwind layer is still not a third package.** It is data travelling one way into
+Angular, the single edge `check:layer-independence` declares `ALLOWED`, and no consumer of
+the Angular package ever imports it by name.
+
 ## Assembly, not restructuring
 
 Nothing moves. `bun run build:packages` reads the tree as it stands and writes two
@@ -83,11 +111,8 @@ imports a Tailwind manifest four directories up. So the layer is staged at
 `frameworks/angular/build/package/` with that slice of `frameworks/tailwind/` beside it, and each
 specifier is repointed to the depth it now sits at.
 
-**The Tailwind layer is not a third package.** It is data travelling one way into Angular,
-which is the single edge `check:layer-independence` declares `ALLOWED`, and no consumer of
-the Angular package ever names it. The compiled `Utilities.generated.css` ships too, so a
-consumer needs no Tailwind at all; the `@theme` preset ships beside it for one who already
-runs Tailwind v4 and would rather compile.
+**Angular's staging tree is the shape that coupling takes at build time**, and the section
+above is what it means for an adopter.
 
 ### What never ships
 

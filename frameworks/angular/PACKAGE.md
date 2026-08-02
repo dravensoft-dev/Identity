@@ -8,8 +8,14 @@ component, and shipped in Angular Package Format.
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
 
-**You do not need Tailwind.** The compiled utility sheet ships with the package, so one
-`@import` is enough. If your app already runs Tailwind v4, the `@theme` preset is here too.
+**You do not need to RUN Tailwind, and the appearance is Tailwind either way.** The compiled
+utility sheet ships with the package, so one `@import` is enough and you compile nothing; if
+your app already runs Tailwind v4, the `@theme` preset is here too and you compile a smaller
+sheet from it. What is fixed is that every component's appearance is a class string from a
+shared recipe layer, resolved through `tailwind-variants` and `tailwind-merge`, which travel
+as runtime dependencies of this package. **This is a coupling and not a detail**, the way
+Phosphor is for iconography: a project that wants a different styling system underneath wants
+a different design system.
 
 ## It works with the repository, and that is the point
 
