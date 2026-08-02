@@ -37,18 +37,23 @@ if (!check('marketplace entry', !!entry, entry ? `"${plugin.name}" found` : `no 
 
 check('marketplace version', entry.version === version, `${entry.version ?? '(unset)'} — plugin.json says ${version}`);
 
-const readme = read('README.md');
-const artifact = (label) => readme.match(new RegExp(`^-\\s+\\*\\*${label}\\*\\*:\\s*(\\S+)`, 'm'))?.[1];
+const HEADING = 'Latest project artifacts';
+const LABEL = 'Repo/Claude Code plugin';
 
-for (const label of ['Repo', 'Claude Code plugin']) {
-  const found = artifact(label);
-  check(`README ${label}`, found === version, found ?? `no "- **${label}**: X.Y.Z" line found`);
-}
+const lines = read('README.md').split('\n');
+const opens = lines.findIndex((l) => new RegExp(`^##\\s+${HEADING}\\s*$`).test(l));
+const closes = lines.findIndex((l, i) => i > opens && /^##\s/.test(l));
+const artifacts = opens === -1 ? [] : lines.slice(opens + 1, closes === -1 ? lines.length : closes);
 
-for (const label of ['npm package - React', 'npm package - Angular']) {
-  check(`README ${label}`, true,
-    `${artifact(label) ?? '(unset)'} — a package keeps its version until something it carries moves, so this one trails ${version} whenever a release left its layer alone`,
-    false);
+if (check('README artifact list', opens !== -1, opens === -1 ? `no "## ${HEADING}" section found` : `${artifacts.filter((l) => l.trim()).length} entr(ies)`)) {
+  const stated = artifacts.join('\n').match(new RegExp(`^-\\s+\\*\\*${LABEL}\\*\\*:\\s*(\\S+)`, 'm'))?.[1];
+  check('the repo and the plugin move together', stated === version, stated ?? `no "- **${LABEL}**: X.Y.Z" line found`);
+
+  const restated = artifacts.filter((l) => /npm/i.test(l) && /\d+\.\d+\.\d+/.test(l));
+  check('a package version is linked, never restated', restated.length === 0,
+    restated.length
+      ? `${restated.length} line(s) write a version the registry decides: ${restated.map((l) => l.trim()).join(' | ')}`
+      : `${artifacts.filter((l) => /npm/i.test(l)).length} package(s) point at the registry, which is the authority on what is published`);
 }
 
 const source = entry.source;
