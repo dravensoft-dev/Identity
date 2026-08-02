@@ -63,6 +63,17 @@ test('a function-typed member packed beside another is split too, parentheses an
   assert.deepEqual(unpackMembers(packed).split('\n'), ['  actionLabel?: string;', '  onAction?: () => void;']);
 });
 
+test('a member name reused as an object key outside the props interface is left alone', () => {
+  const source = 'export interface XProps {\n  gap?: string;\n}\n\n'
+    + 'export function X({ gap }: XProps) {\n  const style = {\n'
+    + '    gap: STEP[gap],\n  };\n  return style;\n}\n';
+  const out = applyDocs(source, new Map([['gap', 'The air between cells.']]), 'react');
+  assert.equal((out.match(/\/\*\*/g) ?? []).length, 1,
+    'the description landed inside the render as well -- a style key is not a member, and '
+    + 'check:api holds every doc under components/ equal to a contract it can find');
+  assert.match(out, /\/\*\* The air between cells\. \*\/\n {2}gap\?: string;/);
+});
+
 test('a line that is one member is left exactly alone', () => {
   const line = '  floating?: boolean;';
   assert.doesNotMatch(line, PACKED_MEMBERS);

@@ -1,0 +1,39 @@
+<!-- @dsCard group="Tailwind" viewport="820x520" name="Grid" subtitle="The four gap steps, rendered from Grid.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../../intro/styles.css">
+<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+
+const manifest = await (await fetch('./Grid.manifest.json')).json();
+
+const TRACKS = 'repeat(auto-fit, minmax(min(calc(var(--sp-1) * 34), 100%), 1fr))';
+
+function cell(text) {
+  return el('div', {
+    class: 'bg-base-300 border-[length:var(--bw)] border-neutral rounded-sm px-3 py-2.5 '
+      + 'font-mono text-ctl-sm text-base-content/82',
+    text,
+  });
+}
+
+function grid(gap, count) {
+  const box = el('div', { class: classesFor(manifest, { gap }).root, style: { gridTemplateColumns: TRACKS } });
+  for (let i = 1; i <= count; i += 1) box.append(cell(`Cell ${i}`));
+  return box;
+}
+
+mountSpecimen({ sections: [
+  section('gap="none"', [grid('none', 4)], { stack: true }),
+  section('gap="sm"', [grid('sm', 4)], { stack: true }),
+  section('gap="md" — the default', [grid('md', 4)], { stack: true }),
+  section('gap="lg"', [grid('lg', 4)], { stack: true }),
+  section('The count comes from the room, not from a breakpoint', [
+    el('div', { class: 'font-body text-sm text-base-content/62' },
+      'The manifest holds the display and the gap; the track list is the component\'s, and it is '
+      + 'the same repeat(auto-fit, minmax(min(min, 100%), 1fr)) in both layers.'),
+  ]),
+]});
+</script></body></html>

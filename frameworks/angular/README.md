@@ -73,8 +73,8 @@ than being handed one. A consumer's own wrapper component between two levels is 
 harmless here, since it interrupts nothing that travels. **The coordination is a member of no
 contract**, the way `Table`/`TableRow` and `RadioGroup`/`Radio` are not.
 
-The layer spans all six categories the layout rule allows: `brand`, `charts`, `display`,
-`feedback`, `forms` and `navigation`. **Read the set from the tree
+The layer spans every category the layout rule allows: `brand`, `charts`, `display`,
+`feedback`, `forms`, `layout` and `navigation`. **Read the set from the tree
 rather than from a list here**, because a list here rots and nothing checks it:
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | sort`, and count it
 with the same command piped to `wc -l`.

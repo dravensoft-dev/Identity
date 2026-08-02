@@ -83,6 +83,12 @@ Import every component from its layer's package root: `@dravensoft/arena-react` 
 | `Switch` | A controlled on/off switch showing an icon per state. `confirm` gates a high-impact change through a ConfirmDialog before it applies. | `state` `orientation` `size` `iconOn` `iconOff` `label*` `disabled` `confirm` `funcOn` `funcOff` `requestChange` | switch | [angular](./angular/components/forms/switch/Switch.prompt.md) · [react](./react/components/forms/switch/Switch.prompt.md) |
 | `Textarea` | Multi-line text field with validation and an optional counter. | `label` `id` `hint` `error` `required` `counter` `autoResize` `value` `disabled` `readOnly` `placeholder` `name` `maxLength` `rows` `change` | textbox | [angular](./angular/components/forms/textarea/Textarea.prompt.md) · [react](./react/components/forms/textarea/Textarea.prompt.md) |
 
+## layout
+
+| Component | What it is | Takes | Behaviour | Usage |
+|---|---|---|---|---|
+| `Grid` | A grid that decides its own column count from the room it is given, rather than from a breakpoint anyone had to pick. Cells are as wide as they can be at or above a minimum, and the count falls as the room does, all the way to one. | `min` `gap` `maxWidth` `content` | none | [angular](./angular/components/layout/grid/Grid.prompt.md) · [react](./react/components/layout/grid/Grid.prompt.md) |
+
 ## navigation
 
 | Component | What it is | Takes | Behaviour | Usage |
@@ -101,4 +107,4 @@ Import every component from its layer's package root: `@dravensoft/arena-react` 
 | `Tab` | One tab in a Tabs strip, and the panel it shows. Tab draws the button; its content fills the tabpanel Tabs renders beside the tablist. | `value*` `label*` `content` | none | [angular](./angular/components/navigation/tab/Tab.prompt.md) · [react](./react/components/navigation/tab/Tab.prompt.md) |
 | `Tabs` | A row of tabs and the one panel they switch between. Write one `Tab` per view; Tabs renders the tablist, the panel, and the keyboard. | `content` `value` `defaultValue` `change` | tabs | [angular](./angular/components/navigation/tabs/Tabs.prompt.md) · [react](./react/components/navigation/tabs/Tabs.prompt.md) |
 
-52 components across 6 categories.
+53 components across 7 categories.

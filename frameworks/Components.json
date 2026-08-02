@@ -41,6 +41,7 @@
     "Switch",
     "Textarea"
   ],
+  "layout": ["Grid"],
   "navigation": [
     "Breadcrumbs",
     "BulkActionBar",

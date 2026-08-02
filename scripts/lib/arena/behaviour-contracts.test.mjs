@@ -172,7 +172,7 @@ test('an angular binding that names its counterpart is valid', () => {
 
 test('the React inventory finds every component, no category and no loose file', () => {
   const found = reactComponents('.');
-  assert.equal(found.length, 52);
+  assert.equal(found.length, 53);
   assert.ok(found.includes('Dialog'));
   assert.ok(found.includes('CalendarEvent'));
   assert.ok(found.includes('TableRow'));
@@ -186,13 +186,13 @@ test('the React inventory finds every component, no category and no loose file',
   assert.ok(!found.includes('side-nav-inject'));
   assert.ok(!found.some((c) => c.endsWith('.card.entry')));
 
-  for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'])
+  for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'layout', 'navigation'])
     assert.ok(!found.includes(pascal(category)), `${category} is a category, not a component`);
 });
 
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
-  assert.equal(found.length, 52);
+  assert.equal(found.length, 53);
   assert.ok(found.includes('tag'));
   assert.ok(found.includes('bar-chart'));
   assert.ok(found.includes('button'));
@@ -201,7 +201,7 @@ test('the Angular inventory finds every component, no category and no bare modul
   assert.ok(found.includes('calendar-event'));
   assert.ok(!found.includes('CalendarInternals.ts'));
   assert.ok(!found.includes('CalendarState.ts'));
-  for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'navigation'])
+  for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'layout', 'navigation'])
     assert.ok(!found.includes(category), `${category} is a category, not a component`);
   assert.ok(!found.includes('ChartDataTable.test.ts'));
   assert.ok(!found.includes('index.ts'));
