@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import type { InputType, ValidateOn } from '../../../Api.generated';
 
@@ -93,14 +93,24 @@ function usePickerIndicator() {
   }, []);
 }
 
-export function Input({
+export interface InputHandle {
+  focus(options?: FocusOptions): void;
+  select(): void;
+}
+
+export const Input = forwardRef<InputHandle, InputProps>(function Input({
   label, id, hint, error, valid = false, required = false,
   validate, validateOn = 'blur', type = 'text',
   icon, prefix, value, disabled = false, readOnly = false,
   placeholder, name, autoComplete, min, max, step, maxLength, pattern,
   onChange, onBlur,
-}: InputProps) {
+}: InputProps, handle) {
   usePickerIndicator();
+  const control = useRef<HTMLInputElement>(null);
+  useImperativeHandle(handle, () => ({
+    focus: (options?: FocusOptions) => control.current?.focus(options),
+    select: () => control.current?.select(),
+  }), []);
   const [focus, setFocus] = useState(false);
   const [localErr, setLocalErr] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
@@ -129,7 +139,7 @@ export function Input({
         transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
         {icon && <i className={icon} aria-hidden="true" style={{ color: 'var(--mute)' }} />}
         {prefix && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{prefix}</span>}
-        <input id={inputId} type={type} value={value} disabled={disabled} readOnly={readOnly}
+        <input ref={control} id={inputId} type={type} value={value} disabled={disabled} readOnly={readOnly}
           required={required} aria-invalid={!!shownError} className="arena-input"
           placeholder={placeholder} name={name} autoComplete={autoComplete}
           min={min} max={max} step={step} maxLength={maxLength} pattern={pattern}
@@ -144,4 +154,4 @@ export function Input({
         : hint && <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span>}
     </div>
   );
-}
+});

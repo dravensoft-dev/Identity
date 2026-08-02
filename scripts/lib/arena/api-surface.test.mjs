@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  classify, reactSurface, angularSurface, templateSlots, braceBody, UnrecognisedShape, PLATFORM_TYPES, reactImplementation, literalValue, defaultProblems,
+  classify, reactSurface, angularSurface, templateSlots, braceBody, UnrecognisedShape, PLATFORM_TYPES, reactImplementation, literalValue, defaultProblems, IMPERATIVE_HANDLES,
 } from './api-surface.mjs';
 
 test('the three primitives classify as primitives', () => {
@@ -523,4 +523,25 @@ test('a contract default with no destructuring default is NOT reported, because 
 
 test('a non-literal default is not compared, because the gate reads source and does not evaluate it', () => {
   assert.deepEqual(defaultProblems('react/Dialog', 'width', 'calc(var(--sp-1) * 120)', 'calc(var(--sp-1) * 120)'), []);
+});
+
+test('IMPERATIVE_HANDLES names each allowed method by literal value, with a reason', () => {
+  assert.deepEqual([...IMPERATIVE_HANDLES.keys()].sort(), ['Input.focus', 'Input.select'],
+    'a public method on a component class is an undeclared surface unless it is one of these, '
+    + 'and widening the set is a decision rather than an oversight');
+  for (const [name, reason] of IMPERATIVE_HANDLES) {
+    assert.ok(reason.length > 60, `${name} carries no real reason`);
+  }
+});
+
+test('an allowed handle is skipped, and any other public method still fails', () => {
+  const allowed = 'export class Input {\n  readonly a = input<string>();\n  focus(): void { this.x(); }\n}';
+  assert.deepEqual(angularSurface(allowed, 'Input').members.map((m) => m.name), ['a']);
+
+  const stray = 'export class Input {\n  readonly a = input<string>();\n  reset(): void { this.x(); }\n}';
+  assert.throws(() => angularSurface(stray, 'Input'), UnrecognisedShape);
+
+  const wrongClass = 'export class Select {\n  readonly a = input<string>();\n  focus(): void { this.x(); }\n}';
+  assert.throws(() => angularSurface(wrongClass, 'Select'), UnrecognisedShape,
+    'the allowance is keyed by component and method, so it does not leak to a sibling');
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React, { useRef } from 'react';
 import { mount, cleanup } from './Harness.tsx';
-import { readBreakpoint, useContainerWidth } from '../UseContainerWidth.ts';
+import { forgetBreakpoints, readBreakpoint, useContainerWidth } from '../UseContainerWidth.ts';
 
 function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
   const messages: string[] = [];
@@ -18,6 +18,7 @@ function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
 const root = () => document.documentElement.style;
 
 test('an unresolved breakpoint says so once, rather than returning a silent NaN', () => {
+  forgetBreakpoints();
   root().removeProperty('--bp-lg');
 
   const first = captureWarn(() => readBreakpoint('lg'));

@@ -1,5 +1,6 @@
 import {
-  ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output, signal,
+  ChangeDetectionStrategy, Component, ElementRef, booleanAttribute, computed, input, output, signal,
+  viewChild,
 } from '@angular/core';
 import type { InputType, ValidateOn } from '../../../Api.generated';
 import { inputStyles } from './Input.variants';
@@ -31,7 +32,7 @@ export function inputIdFor(id: string | undefined, label: string | undefined): s
       @if (prefix(); as text) {
         <span [class]="styles().prefix()">{{ text }}</span>
       }
-      <input [class]="styles().input()" [attr.id]="controlId()" [attr.type]="type()"
+      <input #control [class]="styles().input()" [attr.id]="controlId()" [attr.type]="type()"
              [value]="value() ?? ''" [disabled]="disabled()" [readOnly]="readOnly()"
              [required]="required()" [attr.aria-invalid]="hasError()"
              [attr.placeholder]="placeholder()" [attr.name]="name()"
@@ -152,5 +153,15 @@ export class Input {
   private runValidate(text: string): void {
     const fn = this.validate();
     if (fn) this.localError.set(fn(text) || null);
+  }
+
+  private readonly control = viewChild<ElementRef<HTMLInputElement>>('control');
+
+  focus(options?: FocusOptions): void {
+    this.control()?.nativeElement.focus(options);
+  }
+
+  select(): void {
+    this.control()?.nativeElement.select();
   }
 }

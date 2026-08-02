@@ -71,3 +71,23 @@ open `/frameworks/angular/components/forms/input/Input.card.html`:
 - The error border and ring appear at rest, with no focus needed.
 - Typing into the validated field and leaving it produces the message on blur, and the
   `validateOn="change"` one produces it while typing and clears it again.
+
+### Taking focus, the one method on the component
+
+`arena-input` exposes `focus()` and `select()` on the class. Reach them with a `viewChild`, and
+never by querying the real `<input>` out of the host, which is Arena's markup and can move:
+
+```ts
+readonly search = viewChild.required(Input);
+
+completeSale(): void {
+  this.record();
+  this.search().focus();
+  this.search().select();
+}
+```
+
+They are methods rather than members because none of the nine contract forms is imperative, and
+`autoFocus` would answer a different question: it fires once at mount, and chaining sales needs
+focus back after **every** completion. `contracts/api/README.md` states the rule and
+`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` is what allows exactly these two.

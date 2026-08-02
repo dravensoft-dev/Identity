@@ -81,12 +81,18 @@ style **objects**, meaning the camelCase
 `check:dimensions` can actually read. `chart-card` is not one of them: it is a bordered
 tile with a microlabel, so it has a manifest like every other expressible component.
 
-Four shared files are not components, and each sits at the narrowest level that contains
+Five shared files are not components, and each sits at the narrowest level that contains
 all of its consumers rather than in one shared bucket:
 `ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
 once per name when a breakpoint token does not resolve and never caches the failure**: every
 comparison against `NaN` is false, so a silent one leaves `Table`, `Calendar` and `PageHead` on
-their wide branch on a phone with nothing reported),
+their wide branch on a phone with nothing reported, plus `forgetBreakpoints`, which drops what
+was cached for the two callers that need it, a document that swapped its stylesheet at runtime
+and a suite whose subject is the cache, and `viewportBelow`, below),
+`AnchorActivation.ts` (the predicate behind the anchor convention: an anchor Arena draws cancels
+a primary click with no modifier and reports through its own navigation event, and everything
+else is the browser's, which `Card`, `Breadcrumbs`, `SideNavItem` and `CommandPalette` all read
+and `test/AnchorActivation.test.ts` holds one activation at a time),
 `FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
 used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
@@ -99,6 +105,26 @@ sits at the layer root beside them, and the rule puts it there in both layers no
 consumers are the three charts **and** `arena-calendar-event`, which reads `catColor` for a
 chip's identity colour. The name matches the placement: a module a schedule grid consumes is
 not "chart internals".
+
+**`viewportBelow(name)` answers the other half of the breakpoint question, and it is a
+different question.** `containerWidth` measures a box, which is what a component needs, because
+a component may be rendered anywhere and the viewport says nothing about how much room it was
+given. `viewportBelow` measures the viewport, which is what a page layout needs and what an app
+writing CSS in a `styles:` block cannot get any other way: a media query condition holds no
+`var()`, so the threshold cannot be named from a stylesheet at all. It returns a signal over
+`not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
+`max-width` an epsilon short of it, and it warns through the same `readBreakpoint` when the
+token does not resolve. **Reach for it for a page's own layout and never for a component's**: a
+component that branches on the viewport is wrong the first time somebody puts it in a narrow
+column.
+
+**One component exposes a method, and it is the only one.** `arena-input` has `focus()` and
+`select()`, because none of the nine contract forms is imperative and returning focus after each
+completed transaction is what lets a till chain sales without the mouse; `autoFocus` fires once
+at mount and answers a different question. `IMPERATIVE_HANDLES` in
+`scripts/lib/arena/api-surface.mjs` is what lets `check:api` read a public method on a component
+class at all, it names these two and no others with a reason each, and any other public method
+still fails the gate as an undeclared surface.
 
 A primitive defines no styling of its own. Its recipe lives in
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`,

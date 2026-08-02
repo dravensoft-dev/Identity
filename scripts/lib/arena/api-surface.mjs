@@ -275,6 +275,15 @@ function interfaceMembers(body) {
   return members;
 }
 
+export const IMPERATIVE_HANDLES = new Map([
+  ['Input.focus', 'None of the nine contract forms is imperative, and returning focus to a field '
+    + 'after the transaction it belongs to is settled is a gesture no declarative member expresses: '
+    + 'autoFocus fires once at mount, and the caller needs it again on every completion. It is a '
+    + 'method on the class rather than a member, in both layers, and each layer README says so.'],
+  ['Input.select', 'The same handle, for the case that follows it: focusing a field holding a value '
+    + 'the caller expects to be replaced is one keystroke short of useful without it.'],
+]);
+
 export function angularSurface(source, className) {
   const decl = new RegExp(`export\\s+class\\s+${className}\\b[^{]*\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export class ${className}" in this source`);
@@ -300,6 +309,8 @@ export function angularSurface(source, className) {
       continue;
     }
     if (/^(protected|private)\b/.test(text)) continue;
+    const method = /^([A-Za-z_$][\w$]*)\s*\(/.exec(text);
+    if (method && IMPERATIVE_HANDLES.has(`${className}.${method[1]}`)) continue;
     const m = /^readonly\s+([A-Za-z_$][\w$]*)\s*=\s*([\s\S]+)$/.exec(text);
     if (!m) throw new UnrecognisedShape(`unreadable class member: ${text}`);
     members.push(classMember(m[1], m[2]));

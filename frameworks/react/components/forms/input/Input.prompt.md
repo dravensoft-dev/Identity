@@ -41,3 +41,25 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 - Don't build a custom calendar popover to replace it. That is a deliberate non-goal: a custom picker is a large accessibility surface to re-earn, and the native one already has it.
 - Don't fake a date field with `type="text"` and a mask. It loses the picker, the mobile keyboard and the locale.
 - Don't reach for a wrapper attribute or an inline `style` to size the field; wrap it in a container you control instead.
+
+### Taking focus, the one handle on the component
+
+`Input` forwards a ref carrying `focus()` and `select()`. Reach them through it, and never by
+querying the real `<input>` out of the DOM, which is Arena's markup and can move:
+
+```tsx
+const search = useRef<InputHandle>(null);
+
+function completeSale() {
+  record();
+  search.current?.focus();
+  search.current?.select();
+}
+
+<Input ref={search} label="Search" value={query} onChange={setQuery} />
+```
+
+They are a handle rather than props because none of the nine contract forms is imperative, and
+an `autoFocus` prop would answer a different question: it fires once at mount, and chaining
+sales needs focus back after **every** completion. `contracts/api/README.md` states the rule and
+`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` is what allows exactly these two.

@@ -69,8 +69,9 @@ BarChart, LineChart, DoughnutChart, all dependency-free SVG) and `brand/` (AppLo
 
 A file that is not one component's rises to the narrowest level containing all of its
 consumers, and a compound family counts as its parent rather than as the category. The
-layer root holds the generated `Api.generated.ts` and `Tokens.generated.js` plus four
-shared internals: `DataVisuals.ts`, `UseContainerWidth.ts`, `Theme.ts` and `UseDialogModal.ts`,
+layer root holds the generated `Api.generated.ts` and `Tokens.generated.js` plus five
+shared internals: `DataVisuals.ts`, `UseContainerWidth.ts`, `Theme.ts`, `AnchorActivation.ts`
+and `UseDialogModal.ts`,
 that last one because its suite counts as a consumer: its three component consumers are all in
 `feedback/`, but `test/UseDialogModal.dom.test.tsx` is one too.
 
@@ -78,7 +79,26 @@ that last one because its suite counts as a consumer: its three component consum
 resolve, and never caches the failure.** Every comparison against `NaN` is false, so a silent one
 leaves `Table`, `Calendar` and `PageHead` on their wide branch on a phone with nothing reported,
 and a cached one pins that for the life of the process. `test/UseContainerWidth.dom.test.tsx`
-holds both halves.
+holds both halves. `forgetBreakpoints()` drops what was cached, for the two callers that need
+it: a document that swapped its stylesheet at runtime, and a suite whose subject is the cache,
+which would otherwise depend on which file the runner reached first.
+
+**`useViewportBelow(name)` answers the other question, and it is a different one.**
+`useContainerWidth` measures a box, which is what a component needs, because a component may be
+rendered anywhere and the viewport says nothing about how much room it was given.
+`useViewportBelow` measures the viewport, which is what a page layout needs and what a consumer
+writing their own stylesheet cannot get any other way: a media query condition
+holds no `var()`, so the threshold cannot be named from CSS at all. The query is
+`not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
+`max-width` an epsilon short of it. **Reach for it for a page's own layout and never for a
+component's**: a component that branches on the viewport is wrong the first time somebody puts
+it in a narrow column.
+
+**`AnchorActivation.ts` is the predicate behind the anchor convention**: an anchor Arena draws
+cancels a primary click with no modifier and reports through its own navigation event, and
+everything else is the browser's. `Card`, `Breadcrumbs`, `SideNavItem` and `CommandPalette` all
+read it, `contracts/api/README.md` states the rule, and `test/AnchorActivation.dom.test.tsx`
+holds each activation separately.
 
 **`UseDialogModal.js` implements `contracts/behaviour/dialog-modal.json` for this layer, and
 that contract is its only authority**, covering `focus.trap`, `focus.onOpen`, `focus.onClose` and

@@ -220,6 +220,25 @@ demanding identical call-site syntax would demand something neither platform can
 This is the line that makes "zero API divergences" achievable rather than rhetorical:
 identical members, idiomatic binding.
 
+### An imperative handle is not a member, and the gate is what keeps it rare
+
+**None of the nine forms is imperative**, and that is a property of what a contract can state
+rather than an omission: every form is a value that flows in or a report that flows out, and a
+method the consumer calls at a moment of their own choosing is neither. So a component that
+needs one exposes it on the class in each layer, documented in that layer's README, and it
+appears in no contract.
+
+It is not free. `check:api` reads a layer's class and refuses any public member it cannot
+recognise, so an imperative handle exists only by being named in `IMPERATIVE_HANDLES`
+(`scripts/lib/arena/api-surface.mjs`), keyed by component and method, with its reason as the
+value, and asserted by literal value in that file's own suite. Any other public method on any
+component fails the gate as an undeclared surface.
+
+**Ask first whether the answer is a member.** `Input.focus()` earns its place because returning
+focus to a field after the transaction it belongs to is settled is a gesture no declarative
+member expresses: `autoFocus` fires once at mount and the caller needs it again on every
+completion. A handle that could have been a boolean is a boolean.
+
 ### Required-ness is contracted too, with a carve-out
 
 `required` is not only wording for a missing-member message: the contract's `required`

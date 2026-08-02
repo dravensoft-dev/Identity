@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOCUMENT, ElementRef, Injector, runInInjectionContext } from '@angular/core';
-import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { containerWidth, forgetBreakpoints, readBreakpoint } from '../../../ContainerSize';
 import { pageHeadStyles } from './PageHead.variants';
 
 function injectorWith(properties: Record<string, string>): Injector {
@@ -117,6 +117,7 @@ test('every slot resolves to a non-empty class string with no variant argument',
 });
 
 test('readBreakpoint reads --bp-<name> off the document root and returns it as a number of px', () => {
+  forgetBreakpoints();
   const value = runInInjectionContext(injectorWith({ '--bp-md': ' 768px ' }), () => readBreakpoint('md'));
   assert.equal(value, 768);
 });
