@@ -5,11 +5,11 @@
   "api": {
     "label": { "form": "primitive", "type": "string", "description": "Field label; the counter and error sit under the field." },
     "id": { "form": "primitive", "type": "string",
-            "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `ta-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased — the derivation Input.id states, under this component's own prefix." },
+            "description": "The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `ta-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased: the derivation Input.id states, under this component's own prefix." },
     "hint": { "form": "primitive", "type": "string", "description": "A line of help under the field." },
     "error": { "form": "primitive", "type": "string", "description": "Error message; turns the border crimson and shows below." },
     "required": { "form": "primitive", "type": "boolean", "default": false, "description": "Marks the label and the control required." },
-    "counter": { "form": "primitive", "type": "boolean", "default": false, "description": "Shows a live length/maxLength count, which warns once the length is STRICTLY past nine tenths of `maxLength` — exactly at the share is not yet near the limit." },
+    "counter": { "form": "primitive", "type": "boolean", "default": false, "description": "Shows a live length/maxLength count, which warns once the length is STRICTLY past nine tenths of `maxLength`; exactly at the share is not yet near the limit." },
     "autoResize": { "form": "primitive", "type": "boolean", "default": false, "description": "Grows with the content instead of scrolling." },
     "value": { "form": "primitive", "type": "string", "description": "The controlled text." },
     "disabled": { "form": "primitive", "type": "boolean", "default": false, "description": "Blocks editing and dims it." },

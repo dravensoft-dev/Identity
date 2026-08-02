@@ -36,7 +36,7 @@ export class SegmentedControl {
   readonly defaultValue = input<string>();
   /** Compact or default. */
   readonly size = input<SegmentedControlSize>('md');
-  /** Names what is being filtered — "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
+  /** Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
   readonly ariaLabel = input.required<string>();
   /** Shared name for the underlying radios; generated when omitted. */
   readonly name = input<string>();

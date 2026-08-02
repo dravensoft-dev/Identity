@@ -3,7 +3,7 @@ import React from 'react';
 import type { AlertTone } from '../../../Api.generated';
 
 export interface AlertProps {
-  /** The severity — colour, default icon, and (for danger) the alert role. */
+  /** The severity: colour, default icon, and (for danger) the alert role. */
   tone?: AlertTone;
   /** An optional bold lead line above the message. */
   title?: string;
@@ -15,7 +15,7 @@ export interface AlertProps {
   actionLabel?: string;
   /** The inline action button was activated. */
   onAction?: () => void;
-  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6. */
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. */
   dismissible?: boolean;
   /** The × was activated. */
   onClose?: () => void;

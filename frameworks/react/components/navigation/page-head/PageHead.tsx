@@ -5,7 +5,7 @@ import type { PageHeadAlign } from '../../../Api.generated';
 
 export interface PageHeadProps {
 
-  /** The page title. Required — a page head with no title is a bug, not a state. */
+  /** The page title. Required: a page head with no title is a bug, not a state. */
   title: string;
 
   /** A muted line under the title. */

@@ -17,7 +17,7 @@ export interface SegmentedControlProps {
   /** Compact or default. */
   size?: SegmentedControlSize;
 
-  /** Names what is being filtered — "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
+  /** Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
   ariaLabel: string;
 
   /** Shared name for the underlying radios; generated when omitted. */

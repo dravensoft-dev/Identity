@@ -1,5 +1,8 @@
 # Arena, the Angular layer
 
+> **For whoever works on this layer.** Building an app with it instead? Read [`PACKAGE.md`](./PACKAGE.md) to install it,
+> [`../Catalog.generated.md`](../Catalog.generated.md) to find a component, and that component's `.prompt.md` to use it.
+
 **Published as `@dravensoft/arena-angular`.** [`PACKAGE.md`](./PACKAGE.md) is what a consumer
 reads, and the assembly copies it into `dist/` as the package README;
 [`../PACKAGING.md`](../PACKAGING.md) is how the package is built and what it leaves out.
@@ -46,8 +49,19 @@ quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<Component>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
 `<Component>.prompt.md` (usage and Do/Don't), and an `index.ts` barrel.
 `components/display/tag/` is the
-reference shape. The three SVG charts are the one exception and have no
-`<Component>.variants.ts`; see below. The category is the one
+reference shape. **A directory with no `<Component>.variants.ts` is one of two declared cases
+rather than one**; derive the set rather than trusting a list here:
+
+```bash
+comm -23 <(find components -mindepth 2 -maxdepth 2 -type d -printf '%f\n' | sort) \
+         <(find components -name '*.variants.ts' -printf '%h\n' | xargs -n1 basename | sort)
+```
+
+The three SVG charts have no recipe at all, for the reason below. **A compound family's
+children have none either, because they import the parent's**: each `SideNav*` child imports
+`sideNavStyles` from `side-nav/SideNav.variants`, which is the recipe mirror of the rule
+`frameworks/tailwind/README.md` states for manifests, that a manifest mirrors a *surface* and a
+family draws one. The category is the one
 `frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
 `CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
@@ -58,10 +72,11 @@ rather than from a list here**, because a list here rots and nothing checks it:
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | sort`, and count it
 with the same command piped to `wc -l`.
 
-**The three SVG charts are the declared exception**, and a missing chart manifest is a
-decision rather than an omission: a chart's visual identity is path data and attribute
-bindings, not class strings, so `bar-chart`, `line-chart` and `doughnut-chart` have no
-`*.variants.ts` and style themselves with token-valued style **objects**, meaning the camelCase
+**The three SVG charts are the declared exception to having a MANIFEST**, and a missing chart
+manifest is a decision rather than an omission: a chart's visual identity is path data and
+attribute bindings, not class strings, so `bar-chart`, `line-chart` and `doughnut-chart` have no
+recipe of their own and none to inherit either, and they style themselves with token-valued
+style **objects**, meaning the camelCase
 `[style]` form, never a kebab-case string or attribute, because that is the only shape
 `check:dimensions` can actually read. `chart-card` is not one of them: it is a bordered
 tile with a microlabel, so it has a manifest like every other expressible component.

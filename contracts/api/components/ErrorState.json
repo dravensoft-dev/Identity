@@ -6,7 +6,7 @@
     "icon": { "form": "primitive", "type": "string",
               "description": "A Phosphor class name for the danger glyph Arena draws." },
     "title": { "form": "primitive", "type": "string", "default": "Something went wrong",
-               "description": "The headline — what failed." },
+               "description": "The headline: what failed." },
     "message": { "form": "primitive", "type": "string",
                  "description": "A sentence of detail under the title." },
     "code": { "form": "primitive", "type": "string",

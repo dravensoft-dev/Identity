@@ -96,7 +96,7 @@ const MINUTE = 60000;
   `,
 })
 export class Calendar {
-  /** IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs — a Madrid timetable read from Tokyo — and when server-rendering, where the reader's zone is not knowable. */
+  /** IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs (a Madrid timetable read from Tokyo), and when server-rendering, where the reader's zone is not knowable. */
   readonly timeZone = input<string>();
   /** ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. */
   readonly anchorDate = input<string>();
@@ -110,7 +110,7 @@ export class Calendar {
   readonly weekStartsOn = input(1, { transform: numberAttribute });
   /** Drop Sunday from the week unless an event falls on it. */
   readonly hideEmptyWeekend = input(true, { transform: booleanAttribute });
-  /** Whether a day can be activated. A boolean rather than "is `dateClick` bound?" — R6, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> — the keyboard's route to the date, and the one element that already names it — and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. */
+  /** Whether a day can be activated. A boolean rather than "is `dateClick` bound?", per R6, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> (the keyboard's route to the date, and the one element that already names it), and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. */
   readonly dayInteractive = input(false, { transform: booleanAttribute });
   /** A day header or column background was activated; carries the ISO date. Never emitted unless `dayInteractive`. */
   readonly dateClick = output<string>();

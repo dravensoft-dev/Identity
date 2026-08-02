@@ -56,7 +56,7 @@ export function borderBoxSlack(element: HTMLElement): number {
 export class Textarea {
   /** Field label; the counter and error sit under the field. */
   readonly label = input<string>();
-  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `ta-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased — the derivation Input.id states, under this component's own prefix. */
+  /** The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `ta-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased: the derivation Input.id states, under this component's own prefix. */
   readonly id = input<string>();
   /** A line of help under the field. */
   readonly hint = input<string>();
@@ -64,7 +64,7 @@ export class Textarea {
   readonly error = input<string>();
   /** Marks the label and the control required. */
   readonly required = input(false, { transform: booleanAttribute });
-  /** Shows a live length/maxLength count, which warns once the length is STRICTLY past nine tenths of `maxLength` — exactly at the share is not yet near the limit. */
+  /** Shows a live length/maxLength count, which warns once the length is STRICTLY past nine tenths of `maxLength`; exactly at the share is not yet near the limit. */
   readonly counter = input(false, { transform: booleanAttribute });
   /** Grows with the content instead of scrolling. */
   readonly autoResize = input(false, { transform: booleanAttribute });

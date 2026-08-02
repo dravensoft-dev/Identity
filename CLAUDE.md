@@ -14,8 +14,12 @@ from its own suites (`bun run test:scripts` / `test:react` / `test:react-dom` /
 
 Those four run in **two `bun test` processes**, not one, preceded by a build the Angular
 suites need before either process can see them, because the preload registers a DOM globally
-and must not share a process with the DOM-free suites (see the DOM-split note under
-*Architecture*). **The single authority for that command is `testStep()` in
+and must not share a process with the DOM-free suites. **The preload must never reach the
+DOM-free invocation and is mandatory for the DOM one**: without a DOM already installed,
+`react-dom` latches its `input`-event support false at module evaluation and an `onChange`
+handler receives a dispatched event **zero** times, silently.
+[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full.
+**The single authority for that command is `testStep()` in
 `scripts/check/arena/check-all.mjs`**, and its `.test.mjs` sibling asserts the args array by
 literal value. Read it there rather than reconstructing one; a narrowed invocation matching
 fewer files is indistinguishable from one matching all of them, so a stale path reports green
@@ -35,6 +39,14 @@ It ships as three things at once from the same tree:
 - a **Claude Code plugin** (`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, registering the `design` skill defined by the root `SKILL.md`);
 - two **npm packages**, `@dravensoft/arena-react` and `@dravensoft/arena-angular`, assembled by `bun run build:packages` into `frameworks/<layer>/dist/`;
 - a standalone **Agent Skill** (`SKILL.md`).
+
+**`SKILL.md` routes and states no rule twice.** It is the root of the *consumer* branch of the
+documentation, the way this file is the root of the contributor one, and the two branches are
+almost disjoint: an agent building with Arena reads the router, then
+`frameworks/Catalog.generated.md`, then one component's `.prompt.md`, and needs none of the
+normative READMEs under `contracts/api/`, `contracts/behaviour/` or `frameworks/`. Keep it that
+way. **A rule that binds a consumer belongs in `SKILL.md` or in a `.prompt.md`, and a rule
+about changing Arena belongs here**; a rule written into both goes stale in one of them.
 
 **A published Arena carries the language and never the skin**, which is the decision the
 whole npm channel follows from: the palettes and the fonts arrive as an `arena.config.json`
@@ -129,9 +141,10 @@ which holds five CSS files, and `contracts/design/`, which holds two hand-author
 carry the `.generated.` infix, so the name says it: their
 values are authored in strictly-conformant DTCG 2025.10 JSON under `contracts/design/` and
 emitted by `bun run generate:tokens`. Edit the JSON and rebuild.
-`contracts/design/README.md` is the normative table of
-which DTCG `$type` every token group uses, and it is the first thing a new platform target
-should read.
+`contracts/design/README.md` states what those values MEAN and
+`contracts/design/TokenTypes.md` beside it is the normative table of which DTCG `$type` every
+token group uses. The split is by audience: a new platform target reads both, a consumer of a
+value reads neither, because the JSON is the value.
 
 The split matters. **`contracts/design/palette.{dark,light}.json` is the skin**: the
 daisyUI-structured `--color-*` / `--color-*-content` pairs per theme (dark on `:root`, light on
@@ -388,15 +401,6 @@ every global/ARIA attribute a `{...rest}` spread would forward, with no gate beh
 `check:api` reads the `.tsx`, so a restored spread fails, but nothing re-derives which native
 members the flattening dropped.
 
-**React's suites run in two `bun test` invocations that must not merge.** A `.dom.test.` suite
-renders into a real DOM; every other `*.test.tsx` asserts on `renderToStaticMarkup` with no DOM,
-by design, because those suites prove those components render correctly server-side. **The
-preload must never reach the DOM-free invocation, and is mandatory for the DOM one**: `react-dom`
-latches its `input`-event support at module evaluation, so without a DOM already installed an
-`onChange` handler receives a dispatched event **zero** times, silently.
-[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full, why
-one process forces the split, and what `scripts/` adds to it.
-
 **`check:react-types` compiles the layer.** That README says what it reaches, and which two
 compiler options are load-bearing rather than stylistic.
 
@@ -417,31 +421,19 @@ what a Tailwind bracket may hold, and the two gates share the same unmodelled-un
 they are not one list: this inline gate additionally tolerates `s`/`ms`, while the bracket gate
 does not, because `--dur-*` and `--loop-*` model duration.
 
-The scan reaches four kinds of site: a JS declaration, a template literal's interpolation, CSS
-injected as a string, and an SVG presentation attribute in `prop="value"` form. An expression
-binding, `r={hover ? 5 : 4}`, is outside all of them. A literal reached through an
-intermediate local variable is still caught, but only when that identifier is used bare (no
-member access, no call, no arithmetic) at the governed site. A handful of sites are exempt by
-name with a reason each: read `EXEMPT` for the current set rather than a count. A stale
-exemption fails the gate itself, and **a change to `EXEMPT` or `PASSTHROUGH` is a change to
-`scripts/check/arena/check-dimension-literals.test.mjs` too**, since that suite asserts on both maps by
-name.
-
-It scans `.jsx`, `.ts` and `.tsx` under `frameworks/`, not `.html`, and nothing under `intro/`,
-so those pages stay clean only because they are tokenized by hand. The `*.card.html`
-specimens under `frameworks/tailwind/` are the one family of unscanned pages that stays clean
-structurally: every class they render comes from the manifest through `classesFor()`. **Two
-blind spots are known and neither is fixed**: a kebab-case SVG attribute, and Angular's
-`[style.x]` binding form, which sits outside all four scanners. This is why the three SVG charts write their
-static styling as camelCase `[style]` **objects**: in that shape `strokeWidth` and `fontSize`
-are judged as themselves, which is strictly more coverage than an attribute.
+**What the scan reaches, what it does not, and its two known blind spots are in
+[`scripts/check/arena/README.md`](./scripts/check/arena/README.md), beside the gate.** Read it
+before assuming a site is covered: the reason the three SVG charts write their static styling
+as camelCase `[style]` objects rather than as attributes is there, and it is not a style
+preference. A change to `EXEMPT` or `PASSTHROUGH` is a change to
+`check-dimension-literals.test.mjs` too, since that suite asserts on both maps by name.
 
 **No gate compares a Tailwind manifest against a rendered component, and the mapping is not
-one-to-one**: a manifest mirrors a *surface*, which a compound family draws with several
-contracted components and a composing component draws with someone else's. The only components
-with no manifest are the three SVG charts. `check:tailwind` proves every class resolves; nothing
-proves a manifest still matches the contract it was written from, so check by hand when either
-has moved.
+one-to-one**: a manifest mirrors a *surface*, so a compound family's members share the parent's
+and the three SVG charts have none at all. **Derive that set rather than trusting a list**, with
+the `comm` command in [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md), which
+also gives the two reasons. `check:tailwind` proves every class resolves; nothing proves a
+manifest still matches the contract it was written from, so check by hand when either has moved.
 
 One narrow slice of that is machine-checked: `check:states` fails a `hover:`/`focus:`-family
 modifier on a slot when no contract the manifest covers declares that affordance, and fails a
@@ -494,18 +486,15 @@ happens entirely through token values. Keep new components self-contained the sa
 `Button.tsx` as the reference shape.
 
 **The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot
-express, meaning `@keyframes` and vendor pseudo-elements such as `Input`'s
-`::-webkit-calendar-picker-indicator`. The pattern is always a module-level
-`let injected = false` guard, a `useEffect`, and `document.head.appendChild`. Never a `<style>`
-rendered inside the component's own markup, which ships one tag per instance and leaks the CSS
-into the element's `textContent`. Inject **as little as the job needs**, and reach for a class
-of ours **only when a selector is unavoidable**, never as a shortcut around an inline style
-that would have worked.
+express, meaning `@keyframes` and vendor pseudo-elements. **Never a `<style>` rendered inside
+the component's own markup**, which ships one tag per instance and leaks the CSS into the
+element's `textContent`. [`frameworks/react/README.md`](./frameworks/react/README.md) carries
+the injection pattern, and how little to inject.
 
-**Every animation answers `prefers-reduced-motion`**, and the answer depends on what the motion
-means: motion reporting work in progress *slows* rather than stops, decorative motion stops
-outright, an entrance keeps its fade and drops its travel, and an opacity-only animation needs
-no clause at all. `frameworks/react/README.md` carries both rules in full.
+**Every animation answers `prefers-reduced-motion`**, and what it answers depends on what the
+motion means. [`contracts/design/README.md`](./contracts/design/README.md) states the four
+cases and the reason for each. It is stated there rather than per layer because it is a design
+decision, and a layer that disagrees with it is wrong.
 
 **Every React component is a trio, and the three files live in the component's own directory**,
 `frameworks/react/components/<category>/<component-kebab>/`: `X.tsx` (implementation and its
@@ -527,29 +516,31 @@ the args array in `testStep()`, because `bun test frameworks/react` never matche
 so it reports green over a tree whose test run is red. That is a different hazard from the
 two-invocation rule above: this one is about a path a narrowed invocation never matched.
 
-The Angular layer is a quartet, the same three plus its recipe, in
-`frameworks/angular/components/<category>/<component-kebab>/`: `<Component>.ts` (standalone
-`OnPush` component, `arena-` selector, signal I/O, no component `styles`),
-`<Component>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`),
-`<Component>.prompt.md`, and an `index.ts` barrel, plus `<Component>.behaviour.json` and the
-component's own suites, `<Component>.<facet>.test.ts`, in the same directory. The three SVG charts are the one
-exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
-layout rule allows, and implements every component the layer ships.
+**A new component in either layer also moves `frameworks/Catalog.generated.md`**, the index
+every consumer reads before reaching for anything. It is generated, so nothing is written by
+hand: run `bun run generate:catalog`, which `bun run build` already does, and commit the
+result. It is **tracked**, unlike everything else a generator writes under `frameworks/`,
+because the plugin is served from the git tag where nothing runs a build, so an uncommitted
+catalog is a wrong answer handed to every reader of that tag. `check:catalog` fails a stale one.
+
+**The Angular layer's shape is a quartet**, the same three plus its recipe, in
+`frameworks/angular/components/<category>/<component-kebab>/`: a standalone `OnPush` component
+with an `arena-` selector and no component `styles`, its `tailwind-variants` recipe, its prompt
+and an `index.ts` barrel, plus its behaviour binding and its own suites in the same directory.
 **A primitive binds its root slot to the host rather than rendering a wrapper div**, with a
-growing carve-out set for roots that must be a specific semantic or interactive element;
-`frameworks/angular/README.md` states the rule, the carve-outs and the display-utility
-requirement `HostClassBinding.test.ts` guards.
+growing carve-out set. [`frameworks/angular/README.md`](./frameworks/angular/README.md) names
+each file, gives the command for which components carry no recipe and the two reasons they do
+not, and states the four carve-out groups and the display-utility requirement
+`HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
-test surface with `ngc --strictTemplates` into git-ignored `frameworks/angular/build/test/`, and every run
-target is that emit rather than the `.ts` sources, so a type error anywhere in it fails the
-*build* and no test executes at all. **A green compile is a claim about TYPES, never about
-behaviour.** One process means one document and one `TestBed` environment for the whole layer, so
-**state written onto that shared document outlives the file that wrote it** and every
-directly-created fixture must be `destroy()`-ed. `frameworks/angular/README.md` carries all of
-it: the shared environment, why `TestBed.resetTestEnvironment()` is not an option, and what
-`HarnessCapabilities.test.ts` pins.
+test surface with `ngc --strictTemplates`, and every run target is that emit rather than the
+`.ts` sources, so a type error anywhere in it fails the *build* and no test executes at all.
+**A green compile is a claim about TYPES, never about behaviour.** One process means one
+document and one `TestBed` for the whole layer, so **state written onto that shared document
+outlives the file that wrote it** and every directly-created fixture must be `destroy()`-ed.
+[`frameworks/angular/README.md`](./frameworks/angular/README.md) carries all of it.
 
 **Specimen/demo pages** start with an HTML comment
 `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card
@@ -564,12 +555,15 @@ with its own scroll area, not a card.
 **A file a script under `scripts/` writes is named `<stem>.generated.<ext>`, and that name is
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
 separate question `.gitignore` answers, and the line is audience, not provenance. Two reasons
-keep one tracked: **the tag has to hand it to a browser directly**, true of
+keep one tracked: **the tag has to hand it to a reader directly**, true of
 `contracts/design-generated/` and the `assets/fonts/` binaries, so ignoring the token CSS
 would ship a tag whose `intro/styles.css` `@import`s resolve to nothing, unstyled and silent;
 or **a clone cannot reproduce it**, true of `assets/fonts/Fonts.generated.json`, whose rebuild
 needs the network. Everything a script writes under `frameworks/` is ignored, by one pattern,
-with a reason per family in `UNTRACKED`. So a fresh clone
+with a reason per family in `UNTRACKED`, **with one negation**:
+`frameworks/Catalog.generated.md` is the first reason rather than a hole in the second, and
+`check:catalog` asserts it is tracked because `check:generated` scans no `.md` and so cannot.
+So a fresh clone
 runs `bun run build` first; [`scripts/build/README.md`](./scripts/build/README.md) is the
 first-compile document, linked from the root README. `check:generated` holds both halves and
 names the two outputs that can hold neither infix nor header: the `assets/fonts/` binaries, and
@@ -614,22 +608,18 @@ harness plus the suites belonging to no one component under `test/`.
 `frameworks/react/README.md` names what sits at the layer root and why each is there.
 
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
-and standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
-(`components/display/tag/` is the reference shape; the three SVG charts are the declared
-exception, with no manifest, no `.variants.ts` and token-valued camelCase `[style]` objects), each styled by the
-shared `frameworks/tailwind/` recipes through the configured `tv`. Count the components with
+and standalone `OnPush` primitives styled by the shared `frameworks/tailwind/` recipes through
+the configured `tv`. Count the components with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
-behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
-built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
-**no** `@dsCard`. `frameworks/angular/README.md` says why, and names what sits at the layer root.
+behaviour only a browser can show also has a `<Component>.card.html` demo beside it, and those
+pages carry **no** `@dsCard`. [`frameworks/angular/README.md`](./frameworks/angular/README.md)
+says why, and names what sits at the layer root.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
-manifests), authored once because the token→utility mapping is pure CSS. Its root holds the
-preset, the generated `Utilities.generated.css`, the shared `tv`, the animation utilities and the specimen
-harness; and a component's three files, `<Name>.manifest.json`, the generated
-`<Name>.manifest.generated.ts` and the `<Name>.card.html` specimen, sit together in
-`components/<category>/<component-kebab>/`. Count the manifests with
-`find frameworks/tailwind/components -name '*.manifest.json' | wc -l`.
+manifests), authored once because the token→utility mapping is pure CSS. Count the manifests with
+`find frameworks/tailwind/components -name '*.manifest.json' | wc -l`;
+[`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) names what sits at the layer
+root, and the three files a component keeps together.
 
 **The Tailwind layer derives every utility from an existing token and introduces no new hex and
 no new value**: add the token first, then reference it. Four gates hold it, `check:tailwind`,

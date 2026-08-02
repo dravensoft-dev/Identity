@@ -92,7 +92,7 @@ rather than a gate.
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 15 | two or more layers at once, or the repository root |
+| [`arena/`](./arena/README.md) | 16 | two or more layers at once, or the repository root |
 | [`tailwind/`](./tailwind/README.md) | 6 | the shared Tailwind layer |
 | [`angular/`](./angular/README.md) | 4 | the Angular layer |
 | [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |
@@ -104,7 +104,7 @@ rather than a gate.
 The domain is also what a narrowed run selects on. `check-all.mjs` takes `--domain=core,arena`
 and `--no-tests`, and `gatesFor()` refuses a name outside `DOMAINS` and a selection matching no
 gate, because a run of nothing reports nothing wrong with everything. CI is its only caller,
-and its four jobs partition this table: `core` takes `core/` and `arena/`, since the fifteen
+and its four jobs partition this table: `core` takes `core/` and `arena/`, since the sixteen
 cross-layer gates are questions no single layer can answer. That partition is asserted too, so
 a gate cannot join `GATES` and then run in no job.
 

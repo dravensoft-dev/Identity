@@ -1,14 +1,21 @@
 # Arena's contracts
 
 Three levels, one roof. Each states, once and neutrally, something every platform
-target implements, and each has exactly one normative document, which is the file
-beside this one in its directory.
+target implements, and each level's normative statement starts at the `README.md`
+in its directory.
 
 | Level | Governs | Normative document |
 |---|---|---|
 | [`api/`](api/README.md) | the members a component's API presents | `api/README.md` |
 | [`behaviour/`](behaviour/README.md) | what a kind of component must do: roles, keys, focus, dismissal | `behaviour/README.md` |
-| [`design/`](design/README.md) | what a value is | `design/README.md` |
+| [`design/`](design/README.md) | what a value is | `design/README.md`, plus [`design/TokenTypes.md`](design/TokenTypes.md) for the shape a value arrives in |
+
+**`design/` is the one level whose statement is two files, and the split is by audience
+rather than by topic.** `design/README.md` says what a value MEANS, which is what anyone
+choosing a colour or a spacing step needs; `design/TokenTypes.md` says what DTCG `$type` it
+carries and what shape it is authored in, which only somebody authoring a token or targeting
+a new platform needs. The other two levels are one file each because neither has a second
+audience to separate: nobody reads an API contract without intending to implement it.
 
 Read the one for the level you are implementing. None of the three is a summary of
 another: `design/` answers *what is this value*, `behaviour/` answers *what must this
@@ -90,7 +97,8 @@ framework is added without touching the language.
 - `intro/styles.css`: the global entry point, `@import`s only. Consumers link this file.
   Its seven `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
 - `contracts/design/`: the DTCG 2025.10 source of every token value (`*.json`),
-  `README.md` (the normative design specification and `$type` table), and two hand-authored
+  `README.md` (the normative design specification), `TokenTypes.md` (the `$type` map and the
+  strict 2025.10 value formats), and two hand-authored
   stylesheets: `colors.css` (aliases and `color-mix` derivations) and `reset.css`
   (`box-sizing: border-box`, the box model both layers share). Neither is a value, which is why
   neither is DTCG: values are what `design/` governs, and how a value is combined at runtime

@@ -35,7 +35,7 @@ import { errorStateStyles } from './ErrorState.variants';
 export class ErrorState {
   /** A Phosphor class name for the danger glyph Arena draws. */
   readonly icon = input<string>();
-  /** The headline — what failed. */
+  /** The headline: what failed. */
   readonly title = input('Something went wrong');
   /** A sentence of detail under the title. */
   readonly message = input<string>();

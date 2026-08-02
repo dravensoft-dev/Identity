@@ -14,7 +14,7 @@ export interface ConfirmDialogProps {
   title: string;
   /** Small uppercase label above the title. */
   eyebrow?: string;
-  /** The dialog body — the question and any detail. */
+  /** The dialog body: the question and any detail. */
   children?: React.ReactNode;
   /** The confirm button's label. */
   confirmLabel?: string;

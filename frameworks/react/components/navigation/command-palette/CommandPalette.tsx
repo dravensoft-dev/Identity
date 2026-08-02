@@ -16,7 +16,7 @@ export interface CommandPaletteProps {
   /** The search field's placeholder. */
   placeholder?: string;
 
-  /** The palette asked to be closed — Escape, the scrim, or a command having been run. */
+  /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   onClose?: () => void;
 
   /** A command was activated, carrying which one. Emitted after close. */

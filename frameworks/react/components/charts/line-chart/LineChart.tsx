@@ -24,13 +24,13 @@ export interface LineChartProps {
   /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */
   slot?: number;
 
-  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot — passing both warns in development and tone wins. */
+  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. */
   tone?: SeriesTone;
 
-  /** Fill under the line at 18% of the series colour — a tint, never a gradient. For a single series; two fills occlude each other. */
+  /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   area?: boolean;
 
-  /** Appended verbatim to every number the chart draws — the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
+  /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   valueSuffix?: string;
 
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */

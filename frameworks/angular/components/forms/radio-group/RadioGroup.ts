@@ -20,7 +20,7 @@ let nextId = 0;
   template: `<ng-content />`,
 })
 export class RadioGroup {
-  /** Names the group — what is being chosen, not that it is a choice. Required, and guarded at runtime: a radiogroup with no accessible name is announced unlabelled, and each option's own label says what that option is, never what the set is for. "Deployment target", not "Options". Distinct from `name`, which is the radios' shared form name and never reaches a screen reader. */
+  /** Names the group: what is being chosen, not that it is a choice. Required, and guarded at runtime: a radiogroup with no accessible name is announced unlabelled, and each option's own label says what that option is, never what the set is for. "Deployment target", not "Options". Distinct from `name`, which is the radios' shared form name and never reaches a screen reader. */
   readonly ariaLabel = input.required<string>();
   /** The selected option's value. */
   readonly value = input<string>();

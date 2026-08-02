@@ -1,7 +1,7 @@
 {
   "delay": {
     "$type": "duration",
-    "$description": "Pointer intent — how long a pointer must rest on a target before a\ndeferred affordance appears, and how long it may leave before that affordance\nwithdraws. Deliberately not part of dur: dur measures how long a transition\ntakes once it has been decided, delay measures how long we wait before\ndeciding. These apply to the POINTER only. A keyboard focus must reveal its\ntooltip immediately — a delay there reads as an unresponsive control, and a\nfuture plan adding focus support must not route it through these.",
+    "$description": "Pointer intent: how long a pointer must rest on a target before a\ndeferred affordance appears, and how long it may leave before that affordance\nwithdraws. Deliberately not part of dur: dur measures how long a transition\ntakes once it has been decided, delay measures how long we wait before\ndeciding. These apply to the POINTER only. A keyboard focus must reveal its\ntooltip immediately: a delay there reads as an unresponsive control, and a\nfuture plan adding focus support must not route it through these.",
     "open": {
       "$value": { "value": 400, "unit": "ms" },
       "$description": "Rest time before a tooltip appears. Long enough that crossing a toolbar reveals nothing.",
@@ -15,7 +15,7 @@
   },
   "dismiss": {
     "$type": "duration",
-    "$description": "Automatic permanence — how long a transient notice remains before it\nwithdraws itself. The HOST owns dismissal, not Toast: Toast renders and exposes\npersist, the host runs the clock.",
+    "$description": "Automatic permanence: how long a transient notice remains before it\nwithdraws itself. The HOST owns dismissal, not Toast: Toast renders and exposes\npersist, the host runs the clock.",
     "default": {
       "$value": { "value": 4200, "unit": "ms" },
       "$description": "A toast that only has to be read. This is the value the Delivery Console\nshipped hard-coded before it was a token.",
@@ -29,7 +29,7 @@
   },
   "limit": {
     "$type": "number",
-    "$description": "Quantity bounds — system-wide invariants about how much is shown. Not\ngeometry, and the twin of z: same $type, same character. The family declares the\ninvariant; a component derives its own consequences from it.",
+    "$description": "Quantity bounds: system-wide invariants about how much is shown. Not\ngeometry, and the twin of z: same $type, same character. The family declares the\ninvariant; a component derives its own consequences from it.",
     "pagination-siblings": {
       "$value": 1,
       "$description": "How many page numbers flank the current one before the list elides. The\nwindow's total width is a CONSEQUENCE and is derived at the point of use, never\nauthored: first + last + (2 * siblings + 1) + two ellipses.",

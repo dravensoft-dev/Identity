@@ -5,7 +5,7 @@ MIT License · Token-driven design system for React, Angular and Tailwind.
 **Arena** is the single interface language under which every Dravensoft software product is built.
 
 ## Latest project artifacts
-- **Repo/Claude Code plugin**: 5.1.1
+- **Repo/Claude Code plugin**: 5.1.2
 - [npm React package](https://www.npmjs.com/package/@dravensoft/arena-react?activeTab=versions)
 - [npm Angular package](https://www.npmjs.com/package/@dravensoft/arena-angular?activeTab=versions)
 
@@ -45,6 +45,20 @@ bun add @phosphor-icons/web         # required: Arena renders icon class names, 
 - **Icons are [Phosphor Icons](https://phosphoricons.com) (MIT)**, and are not bundled. **Install the official package by default**, either `@phosphor-icons/web` (webfont) or `@phosphor-icons/react`, for full weight and tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See [Iconography](./contracts/design/README.md#iconography).
 
 ## Where to go next
+
+**Which job is this?** The two audiences read almost disjoint sets of these files, and
+starting on the wrong branch is how a short question turns into a long read.
+
+**Building something with Arena.** [`SKILL.md`](./SKILL.md) is the router, and it answers
+each question with one file. From it:
+[`frameworks/Catalog.generated.md`](./frameworks/Catalog.generated.md) is every component in
+one read, each component's `.prompt.md` is how to use that one, and
+[`frameworks/react/PACKAGE.md`](./frameworks/react/PACKAGE.md) or
+[`frameworks/angular/PACKAGE.md`](./frameworks/angular/PACKAGE.md) is how to install it.
+
+**Working on Arena itself.** [`CLAUDE.md`](./CLAUDE.md) is the root of that branch, and
+everything below is reached through it.
+
 - [`scripts/build/README.md`](./scripts/build/README.md): **compile Arena for the first
   time**, meaning what a fresh clone must build before `bun run demos` or `bun run check`
   mean anything, and why some generated files are tracked and some are not.
@@ -55,7 +69,8 @@ bun add @phosphor-icons/web         # required: Arena renders icon class names, 
   map of everything in this repository.
 - [`contracts/design/README.md`](./contracts/design/README.md): **the normative design
   specification**, covering voice, type, color, spacing, motion, the danger convention,
-  iconography and theming, plus the DTCG token type map.
+  iconography and theming. [`contracts/design/TokenTypes.md`](./contracts/design/TokenTypes.md)
+  beside it carries the DTCG token type map, for whoever authors a token.
 - [`frameworks/react/README.md`](./frameworks/react/README.md): the React layer.
 - [`frameworks/angular/README.md`](./frameworks/angular/README.md): the Angular layer,
   including how to adopt it.

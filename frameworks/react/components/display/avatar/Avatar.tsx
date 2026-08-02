@@ -11,7 +11,7 @@ export interface AvatarProps {
   size?: AvatarSize;
   /** Circle for a person, rounded for a team. */
   shape?: AvatarShape;
-  /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional — there is no invisible enum value. */
+  /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value. */
   status?: AvatarStatus;
 }
 

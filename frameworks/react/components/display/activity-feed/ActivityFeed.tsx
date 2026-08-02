@@ -7,7 +7,7 @@ export type { ActivityItem };
 
 export interface ActivityFeedProps {
 
-  /** Names the feed for assistive technology. Required, and guarded at runtime: nothing can derive it, and a feed is a landmark a reader navigates BY — say what the events are about ("Deployment activity"), never "Activity feed". */
+  /** Names the feed for assistive technology. Required, and guarded at runtime: nothing can derive it, and a feed is a landmark a reader navigates BY, so say what the events are about ("Deployment activity"), never "Activity feed". */
   label: string;
 
   /** The events, newest first by convention. Each row is drawn by Arena; there is no per-item projection. */

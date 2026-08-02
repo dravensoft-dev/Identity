@@ -4,7 +4,7 @@
   "affordances": [],
   "api": {
     "tone": { "form": "enum", "type": "AlertTone", "default": "info",
-              "description": "The severity — colour, default icon, and (for danger) the alert role." },
+              "description": "The severity: colour, default icon, and (for danger) the alert role." },
     "title": { "form": "primitive", "type": "string",
                "description": "An optional bold lead line above the message." },
     "content": { "form": "slot",
@@ -16,7 +16,7 @@
     "action": { "form": "event",
                 "description": "The inline action button was activated." },
     "dismissible": { "form": "primitive", "type": "boolean", "default": false,
-                     "description": "Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close` — R6." },
+                     "description": "Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6." },
     "close": { "form": "event",
                "description": "The × was activated." }
   }

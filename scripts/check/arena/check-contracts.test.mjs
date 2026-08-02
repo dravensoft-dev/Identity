@@ -62,15 +62,21 @@ test('a stray file inside a level is caught by extension, which is how every rea
 
 test('design keeps its two hand-authored stylesheets by name, because neither is a token source', () => {
   assert.deepEqual(
-    levelProblems('design', ['README.md', 'colors.css', 'reset.css', 'palette.dark.json'], () => false),
+    levelProblems('design', ['README.md', 'TokenTypes.md', 'colors.css', 'reset.css', 'palette.dark.json'], () => false),
     [],
   );
 });
 
-test('a third stylesheet is a problem until contracts/README.md names it, which is the point of listing them', () => {
-  const problems = levelProblems('design', ['README.md', 'colors.css', 'reset.css', 'motion.css'], () => false);
+test('design is the one level whose normative statement is two documents, split by audience', () => {
+  const problems = levelProblems('design', ['TokenTypes.md', 'colors.css', 'reset.css'], () => false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /contracts\/design\/motion\.css is neither README\.md nor colors\.css nor reset\.css/);
+  assert.match(problems[0], /contracts\/design\/README\.md is missing/);
+});
+
+test('a third stylesheet is a problem until contracts/README.md names it, which is the point of listing them', () => {
+  const problems = levelProblems('design', ['README.md', 'TokenTypes.md', 'colors.css', 'reset.css', 'motion.css'], () => false);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /contracts\/design\/motion\.css is neither README\.md nor TokenTypes\.md nor colors\.css nor reset\.css/);
 });
 
 test('a generated stylesheet without the infix is a problem', () => {
