@@ -16,6 +16,8 @@
     "td": "table-cell px-row-px py-row-py text-left align-middle text-ctl font-body text-base-content/82 outline-none focus:shadow-[inset_0_0_0_var(--focus-width)_var(--focus-ring)]",
     "tdMono": "table-cell px-row-px py-row-py text-left align-middle text-ctl font-mono tabular-nums text-secondary outline-none focus:shadow-[inset_0_0_0_var(--focus-width)_var(--focus-ring)]",
     "empty": "px-4 py-8 text-center align-middle text-ctl text-base-content/62",
+    "sortBar": "flex items-center gap-2 w-full",
+    "sortField": "min-w-0 flex-1",
     "cards": "flex flex-col gap-4",
     "card": "flex flex-col gap-stack bg-base-200 border-[length:var(--bw)] border-base-300 rounded-lg p-row-px",
     "cardRow": "flex items-baseline justify-between gap-3",

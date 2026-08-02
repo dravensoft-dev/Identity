@@ -11,7 +11,7 @@
       "name": "card",
       "when": "responsive is true and the container is below --bp-md -- one card per row, no grid, row or cell role anywhere",
       "pattern": "none",
-      "reason": "Below the breakpoint there is no grid: the rows become stacked cards and nothing carries a grid, row or cell role. The grid pattern's requirements do not go unmet in this shape, they do not APPLY to it -- there is no grid for a roving tab stop to live in. Whether a card a consumer made clickable is reachable by keyboard is TableRow's question, not a clause of this one, and that binding records where this layer stands on it.",
+      "reason": "Below the breakpoint there is no grid: the rows become stacked cards and nothing carries a grid, row or cell role. The grid pattern's requirements do not go unmet in this shape, they do not APPLY to it -- there is no grid for a roving tab stop to live in. The sort control this shape draws instead is a Select, which carries Select's own binding and not a clause of this one, and it is what keeps a sortable column reachable where there is no header row to activate. Whether a card a consumer made clickable is reachable by keyboard is TableRow's question, not a clause of this one, and that binding records where this layer stands on it.",
       "exceptions": []
     },
     {

@@ -37,6 +37,8 @@ export const UNTRACKED = {
   'frameworks/react/AnchorActivation.generated.js':
     'the same, for the predicate that decides which activation of an anchor is the router\'s.',
   'frameworks/react/Theme.generated.js': 'the same, for the theme helper.',
+  'frameworks/react/WarnOnce.generated.js': 'the same, for the once-per-message console warning '
+    + 'the charts and Table share.',
   'frameworks/react/UseContainerWidth.generated.js': 'the same, for the container-width hook.',
   'frameworks/react/UseDialogModal.generated.js': 'the same, for the modal focus helper.',
   'frameworks/react/Index.generated.ts':

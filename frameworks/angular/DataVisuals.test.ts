@@ -6,6 +6,7 @@ import {
   barPath, arcPath,
 } from './DataVisuals';
 import type { SeriesTone, Tone } from './Api.generated';
+import { forgetWarnings } from './WarnOnce';
 
 test('niceMax returns 1 for every input that is not a positive number', () => {
 
@@ -158,7 +159,7 @@ test('`tone` paints every series the semantic colour', () => {
 });
 
 test('`tone` wins over `slot` and over `slots`, and passing both warns', () => {
-
+  forgetWarnings();
   const warnings = captureWarnings(() => {
     assert.deepEqual(resolveColors({ count: 1, tone: 'danger', slot: 3 }), ['var(--danger)']);
     assert.deepEqual(resolveColors({ count: 1, tone: 'danger', slots: [3] }), ['var(--danger)']);
@@ -166,25 +167,23 @@ test('`tone` wins over `slot` and over `slots`, and passing both warns', () => {
   assert.ok(warnings.length <= 1, 'warnOnce must not warn twice for one message');
 });
 
-test('the mutually-exclusive warning fires once, and only when both are passed', async () => {
-
-  // @ts-expect-error -- a query-string specifier is a runtime cache-buster: bun
-
-  const fresh = await import('./DataVisuals?warn-once-probe');
+test('the mutually-exclusive warning fires once, and only when both are passed', () => {
+  forgetWarnings();
   const clean = captureWarnings(() => {
-    fresh.resolveColors({ count: 1, tone: 'danger' });
-    fresh.resolveColors({ count: 1, slot: 2 });
-    fresh.resolveColors({ count: 1 });
+    resolveColors({ count: 1, tone: 'danger' });
+    resolveColors({ count: 1, slot: 2 });
+    resolveColors({ count: 1 });
   });
   assert.deepEqual(clean, [], 'identity alone and meaning alone are both legal, and silent');
 
   const warnings = captureWarnings(() => {
-    fresh.resolveColors({ count: 1, tone: 'danger', slot: 3 });
-    fresh.resolveColors({ count: 1, tone: 'info', slots: [2] });
+    resolveColors({ count: 1, tone: 'danger', slot: 3 });
+    resolveColors({ count: 1, tone: 'info', slots: [2] });
   });
   assert.equal(warnings.length, 1, 'warned once for the two offending calls');
   assert.match(warnings[0], /^\[arena\] chart:/);
   assert.match(warnings[0], /mutually exclusive/);
+  forgetWarnings();
 });
 
 test('a tone outside the union falls back to slot 1 instead of yielding undefined', () => {

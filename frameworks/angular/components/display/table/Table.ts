@@ -2,21 +2,44 @@ import {
   ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, booleanAttribute, computed,
   contentChildren, effect, inject, input, output, untracked,
 } from '@angular/core';
-import type { TableColumn, TablePage, TableSort } from '../../../Api.generated';
+import type {
+  SelectOption, TableColumn, TablePage, TableSort, TableSortControl,
+} from '../../../Api.generated';
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { warnOnce } from '../../../WarnOnce';
 import { Pagination } from '../../navigation/pagination/Pagination';
+import { Select } from '../../forms/select/Select';
 import { TableRow } from '../table-row/TableRow';
 import { TableState } from './TableState';
 import { tableStyles } from './Table.variants';
+
+export function sortOptionValue(column: number, direction: TableSort['direction']): string {
+  return `${column}:${direction}`;
+}
+
+export function parseSortOption(value: string): TableSort | null {
+  const [column, direction] = value.split(':');
+  const index = Number.parseInt(column ?? '', 10);
+  if (!Number.isInteger(index) || (direction !== 'asc' && direction !== 'desc')) return null;
+  return { column: index, direction };
+}
 
 @Component({
   selector: 'arena-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TableState],
-  imports: [Pagination],
+  imports: [Pagination, Select],
   host: { '[class]': 'styles().root()' },
   template: `
+    @if (sortBar()) {
+      <div [class]="styles().sortBar()">
+        <div [class]="styles().sortField()">
+          <arena-select [label]="sortLabel" [options]="sortOptions()" [value]="sortValue()"
+                        (change)="onSortPick($event)" />
+        </div>
+      </div>
+    }
     <div [class]="styles().grid()" [attr.role]="gridRole()"
          [attr.aria-label]="empty() ? null : gridLabel()" (keydown)="onKeydown($event)">
       @if (!narrow() && !empty()) {
@@ -52,11 +75,13 @@ export class Table {
   readonly responsive = input(true, { transform: booleanAttribute });
   /** Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target. */
   readonly sort = input<TableSort>();
+  /** How the sort affordance is reached in CARD MODE, where there is no header row to activate and a `sortable` column therefore has no control under it at all. 'auto' draws one compact select above the cards, listing every sortable column in each direction, which is the shape a phone has room for; 'none' leaves card mode unsorted by hand, for a table whose order is the document's rather than the reader's. Above --bp-md the header row is the control and this member draws nothing. The header row does NOT come back below the breakpoint, because card mode exists for the one reason a grid does not fit. It is a member rather than something a consumer draws for themselves because the state it edits, TableSort, is Arena's: left to each consumer, the label, the option order and the way a direction is worded are invented once per project over a model they did not define. */
+  readonly sortControl = input<TableSortControl>('auto');
   /** Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`, which is what gives that required name its uniqueness on a page with two paged tables. Absent, no pager is drawn and the projected rows are the whole list. */
   readonly page = input<TablePage>();
   /** A sortable header was activated, carrying the column and the direction it should become: the same column flips, a different one starts ascending. Table never reorders anything itself, so a consumer who ignores this event gets a caret that moves and rows that do not, which is why the member is controlled rather than a starting value. */
   readonly sortChange = output<TableSort>();
-  /** A page was chosen, carrying the new 1-based page. It also fires with 1 when the total row count drops far enough that the current page is past the end, which is the reset a consumer otherwise writes by hand beside every filter; it fires only when the page has actually gone out of range, so a filter that leaves it valid is silent. */
+  /** A page was chosen, carrying the new 1-based page. It also fires with 1 when the current page has gone PAST THE END, which is the only reset Table performs; a filter that leaves the page in range is silent, so returning the reader to page one on a change of criterion stays the consumer's, beside the criterion they hold. */
   readonly pageChange = output<number>();
 
   protected readonly state = inject(TableState);
@@ -91,6 +116,32 @@ export class Table {
   });
 
   protected readonly styles = computed(() => tableStyles({ narrow: this.narrow() }));
+
+  protected readonly sortLabel = 'Sort by';
+
+  protected readonly sortable = computed(() => this.columns()
+    .map((column, index) => ({ column, index }))
+    .filter(({ column }) => column.sortable));
+
+  protected readonly sortBar = computed(() => this.narrow() && !this.empty()
+    && this.sortControl() !== 'none' && Boolean(this.sort()) && this.sortable().length > 0);
+
+  protected readonly sortOptions = computed<SelectOption[]>(() => this.sortable().flatMap(
+    ({ column, index }) => [
+      { value: sortOptionValue(index, 'asc'), label: `${column.header} \u2191` },
+      { value: sortOptionValue(index, 'desc'), label: `${column.header} \u2193` },
+    ],
+  ));
+
+  protected readonly sortValue = computed(() => {
+    const current = this.sort();
+    return current ? sortOptionValue(current.column, current.direction) : undefined;
+  });
+
+  protected onSortPick(value: string): void {
+    const picked = parseSortOption(value);
+    if (picked) this.sortChange.emit(picked);
+  }
 
   protected sortStateOf(column: number): string | null {
     if (!this.columns()[column]?.sortable || !this.sort()) return null;
@@ -127,6 +178,19 @@ export class Table {
       const pages = this.pageCount();
       if (!paging || paging.index <= pages) return;
       untracked(() => this.pageChange.emit(1));
+    });
+
+    effect(() => {
+      const current = this.sort();
+      const columns = this.columns();
+      if (!current) return;
+      const column = columns[current.column];
+      if (column?.sortable) return;
+      const name = column ? `"${column.header}"` : 'no column at all';
+      warnOnce(`Table "${untracked(() => this.label())}": sort.column ${current.column} is ${name},`
+        + ' which does not declare `sortable`, so no header is a target and the caret is not drawn.'
+        + ' TableSort.column is an INDEX, so moving a column reorders the rows in silence; keep the'
+        + ' sort field inside the column entry it belongs to and the two move together.');
     });
 
     afterRenderEffect(() => {

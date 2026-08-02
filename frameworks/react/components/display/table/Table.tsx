@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { warnOnce } from '../../../WarnOnce.ts';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
 import { HEADER_LABEL, CELL_BASE } from '../table-cell/TableCell.tsx';
 
 import { Pagination } from '../../navigation/pagination/Pagination.tsx';
+import { Select } from '../../forms/select/Select.tsx';
 
-import type { TableColumn, TablePage, TableSort } from '../../../Api.generated';
+import type {
+  SelectOption, TableColumn, TablePage, TableSort, TableSortControl,
+} from '../../../Api.generated';
 
 export type { TableColumn };
 
@@ -28,20 +32,34 @@ export interface TableProps {
   /** Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target. */
   sort?: TableSort;
 
+  /** How the sort affordance is reached in CARD MODE, where there is no header row to activate and a `sortable` column therefore has no control under it at all. 'auto' draws one compact select above the cards, listing every sortable column in each direction, which is the shape a phone has room for; 'none' leaves card mode unsorted by hand, for a table whose order is the document's rather than the reader's. Above --bp-md the header row is the control and this member draws nothing. The header row does NOT come back below the breakpoint, because card mode exists for the one reason a grid does not fit. It is a member rather than something a consumer draws for themselves because the state it edits, TableSort, is Arena's: left to each consumer, the label, the option order and the way a direction is worded are invented once per project over a model they did not define. */
+  sortControl?: TableSortControl;
+
   /** A sortable header was activated, carrying the column and the direction it should become: the same column flips, a different one starts ascending. Table never reorders anything itself, so a consumer who ignores this event gets a caret that moves and rows that do not, which is why the member is controlled rather than a starting value. */
   onSortChange?: (sort: TableSort) => void;
 
   /** Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`, which is what gives that required name its uniqueness on a page with two paged tables. Absent, no pager is drawn and the projected rows are the whole list. */
   page?: TablePage;
 
-  /** A page was chosen, carrying the new 1-based page. It also fires with 1 when the total row count drops far enough that the current page is past the end, which is the reset a consumer otherwise writes by hand beside every filter; it fires only when the page has actually gone out of range, so a filter that leaves it valid is silent. */
+  /** A page was chosen, carrying the new 1-based page. It also fires with 1 when the current page has gone PAST THE END, which is the only reset Table performs; a filter that leaves the page in range is silent, so returning the reader to page one on a change of criterion stays the consumer's, beside the criterion they hold. */
   onPageChange?: (page: number) => void;
 }
 
 
+export function sortOptionValue(column: number, direction: TableSort['direction']): string {
+  return `${column}:${direction}`;
+}
+
+export function parseSortOption(value: string): TableSort | null {
+  const [column, direction] = value.split(':');
+  const index = Number.parseInt(column ?? '', 10);
+  if (!Number.isInteger(index) || (direction !== 'asc' && direction !== 'desc')) return null;
+  return { column: index, direction };
+}
+
 export function Table({
   columns, children, empty = 'No data.', responsive = true, label,
-  sort, onSortChange, page, onPageChange,
+  sort, sortControl = 'auto', onSortChange, page, onPageChange,
 }: TableProps) {
   if (!label?.trim()) throw new Error('Table: `label` is required');
   if (columns == null) throw new Error('Table: `columns` is required');
@@ -57,6 +75,17 @@ export function Table({
   useEffect(() => {
     if (page && page.index > pageCount) onPageChange?.(1);
   }, [page?.index, pageCount]);
+
+  useEffect(() => {
+    if (!sort) return;
+    const column = columns[sort.column];
+    if (column?.sortable) return;
+    const name = column ? `"${column.header}"` : 'no column at all';
+    warnOnce(`Table "${label}": sort.column ${sort.column} is ${name}, which does not declare`
+      + ' `sortable`, so no header is a target and the caret is not drawn. TableSort.column is an'
+      + ' INDEX, so moving a column reorders the rows in silence; keep the sort field inside the'
+      + ' column entry it belongs to and the two move together.');
+  }, [sort?.column, columns]);
 
   const sortStateOf = (index: number): 'ascending' | 'descending' | 'none' | undefined => {
     if (!columns[index]?.sortable || !sort) return undefined;
@@ -139,6 +168,14 @@ export function Table({
     onFocus: (e: React.FocusEvent) => { if (e.target === e.currentTarget) onCellFocus(0, ci); },
   });
 
+  const sortable = columns.map((column, index) => ({ column, index })).filter((c) => c.column.sortable);
+  const sortBar = narrow && !bare && sortControl !== 'none' && Boolean(sort) && sortable.length > 0;
+  const sortOptions: SelectOption[] = sortable.flatMap(({ column, index }) => [
+    { value: sortOptionValue(index, 'asc'), label: `${column.header} \u2191` },
+    { value: sortOptionValue(index, 'desc'), label: `${column.header} \u2193` },
+  ]);
+  const sortValue = sort ? sortOptionValue(sort.column, sort.direction) : undefined;
+
   const cellRing = (ri: number, ci: number): React.CSSProperties => ({
     outline: 'none',
     boxShadow: ri === curRow && ci === curCol && gridFocused
@@ -149,6 +186,10 @@ export function Table({
     <div ref={ref} style={{ width: '100%' }}>
       {narrow ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
+          {sortBar && (
+            <Select label="Sort by" options={sortOptions} value={sortValue}
+              onChange={(picked) => { const next = parseSortOption(picked); if (next) onSortChange?.(next); }} />
+          )}
           {bare && (
             <div style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
               borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)', textAlign: 'center',

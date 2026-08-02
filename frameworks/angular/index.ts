@@ -5,5 +5,6 @@ export * from './ContainerSize';
 export * from './DataVisuals';
 export * from './FocusTrap';
 export * from './ProjectionMarkers';
+export * from './WarnOnce';
 export * from './theme/ThemeService';
 export * from './icons/IconManifest';

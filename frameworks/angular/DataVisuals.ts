@@ -3,6 +3,7 @@ import {
   tintArea, tintSoft, tintEdge,
 } from './Tokens.generated';
 import type { NumberFormat, SeriesTone, Tone } from './Api.generated';
+import { warnOnce } from './WarnOnce';
 
 export const CAT_SLOTS = catSlots;
 
@@ -57,13 +58,6 @@ const TONE_VARS: Record<Tone, string> = {
 
 export function toneColor(tone: Tone): string {
   return TONE_VARS[tone];
-}
-
-const warned = new Set<string>();
-function warnOnce(message: string): void {
-  if (warned.has(message) || typeof console === 'undefined') return;
-  warned.add(message);
-  console.warn(`[arena] ${message}`);
 }
 
 export function resolveColors(options: {

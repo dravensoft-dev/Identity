@@ -10,7 +10,7 @@
       "name": "card",
       "when": "responsive is true and the container is below --bp-md -- one card per row, no table element at all",
       "pattern": "none",
-      "reason": "Below the breakpoint there is no grid: the rows become stacked cards and nothing renders a table, a row role or a cell. The grid pattern's requirements do not go unmet in this shape, they do not APPLY to it -- there is no grid element for a roving tab stop to live in. A row a consumer made clickable is still reachable by keyboard here, but that is TableRow's own `card-interactive` case bound to `button`, not a clause of this one.",
+      "reason": "Below the breakpoint there is no grid: the rows become stacked cards and nothing renders a table, a row role or a cell. The grid pattern's requirements do not go unmet in this shape, they do not APPLY to it -- there is no grid element for a roving tab stop to live in. A row a consumer made clickable is still reachable by keyboard here, but that is TableRow's own `card-interactive` case bound to `button`, not a clause of this one. The sort control this shape draws instead is a Select, which carries Select's own binding and not a clause of this one either, and it is what keeps a sortable column reachable where there is no header row to activate.",
       "exceptions": []
     },
     {

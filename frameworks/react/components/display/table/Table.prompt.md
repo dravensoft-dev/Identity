@@ -132,11 +132,48 @@ ascending. It costs **no tab stop**: the header row is already row 0 of the grid
 cursor, so Enter and Space act on the cell the reader is already on, and `aria-sort` says which
 column and which way.
 
+**Below `--bp-md` the header row is gone, so `sortControl` is the affordance.** With `sort`
+bound and at least one `sortable` column, card mode draws one compact select above the cards,
+listing every sortable column in each direction, and it reports through the same `sortChange`
+the header does. Set it to `none` for a table whose order is the document's rather than the
+reader's. The header row does **not** come back below the breakpoint: card mode exists for the
+one reason a grid does not fit.
+
+### `TableSort.column` is an index, and a column that moves takes the order with it
+
+The cells are already positional, so a key would be a second identity for a thing that has one,
+and that is the right trade. The price is that moving a column silently reorders the rows,
+because the index now names a different column. **Keep the sort field inside the column entry it
+belongs to and the two move together:**
+
+```ts
+const COLUMNS = [
+  { header: 'Customer', sortable: true, field: (s: Sale) => s.customer },
+  { header: 'Status' },
+  { header: 'Total', sortable: true, field: (s: Sale) => s.total },
+];
+```
+
+Arena cannot check that, but it does catch the loudest way to get it wrong: a `sort.column`
+aimed at a column that declares no `sortable` **warns once**, naming the column it landed on,
+instead of drawing no caret and saying nothing.
+
 `page` is `{ index, size, total }`. `total` is the count across every page and is required,
 because the rows you project are one page and nothing about the whole list can be read from
 them. Table draws its own `Pagination` below the grid and names it from `label`, which is
 what makes two paged tables on one dashboard tellable apart.
 
 The one thing Table emits on its own is `pageChange` with 1, when the total drops far enough
-that the current page is past the end. That is the reset otherwise written by hand beside every
-filter, and it is bounded: a filter that leaves the page valid is silent, so nothing loops.
+that the current page is **past the end**. It is bounded: a filter that leaves the page valid is
+silent, so nothing loops.
+
+**That is not the reset you write beside a filter, and expecting it to be is the mistake this
+paragraph exists to stop.** Filter ten pages down to five while the reader is on the third and
+the page is still in range, so Table says nothing and the reader is left on page three of
+results they never asked for. Table cannot tell that from removing one row from page three of
+ten, which must move nobody, because a count is all it has. **Whether a change of criterion
+returns the reader to page one is yours**, and it belongs beside the criterion:
+
+```tsx
+const applyStatus = (next: string) => { setStatus(next); setPage(1); };
+```
