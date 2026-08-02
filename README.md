@@ -5,7 +5,7 @@ MIT License · Token-driven design system for React, Angular and Tailwind.
 **Arena** is the single interface language under which every Dravensoft software product is built.
 
 ## Latest project artifacts
-- **Repo/Claude Code plugin**: 5.2.0
+- **Repo/Claude Code plugin**: 5.1.2
 - [npm React package](https://www.npmjs.com/package/@dravensoft/arena-react?activeTab=versions)
 - [npm Angular package](https://www.npmjs.com/package/@dravensoft/arena-angular?activeTab=versions)
 
