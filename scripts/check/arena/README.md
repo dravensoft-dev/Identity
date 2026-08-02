@@ -22,6 +22,30 @@ The domain for a gate that reads two or more layers at once, or the repository r
 | `check-packages.mjs` | the `arena-theme` CLI that ships inside both npm packages stops emitting what Style Dictionary emits, or an assembled `dist/` is not registry-standard: a version out of step with `plugin.json`, an `exports` target that was never emitted, an install script, a missing README, or Phosphor bundled rather than declared a peer. Two emitters exist for the palette, so something has to hold them together; a zero-declaration comparison is an explicit failure. `dist/` is git-ignored, so the manifest half is skipped on a fresh clone and the run says so. |
 | `check-release.mjs` | any release surface disagrees with `.claude-plugin/plugin.json`, above all when the `plugin.json` **at the pinned tag** hands out a different version than the marketplace advertises. Forgetting the `ref` fails silently: the update is never offered and nothing errors. Run by path, with no npm script. |
 
+## What `check-dimension-literals.mjs` reaches
+
+The scan reaches four kinds of site: a JS declaration, a template literal's interpolation, CSS
+injected as a string, and an SVG presentation attribute in `prop="value"` form. An expression
+binding, `r={hover ? 5 : 4}`, is outside all of them. A literal reached through an
+intermediate local variable is still caught, but only when that identifier is used bare (no
+member access, no call, no arithmetic) at the governed site.
+
+It scans `.jsx`, `.ts` and `.tsx` under `frameworks/`, not `.html`, and nothing under `intro/`,
+so those pages stay clean only because they are tokenized by hand. The `*.card.html` specimens
+under `frameworks/tailwind/` are the one family of unscanned pages that stays clean
+structurally: every class they render comes from the manifest through `classesFor()`.
+
+**Two blind spots are known and neither is fixed**: a kebab-case SVG attribute, and Angular's
+`[style.x]` binding form, which sits outside all four scanners. This is why the three SVG
+charts write their static styling as camelCase `[style]` **objects**: in that shape
+`strokeWidth` and `fontSize` are judged as themselves, which is strictly more coverage than an
+attribute.
+
+A handful of sites are exempt by name with a reason each: read `EXEMPT` for the current set
+rather than a count. A stale exemption fails the gate itself, and a change to `EXEMPT` or
+`PASSTHROUGH` is a change to `check-dimension-literals.test.mjs` too, since that suite asserts
+on both maps by name.
+
 Every `X.test.mjs` beside a gate covers that gate. Two suites here name no gate:
 `browser-modules.test.mjs` covers the `intro/` runtime modules, and
 `components-categories.test.mjs` covers `frameworks/Components.json`, and both are claims about
