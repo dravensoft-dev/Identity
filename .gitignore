@@ -33,6 +33,12 @@ node_modules/
 # scripts/check/arena/check-generated.mjs.
 /frameworks/**/*.generated.*
 
+# The one exception under frameworks/, and it is the first rule above rather than a hole in
+# the second: the catalog is served to a reader from the tag, where nothing runs a build, so
+# ignoring it hands every consumer of the plugin an index that is not there. check:catalog
+# asserts it is tracked, because no other gate can: check:generated scans no .md.
+!/frameworks/Catalog.generated.md
+
 # Logs
 *.log
 npm-debug.log*

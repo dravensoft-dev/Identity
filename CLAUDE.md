@@ -558,12 +558,15 @@ with its own scroll area, not a card.
 **A file a script under `scripts/` writes is named `<stem>.generated.<ext>`, and that name is
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
 separate question `.gitignore` answers, and the line is audience, not provenance. Two reasons
-keep one tracked: **the tag has to hand it to a browser directly**, true of
+keep one tracked: **the tag has to hand it to a reader directly**, true of
 `contracts/design-generated/` and the `assets/fonts/` binaries, so ignoring the token CSS
 would ship a tag whose `intro/styles.css` `@import`s resolve to nothing, unstyled and silent;
 or **a clone cannot reproduce it**, true of `assets/fonts/Fonts.generated.json`, whose rebuild
 needs the network. Everything a script writes under `frameworks/` is ignored, by one pattern,
-with a reason per family in `UNTRACKED`. So a fresh clone
+with a reason per family in `UNTRACKED`, **with one negation**:
+`frameworks/Catalog.generated.md` is the first reason rather than a hole in the second, and
+`check:catalog` asserts it is tracked because `check:generated` scans no `.md` and so cannot.
+So a fresh clone
 runs `bun run build` first; [`scripts/build/README.md`](./scripts/build/README.md) is the
 first-compile document, linked from the root README. `check:generated` holds both halves and
 names the two outputs that can hold neither infix nor header: the `assets/fonts/` binaries, and

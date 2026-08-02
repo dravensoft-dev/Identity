@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { catalogProblems, firstDifference, zeroCatalogProblems } from './check-catalog.mjs';
+import { catalogProblems, firstDifference, zeroCatalogProblems, trackingProblems } from './check-catalog.mjs';
 
 test('the committed catalog matches a fresh emit', () => {
   const { problems } = catalogProblems();
@@ -10,6 +10,12 @@ test('the committed catalog matches a fresh emit', () => {
 test('the gate compared a real result set rather than an empty one', () => {
   const { declared } = catalogProblems();
   assert.ok(declared > 0, 'no component was declared, so a clean pass says nothing');
+});
+
+test('an untracked catalog is a problem, because it would reach no clone and no tag', () => {
+  assert.equal(trackingProblems(false).length, 1);
+  assert.match(trackingProblems(false)[0], /reaches no clone and no tag/);
+  assert.deepEqual(trackingProblems(true), []);
 });
 
 test('an empty declaration is a problem, never a clean run', () => {
