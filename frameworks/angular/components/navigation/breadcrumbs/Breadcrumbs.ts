@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { isPrimaryActivation } from '../../../AnchorActivation';
 import type { Crumb } from '../../../Api.generated';
 import { breadcrumbsStyles } from './Breadcrumbs.variants';
 
@@ -13,7 +14,7 @@ import { breadcrumbsStyles } from './Breadcrumbs.variants';
         @if (last) {
           <span [class]="styles().current()" aria-current="page">{{ crumb.label }}</span>
         } @else {
-          <a [class]="styles().crumb()" [attr.href]="crumb.href ?? '#'" (click)="onCrumbClick(crumb)">{{ crumb.label }}</a>
+          <a [class]="styles().crumb()" [attr.href]="crumb.href ?? '#'" (click)="onCrumbClick(crumb, $event)">{{ crumb.label }}</a>
           <span [class]="styles().separator()" aria-hidden="true">{{ separator() }}</span>
         }
       }
@@ -27,7 +28,7 @@ export class Breadcrumbs {
   readonly items = input.required<Crumb[]>();
   /** Drawn between crumbs, never before the first. Arena draws it, in its own aria-hidden span. */
   readonly separator = input('/');
-  /** A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, so a listener cannot call preventDefault() on the anchor's own navigation -- ctrl-click, middle-click and open-in-new-tab still work for a consumer who wires nothing; intercepting a plain click to substitute SPA routing belongs at the router (routerLink, Link), not here. */
+  /** A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, because a platform event type is an R4 violation inside a payload; what the listener needs from it, the chance to route instead of navigating, arrives as behaviour rather than as data. Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate. It fires for a primary click with no modifier and for Enter; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working trail of real links. */
   readonly navigate = output<Crumb>();
 
   protected readonly label = computed(() => {
@@ -40,7 +41,9 @@ export class Breadcrumbs {
 
   protected readonly styles = computed(() => breadcrumbsStyles());
 
-  protected onCrumbClick(crumb: Crumb): void {
+  protected onCrumbClick(crumb: Crumb, event: MouseEvent): void {
+    if (!isPrimaryActivation(event)) return;
+    event.preventDefault();
     this.navigate.emit(crumb);
   }
 }

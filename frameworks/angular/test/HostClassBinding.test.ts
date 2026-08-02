@@ -501,7 +501,11 @@ test('arena-breadcrumbs: a crumb click emits the clicked Crumb alone through nav
   });
 
   const crumb: Crumb = { label: 'Clients', href: '/clients' };
-  (breadcrumbs as unknown as { onCrumbClick(crumb: Crumb): void }).onCrumbClick(crumb);
+  const event = new (fixture.nativeElement as Element).ownerDocument.defaultView!.MouseEvent(
+    'click', { cancelable: true },
+  );
+  (breadcrumbs as unknown as { onCrumbClick(crumb: Crumb, event: MouseEvent): void })
+    .onCrumbClick(crumb, event);
 
   assert.ok(received, 'navigate did not emit');
   assert.equal(received, crumb, 'the emitted payload is not the same crumb object the click targeted');

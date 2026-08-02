@@ -15,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { commandPaletteStyles } from './CommandPalette.variants';
+import { isPrimaryActivation } from '../../../AnchorActivation';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
 import type { Command } from '../../../Api.generated';
 
@@ -111,7 +112,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
               <a [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
                  [href]="target"
                  [class]="styles().row() + ' ' + (i === active() ? styles().rowActive() : styles().rowDefault())"
-                 (mouseenter)="onHover(i)" (click)="onRun(command)">
+                 (mouseenter)="onHover(i)" (click)="onRouteClick(command, $event)">
                 @if (command.icon; as glyph) {
                   <span [class]="styles().rowIcon()"><i [class]="glyph" aria-hidden="true"></i></span>
                 }
@@ -153,7 +154,7 @@ export class CommandPalette {
   readonly placeholder = input('Search for an action or project…');
   /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   readonly close = output<void>();
-  /** A command was activated, carrying which one. Emitted after close. */
+  /** A command was activated, carrying which one. Emitted after close. For a command with `route` it fires for a primary click with no modifier and for Enter, both of which cancel the row's anchor first, so the two activations do the same thing and a host that routes here never navigates twice; a modified or middle click on such a row is the browser's, fires nothing and does not close the palette. */
   readonly run = output<Command>();
 
   protected readonly query = signal('');
@@ -224,6 +225,12 @@ export class CommandPalette {
       const panel = this.panel()?.nativeElement;
       if (panel) trapTabKey(panel, event, this.doc.activeElement);
     }
+  }
+
+  protected onRouteClick(command: Command, event: MouseEvent): void {
+    if (!isPrimaryActivation(event)) return;
+    event.preventDefault();
+    this.onRun(command);
   }
 
   protected onRun(command: Command): void {

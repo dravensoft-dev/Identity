@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 
 export interface CardProps {
 
@@ -21,10 +22,10 @@ export interface CardProps {
   /** Whether an interactive card is drawn but cannot be activated. It reflects through aria-disabled rather than any native attribute, and the card stays in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. Without `interactive` there is nothing to disable and the card is inert already. */
   disabled?: boolean;
 
-  /** Present => the card renders an <a>; absent, with `interactive`, a role="button". The same split, and the same reason, as SideNavItem.href: a control that navigates must be a link, openable in a new tab, address copyable, announced as a link, and none of that can be rebuilt on a div. It implies interaction on its own, so `interactive` is not also required, and with `disabled` it refuses activation through aria-disabled the way an item does. The card's own content still holds whatever controls it holds; a control inside the anchor is a control inside a link, which is the price of making the whole surface the target and the reason `interactive` exists as the alternative. */
+  /** Present => the card renders an <a>; absent, with `interactive`, a role="button". The same split, and the same reason, as SideNavItem.href: a control that navigates must be a link, openable in a new tab, address copyable, announced as a link, and none of that can be rebuilt on a div. A primary click with no modifier is cancelled and reported through `click`, so a router owns it; ctrl, meta, shift, alt, a middle click and a context menu stay the browser's and report nothing. It implies interaction on its own, so `interactive` is not also required, and with `disabled` it refuses activation through aria-disabled the way an item does. The card's own content still holds whatever controls it holds; a control inside the anchor is a control inside a link, which is the price of making the whole surface the target and the reason `interactive` exists as the alternative. */
   href?: string;
 
-  /** An interactive card was activated, by pointer or by Enter or Space. No payload, because the consumer wrote this element and already holds what it is about. */
+  /** An interactive card was activated, by pointer or by Enter or Space. With `href` it is also how the card reports the one activation a router owns, a primary click or Enter with no modifier, and Arena has already cancelled the anchor's own navigation by the time it fires; a modified or middle click is the browser's and does not fire it at all. No payload, because the consumer wrote this element and already holds what it is about. */
   onClick?: () => void;
 }
 
@@ -90,7 +91,12 @@ export function Card({
   if (target) {
     return (
       <a href={href} {...shared}
-        onClick={(event) => { if (disabled) { event.preventDefault(); return; } activate(); }}>
+        onClick={(event) => {
+          if (disabled) { event.preventDefault(); return; }
+          if (!isPrimaryActivation(event)) return;
+          event.preventDefault();
+          activate();
+        }}>
         {body}
       </a>
     );

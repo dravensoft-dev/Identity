@@ -13,12 +13,16 @@ like `"Breadcrumb"` written straight into the `host` block names the
 WIDGET rather than the trail and leaves two of these on one page indistinguishable as
 landmarks. Say which hierarchy this is a trail through ("Project navigation").
 
-A crumb renders as a real `<a href>`, so a plain click still navigates the browser.
-`navigate` reports the clicked `Crumb` alone -- the native `MouseEvent` is not forwarded,
-so a listener cannot call `preventDefault()` to stop the anchor's own navigation.
-Ctrl-click, middle-click and open-in-new-tab keep working for a consumer who wires
-nothing; intercepting a plain click to substitute SPA routing now belongs at the router
-(`routerLink`), not here:
+A crumb renders as a real `<a href>`, and Arena splits its activations the way a router link
+does. A primary click with no modifier, and Enter, are cancelled and reported through
+`navigate`, which carries the clicked `Crumb` alone: route from there and the browser does not
+navigate underneath you. Ctrl-click, middle-click and open-in-new-tab are the browser's, report
+nothing, and keep working for a consumer who wires no listener at all.
+
+**Do not put `routerLink` on `arena-breadcrumbs`.** It would not work: `RouterLink` decides
+whether it is on an anchor from the host's `tagName`, and the anchor here is inside the
+component, so it would ignore every modifier key and add a second tab stop over the crumb's own
+link. Route in the handler instead:
 
 ```html
 <arena-breadcrumbs ariaLabel="Project navigation" [items]="[
@@ -41,7 +45,9 @@ go(crumb: Crumb): void {
   not how far through it you are -- that is the coachmark's dots or a stepper.
 - Don't truncate the middle of a trail to save space. Wrap it; the row already does.
 - Don't reach for `(navigate)` to call `preventDefault()` -- it never receives the click
-  event, so it cannot stop the anchor's own navigation. Intercept at the router instead.
+  event, and it does not need to: Arena has already cancelled the anchor by the time it fires.
+- Don't route on a modified click. `(navigate)` never fires for one, and if it did, opening
+  in the current tab is the opposite of what the reader asked for.
 
 **Accessibility note:** the trail renders no `<ol>`/`<li>` wrapper, so a
 screen reader gets no "list, N items" orientation cue that the WAI-ARIA APG's breadcrumb

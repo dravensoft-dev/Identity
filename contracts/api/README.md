@@ -426,9 +426,26 @@ inside a tooltip stops being possible.
 parameters, the item and the DOM event that produced it, is not readable as an event, and
 `classify()` refuses it. The resolution holds generally: **the platform
 event leaves the payload and the item alone travels**, because a platform event type is an R4
-violation inside a payload just as it is anywhere else. What leaves with it is `preventDefault()`, so
-a component whose items render real anchors must say in its `.prompt.md` that the browser's own
-navigation is no longer interceptable from the handler and that routing belongs to the router.
+violation inside a payload just as it is anywhere else. What leaves with it is `preventDefault()`,
+and the convention below is what hands that back without putting an event in a payload.
+
+**An anchor Arena draws cancels a primary click with no modifier and reports through its own
+navigation event.** A click carrying ctrl, meta, shift or alt, a middle click and a context menu
+stay the browser's, and nothing is emitted for any of them: the reader asked for a new tab or for
+the address, and answering with an in-app route would be the defect the convention exists to
+avoid. So a handler that routes fires for exactly the activation it should answer, and the keyboard
+agrees with the mouse, because Enter on such a row takes the same path a primary click does. This is
+the rule `RouterLink` applies, and it is here for the same reason. Four members carry it:
+`Card.href`, `Command.route`, `Crumb.href` and `SideNavItem.href`.
+
+**Leaving it to the router instead is not available, and the reason is mechanical rather than
+doctrinal.** `RouterLink` decides whether it sits on an anchor by `tagName` and by
+`customElements`, so a component that draws its anchor **inside** itself is neither: composed onto
+such a host, it ignores every modifier key and lands a second tab stop on the host, over the anchor
+already within. That leaves a single-page consumer with no way to use `href` at all, which is the
+member unusable in the one kind of application it exists for. A component that renders an anchor is
+therefore the one place where Arena's own render, rather than the consumer's composition, has to
+answer the question.
 
 **A member offering "a bare value or a described one" picks the described one.** `(string | X)[]` is
 an R5 violation and a convenience: the bare string means *value and label are the same*. The array of

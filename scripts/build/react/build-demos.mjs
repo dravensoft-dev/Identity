@@ -15,7 +15,8 @@ export const BANNER =
 export const ROOTS = ['frameworks/react/components', 'frameworks/react/ui-kits/console'];
 
 export const ROOT_MODULES = [
-  'frameworks/react/DataVisuals.ts', 'frameworks/react/Theme.ts',
+  'frameworks/react/AnchorActivation.ts', 'frameworks/react/DataVisuals.ts',
+  'frameworks/react/Theme.ts',
   'frameworks/react/UseContainerWidth.ts', 'frameworks/react/UseDialogModal.ts',
 ];
 

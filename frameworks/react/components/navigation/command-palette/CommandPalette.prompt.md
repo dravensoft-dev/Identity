@@ -33,7 +33,13 @@ ctrl-click, middle-click and open-in-new-tab work, which is what an accelerator 
 destinations owes a keyboard user. It keeps `role="option"`, because the listbox pattern
 requires that of every row and losing it would break the arrow walk for the whole list: a
 screen reader announces the row as an option rather than as a link, and that is the trade.
-`onRun` still fires, so a host that routes in JavaScript needs no change.
+
+**With `route`, the mouse and the keyboard do the same thing, and that is the point.** A
+primary click with no modifier and Enter both cancel the row's anchor and report through
+`onRun`, so a host that navigates in its `onRun` handler navigates exactly once, whichever way
+the reader activated the row. Ctrl-click, meta-click, shift-click and a middle click are the
+browser's: they open the destination themselves, fire nothing, and leave the palette open,
+because a reader who asked for a second tab did not ask to leave this one.
 
 There is no `maxResults`. Trimming the list before passing it throws away matches the query
 would have found, and a better ranking is an improvement inside the component rather than a

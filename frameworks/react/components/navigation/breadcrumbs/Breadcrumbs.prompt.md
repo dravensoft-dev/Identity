@@ -13,14 +13,16 @@ Breadcrumb navigation (H3). Gives an explicit return path when the hierarchy is 
 as indistinguishable landmarks while the requirement reads as met. Say which hierarchy this is
 a trail through ("Project navigation").
 
-A non-current crumb's click reports `onNavigate(crumb)` -- the crumb alone, with no DOM
-event. The anchor still navigates natively, so ctrl-click, middle-click and
-open-in-new-tab keep working for a consumer who wires nothing, but intercepting a plain
-click to substitute SPA routing is not possible from `onNavigate`; do that at the
-router (`Link`) instead.
+A non-current crumb renders a real `<a href>`, and Arena splits its activations the way a
+router link does. A primary click with no modifier, and Enter, are cancelled and reported
+through `onNavigate(crumb)`, which carries the crumb alone and no DOM event: route from there
+and the browser does not navigate underneath you. Ctrl-click, middle-click and open-in-new-tab
+are the browser's, report nothing, and keep working for a consumer who wires no handler.
 
 **Do / Don't**
 - The last item is the current location: no link, styled in `--bone`.
 - Don't replace tabs with breadcrumbs or vice versa; they coexist (tabs = sibling sections, breadcrumbs = depth).
 - Don't reach for `onNavigate` to call `preventDefault()` -- it never receives the click
-  event, so it cannot stop the anchor's own navigation. Intercept at the router instead.
+  event, and it does not need to: Arena has already cancelled the anchor by the time it fires.
+- Don't wrap a crumb in your router's `Link`. `items` is data and the anchor is Arena's;
+  navigate in `onNavigate` instead.

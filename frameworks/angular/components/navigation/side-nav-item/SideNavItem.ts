@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, forwardRef, inject, input } from '@angular/core';
+import { isPrimaryActivation } from '../../../AnchorActivation';
 import { SideNavChild, SideNavState, indentFor } from '../side-nav/SideNavState';
 import { sideNavStyles } from '../side-nav/SideNav.variants';
 
@@ -15,7 +16,7 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
     @if (href(); as url) {
       <a [class]="styles().item()" [href]="url" [style.paddingInlineStart]="indent()"
          [attr.aria-current]="current()" [attr.aria-disabled]="off()"
-         (click)="activate($event)">
+         (click)="activateAnchor($event)">
         @if (icon(); as glyph) {
           <i [class]="styles().icon() + ' ' + glyph" aria-hidden="true"></i>
         }
@@ -48,7 +49,7 @@ export class SideNavItem {
   readonly icon = input<string>();
   /** A count drawn at the row's trailing edge -- pending orders, unread notices. Zero draws nothing, because a badge reading 0 is a mark that says there is nothing to mark; above 99 it reads "99+", so a four-digit count cannot widen the column. A number rather than a string, because the two rules above are arithmetic and a caller who has already formatted the value has taken them away. It is NOT hidden from assistive technology, so the row announces "Orders 12": a count a screen-reader user cannot hear is a count that is not there, and aria-hidden on it would trade a real loss for a tidier name. What the 12 counts stays unsaid, because nothing can derive it and no member states it -- say it in the label where it matters. */
   readonly badge = input<number>();
-  /** Present => the item renders an <a>; absent => a <button>. A control that navigates must be a link -- openable in a new tab, address copyable, announced as a link. An item that only changes local state is a button. */
+  /** Present => the item renders an <a>; absent => a <button>. A control that navigates must be a link -- openable in a new tab, address copyable, announced as a link. An item that only changes local state is a button. A primary click with no modifier is cancelled and reported through SideNav's `nav`, so a router owns it; a modified or middle click is the browser's and reports nothing. */
   readonly href = input<string>();
   /** Whether the destination is drawn but cannot be reached -- one the consumer's rules lock, such as a feature the current plan does not include. It reflects through `aria-disabled` rather than the native attribute, and rather than by not rendering the item at all: an unavailable destination a user can see and hear announced as unavailable is what tells them it exists, which is the whole reason to draw it. The anchor keeps its `href` so the case split stays what it is -- what changes is that activation is refused and the state is announced. */
   readonly disabled = input(false, { transform: booleanAttribute });
@@ -85,6 +86,13 @@ export class SideNavItem {
 
   protected activate(event: Event): void {
     if (this.disabled()) { event.preventDefault(); return; }
+    this.nav.activate(this.id());
+  }
+
+  protected activateAnchor(event: MouseEvent): void {
+    if (this.disabled()) { event.preventDefault(); return; }
+    if (!isPrimaryActivation(event)) return;
+    event.preventDefault();
     this.nav.activate(this.id());
   }
 }

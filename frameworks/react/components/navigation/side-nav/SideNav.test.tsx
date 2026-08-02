@@ -39,7 +39,10 @@ test('onNav carries the activated id alone, and no DOM event reaches the handler
   const tree = SideNav({ children: TREE, ariaLabel: 'Primary', onNav: (...args) => seen.push(args) });
 
   const [anchor, button] = tree.props.children.map((el: React.ReactElement) => SideNavItem(el.props));
-  const event = { preventDefault() { this.defaultPrevented = true; }, defaultPrevented: false };
+  const event = {
+    button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false,
+    preventDefault() { this.defaultPrevented = true; }, defaultPrevented: false,
+  };
 
   anchor.props.onClick(event);
   assert.equal((seen[0] as unknown[]).length, 1, 'a second argument reached the handler -- the DOM event is back');

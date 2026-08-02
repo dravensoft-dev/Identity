@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import { trapTabKey } from '../../../UseDialogModal.ts';
 
 import type { Command } from '../../../Api.generated';
@@ -19,7 +20,7 @@ export interface CommandPaletteProps {
   /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   onClose?: () => void;
 
-  /** A command was activated, carrying which one. Emitted after close. */
+  /** A command was activated, carrying which one. Emitted after close. For a command with `route` it fires for a primary click with no modifier and for Enter, both of which cancel the row's anchor first, so the two activations do the same thing and a host that routes here never navigates twice; a modified or middle click on such a row is the browser's, fires nothing and does not close the palette. */
   onRun?: (command: Command) => void;
 }
 
@@ -116,7 +117,13 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
                   'aria-selected': idx === i,
                   tabIndex: -1,
                   onMouseEnter: () => setI(idx),
-                  onClick: () => run(c),
+                  onClick: (e: React.MouseEvent) => {
+                    if (c.route !== undefined) {
+                      if (!isPrimaryActivation(e)) return;
+                      e.preventDefault();
+                    }
+                    run(c);
+                  },
                   style: { display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left' as const, padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer', textDecoration: 'none',
                     background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' },
                 };

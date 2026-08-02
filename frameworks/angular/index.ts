@@ -1,3 +1,4 @@
+export * from './AnchorActivation';
 export * from './Api.generated';
 export * from './components';
 export * from './ContainerSize';

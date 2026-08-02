@@ -32,10 +32,20 @@ implies interaction on its own, so `interactive` is not also needed. With `disab
 refuses activation through `aria-disabled` and prevents the anchor's default.
 
 ```tsx
-<Card href="/clients/acme" title="Acme Corp">
+<Card href="/clients/acme" title="Acme Corp" onClick={() => navigate('/clients/acme')}>
   <p>Everything the client can see.</p>
 </Card>
 ```
+
+**A router owns the plain click, and the browser owns the rest.** A primary click with no
+modifier, and Enter, are cancelled and reported through `onClick`, so your router's navigate
+in that handler is the whole bridge and the page does not reload. Ctrl-click, meta-click,
+shift-click, a middle click and the context menu are the browser's: they open the `href`
+themselves and fire nothing, which is why the member is worth having over `interactive`. Bind
+nothing and the card is a plain link that navigates the document.
+
+**Don't wrap a `Card` in your router's `Link`.** That nests an anchor inside an anchor, which
+is invalid and reachable by nobody. Give the card the `href` and route in `onClick`.
 
 Choose between the two by what the press DOES. A card that goes somewhere is `href`; a card
 that changes local state is `interactive` with `onClick`. And a card whose body holds controls

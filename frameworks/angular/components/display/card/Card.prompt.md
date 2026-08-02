@@ -80,10 +80,32 @@ refuses activation through `aria-disabled` and prevents the anchor's default, th
 does.
 
 ```html
-<arena-card href="/clients/acme" title="Acme Corp">
+<arena-card href="/clients/acme" title="Acme Corp" (click)="go('/clients/acme')">
   <p>Everything the client can see.</p>
 </arena-card>
 ```
+
+**A router owns the plain click, and the browser owns the rest.** A primary click with no
+modifier, and Enter, are cancelled and reported through `(click)`, so `router.navigateByUrl`
+in that handler is the whole bridge and the page does not reload. Ctrl-click, meta-click,
+shift-click, a middle click and the context menu are the browser's: they open the `href`
+themselves and fire nothing, which is why the member is worth having over `interactive`.
+Bind nothing and the card is a plain link that navigates the document, which is the right
+shape outside a single-page application.
+
+**`(click)` on `arena-card` is two bindings wearing one name, and the card resolves it.** Angular
+subscribes the binding to the component's `click` output *and* adds a native listener for the DOM
+event of the same name, so a click that reaches the host is counted twice. The card stops
+propagation on its own anchor, which is what makes `(click)` fire exactly once for the activation
+it owns and not at all for the ones it leaves to the browser. `AnchorActivation.test.ts` pins both
+halves; the consequence for you is that a click delegated from an ancestor of the card never sees
+an activation the card handled.
+
+**Do not put `routerLink` on `arena-card`.** It would not work: `RouterLink` decides whether
+it is on an anchor from the host's `tagName`, and `arena-card` is neither an `<a>` nor a
+registered custom element, so it ignores every modifier key and lands a second tab stop on the
+host, over the anchor the card already draws inside itself. That is the reason `(click)` reports
+the activation at all.
 
 Choose between the two by what the press DOES. A card that goes somewhere is `href`; a card
 that changes local state is `interactive` with `(click)`. And a card whose body holds controls

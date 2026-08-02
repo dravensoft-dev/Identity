@@ -32,8 +32,14 @@ re-densifies and re-themes with the token. `check:dimensions` cannot see this: i
 `indentFor` is unit-tested at every depth instead.
 
 `active` is the id of the current destination and `nav` reports the id of the row pressed. An item
-with `href` keeps its **native navigation**: ctrl-click and open-in-new-tab still work, and
-reports through `nav` as well; a router-driven app usually wants one or the other, not both.
+with `href` splits its activations the way a router link does: a primary click with no modifier,
+and Enter, are cancelled and reported through `nav`, so `router.navigateByUrl` in that handler is
+the whole bridge and nothing navigates twice; ctrl-click, middle-click and open-in-new-tab are the
+browser's, report nothing, and keep working for a consumer who wires no handler.
+
+**Do not put `routerLink` on `arena-side-nav-item`.** `RouterLink` decides whether it is on an
+anchor from the host's `tagName`, and the anchor here is inside the component, so it would ignore
+every modifier key and add a second tab stop over the row's own link. Navigate in `(nav)` instead.
 
 **Do / Don't**
 - **Do** give each row a stable `id`. `active`, `nav` and the collapsible's own auto-expansion are

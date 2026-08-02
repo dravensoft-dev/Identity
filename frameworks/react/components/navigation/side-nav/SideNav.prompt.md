@@ -16,10 +16,11 @@ the same shape as `Table`/`TableRow` and `RadioGroup`/`Radio`, one size down.
 
 An item's click reports `onNav(id)` -- the activated item's `id`, with no DOM event.
 There is no item datum to carry: you wrote the element, so you already hold
-everything on it. The anchor still navigates natively, so ctrl-click, middle-click
-and open-in-new-tab keep working for a consumer who wires nothing, but intercepting
-a plain click to substitute SPA routing is not possible from `onNav`; do that at the
-router (`Link`) instead.
+everything on it. On an item with `href`, Arena splits the activations the way a router
+link does: a primary click with no modifier, and Enter, are cancelled and reported through
+`onNav`, so routing from there does not race the browser; ctrl-click, middle-click and
+open-in-new-tab are the browser's, report nothing, and keep working for a consumer who
+wires no handler.
 
 An item with `href` renders an `<a>`; without one it renders a `<button>`. The active
 item takes `--crimson-soft` behind `--crimson` text at `--fw-semibold`; the rest are
@@ -77,7 +78,9 @@ it, because the automatic expansion is Arena's decision rather than the user's. 
   siblings, or in an array. A wrapper component of your own has the same effect, and
   it is the same limit `Table` and `RadioGroup` already carry.
 - **Don't** reach for `onNav` to call `preventDefault()` -- it never receives the click
-  event, so it cannot stop the anchor's own navigation. Intercept at the router instead.
+  event, and it does not need to: Arena has already cancelled the anchor by the time it fires.
+- **Don't** wrap an item in your router's `Link`. The anchor is Arena's and is already
+  inside the item; navigate in `onNav`.
 - **Don't** use it for tabs. `SideNav` navigates between destinations; `Tabs` changes
   the view within one, and `SegmentedControl` filters within that.
 - **Don't** wrap it in your own `<nav>`. It renders one.
