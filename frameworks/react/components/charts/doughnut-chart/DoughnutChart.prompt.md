@@ -21,3 +21,17 @@ Parts of one whole, a share breakdown across a handful of categories. Always dra
 - Don't compare two doughnuts side by side. Reading angle differences across charts is the thing people are worst at; use grouped bars.
 - Don't omit `labels` or `values`. Both are required props, `DoughnutChart` throws from its render rather than drawing an empty ring. A required member absent is a caller bug that fails hard in every layer, which `contracts/api/README.md` states under required-ness. A chart with no data is a caller bug, not a state to render.
 - Don't pass more `labels` than `values`. A slice is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than given a legend row with no slice behind it.
+
+### Reading a slice back, and reading a legend on a phone
+
+`onSliceActivate` carries the index **in `values`**, and that is the whole member. A slice worth
+zero paints no path, so the shapes on screen and the entries in the array are two different
+lists; a consumer indexing `querySelectorAll('path')` has to reproduce that omission from
+outside to translate one into the other, and the next release breaks it in silence. Both the arc
+and its legend row report, so the zero-valued entry, which has no arc, is still reachable.
+
+`legendLayout` decides how each legend row arranges its label and its figure: `inline` on one
+line, `stacked` with the label above, `auto` measuring the legend column and stacking when the
+row does not give. The default is `auto`, and it matters because the two do not degrade equally:
+on one line the figure does not yield, so at 390px the label is what gets cut, and a column of
+numbers with nothing saying what they count is the opposite of a legend.

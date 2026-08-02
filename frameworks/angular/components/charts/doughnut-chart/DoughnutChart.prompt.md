@@ -75,6 +75,21 @@ frameworks/angular/components/charts/bar-chart/BarChart.ts
 frameworks/angular/components/charts/line-chart/LineChart.ts`, rather than a line
 number, which has already gone stale once, nothing there scrolls,
 so nothing there strands a keyboard user the way a scrollable box with nothing focusable
-inside it does. Hover-only data is a separate, still-open gap
-and affects all three charts: every label and value is already in the visually-hidden
-table, so only the centre percentage is pointer-exclusive.
+inside it does. Every label and value is already in the visually-hidden table, so the centre
+percentage is the only figure the pointer alone reveals, and `(sliceActivate)` is a pointer
+affordance for the same reason: it reports what was clicked, and a keyboard user reaches the
+same information through the table.
+
+### Reading a slice back, and reading a legend on a phone
+
+`(sliceActivate)` carries the index **in `values`**, and that is the whole member. A slice worth
+zero paints no path, so the shapes on screen and the entries in the array are two different
+lists; a consumer indexing `querySelectorAll('path')` has to reproduce that omission from
+outside to translate one into the other, and the next release breaks it in silence. Both the arc
+and its legend row report, so the zero-valued entry, which has no arc, is still reachable.
+
+`legendLayout` decides how each legend row arranges its label and its figure: `inline` on one
+line, `stacked` with the label above, `auto` measuring the legend column and stacking when the
+row does not give. The default is `auto`, and it matters because the two do not degrade equally:
+on one line the figure does not yield, so at 390px the label is what gets cut, and a column of
+numbers with nothing saying what they count is the opposite of a legend.

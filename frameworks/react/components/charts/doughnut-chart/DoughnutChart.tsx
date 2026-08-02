@@ -3,7 +3,7 @@ import { useContainerWidth } from '../../../UseContainerWidth.ts';
 import { resolveColors, arcPath, srOnly, valueWriter, CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
-import type { NumberFormat } from '../../../Api.generated';
+import type { ChartLegendLayout, NumberFormat } from '../../../Api.generated';
 
 export interface DoughnutChartProps {
 
@@ -19,6 +19,12 @@ export interface DoughnutChartProps {
   /** Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point. */
   slots?: number[];
 
+  /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
+  legendLayout?: ChartLegendLayout;
+
+  /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
+  onSliceActivate?: (index: number) => void;
+
   /** Appended verbatim to every number the chart draws: the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
   valueSuffix?: string;
 
@@ -32,6 +38,7 @@ export interface DoughnutChartProps {
 
 export function DoughnutChart({
   labels, values, seriesLabel, slots, valueSuffix, valuePrefix, valueFormat,
+  legendLayout = 'auto', onSliceActivate,
 }: DoughnutChartProps) {
   if (!seriesLabel) throw new Error('DoughnutChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('DoughnutChart: `labels` is required');
@@ -48,6 +55,7 @@ export function DoughnutChart({
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
 
   const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
+  const stacked = legendLayout === 'auto' ? legendW < chartLegendMax : legendLayout === 'stacked';
   const plotW = Math.max(1, width - legendW - chartLegendGap);
   const cx = plotW / 2;
   const cy = height / 2;
@@ -74,7 +82,7 @@ export function DoughnutChart({
 
             stroke="var(--surface-card)"
             opacity={hover === null || hover === i ? 1 : 0.55}
-            onMouseEnter={() => setHover(i)}
+            onMouseEnter={() => setHover(i)} onClick={() => onSliceActivate?.(i)}
             style={{ transition: 'opacity var(--dur-fast) var(--ease-out)', strokeWidth: 'var(--bw-strong)' }} />
         ))}
         {hover !== null && segments[hover] && (
@@ -92,11 +100,16 @@ export function DoughnutChart({
         style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {values.map((_, i) => (
           <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
-            style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', opacity: hover === null || hover === i ? 1 : 0.55 }}>
+            onClick={() => onSliceActivate?.(i)}
+            style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', cursor: 'pointer', opacity: hover === null || hover === i ? 1 : 0.55 }}>
             <span aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 2.5)', height: 'calc(var(--sp-1) * 2.5)', borderRadius: 'var(--r-xs)', background: colors[i], flexShrink: 0 }} />
-            <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labels[i] ?? ''}</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{fmt(values[i] ?? 0)}</span>
+            <span style={stacked
+              ? { display: 'flex', flex: 1, minWidth: 0, flexDirection: 'column', alignItems: 'stretch' }
+              : { display: 'flex', flex: 1, minWidth: 0, alignItems: 'baseline', gap: 'calc(var(--sp-1) * 2)', justifyContent: 'space-between' }}>
+              <span style={{ minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labels[i] ?? ''}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{fmt(values[i] ?? 0)}</span>
+            </span>
           </div>
         ))}
       </div>
