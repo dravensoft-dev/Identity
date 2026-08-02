@@ -154,7 +154,7 @@ bun run demos   # builds, serves the repo root on :8000, prints the entry points
 ```
 
 - `intro/guidelines/*.html`: token specimen cards (type, color, spacing, effects, icons, brand, danger convention).
-- `frameworks/react/components/**/*.card.html`: live component demos; the two shapes a page takes are under *Every React component is a trio*. List them with `find frameworks/react/components -name '*.card.html'`.
+- `frameworks/<layer>/components/**/*.demo.generated.html`: the playground for one component, one per component per layer, generated from the API contract and the fixture beside it. **The two layers' pages differ in one path segment and take the same query string**, which is what makes a difference between them a difference in the component. List them with `find frameworks -name '*.demo.generated.html'`.
 - `frameworks/react/ui-kits/console/index.html`: the Delivery Console example app.
 - `intro/Arena - Overview.html`: the token language, generated at runtime. **It shows no components on purpose**, because those belong to the framework layers.
 - `intro/Dravensoft Identity.dc.html`: the approved brand manual, and the only `dc-runtime` page.
@@ -511,15 +511,13 @@ decision, and a layer that disagrees with it is wrong.
 
 **Every React component is a trio, and the three files live in the component's own directory**,
 `frameworks/react/components/<category>/<component-kebab>/`: `X.tsx` (implementation and its
-exported `XProps`), `X.prompt.md` (usage, examples, Do/Don't) and an entry in a `*.card.html`
-demo. **The layer carries no hand-written `.d.ts`**: the published one is emitted from the
-source, so the two cannot disagree. **That
-demo page is one of two shapes**: `X.card.html` in the component's own directory when the card
-is about that component alone, or a page one level up, beside the directories at its category
-level, when it composes several components onto one card (`display/Display.card.html`,
-`navigation/MenuPagination.card.html`). A category-level page belongs to no one component, which
-is why the placement rule puts it there rather than inside any of them. Adding a component means
-adding all four.
+exported `XProps`), `X.prompt.md` (usage, examples, Do/Don't) and a fixture at
+`frameworks/demos/X.demo.json`. **The layer carries no hand-written `.d.ts`**: the published one
+is emitted from the source, so the two cannot disagree. **The demo page is not one of the
+three**: `bun run generate:playgrounds` emits `X.demo.generated.html` and its entry into the
+component's own directory in **every** layer, from the one contract and the one fixture, which
+is why the two layers' pages can be compared at all. Adding a component means adding the three
+and running the generator.
 
 **A new React component also moves a literal count outside its own layer, and the React suite
 alone cannot see it move.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts

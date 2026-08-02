@@ -38,7 +38,7 @@ the next one, because that is the browser's native sequential focus navigation. 
 browser-driven gate stays refused, so the interior is a person's job.
 
 Serve the tree with `bun run demos` and open
-`frameworks/react/components/feedback/confirm-dialog/ConfirmDialog.card.html`.
+`frameworks/react/components/feedback/confirm-dialog/ConfirmDialog.demo.generated.html`.
 
 **Start by pressing Escape.** That card renders with `open` already `true`, because a
 specimen has to show something. Pressing the trigger while the dialog is already open

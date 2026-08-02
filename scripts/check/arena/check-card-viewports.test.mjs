@@ -227,7 +227,8 @@ test('a page that timed out without ever stabilizing is a skip-class condition, 
 test('findCardPages finds every page that declares, and nothing that does not', () => {
   const pages = findCardPages(repoRoot);
   assert.ok(pages.includes('intro/guidelines/icons.html'));
-  assert.ok(pages.includes('frameworks/react/components/charts/Charts.card.html'));
+  assert.ok(pages.some((one) => one.startsWith('frameworks/tailwind/')),
+    'the recipe specimens are the framework pages this gate measures now');
   assert.ok(!pages.includes('intro/Arena - Overview.html'), 'the Overview is not a card');
   assert.ok(!pages.includes('intro/Dravensoft Identity.dc.html'), 'the brand manual is not a card');
   assert.ok(pages.every((p) => !p.includes('node_modules')));

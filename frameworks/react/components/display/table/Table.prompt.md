@@ -81,7 +81,7 @@ explicitly sized. What is below is what no suite can reach, since happy-dom
 implements no layout and no native sequential focus navigation, and only a person checks it.
 
 Serve the tree with `bun run demos`, open
-`frameworks/react/components/display/TableAvatar.card.html`, and check all of:
+`frameworks/react/components/display/table/Table.demo.generated.html`, and check all of:
 
 1. Tab reaches the table ONCE, and one more Tab leaves it. No cell is a stop of its
    own. Controls YOU drew inside a cell are the exception and are meant to be: they

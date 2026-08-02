@@ -324,7 +324,7 @@ export function modelParityProblems(files) {
 
 const CITING_TREES = LAYERS.map((layer) => join('frameworks', layer));
 const PATH_LIKE = /frameworks\/[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)+/g;
-const PAGE_LIKE = /\b[A-Za-z][A-Za-z0-9]*\.(?:card|demo)\.(?:html|json|entry\.tsx|entry\.ts)\b/g;
+const PAGE_LIKE = /\b[A-Za-z][A-Za-z0-9]*\.(?:card|demo)(?:\.generated)?\.(?:html|json|entry\.tsx|entry\.ts)\b/g;
 
 export function basenameIndex(base = root) {
   const seen = new Set();
@@ -354,19 +354,31 @@ export function* citingFiles(base = root) {
   for (const tree of CITING_TREES) yield* walk(join(base, tree));
 }
 
-export function citationProblems(base = root, files = citingFiles(base), names = basenameIndex(base)) {
+export function citationProblems(base = root, files = citingFiles(base), names = basenameIndex(base), emitted = pagePaths(base)) {
   const problems = [];
+  const pages = new Set(emitted);
+  const pageNames = new Set(emitted.map((rel) => rel.slice(rel.lastIndexOf('/') + 1)));
   for (const path of files) {
     const rel = path.slice(base.length + 1);
     for (const [line, text] of readFileSync(path, 'utf8').split('\n').entries()) {
       for (const cited of text.match(PATH_LIKE) ?? []) {
         const cleaned = cited.replace(/[.,;:)]+$/, '');
+        if (cleaned.endsWith('.demo.generated.html')) {
+          if (!pages.has(cleaned)) {
+            problems.push(`${rel}:${line + 1}: cites ${cleaned}, and no contract emits that page`);
+          }
+          continue;
+        }
         if (cleaned.includes('.generated.')) continue;
         if (existsSync(join(base, cleaned))) continue;
         problems.push(`${rel}:${line + 1}: cites ${cleaned}, and nothing is there`);
       }
       for (const cited of text.match(PAGE_LIKE) ?? []) {
-        if (cited.includes('.generated.') || names.has(cited)) continue;
+        if (pageNames.has(cited) || names.has(cited)) continue;
+        if (cited.includes('.generated.')) {
+          problems.push(`${rel}:${line + 1}: names ${cited}, and no contract emits a page called that`);
+          continue;
+        }
         problems.push(`${rel}:${line + 1}: names ${cited}, and no file under frameworks/ is called that`);
       }
     }

@@ -58,11 +58,6 @@ export const EXEMPT = new Map([
    'the other axis of the same 1px visually-hidden box as the width entry above'],
   ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
-
-  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:11px',
-   'Skeleton.card.entry.tsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
-  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:90px',
-   'Skeleton.card.entry.tsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
 ]);
 
 export const UNMODELLED_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg'];

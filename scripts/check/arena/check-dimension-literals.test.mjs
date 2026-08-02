@@ -309,17 +309,11 @@ test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () =>
   assert.ok(!EXEMPT.has("frameworks/angular/DataVisuals.ts:border:'0'"));
 });
 
-test('EXEMPT records the two demo-entry height literals that are not on the 4px spacing scale, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:11px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:90px'));
-
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:160px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:120px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:72px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:48px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:40px'));
-
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:45%'));
+test('no exemption names a demo entry, since a hand-written one no longer exists to carry a literal', () => {
+  for (const key of EXEMPT.keys()) {
+    assert.doesNotMatch(key, /\.card\.entry\.tsx:/,
+      `${key} names a page entry this layer stopped hand-writing; a generated one binds every value through a knob`);
+  }
 });
 
 test('the SR_ONLY object shape produces exactly the raws those keys are cut from', () => {

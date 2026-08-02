@@ -46,7 +46,7 @@ browser's native sequential focus navigation, which happy-dom does not implement
 browser-driven gate stays refused, so this list is the check.
 
 Serve the tree with `bun run demos` and open
-`frameworks/react/components/feedback/onboarding/Onboarding.card.html`.
+`frameworks/react/components/feedback/onboarding/Onboarding.demo.generated.html`.
 
 **Start by pressing Escape.** That card renders with the tour already open, because a
 specimen has to show something, and pressing "Start tour" while `open` is already

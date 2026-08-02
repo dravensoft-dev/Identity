@@ -59,7 +59,7 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
 `Calendar` has a render suite that walks its grid, and everything below is what
 that suite cannot reach: layout, motion and focus rings, which happy-dom does not
 implement. Serve the tree with `bun run demos`, open
-`frameworks/react/components/display/calendar/Calendar.card.html`, and check all of:
+`frameworks/react/components/display/calendar/Calendar.demo.generated.html`, and check all of:
 
 1. Tab reaches the schedule ONCE, and one more Tab leaves it. No chip and no
    kebab is a stop of its own. An OPEN panel is the exception and is meant to

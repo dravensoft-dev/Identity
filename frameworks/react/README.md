@@ -162,18 +162,27 @@ what covers it: real Chromium over each declared page, one real Tab press per st
 ## Every component is a trio
 
 `<Name>.tsx` (implementation and its exported `<Name>Props`), `<Name>.prompt.md` (usage and
-examples) and an entry in a `*.card.html` demo. Adding a component means adding all three.
+examples) and a fixture at `frameworks/demos/<Name>.demo.json`. Adding a component means adding
+all three. The demo **page** is not one of them: it is generated from the API contract and that
+fixture, into this layer and into every other, which is what makes two layers' pages comparable
+at all.
 
 **There is no hand-written `.d.ts`, and that is the point.** The interface sits in the file
 it describes, so it cannot disagree with the implementation beside it, and the declaration a
 consumer installs is emitted from that source at assembly time rather than maintained by
 hand. The layer whose recipe is a separate file carries one more.
 
-**The demo page is one of two shapes.** `<Name>.card.html` sits in the component's own
-directory when the card is about that component alone; a page one level up, beside the
-directories at its category level, composes several components onto one card
-(`display/Display.card.html`, `navigation/MenuPagination.card.html`). A category-level page
-belongs to no one component, which is why it sits there rather than inside any of them.
+**A demo page is one per component and never per category.** `<Name>.demo.generated.html` and
+its `<Name>.demo.entry.generated.tsx` sit in the component's own directory, so the page for a
+component differs from the other layer's by exactly one path segment and the same query string
+reproduces the same view in both. `bun run generate:playgrounds` writes them and
+`check:playgrounds` holds them to a fresh run, to the fixture that seeds them, and to the other
+layer's model.
+
+**They declare no `@dsCard`**, because a playground's height moves with every knob, so nothing
+measures them against a fixed box. What that costs is real and is bought back elsewhere:
+`check:playgrounds` loads all of them in a real browser and fails one that mounts nothing,
+draws no panel or says anything on the console.
 
 **Every `.prompt.md` carries examples and, where it adds value, a Do / Don't section.**
 
@@ -207,9 +216,9 @@ one allowed comment.
 
 ## Demos are compiled ahead of time
 
-Each demo page's script is a real sibling source file (`<page>.entry.tsx`, e.g.
-`Alert.card.entry.tsx` beside `Alert.card.html`), and every component `.tsx` plus every
-`.entry.tsx` has a compiled `<Name>.generated.js` sibling, same directory and same stem, that
+Each demo page's script is a real sibling source file (`<Name>.demo.entry.generated.tsx` beside
+`<Name>.demo.generated.html`), and every component `.tsx` plus every entry has a compiled
+`<Name>.generated.js` sibling, same directory and same stem, that
 the page loads with a plain `<script type="module">`. `bun run build:demos` compiles them with
 Bun's own transpiler and rewrites each relative import's `.tsx` extension to `.generated.js`;
 `check:demos` guards drift and orphaned output.

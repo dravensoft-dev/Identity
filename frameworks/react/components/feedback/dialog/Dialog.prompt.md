@@ -47,7 +47,7 @@ browser-driven gate was refused as this repo's fourth non-portable gate, so the
 interior is checked by a person against this list.
 
 Serve the tree with `bun run demos`, open
-`frameworks/react/components/feedback/Feedback.card.html`, and check all of:
+`frameworks/react/components/feedback/dialog/Dialog.demo.generated.html`, and check all of:
 
 1. **Tab to "Open dialog" and press Enter.** Focus must land on **Cancel**, the
    first focusable inside the panel, not stay on the trigger.
