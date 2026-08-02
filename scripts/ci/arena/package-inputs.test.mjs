@@ -28,6 +28,14 @@ test('each package names its own layer, and Angular names the Tailwind slice sta
   assert.ok(!pathspecs('react').includes('frameworks/angular/'), 'React carries nothing of the Angular layer');
 });
 
+test('the version file is no input, or the guard could never answer that nothing moved', () => {
+  for (const layer of Object.keys(PACKAGE_INPUTS)) {
+    assert.ok(!pathspecs(layer).includes('.claude-plugin/plugin.json'),
+      `${layer}: the guard is reached only when the registry disagrees with that file, so naming `
+      + 'it here puts a changed file in every diff and no release could ever leave a package alone');
+  }
+});
+
 test('every path a guard would hand to git exists, so a rename fails here rather than narrowing it', () => {
   for (const layer of Object.keys(PACKAGE_INPUTS)) {
     for (const spec of pathspecs(layer)) {

@@ -1,7 +1,11 @@
 /* What a published package is assembled from, so a workflow can ask whether anything it
  * carries has moved since the version now on the registry. The list is derived from what
  * the two assemblers actually read, and its suite holds it to that: a change to the CSS
- * chain or to where the CLI lives fails the test rather than quietly narrowing the guard. */
+ * chain or to where the CLI lives fails the test rather than quietly narrowing the guard.
+ * The version file is deliberately absent. A release always moves it, and the guard is only
+ * reached when the registry disagrees with it, so naming it here would put a changed file in
+ * every diff and leave "nothing this package carries has moved" an answer nothing could
+ * reach. A number is what a release moves; it is not a reason to republish a tree. */
 
 import { fileURLToPath } from 'node:url';
 import { CSS_CHAIN } from '../../lib/arena/package-assembly.mjs';
@@ -11,7 +15,6 @@ export const SHARED_INPUTS = {
   'contracts/design-generated/': 'the typography, spacing and effects the CSS chain copies',
   'scripts/generate/core/arena-theme/': 'the CLI each package ships as its bin',
   'scripts/lib/arena/package-assembly.mjs': 'the exclusion list, the copy and the manifest template',
-  '.claude-plugin/plugin.json': 'the version both manifests are stamped from',
   'LICENSE': 'shipped verbatim in both packages',
 };
 
