@@ -16,7 +16,9 @@ const JS_DIR = join(OUT_DIR, 'js');
 const SRC_ROOT = join(repoRoot, 'frameworks');
 const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
-export const ENTRY_SUFFIX = '.card.entry.js';
+export const ENTRY_SUFFIXES = ['.card.entry.js', '.demo.entry.generated.js'];
+
+export const isEntry = (name, ext = '.js') => ENTRY_SUFFIXES.some((s) => name.endsWith(s.replace('.js', ext)));
 
 function pruneOrphans(dir) {
   const pruned = [];
@@ -55,7 +57,7 @@ export function collectEntries(dir) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (entry.isDirectory()) { walk(full); continue; }
-      if (entry.name.endsWith(ENTRY_SUFFIX)) out.push(full);
+      if (isEntry(entry.name)) out.push(full);
     }
   }
 }
@@ -67,7 +69,7 @@ export function missingEntryProblems(sourceEntries, emittedEntries) {
     const stem = src.slice(0, -'.ts'.length);
     if (!emitted.has(stem)) {
       problems.push(
-        `${src} has no corresponding ${ENTRY_SUFFIX} in frameworks/angular/build/demo/tsc/angular -- `
+        `${src} has no corresponding emit in frameworks/angular/build/demo/tsc/angular -- `
         + `ngc never compiled it (check tsconfig.demo.json's "include"), so its page loads nothing`,
       );
     }
@@ -86,7 +88,7 @@ function collectSourceEntries(dir) {
       const full = join(current, entry.name);
       if (full === EMITTED) continue;
       if (entry.isDirectory()) { walk(full); continue; }
-      if (entry.name.endsWith('.card.entry.ts')) out.push(relative(dir, full));
+      if (isEntry(entry.name, '.ts')) out.push(relative(dir, full));
     }
   }
 }

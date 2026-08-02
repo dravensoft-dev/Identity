@@ -31,6 +31,11 @@ export const UNTRACKED = {
     'the compiled sibling of a component source, read only by a demo page.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
+  'frameworks/react/components/**/*.demo.entry.generated.tsx':
+    'a demo entry, emitted from the component\'s API contract and its frameworks/demos/ fixture. '
+    + 'The page beside it loads the compiled sibling; check:playgrounds holds both to a fresh run '
+    + 'and holds the two layers to one model.',
+  'frameworks/angular/components/**/*.demo.entry.generated.ts': 'the same file, emitted into the other layer.',
   'frameworks/react/playground/PlaygroundCodec.generated.ts':
     'the URL codec, emitted into every layer from frameworks/demos/PlaygroundCodec.ts so the same '
     + 'link cannot resolve to two different views. check:playgrounds holds each copy to the source.',

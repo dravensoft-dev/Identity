@@ -135,9 +135,22 @@
  * so rather than showing a disabled control nobody can explain. */
 .pg-knob-pinned .pg-knob-form { color: var(--gold); }
 
+/* A form control takes its line-height and its margin from the browser unless something
+ * says otherwise, and one layer's page also links the compiled utility sheet, whose reset
+ * does say otherwise: the same text field measured five pixels taller there and the same
+ * checkbox one pixel shorter, once per row. Stating both here is what makes this file
+ * shared rather than merely copied, because the frame must not depend on what else a page
+ * happens to link. The spacing beside a control is the flex gap, never a margin. */
+.pg-panel input,
+.pg-panel select,
+.pg-panel textarea {
+  margin: 0;
+}
+
 .pg-field {
   width: 100%;
   box-sizing: border-box;
+  line-height: var(--lh-body);
   padding: var(--sp-2) var(--sp-3);
   background: var(--surface-input);
   color: var(--text-strong);
@@ -222,6 +235,7 @@ textarea.pg-field {
   border-radius: var(--r-pill);
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
+  line-height: var(--lh-body);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   cursor: pointer;

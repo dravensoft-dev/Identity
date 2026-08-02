@@ -4,14 +4,18 @@
  * serve.mjs -- it calls Bun.serve() at module top level, so importing it starts a server.
  * A *.test.mjs is excluded on the opposite reasoning: running it proves its imports, and its
  * fixtures are import statements inside STRING literals, which a text scan cannot tell apart.
- * An interpolated specifier is that same class in a generator, and is skipped by the one thing
- * that tells the two apart for certain: a real static specifier never contains a `${`. */
+ * A generator writing an import into its OUTPUT is that same class, and a static one there is
+ * indistinguishable by text alone. What tells them apart is where the KEYWORD sits, never the
+ * specifier: a specifier is a string in both cases, so blanking strings would blank the very
+ * thing being resolved and leave the scan reporting nothing about every file. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
+import { tmpdir } from 'node:os';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { literalRanges, insideLiteral } from '../../lib/arena/comments.mjs';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]*)['"]/g;
 
@@ -29,9 +33,12 @@ export function scriptsUnder(dir) {
 export const isInterpolated = (specifier) => specifier.includes('${');
 
 export function unresolvedSpecifiers(path) {
+  const source = readFileSync(path, 'utf8');
+  const literals = literalRanges(source);
   const bad = [];
-  for (const m of readFileSync(path, 'utf8').matchAll(SPECIFIER)) {
+  for (const m of source.matchAll(SPECIFIER)) {
     if (isInterpolated(m[1])) continue;
+    if (insideLiteral(literals, m.index)) continue;
     if (!existsSync(join(dirname(path), m[1]))) bad.push(m[1]);
   }
   return bad;
@@ -61,4 +68,16 @@ test('a suite is out of scope, because its fixtures are imports inside strings',
   assert.equal(scripts.some((p) => p.endsWith('.test.mjs')), false);
   assert.deepEqual(unresolvedSpecifiers(join(repoRoot, 'scripts/check/arena/script-imports.test.mjs')), [],
     'and this suite is its own witness: scanned directly it is clean, so exclusion is not hiding a break');
+});
+
+test('a real import that resolves to nothing is still caught, which is what the blanking must not cost', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'arena-imports-'));
+  try {
+    const path = join(dir, 'Broken.mjs');
+    writeFileSync(path, "import { x } from './gone.mjs';\nconst t = `import { y } from './alsoGone.mjs';`;\n");
+    assert.deepEqual(unresolvedSpecifiers(path), ['./gone.mjs'],
+      'the real import must be reported and the one inside the template must not');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

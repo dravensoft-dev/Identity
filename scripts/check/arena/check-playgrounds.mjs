@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { LAYERS } from '../../lib/arena/layers.mjs';
 import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.mjs';
-import { codecFiles } from '../../generate/arena/generate-playgrounds.mjs';
+import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.mjs';
 
 export const FIXTURE_DIR = 'frameworks/demos';
 export const FIXTURE_SUFFIX = '.demo.json';
@@ -261,7 +261,7 @@ export function fixtureProblems(name, contract, fixture, contracts, types) {
   return [];
 }
 
-export function emissionProblems(base = root, files = codecFiles(base)) {
+export function emissionProblems(base = root, files = buildPlaygrounds(base).files) {
   const problems = [];
   if (files.size === 0) {
     problems.push('generate-playgrounds emitted 0 files, and an empty emit is a failure rather than a clean pass');
@@ -276,11 +276,41 @@ export function emissionProblems(base = root, files = codecFiles(base)) {
       problems.push(`${rel}: stale — run bun run generate:playgrounds`);
     }
   }
-  const bodies = new Set(files.values());
-  if (bodies.size > 1) {
+  const codecs = [...files].filter(([rel]) => rel.endsWith('PlaygroundCodec.generated.ts')).map(([, body]) => body);
+  if (new Set(codecs).size > 1) {
     problems.push(
-      'the emitted copies are not byte-identical, so the same URL can resolve to two different views',
+      'the emitted copies of the codec are not byte-identical, so the same URL can resolve to two different views',
     );
+  }
+  problems.push(...modelParityProblems(files));
+  return problems;
+}
+
+export function modelLiteral(source) {
+  const open = source.indexOf('const MODEL: KnobModel = ');
+  if (open === -1) return null;
+  const start = source.indexOf('{', open);
+  return source.slice(start, source.lastIndexOf('\n};', start === -1 ? 0 : source.length) + 2);
+}
+
+export function modelParityProblems(files) {
+  const byComponent = new Map();
+  for (const [rel, body] of files) {
+    const match = /\/(\w+)\.demo\.entry\.generated\.tsx?$/.exec(rel);
+    if (!match) continue;
+    const found = byComponent.get(match[1]) ?? [];
+    found.push([rel, modelLiteral(body)]);
+    byComponent.set(match[1], found);
+  }
+  const problems = [];
+  for (const [component, entries] of byComponent) {
+    if (entries.some(([, literal]) => literal === null)) {
+      problems.push(`${component}: an entry carries no MODEL literal, so nothing holds the two layers to one model`);
+      continue;
+    }
+    if (new Set(entries.map(([, literal]) => literal)).size > 1) {
+      problems.push(`${component}: the layers' MODEL literals differ, so the two pages are not the same page`);
+    }
   }
   return problems;
 }
@@ -357,7 +387,7 @@ function main() {
   }
   console.log(
     `check-playgrounds: ${fixtures.size} fixture(s) seed every contracted member a contract cannot invent, `
-    + `${codecFiles().size} emitted copies of the codec match their source, `
+    + `${buildPlaygrounds().files.size} emitted file(s) match a fresh run and every page pair carries one model, `
     + 'and every path cited from a layer exists',
   );
 }

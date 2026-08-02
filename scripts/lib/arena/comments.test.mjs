@@ -3,7 +3,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { findComments } from './comments.mjs';
+import { findComments, literalRanges, insideLiteral } from './comments.mjs';
 
 test('a line comment is found, with its line number', () => {
   const found = findComments('const a = 1;\n// gone\nconst b = 2;');
@@ -60,4 +60,30 @@ test('an unterminated block comment is still reported rather than swallowing the
   const found = findComments('const a = 1;\n/* never closed');
   assert.equal(found.length, 1);
   assert.equal(found[0].line, 2);
+});
+
+const at = (source, needle) => source.indexOf(needle);
+
+test('a real statement keyword is outside every literal, and one inside a template is inside one', () => {
+  const source = "import { b } from './y.mjs';\nconst t = `import { y } from './gone.mjs';`;\n";
+  const ranges = literalRanges(source);
+  assert.equal(insideLiteral(ranges, at(source, 'import { b }')), false);
+  assert.equal(insideLiteral(ranges, at(source, 'import { y }')), true);
+});
+
+test('a template nested inside an interpolation is a literal again', () => {
+  const source = "const t = `head ${cond ? `import x from './deep.mjs'` : ''} tail`;\n";
+  assert.equal(insideLiteral(literalRanges(source), at(source, "import x")), true);
+});
+
+test('the interpolation itself is code, so a real call there is still in scope', () => {
+  const source = "const t = `a ${await import('./real.mjs')} b`;\n";
+  assert.equal(insideLiteral(literalRanges(source), at(source, "import('./real")), false);
+});
+
+test('a comment is a literal too, so a path a header mentions is not read as an import', () => {
+  const line = "// see import x from './moved.mjs'\n";
+  assert.equal(insideLiteral(literalRanges(line), at(line, 'import x')), true);
+  const block = "/* see import x from './moved.mjs' */\n";
+  assert.equal(insideLiteral(literalRanges(block), at(block, 'import x')), true);
 });

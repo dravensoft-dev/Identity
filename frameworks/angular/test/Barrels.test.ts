@@ -4,7 +4,8 @@
  * it. Five display primitives were missing for exactly that long, and the gap also hid a real
  * name collision between two `GridCursor` shapes. PRIVATE and ROOT_PRIVATE are the record of
  * what a barrel deliberately does NOT export, and both carry the bidirectional staleness rule:
- * a named module that has since become exported fails here. */
+ * a named module that has since become exported fails here. A demo entry is out of scope on the
+ * same footing as a suite: it is a page's own bootstrap, it is generated, and it ships nowhere. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -48,7 +49,8 @@ function ownModulesOf(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
     .map((entry) => entry.name)
-    .filter((name) => name !== 'index.ts' && !name.includes('.test.') && !name.endsWith('.card.entry.ts'))
+    .filter((name) => name !== 'index.ts' && !name.includes('.test.')
+      && !name.endsWith('.card.entry.ts') && !name.endsWith('.demo.entry.generated.ts'))
     .sort();
 }
 

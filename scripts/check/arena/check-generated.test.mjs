@@ -38,6 +38,7 @@ test('every ignore pattern carries a reason, and each names a real tree', () => 
   assert.deepEqual(Object.keys(UNTRACKED).sort(), [
     'frameworks/angular/Api.generated.ts',
     'frameworks/angular/Tokens.generated.ts',
+    'frameworks/angular/components/**/*.demo.entry.generated.ts',
     'frameworks/angular/playground/PlaygroundCodec.generated.ts',
     'frameworks/react/AnchorActivation.generated.js',
     'frameworks/react/Api.generated.ts',
@@ -48,6 +49,7 @@ test('every ignore pattern carries a reason, and each names a real tree', () => 
     'frameworks/react/UseContainerWidth.generated.js',
     'frameworks/react/UseDialogModal.generated.js',
     'frameworks/react/WarnOnce.generated.js',
+    'frameworks/react/components/**/*.demo.entry.generated.tsx',
     'frameworks/react/components/**/*.generated.js',
     'frameworks/react/playground/*.generated.js',
     'frameworks/react/playground/PlaygroundCodec.generated.ts',
