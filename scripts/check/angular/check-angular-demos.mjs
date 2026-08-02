@@ -20,6 +20,7 @@ export const PAGED = new Set([
   'Dialog',
   'Select',
   'Toast',
+  'ToastHost',
   'Menu',
   'ProgressBar',
   'Spinner',

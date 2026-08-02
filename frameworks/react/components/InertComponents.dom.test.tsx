@@ -22,6 +22,7 @@ import { StatCard } from './display/stat-card/StatCard.tsx';
 import { UnauthCard } from './display/unauth-card/UnauthCard.tsx';
 import { ChartCard } from './charts/chart-card/ChartCard.tsx';
 import { EmptyState } from './feedback/empty-state/EmptyState.tsx';
+import { ToastHost } from './feedback/toast-host/ToastHost.tsx';
 import { PageHead } from './navigation/page-head/PageHead.tsx';
 import { SideNavSection } from './navigation/side-nav-section/SideNavSection.tsx';
 
@@ -45,6 +46,7 @@ const INERT: [string, string, React.ReactElement][] = [
   ['UnauthCard', 'display/unauth-card/UnauthCard.behaviour.json', <UnauthCard title="Sign in" />],
   ['ChartCard', 'charts/chart-card/ChartCard.behaviour.json', <ChartCard title="Latency" />],
   ['EmptyState', 'feedback/empty-state/EmptyState.behaviour.json', <EmptyState title="Nothing here yet" />],
+  ['ToastHost', 'feedback/toast-host/ToastHost.behaviour.json', <ToastHost />],
   ['PageHead', 'navigation/page-head/PageHead.behaviour.json', <PageHead title="Projects" />],
   ['SideNavSection', 'navigation/side-nav-section/SideNavSection.behaviour.json',
     <SideNavSection label="Workspace"><InertChild /></SideNavSection>],

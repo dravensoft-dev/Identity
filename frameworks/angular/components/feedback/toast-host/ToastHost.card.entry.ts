@@ -1,12 +1,12 @@
 import '@angular/compiler';
 import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import type { ToastTone } from '../../../Api.generated';
+import type { ToastPlacement, ToastTone } from '../../../Api.generated';
 import { dismissActionable, dismissDefault } from '../../../Tokens.generated';
 import { Button } from '../../forms/button/Button';
 import { Dialog } from '../dialog/Dialog';
-import { ToastHost } from '../toast-host/ToastHost';
-import { Toast } from './Toast';
+import { Toast } from '../toast/Toast';
+import { ToastHost } from './ToastHost';
 
 interface Notice {
   id: number;
@@ -16,6 +16,8 @@ interface Notice {
   actionLabel?: string;
 }
 
+const PLACEMENTS: ToastPlacement[] = ['top-start', 'top-end', 'bottom-start', 'bottom-end'];
+
 let nextId = 0;
 
 @Component({
@@ -24,26 +26,15 @@ let nextId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Button, Dialog, Toast, ToastHost],
   template: `
-    <p class="sub">Every tone: the left bar carries it, the surface never does</p>
+    <p class="sub">The corner is the whole API — one host, four placements</p>
     <div class="row">
-      <arena-toast title="Build 482 promoted" message="Production is on the new build." tone="success"
-                   actionLabel="View logs" dismissible />
-      <arena-toast title="Deployment failed" message="Build 482 could not be promoted." tone="danger"
-                   actionLabel="Retry" dismissible />
-    </div>
-    <div class="row">
-      <arena-toast title="Cache warmed" message="First requests will be slower for a minute." tone="neutral" dismissible />
-      <arena-toast title="Certificate expires in 6 days" message="Renew it before Friday." tone="gold"
-                   actionLabel="Renew" dismissible />
+      @for (corner of placements; track corner) {
+        <arena-button [variant]="corner === placement() ? 'primary' : 'ghost'"
+                      (click)="placement.set(corner)">{{ corner }}</arena-button>
+      }
     </div>
 
-    <p class="sub">Danger is pinned even when the host passes persist="false"</p>
-    <div class="row">
-      <arena-toast title="Disk almost full" message="94% of the volume is in use." tone="danger" [persist]="false" />
-      <arena-toast title="Nightly backup done" message="Retained for 30 days." tone="success" [persist]="false" />
-    </div>
-
-    <p class="sub">The host owns the clock — raise one and watch it expire, except the pinned ones</p>
+    <p class="sub">Raise notices and watch them stack, in the order they were raised</p>
     <div class="row">
       <arena-button (click)="raise('success', 'Snapshot taken')">Raise an advisory</arena-button>
       <arena-button variant="secondary" (click)="raise('gold', 'Quota at 80%', 'Increase')">Raise one with an action</arena-button>
@@ -52,13 +43,16 @@ let nextId = 0;
     </div>
     <p class="echo">advisory {{ advisoryMs }}ms · with an action {{ actionableMs }}ms · danger never</p>
 
-    <arena-dialog [open]="dialog()" title="A toast outranks this panel" eyebrow="Layering"
+    <p class="sub">The page scrolls and the stack does not — a fixed box is measured against the viewport</p>
+    <div class="tall"></div>
+
+    <arena-dialog [open]="dialog()" title="A stack outranks this panel" eyebrow="Layering"
                   (close)="dialog.set(false)">
-      Raise a toast with the dialog open: it paints above the scrim, because --z-toast is the one
+      Raise a notice with the dialog open: it paints above the scrim, because --z-toast is the one
       slot above every other overlay.
     </arena-dialog>
 
-    <arena-toast-host>
+    <arena-toast-host [placement]="placement()">
       @for (notice of notices(); track notice.id) {
         <arena-toast [title]="notice.title" [message]="notice.message" [tone]="notice.tone"
                      [actionLabel]="notice.actionLabel" dismissible
@@ -67,7 +61,9 @@ let nextId = 0;
     </arena-toast-host>
   `,
 })
-class ToastCard {
+class ToastHostCard {
+  protected readonly placements = PLACEMENTS;
+  protected readonly placement = signal<ToastPlacement>('bottom-end');
   protected readonly advisoryMs = dismissDefault;
   protected readonly actionableMs = dismissActionable;
   protected readonly notices = signal<Notice[]>([]);
@@ -86,4 +82,4 @@ class ToastCard {
   }
 }
 
-bootstrapApplication(ToastCard, { providers: [provideZonelessChangeDetection()] });
+bootstrapApplication(ToastHostCard, { providers: [provideZonelessChangeDetection()] });

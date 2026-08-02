@@ -33,7 +33,7 @@ test('each category lists its components sorted, so a diff shows only what moved
     assert.deepEqual(names, [...names].sort(), `${category} is not sorted`);
 });
 
-test('the file declares all fifty components', () => {
+test('the file declares all fifty-one components', () => {
   const total = Object.values(categories).reduce((n, names) => n + names.length, 0);
-  assert.equal(total, 50);
+  assert.equal(total, 51);
 });

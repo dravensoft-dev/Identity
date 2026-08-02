@@ -7,4 +7,5 @@ export * from './onboarding';
 export * from './progress-bar';
 export * from './spinner';
 export * from './toast';
+export * from './toast-host';
 export * from './tooltip';

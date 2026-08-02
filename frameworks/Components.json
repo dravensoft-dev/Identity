@@ -26,6 +26,7 @@
     "ProgressBar",
     "Spinner",
     "Toast",
+    "ToastHost",
     "Tooltip"
   ],
   "forms": [
