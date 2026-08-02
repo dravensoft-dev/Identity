@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findSourceFiles, rewriteRelativeSourceImports, loaderFor, outputPathFor, ROOT_MODULES } from './build-demos.mjs';
+import { findSourceFiles, rewriteRelativeSourceImports, loaderFor, outputPathFor, ROOT_MODULES, ROOTS } from './build-demos.mjs';
 
 test('a relative .jsx import points at the .generated.js sibling this script writes', () => {
   const code = 'import { Button } from "./Button.jsx";\nimport { A } from "../a/A.jsx";\n';
@@ -73,6 +73,25 @@ test('a .ts specifier is rewritten too, because a browser cannot execute TypeScr
     'a module already compiled must not be rewritten onto itself',
   );
   assert.equal(outputPathFor('a/DataVisuals.ts'), 'a/DataVisuals.generated.js');
+});
+
+test('a source that already names itself generated does not gain a second segment', () => {
+  assert.equal(
+    outputPathFor('a/Card.demo.entry.generated.tsx'), 'a/Card.demo.entry.generated.js',
+    'Card.demo.entry.generated.generated.js is what the page would then fail to load',
+  );
+  assert.equal(
+    rewriteRelativeSourceImports('import { M } from "./Card.demo.entry.generated.tsx";\n'),
+    'import { M } from "./Card.demo.entry.generated.js";\n',
+    'the specifier and the output path have to agree, or the import resolves to nothing',
+  );
+});
+
+test('the playground harness is compiled, because the generated entries import it', () => {
+  assert.ok(
+    ROOTS.includes('frameworks/react/playground'),
+    'the harness left out is a module that 404s on all 55 pages with every suite still green',
+  );
 });
 
 test('every layer-root helper a component imports is compiled, or its page 404s', () => {

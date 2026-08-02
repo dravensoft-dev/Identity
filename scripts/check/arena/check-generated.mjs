@@ -31,6 +31,9 @@ export const UNTRACKED = {
     'the compiled sibling of a component source, read only by a demo page.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
+  'frameworks/react/playground/*.generated.js':
+    'the same, for the harness every generated demo page mounts. It is not part of the package: '
+    + 'tsconfig.dist.json excludes the directory and no barrel exports it.',
   'frameworks/react/DataVisuals.generated.js':
     'a compiled layer-root helper a demo page loads. A browser cannot execute TypeScript, so a '
     + 'page importing one needs it compiled.',

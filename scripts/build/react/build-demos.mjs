@@ -12,7 +12,9 @@ export const BANNER =
   + ' * Bun.Transpiler, classic JSX (React.createElement). See build-demos.mjs\n'
   + ' * for the full rationale. */\n';
 
-export const ROOTS = ['frameworks/react/components', 'frameworks/react/ui-kits/console'];
+export const ROOTS = [
+  'frameworks/react/components', 'frameworks/react/ui-kits/console', 'frameworks/react/playground',
+];
 
 export const ROOT_MODULES = [
   'frameworks/react/AnchorActivation.ts', 'frameworks/react/DataVisuals.ts',
@@ -43,11 +45,11 @@ export function findSourceFiles(dir) {
 }
 
 export function rewriteRelativeSourceImports(code) {
-  return code.replace(/(from\s*")(\.\.?\/[^"]+?)\.(?:jsx|tsx|ts)"/g, '$1$2.generated.js"');
+  return code.replace(/(from\s*")(\.\.?\/[^"]+?)(?:\.generated)?\.(?:jsx|tsx|ts)"/g, '$1$2.generated.js"');
 }
 
 export function outputPathFor(relPath) {
-  return relPath.replace(/\.(?:jsx|tsx|ts)$/, '.generated.js');
+  return relPath.replace(/(?:\.generated)?\.(?:jsx|tsx|ts)$/, '.generated.js');
 }
 
 export async function buildDemos(opts = {}) {

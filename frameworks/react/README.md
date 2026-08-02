@@ -75,6 +75,19 @@ and `UseDialogModal.ts`,
 that last one because its suite counts as a consumer: its three component consumers are all in
 `feedback/`, but `test/UseDialogModal.dom.test.tsx` is one too.
 
+`playground/` sits beside them and is the one directory here that is **not** part of the
+package: `tsconfig.dist.json` excludes it and no barrel exports it. It holds the harness every
+generated demo page mounts, `Playground.tsx` for the panel and the event log and
+`PlaygroundState.ts` for what a knob holds, whether it is bound and how that round-trips
+through the query string. It is page furniture rather than a component, which is why it is the
+one thing here that renders classes: the classes are `intro/playground.css`'s, which sits
+outside every layer so that each one's harness draws the same page from the same bytes, and a
+difference seen between two layers is a difference in the component rather than in the frame
+around it. **What the suite beside it
+cannot prove is that the browser honours the URL write-back**: happy-dom's
+`history.replaceState` is a no-op, so the suite asserts the call and the real write is the
+smoke pass's.
+
 **`UseContainerWidth.ts`'s `readBreakpoint` warns once per name when a breakpoint token does not
 resolve, and never caches the failure.** Every comparison against `NaN` is false, so a silent one
 leaves `Table`, `Calendar` and `PageHead` on their wide branch on a phone with nothing reported,
