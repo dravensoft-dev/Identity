@@ -32,11 +32,6 @@ export const DIVERGENT = new Map([
     + 'charts carry no manifest by design and are outside the migration, so this one is measured and not '
     + 'yet explained: it is most likely a rounding difference in a path coordinate, and it is declared here '
     + 'rather than tolerated silently, because a threshold that hid it would hide a real one-pixel defect too.'],
-  ['Table', '3427 pixels, all of them below y 145, which is the footer: the two layers put the frame in '
-    + 'different places. React gives the border, the radius and the `overflow: hidden` to a wrapper around '
-    + 'the grid alone, so the pager sits OUTSIDE the rounded card under a rule that runs past its corners, '
-    + 'while the manifest gives them to the root and the pager sits inside. The rows above agree to the '
-    + `pixel. ${AUTHORED_TWICE}`],
 ]);
 
 export function pairPages(pages = pagePaths()) {

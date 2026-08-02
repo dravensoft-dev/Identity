@@ -1,6 +1,10 @@
 import React from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from '../table/Table.manifest.generated.ts';
 import type { TableColumn } from '../../../Api.generated';
 import type { TableCellInjected } from '../table-cell/TableCell.tsx';
+
+const rowStyles = tv(manifest);
 
 export interface TableRowInjected {
   rowIndex: number;
@@ -59,24 +63,23 @@ export function TableRow({
           e.preventDefault();
           activate();
         } : undefined}
-        style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-          borderRadius: 'var(--r-lg)', padding: 'var(--dz-row-px)',
-          display: 'flex', flexDirection: 'column', gap: 'var(--dz-stack)',
-          cursor }}>
+        className={rowStyles({ narrow: true }).card()}>
         {cells}
       </div>
     );
   }
 
+  const base = rowStyles({ narrow: false });
+  const rowClass = [
+    rowIndex <= 1 ? `${base.row()} ${base.rowFirst()}` : base.row(),
+    activate ? base.rowInteractive() : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <tr role="row" onClick={activate}
       aria-disabled={onClick && disabled ? 'true' : undefined}
 
-      style={{ borderTop: rowIndex <= 1 ? 'none' : 'var(--bw) solid var(--color-base-300)',
-        cursor,
-        transition: 'background var(--dur-fast) var(--ease-out)' }}
-      onMouseEnter={activate ? (e) => (e.currentTarget.style.background = 'var(--color-base-300)') : undefined}
-      onMouseLeave={activate ? (e) => (e.currentTarget.style.background = 'transparent') : undefined}>
+      className={rowClass}>
       {cells}
     </tr>
   );

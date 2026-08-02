@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { warnOnce } from '../../../WarnOnce.ts';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
-import { HEADER_LABEL, CELL_BASE } from '../table-cell/TableCell.tsx';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Table.manifest.generated.ts';
 
 import { Pagination } from '../../navigation/pagination/Pagination.tsx';
 import { Select } from '../../forms/select/Select.tsx';
@@ -56,6 +57,8 @@ export function parseSortOption(value: string): TableSort | null {
   if (!Number.isInteger(index) || (direction !== 'asc' && direction !== 'desc')) return null;
   return { column: index, direction };
 }
+
+const tableStyles = tv(manifest);
 
 export function Table({
   columns, children, empty = 'No data.', responsive = true, label,
@@ -176,6 +179,11 @@ export function Table({
   ]);
   const sortValue = sort ? sortOptionValue(sort.column, sort.direction) : undefined;
 
+  const headerClass = (c: TableColumn): string => {
+    const base = tableStyles({ narrow: false, align: c.align || 'left' }).th();
+    return c.sortable && sort ? `${base} ${tableStyles({ narrow: false }).thSortable()}` : base;
+  };
+
   const cellRing = (ri: number, ci: number): React.CSSProperties => ({
     outline: 'none',
     boxShadow: ri === curRow && ci === curCol && gridFocused
@@ -183,52 +191,39 @@ export function Table({
   });
 
   return (
-    <div ref={ref} style={{ width: '100%' }}>
+    <div ref={ref} className={tableStyles({ narrow }).root()}>
       {narrow ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 4)' }}>
+        <div className={tableStyles({ narrow: true }).grid()}>
           {sortBar && (
             <Select label="Sort by" options={sortOptions} value={sortValue}
               onChange={(picked) => { const next = parseSortOption(picked); if (next) onSortChange?.(next); }} />
           )}
           {bare && (
-            <div style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-              borderRadius: 'var(--r-lg)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)', textAlign: 'center',
-              color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
+            <div className={tableStyles({ narrow: true }).empty()}>{empty}</div>
           )}
           {rowEls.map((row, ri) => (React.isValidElement(row)
             ? React.cloneElement(row, { rowIndex: ri + 1, columns, layout: 'card' })
             : row))}
         </div>
       ) : bare ? (
-        <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
-          background: 'var(--surface-card)', padding: 'calc(var(--sp-1) * 8) calc(var(--sp-1) * 4)',
-          textAlign: 'center', color: 'var(--mute)', fontSize: 'var(--dz-text)' }}>{empty}</div>
+        <div className={tableStyles({ narrow: false }).empty()}>{empty}</div>
       ) : (
-        <div style={{ border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-lg)',
-          overflow: 'hidden', background: 'var(--surface-card)' }}>
-          {
-
-}
+        <>
           <table role="grid" aria-label={label} ref={gridRef}
             onKeyDown={onGridKeyDown}
             onFocus={() => setGridFocused(true)}
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
-            style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
+            className={tableStyles({ narrow: false }).table()}>
             <thead>
-              <tr role="row" style={{ background: 'var(--color-base-300)' }}>
+              <tr role="row" className={tableStyles({ narrow: false }).headRow()}>
                 {columns.map((c, ci) => (
                   <th key={ci} role="columnheader" {...headerNav(ci)}
                     aria-sort={sortStateOf(ci)}
                     onClick={c.sortable && sort ? () => onHeaderActivate(ci) : undefined}
-                    style={{ ...CELL_BASE, ...HEADER_LABEL, textAlign: c.align || 'left',
-                      width: c.width, borderBottom: 'var(--bw) solid var(--color-base-300)',
-                      cursor: c.sortable && sort ? 'pointer' : undefined,
-                      userSelect: c.sortable && sort ? 'none' : undefined,
-                      ...cellRing(0, ci) }}>{c.header}{sortStateOf(ci) && sortStateOf(ci) !== 'none' && (
+                    className={headerClass(c)}
+                    style={{ width: c.width, ...cellRing(0, ci) }}>{c.header}{sortStateOf(ci) && sortStateOf(ci) !== 'none' && (
                         <i aria-hidden="true"
-                          className={sort?.direction === 'asc' ? 'ph-bold ph-caret-up' : 'ph-bold ph-caret-down'}
-                          style={{ display: 'inline-flex', marginInlineStart: 'calc(var(--sp-1) * 1.5)',
-                            verticalAlign: 'middle', fontSize: 'var(--icon-sm)' }} />
+                          className={`${tableStyles({ narrow: false }).sortCaret()} ${sort?.direction === 'asc' ? 'ph-bold ph-caret-up' : 'ph-bold ph-caret-down'}`} />
                       )}</th>
                 ))}
               </tr>
@@ -246,12 +241,10 @@ export function Table({
                 : row))}
             </tbody>
           </table>
-        </div>
+        </>
       )}
       {!bare && page && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end',
-          borderTop: 'var(--bw) solid var(--color-base-300)',
-          padding: 'var(--dz-row-py) var(--dz-row-px)' }}>
+        <div className={tableStyles({ narrow: false }).pager()}>
           <Pagination page={page.index} pageCount={pageCount} ariaLabel={label}
             onChange={(next) => onPageChange?.(next)} />
         </div>
