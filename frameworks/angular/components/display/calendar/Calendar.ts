@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, Component, DestroyRef, ElementRef, afterNextRender, afterRenderEffect,
   booleanAttribute, computed, contentChild, contentChildren, inject, input, linkedSignal,
-  numberAttribute, output, signal,
+  numberAttribute, output, signal, viewChild,
 } from '@angular/core';
 import type { CalendarView } from '../../../Api.generated';
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
@@ -23,7 +23,7 @@ const MINUTE = 60000;
   providers: [CalendarState],
   host: { style: 'display: contents' },
   template: `
-    <section [class]="styles().root()" [attr.aria-label]="'Schedule, ' + title()">
+    <section #frame [class]="styles().root()" [attr.aria-label]="'Schedule, ' + title()">
       <div [class]="styles().toolbar()">
         <button type="button" [class]="styles().nav()" aria-label="Previous" (click)="step(-1)">
           <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
@@ -121,7 +121,8 @@ export class Calendar {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly measured = containerWidth();
+  private readonly frame = viewChild.required<ElementRef<HTMLElement>>('frame');
+  private readonly measured = containerWidth(() => this.frame().nativeElement);
   private readonly medium = readBreakpoint('md');
   private readonly tick = signal(0);
 

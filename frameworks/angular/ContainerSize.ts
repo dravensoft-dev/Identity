@@ -4,17 +4,23 @@ export type BreakpointName = 'sm' | 'md' | 'lg';
 
 const breakpoints = new Map<string, number>();
 
-export function containerWidth(target?: ElementRef<HTMLElement>): Signal<number | null> {
-  const host = target ?? inject<ElementRef<HTMLElement>>(ElementRef);
+export type WidthTarget = ElementRef<HTMLElement> | (() => HTMLElement | null | undefined);
+
+export function containerWidth(target?: WidthTarget): Signal<number | null> {
+  const fallback = target === undefined ? inject<ElementRef<HTMLElement>>(ElementRef) : null;
   const destroyRef = inject(DestroyRef);
   const width = signal<number | null>(null);
 
   afterNextRender(() => {
     if (typeof ResizeObserver === 'undefined') return;
+    const element = typeof target === 'function'
+      ? target()
+      : (target ?? fallback)?.nativeElement;
+    if (!element) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) width.set(entry.contentRect.width);
     });
-    observer.observe(host.nativeElement);
+    observer.observe(element);
     destroyRef.onDestroy(() => observer.disconnect());
   });
 
