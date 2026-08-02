@@ -529,8 +529,9 @@ with an `arena-` selector and no component `styles`, its `tailwind-variants` rec
 and an `index.ts` barrel, plus its behaviour binding and its own suites in the same directory.
 **A primitive binds its root slot to the host rather than rendering a wrapper div**, with a
 growing carve-out set. [`frameworks/angular/README.md`](./frameworks/angular/README.md) names
-each file, the SVG charts' exception to the recipe, the four carve-out groups and the
-display-utility requirement `HostClassBinding.test.ts` guards.
+each file, gives the command for which components carry no recipe and the two reasons they do
+not, and states the four carve-out groups and the display-utility requirement
+`HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
