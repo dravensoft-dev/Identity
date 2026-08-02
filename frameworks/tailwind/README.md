@@ -173,9 +173,10 @@ its own directory, whether `intro/styles.css` or this layer's `Utilities.generat
 it looks.** That gate loads each declaring page in headless Chromium, and the only status
 it *fails* on is `clip`, meaning content over-running the declared box. So a broken **script**
 path (`Specimen.js`, or the page's own manifest `fetch`) leaves `#root` empty, which
-`classify()` reports as `unrendered`; `main()` routes that to `skip()`, which exits 2, and
-`check-all` marks the gate SKIP and the whole run INCOMPLETE, **not failed**, unless
-`ARENA_CHECK_STRICT=1` or `CI=true`. And a broken **stylesheet** path (`intro/styles.css`,
+`classify()` reports as `unrendered`; `main()` routes that to `skip()`, which the repository's
+declared strict setting turns into a failure, and which an environment exporting
+`ARENA_CHECK_STRICT` as anything but `1` turns back into a SKIP and an INCOMPLETE run,
+**not a failure**. And a broken **stylesheet** path (`intro/styles.css`,
 `Utilities.generated.css`, `Specimen.css`) is not caught at all: the page still renders, so an
 unstyled specimen that happens to fit its declared box passes outright, and one that
 under-runs only warns. What actually stands behind a correct specimen is the by-hand

@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { arenaEnv } from './arena-scripts-vars.mjs';
 
 export const CANDIDATES = [
   '/usr/bin/chromium',
@@ -13,7 +14,7 @@ export const CANDIDATES = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 ];
 
-export function findChromium(env = process.env, exists = existsSync) {
+export function findChromium(env = arenaEnv(), exists = existsSync) {
   const named = env.CHROME_PATH;
   if (named) {
     return exists(named)

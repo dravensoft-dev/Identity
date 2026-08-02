@@ -36,7 +36,7 @@ toolchains expect.
 
 | domain | modules | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 11 | belongs to no one layer: parsers, the browser harness, the tree's own facts |
+| [`arena/`](./arena/README.md) | 12 | belongs to no one layer: parsers, the browser harness, the tree's own facts |
 | [`core/`](./core/README.md) | 7 | speaks `contracts/`: DTCG, behaviour requirements, colour science |
 | [`tailwind/`](./tailwind/README.md) | 1 | compiles the Tailwind layer, for the four gates that read it |
 | `react/`, `angular/` | none | empty; nothing shared between two React or two Angular scripts yet |

@@ -3,15 +3,12 @@ import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-
-export function skipExitCode(env = process.env) {
-  return env.ARENA_CHECK_STRICT === '1' || env.CI === 'true' ? 1 : 2;
-}
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
 
 function skip(reason) {
-  const code = skipExitCode(process.env);
+  const code = skipExitCode();
   console.error(`check-demos-generated: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
-  if (code === 2) console.error('  check-all reports the run INCOMPLETE; set ARENA_CHECK_STRICT=1 to make this a failure.');
+  if (code === 2) console.error('  check-all reports the run INCOMPLETE; the repository declares ARENA_CHECK_STRICT=1, so this environment overrides it.');
   process.exit(code);
 }
 
