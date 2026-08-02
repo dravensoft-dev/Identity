@@ -1,0 +1,21 @@
+Steps to release a new version x.x.x of Arena
+
+1. Change version docs:
+
+.claude-plugin/plugin.json:4
+.claude-plugin/marketplace.json:16
+.claude-plugin/marketplace.json:13
+README.md:8
+
+verify with: 
+bun scripts/check/arena/check-release.mjs 
+(expected a failure with "tag exists")
+
+2. Generate git tag:
+
+git tag -a vx.x.x -m "Arena vx.x.x"
+
+bun scripts/check/arena/check-release.mjs 
+(all PASS)
+
+git push --follow-tags origin current-branch-name
