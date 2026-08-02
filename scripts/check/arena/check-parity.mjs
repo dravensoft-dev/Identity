@@ -24,48 +24,31 @@ const AUTHORED_TWICE = 'React authors this component\'s appearance as inline sty
   + 'renders the shared manifest, so the two copies are only equal by hand and have drifted. It goes when '
   + 'the component renders the manifest.';
 
-const NO_BASE = 'React\'s form controls keep the browser\'s own font, 13.33px Arial with line-height normal, '
-  + 'because only the Angular page links the compiled sheet whose @layer base carries `font: inherit`. '
-  + 'Measured on IconButton, where the same Phosphor glyph draws 13.33px against 16px. It goes when the '
-  + 'React layer receives the same base.';
+const BUTTON_CORNERS = 'the whole of the difference is the four rounded corners of one Button: React draws '
+  + 'its border transparent and the manifest paints that border in the fill colour, which is invisible along '
+  + 'a straight edge and not along a curve, because the antialiased border curve and the antialiased '
+  + 'background curve under it are not the same curve. Every differing box measures 39px tall, which is the '
+  + 'button. It goes when Button renders the manifest.';
 
 export const DIVERGENT = new Map([
   ['ActivityFeed', `309 pixels over the feed's own rows. ${AUTHORED_TWICE}`],
-  ['Alert', `3095 pixels over the whole alert. ${AUTHORED_TWICE}`],
-  ['BulkActionBar', `1130 pixels across the bar's single row of controls. ${NO_BASE}`],
-  ['Button', `41 pixels inside the button's own box. ${NO_BASE}`],
-  ['Calendar', `3582 pixels across the grid. ${AUTHORED_TWICE}`],
-  ['CalendarEvent', `3545 pixels across the grid it is drawn into. ${AUTHORED_TWICE}`],
-  ['CommandPalette', `around 5350 pixels over the panel. ${AUTHORED_TWICE}`],
+  ['BulkActionBar', `136 pixels across the bar's row of controls. ${AUTHORED_TWICE}`],
+  ['Button', `41 pixels, and ${BUTTON_CORNERS}`],
+  ['Calendar', `3331 pixels across the grid. ${AUTHORED_TWICE}`],
+  ['CalendarEvent', `3294 pixels across the grid it is drawn into. ${AUTHORED_TWICE}`],
   ['DoughnutChart', '2 pixels on the ring, worst channel 46, at a single point of one arc. The three SVG '
     + 'charts carry no manifest by design and are outside the migration, so this one is measured and not '
     + 'yet explained: it is most likely a rounding difference in a path coordinate, and it is declared here '
     + 'rather than tolerated silently, because a threshold that hid it would hide a real one-pixel defect too.'],
-  ['EmptyState', `642 pixels around the action. ${NO_BASE}`],
-  ['ErrorState', `1102 pixels around the action. ${NO_BASE}`],
-  ['IconButton', `31 pixels, the whole of them the glyph itself. ${NO_BASE}`],
-  ['Input', `651 pixels over the field's text. ${NO_BASE}`],
-  ['Menu', `31 pixels, the trigger's glyph. ${NO_BASE}`],
-  ['PageHead', `43 pixels over the trailing action. ${NO_BASE}`],
-  ['Pagination', `481 pixels across the page numbers. ${NO_BASE}`],
-  ['Select', `531 pixels over the field's text. ${NO_BASE}`],
-  ['Sheet', '79 pixels in the stage\'s top-right corner, x 798..823 by y 0..6, which is the panel\'s own '
-    + `corner rather than its content. ${AUTHORED_TWICE}`],
-  ['SideNav', 'the stage is 24px taller in Angular: the row button gets a 17px line box in React and 22.4px '
-    + `in Angular, four rows and a trigger make the difference, and neither layer declares a leading. ${NO_BASE}`],
-  ['SideNavCollapsible', `12700 pixels, the same row height as SideNav's. ${NO_BASE}`],
-  ['SideNavItem', `12066 pixels, the same row height as SideNav's. ${NO_BASE}`],
-  ['SideNavSection', `12478 pixels, the same row height as SideNav's. ${NO_BASE}`],
-  ['Tab', `6475 pixels across the tablist. ${NO_BASE}`],
+  ['EmptyState', `41 pixels, and ${BUTTON_CORNERS}`],
+  ['ErrorState', `40 pixels, and ${BUTTON_CORNERS}`],
+  ['PageHead', `43 pixels, and ${BUTTON_CORNERS}`],
   ['Table', 'the stage is 1px shorter in Angular, and the height is the symptom rather than the defect: '
     + 'Angular\'s grid is `border-separate border-spacing-0` and puts the separator on the table-row, which '
     + 'the separated model ignores, so Angular draws NO rule between body rows. React\'s real table collapses '
     + 'and draws one. It goes when the manifest\'s grid slot adopts the collapse model.'],
-  ['Tabs', `6908 pixels across the tablist. ${NO_BASE}`],
   ['Tag', '976 pixels over the tag itself, which is 13px text with 4px 10px padding in React and 11px with '
     + `2px 8px in the manifest Angular renders. This one is a genuine disagreement rather than an accident. ${AUTHORED_TWICE}`],
-  ['Toast', `1472 pixels over the toast. ${AUTHORED_TWICE}`],
-  ['Tooltip', `142 pixels, the trigger's glyph. ${NO_BASE}`],
 ]);
 
 export function pairPages(pages = pagePaths()) {

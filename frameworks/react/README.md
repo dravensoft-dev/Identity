@@ -29,6 +29,14 @@ Each component renders with **inline `style` objects that read the CSS custom pr
 values, so changing a token moves every component that reads it.
 `components/forms/button/Button.tsx` is the reference shape.
 
+**What a component inherits is not the browser's.** The layer's pages and its package carry the
+compiled utility sheet for its `@layer base`, which is where `button, input, select, textarea {
+font: inherit }` lives. Without it a form control fell back to 13.33px Arial with
+`line-height: normal`, so an `<i>` inside a `<button>` drew the same glyph at 13.33px where the
+other layer drew 16px, and a row whose height came from its label's line box stood 4px shorter
+per row. Neither showed up in a suite, because happy-dom has no layout; `check:parity` is what
+renders the two and compares them.
+
 **The one exception is a `<style>` tag injected once**, for what an inline style genuinely
 cannot express: `@keyframes`, and vendor pseudo-elements such as `Input`'s
 `::-webkit-calendar-picker-indicator`. The pattern is always a module-level `let injected =

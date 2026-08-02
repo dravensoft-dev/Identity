@@ -157,7 +157,9 @@ export async function buildReactPackage(root = repoRoot) {
   const sources = { length: compiled.length };
   const carried = declarations;
 
-  for (const to of writeCssChain(dir, NAME, [], root)) written.push(join(dir, to));
+  for (const to of writeCssChain(dir, NAME, [
+    { from: 'frameworks/tailwind/Utilities.generated.css', to: 'css/utilities.css' },
+  ], root)) written.push(join(dir, to));
   written.push(join(dir, 'arena.css'));
 
   for (const rel of copyCli(dir, root)) written.push(join(dir, rel));

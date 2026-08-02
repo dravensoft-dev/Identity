@@ -1,19 +1,21 @@
 # @dravensoft/arena-react
 
 Arena is Dravensoft's design system. This package is its React layer: 55 components styled
-entirely by design tokens, with no CSS classes, no stylesheet to override and no theme
-provider to wrap your tree in.
+entirely by design tokens, with no stylesheet to override and no theme provider to wrap your
+tree in.
 
 **The package carries the language. It does not carry a skin.** Your palettes and your fonts
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
 
-**No CSS toolchain, and Phosphor is required.** Every component styles itself with inline
-style objects reading Arena's token custom properties, so this package brings no utility
-sheet, no class names and no styling runtime with it: the only stylesheet you import is the
-token one. What it does require is the icon font. Every `icon` member is a Phosphor class
-name a component renders, never an SVG it bundles, so `@phosphor-icons/web` is a peer
-dependency and not an option.
+**No CSS toolchain, and Phosphor is required.** The compiled utility sheet ships inside
+`arena.css`, so one import is still the whole of it and you compile nothing. It brings a
+browser base with it, which is the point of shipping it: a form control that inherits nothing
+falls back to the browser's own 13.33px Arial, and a `<button>` styled that way is 20% off in
+every measurement that matters. Arena's other layer has always had that base and this one now
+reads the same file, so the two render one component one way. What is not optional is the icon
+font: every `icon` member is a Phosphor class name a component renders, never an SVG it
+bundles, so `@phosphor-icons/web` is a peer dependency.
 
 ## It works with the repository, and that is the point
 
