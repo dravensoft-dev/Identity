@@ -429,11 +429,11 @@ preference. A change to `EXEMPT` or `PASSTHROUGH` is a change to
 `check-dimension-literals.test.mjs` too, since that suite asserts on both maps by name.
 
 **No gate compares a Tailwind manifest against a rendered component, and the mapping is not
-one-to-one**: a manifest mirrors a *surface*, which a compound family draws with several
-contracted components and a composing component draws with someone else's. The only components
-with no manifest are the three SVG charts. `check:tailwind` proves every class resolves; nothing
-proves a manifest still matches the contract it was written from, so check by hand when either
-has moved.
+one-to-one**: a manifest mirrors a *surface*, so a compound family's members share the parent's
+and the three SVG charts have none at all. **Derive that set rather than trusting a list**, with
+the `comm` command in [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md), which
+also gives the two reasons. `check:tailwind` proves every class resolves; nothing proves a
+manifest still matches the contract it was written from, so check by hand when either has moved.
 
 One narrow slice of that is machine-checked: `check:states` fails a `hover:`/`focus:`-family
 modifier on a slot when no contract the manifest covers declares that affordance, and fails a
@@ -523,18 +523,14 @@ result. It is **tracked**, unlike everything else a generator writes under `fram
 because the plugin is served from the git tag where nothing runs a build, so an uncommitted
 catalog is a wrong answer handed to every reader of that tag. `check:catalog` fails a stale one.
 
-The Angular layer is a quartet, the same three plus its recipe, in
-`frameworks/angular/components/<category>/<component-kebab>/`: `<Component>.ts` (standalone
-`OnPush` component, `arena-` selector, signal I/O, no component `styles`),
-`<Component>.variants.ts` (a `tailwind-variants` recipe built with `frameworks/tailwind/Tv.ts`),
-`<Component>.prompt.md`, and an `index.ts` barrel, plus `<Component>.behaviour.json` and the
-component's own suites, `<Component>.<facet>.test.ts`, in the same directory. The three SVG charts are the one
-exception and have no `<Component>.variants.ts`. Angular has **all six** of the categories the
-layout rule allows, and implements every component the layer ships.
+**The Angular layer's shape is a quartet**, the same three plus its recipe, in
+`frameworks/angular/components/<category>/<component-kebab>/`: a standalone `OnPush` component
+with an `arena-` selector and no component `styles`, its `tailwind-variants` recipe, its prompt
+and an `index.ts` barrel, plus its behaviour binding and its own suites in the same directory.
 **A primitive binds its root slot to the host rather than rendering a wrapper div**, with a
-growing carve-out set for roots that must be a specific semantic or interactive element;
-`frameworks/angular/README.md` states the rule, the carve-outs and the display-utility
-requirement `HostClassBinding.test.ts` guards.
+growing carve-out set. [`frameworks/angular/README.md`](./frameworks/angular/README.md) names
+each file, the SVG charts' exception to the recipe, the four carve-out groups and the
+display-utility requirement `HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
@@ -611,22 +607,18 @@ harness plus the suites belonging to no one component under `test/`.
 `frameworks/react/README.md` names what sits at the layer root and why each is there.
 
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
-and standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
-(`components/display/tag/` is the reference shape; the three SVG charts are the declared
-exception, with no manifest, no `.variants.ts` and token-valued camelCase `[style]` objects), each styled by the
-shared `frameworks/tailwind/` recipes through the configured `tv`. Count the components with
+and standalone `OnPush` primitives styled by the shared `frameworks/tailwind/` recipes through
+the configured `tv`. Count the components with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
-behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
-built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
-**no** `@dsCard`. `frameworks/angular/README.md` says why, and names what sits at the layer root.
+behaviour only a browser can show also has a `<Component>.card.html` demo beside it, and those
+pages carry **no** `@dsCard`. [`frameworks/angular/README.md`](./frameworks/angular/README.md)
+says why, and names what sits at the layer root.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
-manifests), authored once because the token→utility mapping is pure CSS. Its root holds the
-preset, the generated `Utilities.generated.css`, the shared `tv`, the animation utilities and the specimen
-harness; and a component's three files, `<Name>.manifest.json`, the generated
-`<Name>.manifest.generated.ts` and the `<Name>.card.html` specimen, sit together in
-`components/<category>/<component-kebab>/`. Count the manifests with
-`find frameworks/tailwind/components -name '*.manifest.json' | wc -l`.
+manifests), authored once because the token→utility mapping is pure CSS. Count the manifests with
+`find frameworks/tailwind/components -name '*.manifest.json' | wc -l`;
+[`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) names what sits at the layer
+root, and the three files a component keeps together.
 
 **The Tailwind layer derives every utility from an existing token and introduces no new hex and
 no new value**: add the token first, then reference it. Four gates hold it, `check:tailwind`,
