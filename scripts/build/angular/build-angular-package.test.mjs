@@ -66,8 +66,8 @@ test('the assets are added to what ng-packagr wrote without losing its own entry
   assert.equal(final.bin['arena-theme'], './bin/arena-theme.mjs');
 });
 
-test('the staging tree is under build/, which is git-ignored and outside every gate', () => {
-  assert.equal(STAGING, 'build/angular-package');
+test('the staging tree is the layer\'s own build/, git-ignored and excluded by an anchored path in every walker that reaches it', () => {
+  assert.equal(STAGING, 'frameworks/angular/build/package');
 });
 
 test('a missing ng-packagr is reported rather than assumed', () => {

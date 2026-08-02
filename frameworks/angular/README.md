@@ -249,7 +249,7 @@ single component, and two of those files carry no `.test.` infix on purpose, bec
 collects by that infix and a shared module must not be collected as a suite.
 
 `bun run build:angular-tests` compiles everything `tsconfig.test.json` includes under
-`ngc --strictTemplates`, into git-ignored `build/angular-test/`; `test:angular`, `test` and
+`ngc --strictTemplates`, into git-ignored `frameworks/angular/build/test/`; `test:angular`, `test` and
 `testStep()` all run `bun test` over that emitted output, never over the `.ts` sources. A type
 error anywhere in the test surface, a template diagnostic in an inline `template:` string
 included, fails the *build* step, and no test in that run executes at all. Staleness is prevented

@@ -1,12 +1,12 @@
 {
   "extends": "./tsconfig.check.json",
   "compilerOptions": {
-    "outDir": "../../build/angular-test",
+    "outDir": "./build/test",
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "../../build/angular-test/.tsbuildinfo"
+    "tsBuildInfoFile": "./build/test/.tsbuildinfo"
   },
   "files": [],
   "include": ["./components/**/*.ts", "./test/**/*.ts", "./theme/**/*.ts", "./icons/**/*.ts", "./*.ts"],
-  "exclude": ["./components/**/*.card.entry.ts"]
+  "exclude": ["./components/**/*.card.entry.ts", "./build/**"]
 }

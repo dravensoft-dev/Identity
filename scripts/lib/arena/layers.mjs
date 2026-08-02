@@ -1,12 +1,16 @@
 /* The framework layers and the two name shapes every gate reads them through.
  * LAYERS is an exhaustive enumeration rather than a walk of frameworks/, so a
- * layer renamed or removed wholesale becomes loud instead of leaving scope. */
+ * layer renamed or removed wholesale becomes loud instead of leaving scope.
+ * emittedTree is anchored rather than a directory name: a walker skipping every
+ * directory called build would also skip scripts/build/, the phase directory. */
 
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './repo-root.mjs';
 
 export const LAYERS = ['tailwind', 'angular', 'react'];
+
+export const emittedTree = (root = repoRoot) => join(root, 'frameworks', 'angular', 'build');
 
 export function kebab(name) {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();

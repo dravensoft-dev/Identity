@@ -7,6 +7,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { emittedTree } from '../../lib/arena/layers.mjs';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
@@ -453,6 +454,7 @@ export function* sourceFiles(dir) {
   for (const entry of readdirSync(dir).sort()) {
     if (entry === 'dist') continue;
     const p = join(dir, entry);
+    if (p === emittedTree()) continue;
     if (statSync(p).isDirectory()) { yield* sourceFiles(p); continue; }
 
     if (entry.endsWith('.d.ts')) continue;

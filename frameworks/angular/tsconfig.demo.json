@@ -1,12 +1,12 @@
 {
   "extends": "./tsconfig.check.json",
   "compilerOptions": {
-    "outDir": "../../build/angular-demo/tsc",
+    "outDir": "./build/demo/tsc",
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "../../build/angular-demo/tsc/.tsbuildinfo"
+    "tsBuildInfoFile": "./build/demo/tsc/.tsbuildinfo"
   },
   "files": [],
   "include": ["./components/**/*.ts", "./*.ts"],
-  "exclude": ["./**/*.test.ts"]
+  "exclude": ["./**/*.test.ts", "./build/**"]
 }

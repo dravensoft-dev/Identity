@@ -9,6 +9,7 @@ import { join, relative, basename, sep } from 'node:path';
 import { findComments } from '../../lib/arena/comments.mjs';
 import { proseSegments } from '../../lib/arena/markdown-prose.mjs';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
+import { emittedTree } from '../../lib/arena/layers.mjs';
 
 export const MAX_DOCUMENT_CHARS = 60_000;
 export const HEADER_MAX_LINES = 10;
@@ -34,7 +35,7 @@ const SOURCE_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js'];
 const SCANNED_TREES = ['scripts', 'frameworks'];
 const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'dist']);
 
-export const emittedTree = (root) => join(root, 'build');
+export { emittedTree };
 
 function walk(dir, keep, emitted) {
   const found = [];

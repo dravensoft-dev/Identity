@@ -17,7 +17,7 @@ import {
 
 export const NAME = '@dravensoft/arena-angular';
 export const LAYER = 'frameworks/angular';
-export const STAGING = 'build/angular-package';
+export const STAGING = 'frameworks/angular/build/package';
 
 export const TAILWIND_SPECIFIER = /(from\s*['"])\.\.\/\.\.\/\.\.\/\.\.\/tailwind\//g;
 

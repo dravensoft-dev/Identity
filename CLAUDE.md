@@ -541,7 +541,7 @@ requirement `HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
-test surface with `ngc --strictTemplates` into git-ignored `build/angular-test/`, and every run
+test surface with `ngc --strictTemplates` into git-ignored `frameworks/angular/build/test/`, and every run
 target is that emit rather than the `.ts` sources, so a type error anywhere in it fails the
 *build* and no test executes at all. **A green compile is a claim about TYPES, never about
 behaviour.** One process means one document and one `TestBed` environment for the whole layer, so

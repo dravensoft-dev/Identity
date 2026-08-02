@@ -1,6 +1,6 @@
 /* The shared evaluator is reached by DYNAMIC import of an absolute file URL, computed
  * from REPO above. A static relative specifier resolves against the importing FILE, so
- * it points at the source tree from here and at nothing from build/angular-test/ — and a
+ * it points at the source tree from here and at nothing from frameworks/angular/build/test/ — and a
  * suite that fails to LOAD turns the run red without naming what dropped. */
 
 import { fileURLToPath, pathToFileURL } from 'node:url';

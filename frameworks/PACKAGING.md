@@ -72,7 +72,7 @@ directories, and it goes through that same compile, so the package exports
 and the reason is worth stating because it is not obvious: ng-packagr infers `rootDir` from
 the entry file's directory and refuses any source outside it, while every `.variants.ts`
 imports a Tailwind manifest four directories up. So the layer is staged at
-`build/angular-package/` with that slice of `frameworks/tailwind/` beside it, and each
+`frameworks/angular/build/package/` with that slice of `frameworks/tailwind/` beside it, and each
 specifier is repointed to the depth it now sits at.
 
 **The Tailwind layer is not a third package.** It is data travelling one way into Angular,
