@@ -11,6 +11,7 @@ import { join, relative, sep } from 'node:path';
 import { startStaticServer } from '../../lib/arena/static-server.mjs';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
 import { connect } from '../../lib/arena/cdp.mjs';
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const FRAME_FALLBACK_MS = 34;
@@ -238,14 +239,10 @@ export async function measureCardPage(cdp, file, pageRoot, port) {
   }
 }
 
-export function skipExitCode(env = process.env) {
-  return env.ARENA_CHECK_STRICT === '1' || env.CI === 'true' ? 1 : 2;
-}
-
 function skip(reason) {
-  const code = skipExitCode(process.env);
+  const code = skipExitCode();
   console.error(`check-card-viewports: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
-  if (code === 2) console.error('  check-all reports the run INCOMPLETE; set ARENA_CHECK_STRICT=1 to make this a failure.');
+  if (code === 2) console.error('  check-all reports the run INCOMPLETE; the repository declares ARENA_CHECK_STRICT=1, so this environment overrides it.');
   process.exit(code);
 }
 
@@ -273,7 +270,7 @@ export function interleaveForDispatch(items, groups) {
 }
 
 async function main() {
-  const browser = findChromium(process.env);
+  const browser = findChromium();
   if (!browser.path) skip(browser.reason);
 
   const pages = findCardPages(root);

@@ -39,7 +39,7 @@ clone has none of them:
 | `frameworks/tailwind/components/**/*.manifest.generated.ts`, one per `<Name>.manifest.json` | every Angular `<Component>.variants.ts`; `check:tailwind-generated` |
 | `frameworks/tailwind/Breakpoints.generated.css` | `Theme.css` imports it, so `build:tailwind` fails outright without it; `check:tokens` |
 | `frameworks/tailwind/Utilities.generated.css` | every Tailwind and Angular specimen; `check:tailwind-generated` |
-| `build/angular-demo/` | the Angular `*.card.html` pages; `check:angular-demos` |
+| `frameworks/angular/build/demo/` | the Angular `*.card.html` pages; `check:angular-demos` |
 
 So on a clone with no build, `bun run demos` serves unstyled or blank pages, neither framework
 layer compiles, because a component's import of `Api.generated` or `Tokens.generated` resolves
@@ -52,7 +52,7 @@ not, a generator and a committed file disagree, which is what `check:tokens` and
 exist to say out loud.
 
 `build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
-git-ignored `build/angular-test/` and is run by `bun run test` and `bun run check` themselves,
+git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,
 always immediately before the suites that read it, because staleness there is prevented by
 ordering rather than by a gate.
 

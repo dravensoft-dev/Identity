@@ -4,9 +4,11 @@ node_modules/
 .pnp.js
 
 # Build output. Anchored: an unanchored build/ also matches scripts/build/, the
-# phase directory, and would silently drop a new script added there.
+# phase directory, and would silently drop a new script added there. The Angular
+# emit sits inside the layer it belongs to, and every walker that reaches it
+# excludes emittedTree() from lib/arena/layers.mjs, anchored for the same reason.
 /dist/
-/build/
+/frameworks/angular/build/
 /.cache/
 
 # The two assembled npm packages. Unlike the payload below, a package is served from

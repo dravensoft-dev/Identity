@@ -9,6 +9,7 @@ import { join, relative, basename, sep } from 'node:path';
 import { findComments } from '../../lib/arena/comments.mjs';
 import { proseSegments } from '../../lib/arena/markdown-prose.mjs';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
+import { emittedTree } from '../../lib/arena/layers.mjs';
 
 export const MAX_DOCUMENT_CHARS = 60_000;
 export const HEADER_MAX_LINES = 10;
@@ -31,15 +32,17 @@ export const PROSE_EXEMPT = {
 export const BANNED_PUNCTUATION = [['—', 'an em dash']];
 
 const SOURCE_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js'];
-const SCANNED_TREES = ['scripts', 'frameworks'];
+export const SCANNED_TREES = ['scripts', 'frameworks', '.github'];
 const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'dist']);
 
-export const emittedTree = (root) => join(root, 'build');
+export const READ_DESPITE_THE_DOT = new Set(['.gitkeep', '.github']);
+
+export { emittedTree };
 
 function walk(dir, keep, emitted) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') && entry.name !== '.gitkeep') continue;
+    if (entry.name.startsWith('.') && !READ_DESPITE_THE_DOT.has(entry.name)) continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       if (SKIPPED_DIRECTORIES.has(entry.name) || full === emitted) continue;

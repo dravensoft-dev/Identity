@@ -6,9 +6,10 @@ import { ngcBin } from '../../check/angular/check-angular.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const PROJECT = 'frameworks/angular/tsconfig.test.json';
-const OUT_DIR = join(repoRoot, 'build', 'angular-test');
+const OUT_DIR = join(repoRoot, 'frameworks', 'angular', 'build', 'test');
 
 const SRC_ROOT = join(repoRoot, 'frameworks');
+const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
 function pruneOrphans(dir) {
   const pruned = [];
@@ -44,6 +45,7 @@ function collectTestSources(dir) {
   function walk(current) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
+      if (full === EMITTED) continue;
       if (entry.isDirectory()) { walk(full); continue; }
       if (entry.name.endsWith('.test.ts')) out.push(relative(dir, full));
     }
@@ -72,7 +74,7 @@ export function missingEmitProblems(sourceTests, emittedTests) {
     const stem = src.slice(0, -'.ts'.length);
     if (!emittedStems.has(stem)) {
       problems.push(
-        `${src} has no corresponding .test.js in build/angular-test/angular -- ` +
+        `${src} has no corresponding .test.js in frameworks/angular/build/test/angular -- ` +
         `ngc never compiled it (check tsconfig.test.json's "include"), so this suite never runs`,
       );
     }
@@ -97,7 +99,7 @@ function main() {
     console.error('\nbuild-angular-tests: the Angular test surface does not compile, so its suites cannot run');
     process.exit(r.status ?? 1);
   }
-  console.log('build-angular-tests: the Angular test surface compiled to build/angular-test');
+  console.log('build-angular-tests: the Angular test surface compiled to frameworks/angular/build/test');
   const pruned = pruneOrphans(OUT_DIR);
   if (pruned.length > 0) {
     console.log(`build-angular-tests: pruned ${pruned.length} orphaned output file(s):`);

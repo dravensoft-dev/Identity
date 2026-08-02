@@ -42,8 +42,9 @@ the consuming project writes, and the `arena-theme` command each package ships t
 the one stylesheet a package cannot carry. Phosphor is a peer dependency in both, never a
 bundled asset. **`dist/` is git-ignored and six gates skip a directory of that name**, because
 it puts a copy of each layer inside the tree they walk; the exclusion is asserted in each
-gate's own suite. Both packages are **live on npm** and **published by hand**, one
-`npm publish` per package at the end of a release; `check:packages` holds the manifests and
+gate's own suite. Both packages are **live on npm**, **published by a workflow** over OIDC, one
+per layer that changed, so the two sit at different versions whenever a release left one alone;
+`check:packages` holds the manifests and
 holds `arena-theme` equivalent to the Style Dictionary pipeline it duplicates.
 [`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md) is the normative statement of the
 channel, and each package's consumer-facing README is authored as
@@ -541,7 +542,7 @@ requirement `HostClassBinding.test.ts` guards.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
 different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
-test surface with `ngc --strictTemplates` into git-ignored `build/angular-test/`, and every run
+test surface with `ngc --strictTemplates` into git-ignored `frameworks/angular/build/test/`, and every run
 target is that emit rather than the `.ts` sources, so a type error anywhere in it fails the
 *build* and no test executes at all. **A green compile is a claim about TYPES, never about
 behaviour.** One process means one document and one `TestBed` environment for the whole layer, so
@@ -601,20 +602,16 @@ a fact missing from a contract.
 
 **Framework layers live under `frameworks/`.** The root holds only the framework-agnostic language
 (`contracts/`, holding all three contract levels, `api/`, `behaviour/` and `design/`, plus
-`design-generated/`; `assets/`; and `scripts/`, which sorts itself into `build/`, `generate/` and
-`check/` by domain and carries a README at every level) plus `intro/`, the browsable front: `styles.css`,
+`design-generated/`; `assets/`; and `scripts/`, which sorts itself into `build/`, `generate/`,
+`check/` and `ci/` by domain and carries a README at every level) plus `intro/`, the browsable front: `styles.css`,
 `guidelines/`, the runtime (`theme.js`, `toggle.css`, `overview.js`, `support.js`) and the two
 pages it serves. **No `.html`, `.css` or `.js` sits loose at the repository root.**
 
 Each layer has its own README; read it for the layer's shape.
 `frameworks/react/` puts components under `components/<category>/<component-kebab>/`, the
 Delivery Console under `ui-kits/console/`, the vendor bundles under `vendor/`, and the
-harness plus the suites belonging to no one component under `test/`. Its layer root holds the
-generated `Api.generated.ts` and `Tokens.generated.js` plus `DataVisuals.ts`, `Theme.ts`,
-`UseContainerWidth.ts` and `UseDialogModal.ts`, that last one **because its suite counts as a
-consumer**: its three component consumers are all in `feedback/`, but
-`test/UseDialogModal.dom.test.tsx` is a consumer too, and the narrowest level containing that
-one as well is the layer root.
+harness plus the suites belonging to no one component under `test/`.
+`frameworks/react/README.md` names what sits at the layer root and why each is there.
 
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
 and standalone `OnPush` primitives under `components/<category>/<component-kebab>/`
@@ -624,10 +621,7 @@ shared `frameworks/tailwind/` recipes through the configured `tv`. Count the com
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
 behaviour only a browser can show also has `<Component>.card.html` + `.card.entry.ts` beside it,
 built by `bun run build:angular-demo` and recorded in `check:angular-demos`. Those pages carry
-**no** `@dsCard`: the bundle is git-ignored, and a blank page passes a viewport check by having
-nothing to overflow. Its layer root additionally holds the generated modules and the
-internals belonging to no one category, and
-`frameworks/angular/README.md` names each and says why.
+**no** `@dsCard`. `frameworks/angular/README.md` says why, and names what sits at the layer root.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
 manifests), authored once because the token→utility mapping is pure CSS. Its root holds the
@@ -643,12 +637,18 @@ no new value**: add the token first, then reference it. Four gates hold it, `che
 states what each reaches and what none of them does.
 
 `bun run check` runs every gate plus the test suite, without stopping at the first failure.
-**Three gates are not runtime-portable**: `check:cards` needs a headless browser (`CHROME_PATH`,
-or Chromium on the usual paths), `check:vendor` needs `Bun.build`, and `check:demos` needs
-`Bun.Transpiler`, and neither builder exists under plain `node`. Where a dependency is missing the
-gate exits 2, `check-all` marks it `SKIP` and reports the whole run `INCOMPLETE` rather than
-green; `ARENA_CHECK_STRICT=1`, or `CI=true` so an automated run never skips quietly, makes
-that a hard failure instead.
+**Four gates are not runtime-portable**: `check:cards` and `check:focus-trap` need a headless
+browser, `check:vendor` needs `Bun.build`, `check:demos` needs `Bun.Transpiler`. Where a
+dependency is missing the gate exits 2 and is reported `SKIP`, **except that the repository
+declares itself strict**, so it fails instead. Every environment variable they read is declared
+in `scripts/lib/arena/arena-scripts-vars.mjs`, and a real one wins over it;
+`scripts/check/README.md` has the table.
+
+**CI narrows that run by domain, never by gate name.** `check-all.mjs` takes `--domain=` and
+`--no-tests`, four jobs partition `GATES`, and `check-all.test.mjs` asserts the partition, so a
+gate cannot join `GATES` and then run in no job.
+[`.github/workflows/README.md`](./.github/workflows/README.md) has the four workflows, why the
+`core` job runs on every change, and why the two packages sit at different versions.
 
 **One shape for every framework layer.** The rule: **directories are `kebab-case` and lowercase; a
 file name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
@@ -745,8 +745,8 @@ can afford at one run per commit.
   published tag would stop resolving to the tree it resolved to at install time. **The two npm
   packages take that same version and are never hand-versioned**: `baseManifest()` stamps it from
   `plugin.json` at assembly, and `check:packages` fails a manifest that disagrees. They are
-  published **last**, by hand, after the tag is pushed, and `frameworks/PACKAGING.md` carries
-  the sequence and the traps.
+  published **last**, by the workflow that fires on a green `main` after the tag lands, and only
+  the one whose layer changed; `frameworks/PACKAGING.md` carries the sequence and the traps.
 - **Anything landing on `main` after a tag goes under `## [Unreleased]`**, and a release is cut by
   renaming that heading to the version. Filing it under the last version instead describes a tree
   nobody has: the plugin is served from the tag, so the release is frozen the moment it is cut.

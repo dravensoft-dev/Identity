@@ -10,10 +10,11 @@ import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 const PROJECT = 'frameworks/angular/tsconfig.demo.json';
-const OUT_DIR = join(repoRoot, 'build', 'angular-demo');
+const OUT_DIR = join(repoRoot, 'frameworks', 'angular', 'build', 'demo');
 const TSC_DIR = join(OUT_DIR, 'tsc');
 const JS_DIR = join(OUT_DIR, 'js');
 const SRC_ROOT = join(repoRoot, 'frameworks');
+const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
 export const ENTRY_SUFFIX = '.card.entry.js';
 
@@ -66,7 +67,7 @@ export function missingEntryProblems(sourceEntries, emittedEntries) {
     const stem = src.slice(0, -'.ts'.length);
     if (!emitted.has(stem)) {
       problems.push(
-        `${src} has no corresponding ${ENTRY_SUFFIX} in build/angular-demo/tsc/angular -- `
+        `${src} has no corresponding ${ENTRY_SUFFIX} in frameworks/angular/build/demo/tsc/angular -- `
         + `ngc never compiled it (check tsconfig.demo.json's "include"), so its page loads nothing`,
       );
     }
@@ -83,6 +84,7 @@ function collectSourceEntries(dir) {
   function walk(current) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
+      if (full === EMITTED) continue;
       if (entry.isDirectory()) { walk(full); continue; }
       if (entry.name.endsWith('.card.entry.ts')) out.push(relative(dir, full));
     }
@@ -146,7 +148,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`build-angular-demo: bundled ${entrypoints.length} page(s) into build/angular-demo/js`);
+  console.log(`build-angular-demo: bundled ${entrypoints.length} page(s) into frameworks/angular/build/demo/js`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

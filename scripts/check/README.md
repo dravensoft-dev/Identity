@@ -46,11 +46,34 @@ pass" but "how many things did it look at, and is that the number I expect".
 
 ## Exit 2 means SKIP, and a skip is never green
 
-Three gates need a runtime dependency that plain node does not have: `check:cards` needs a
-headless browser, `check:vendor` needs `Bun.build`, `check:demos` needs `Bun.Transpiler`. Where
-the dependency is missing the gate exits **2**, `check-all` marks it `SKIP`, and the whole run
-reports **INCOMPLETE** rather than passing. `ARENA_CHECK_STRICT=1`, or `CI=true` so an
-automated run never skips quietly, turns that into a hard failure.
+**Four** gates need a runtime dependency that plain node does not have: `check:cards` and
+`check:focus-trap` need a headless browser, `check:vendor` needs `Bun.build`, `check:demos`
+needs `Bun.Transpiler`. Where the dependency is missing the gate exits **2**, `check-all` marks
+it `SKIP`, and the whole run reports **INCOMPLETE** rather than passing.
+
+**The repository declares itself strict, so that is not the default here**: a gate that cannot
+run **fails**. The soft skip is what an environment has to ask for, by exporting
+`ARENA_CHECK_STRICT` as anything other than `1`. Note that `check-all` exits 0 on a run that
+only skips, so a skip is loud in the summary and quiet in the exit status, which is the second
+reason strict is the declared value rather than the opt-in one.
+
+## Where the variables live
+
+`scripts/lib/arena/arena-scripts-vars.mjs` declares every environment variable the scripts
+read, so a test run or a CI run needs no exports. There are four, and no gate reads any other:
+
+| variable | what it decides |
+| --- | --- |
+| `CHROME_PATH` | The browser `check:cards` and `check:focus-trap` drive. Declared, so a machine with Chromium anywhere else needs one export and nothing more. |
+| `ARENA_CHECK_STRICT` | Whether a missing dependency fails or skips. Compared against the exact string `1`. |
+| `CI` | The same, compared against the exact string `true`. Recognised and never declared: claiming it would tell the scripts they run on a runner. Note that a runner setting `CI=1` rather than `CI=true` buys nothing here. |
+| `PORT` | The port `bun run demos` serves on. The gates' own server binds an ephemeral port and ignores it. |
+
+**A real environment variable wins over a declared one**, so an override stays a shell prefix
+rather than an edit to a versioned file: `CHROME_PATH=/opt/chrome bun run check:cards`. The one
+trap is that `CHROME_PATH` is terminal wherever it comes from. Pointing it at nothing does not
+fall back to the candidate list, it reports the dangling path, and under the declared strict
+setting that is a failure rather than a skip.
 
 ## What a generator-comparing gate claims
 
@@ -78,6 +101,13 @@ rather than a gate.
 `check-all.test.mjs` asserts every gate names one of the five domains and points at
 `<domain>/<gate>.mjs`, so a gate landing outside the grid fails rather than running unnoticed.
 
+The domain is also what a narrowed run selects on. `check-all.mjs` takes `--domain=core,arena`
+and `--no-tests`, and `gatesFor()` refuses a name outside `DOMAINS` and a selection matching no
+gate, because a run of nothing reports nothing wrong with everything. CI is its only caller,
+and its four jobs partition this table: `core` takes `core/` and `arena/`, since the fifteen
+cross-layer gates are questions no single layer can answer. That partition is asserted too, so
+a gate cannot join `GATES` and then run in no job.
+
 ## Adding a gate
 
 Put it in `check/<domain>/`, add it to `GATES` with its domain in the path, give it an npm
@@ -86,4 +116,5 @@ literal value, so the count and the order move in the same commit.
 
 `check-release` is the one script with no npm entry and no place in `GATES`: it is run by path
 before publishing, because it asserts what the *tag* hands out and there is nothing to assert
-until one exists.
+until one exists. Each publish workflow runs it first, so a version bump pushed without its tag
+is refused rather than published.

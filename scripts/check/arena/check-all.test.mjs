@@ -4,7 +4,14 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { testStep, summarize, stepStatus, GATES, DOMAINS, testFilesUnder } from './check-all.mjs';
+import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.mjs';
+
+const CI_JOBS = {
+  core: ['core', 'arena'],
+  react: ['react'],
+  angular: ['angular'],
+  tailwind: ['tailwind'],
+};
 
 test('GATES lists every check gate', () => {
   assert.equal(GATES.length, 34);
@@ -28,6 +35,47 @@ test('every gate sits in one of the five domains, so a new one cannot land outsi
     assert.ok(DOMAINS.includes(domain), `${name} names the domain ${domain}, which is not one of the five`);
     assert.equal(tail.length, 1, `${name} points at ${file}, which is not <domain>/<gate>.mjs`);
   }
+});
+
+test('selecting every domain selects every gate, so no gate can hide outside the union', () => {
+  assert.equal(gatesFor(DOMAINS).length, GATES.length);
+});
+
+test('the four CI jobs partition GATES: each gate runs in exactly one of them', () => {
+  const seen = new Map();
+  for (const [job, domains] of Object.entries(CI_JOBS)) {
+    for (const gate of gatesFor(domains)) {
+      assert.ok(!seen.has(gate.name), `${gate.name} runs in both ${seen.get(gate.name)} and ${job}`);
+      seen.set(gate.name, job);
+    }
+  }
+  assert.deepEqual([...seen.keys()].sort(), GATES.map((g) => g.name).sort());
+});
+
+test('a domain that does not exist is refused rather than answered with an empty run', () => {
+  assert.throws(() => gatesFor(['nope']), /no domain called nope/);
+  assert.throws(() => gatesFor([]), /selected no gate/);
+});
+
+test('the arena domain is where the cross-layer gates are, which is why the core job carries it', () => {
+  const arena = gatesFor(['arena']).map((g) => g.name);
+  for (const name of ['check:api', 'check:behaviour', 'check:compliance', 'check:structure',
+    'check:dimensions', 'check:layer-independence', 'check:cards', 'check:focus-trap', 'check:packages']) {
+    assert.ok(arena.includes(name), `${name} is not in the arena domain`);
+  }
+});
+
+test('with no argument every domain runs and the suite runs, which is what bun run check gets', () => {
+  assert.deepEqual(parseCheckArgs([]), { domains: DOMAINS, tests: true });
+});
+
+test('a narrowed invocation names its domains and can drop the suite', () => {
+  assert.deepEqual(parseCheckArgs(['--domain=core,arena', '--no-tests']), { domains: ['core', 'arena'], tests: false });
+  assert.deepEqual(parseCheckArgs(['--domain=react']), { domains: ['react'], tests: true });
+});
+
+test('an argument nobody recognises is refused, so a typo in a workflow is loud', () => {
+  assert.throws(() => parseCheckArgs(['--domains=react']), /unrecognised argument/);
 });
 
 test('testFilesUnder finds a suite nested several directories deep, which a flat read would miss', () => {
@@ -55,7 +103,7 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
-    ['test', 'scripts', 'frameworks/react', 'build/angular-test/angular',
+    ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test/angular',
      '--path-ignore-patterns=**/*.dom.test.*'],
     ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.'],
   ]);

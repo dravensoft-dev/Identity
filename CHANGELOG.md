@@ -4,9 +4,23 @@ All notable changes to Arena, the Dravensoft Design System, are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.1.0] - 2026-08-01
 
 ### Added
+
+- **Arena has CI.** Four workflows under `.github/workflows/`. A pull request builds once and
+  then fans out over four test jobs, `core` always and the three layers by what the diff
+  reaches; `main` runs every gate and the whole suite and reports the passes per domain; and two
+  publish workflows fire on a green `main`, each publishing its package over OIDC only when
+  something that package carries has moved since the version already on the registry. So a
+  package's latest version is the last release that changed it, and the two can differ.
+  `.github/workflows/README.md` says why, and both `PACKAGE.md` files point a consumer at it.
+- **A fourth phase under `scripts/`, `ci/`.** What a runner asks and no gate answers: which
+  layers a diff reaches, what the suite reported per domain, what each package is assembled
+  from. Every rule lives in a module with a suite beside it rather than in YAML, because a
+  routing rule nothing tests reports green over a tree it never opened. `check-all.mjs` gained
+  `--domain=` and `--no-tests`, and its suite asserts the four CI jobs partition `GATES`, so a
+  gate cannot land and then run in no job. `check:docs` now reads `.github/`.
 
 - **`Table` sorts and pages.** `TableColumn.sortable` plus `Table.sort`/`sortChange` and
   `Table.page`/`pageChange`. Both are controlled, because Table does not hold the rows: it draws
@@ -42,6 +56,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Angular's build output moved into the layer that emits it**, from `/build/` to
+  `frameworks/angular/build/{demo,test,package}/`, dropping the `angular-` prefix that named
+  nothing there. The exclusion keeping it out of every walk is anchored to that path rather than
+  to the directory name, and lives once as `emittedTree()` in `lib/arena/layers.mjs`: a walker
+  skipping every directory called `build` would also skip `scripts/build/`, the phase directory.
 - **An empty `Table` draws no grid at all**, header row included, in both layers. A `role="grid"`
   holding neither a header nor a row is a degenerate render, and a column head over a "no
   results" sentence describes a table that is not there. Measured rather than argued: across
@@ -102,6 +121,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   component source by name and found nothing to say when the probe missed; `check:dimensions`
   matched a parameter list with a regex that an annotation defeats; `check:layer-independence`
   identified a layer by tokens nothing held to the tree.
+- **`@dravensoft/arena-angular` assembled into a directory nobody reads.** ng-packagr resolves
+  `dest` against the directory its `ng-package.json` sits in, and that path was a literal written
+  for a staging tree two levels higher, so the package landed in
+  `frameworks/angular/frameworks/angular/dist`, a tree no `.gitignore` entry covers. ng-packagr
+  compiled it cleanly and exited 0; the failure surfaced two steps later as an `ENOENT` on the
+  `dist/package.json` the emitted manifest is read from, and only on a fresh clone, because a
+  working tree still holding the previous build had a file there to read. Both that path and the
+  `$schema` beside it are derived from `STAGING` now, and the suite resolves the value against it
+  rather than pinning the string a move invalidates.
+- **`check:release` could not read the version it gates.** It matched a `**Version X.Y.Z**` line
+  the shortened root README no longer carries, so the one check standing between a release and a
+  marketplace that advertises a version its pinned tag does not serve was failing on its own
+  regex. It reads the title, which is where the version is authored.
 
 ### Changed
 

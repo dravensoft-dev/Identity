@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
-export const BUNDLE_DIR = 'build/angular-demo/js';
+export const BUNDLE_DIR = 'build/demo/js';
 
 export const PAGED = new Set([
   'Button',

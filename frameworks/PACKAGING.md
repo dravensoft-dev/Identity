@@ -72,7 +72,7 @@ directories, and it goes through that same compile, so the package exports
 and the reason is worth stating because it is not obvious: ng-packagr infers `rootDir` from
 the entry file's directory and refuses any source outside it, while every `.variants.ts`
 imports a Tailwind manifest four directories up. So the layer is staged at
-`build/angular-package/` with that slice of `frameworks/tailwind/` beside it, and each
+`frameworks/angular/build/package/` with that slice of `frameworks/tailwind/` beside it, and each
 specifier is repointed to the depth it now sits at.
 
 **The Tailwind layer is not a third package.** It is data travelling one way into Angular,
@@ -132,41 +132,58 @@ correctly; that is `check:compliance`, and it runs against the sources.
 
 ## Publishing
 
-**Both packages are on npm, under the `@dravensoft` scope, and publishing is done by hand.**
-That is a choice rather than a gap: a release is already a deliberate, user-triggered act
-here, and one `npm publish` per package at the end of it costs less than a workflow to
-maintain. Trusted publishing over OIDC stays available whenever the cost flips; the note at
-the end of this section says what it would take.
-
-A release publishes the packages last, after the tag exists, because the tag is what every
-other surface is pinned to:
+**Both packages are on npm, under the `@dravensoft` scope, and a workflow publishes them.**
+What a release does by hand is move the surfaces and push the tag; everything after that is
+`.github/workflows/npm-publish-react-package.yml` and its Angular twin, each firing on a
+green run of `Arena main`.
 
 ```bash
-# 1. the four surfaces, in one commit, then the tag on it
-#    plugin.json (the authority), marketplace.json version AND source.ref,
-#    the README header, and CHANGELOG's [Unreleased] renamed to the version
+# the six surfaces, in one commit, then the tag on it
+#   plugin.json (the authority), marketplace.json version AND source.ref,
+#   the README header, and CHANGELOG's [Unreleased] renamed to the version
 git tag -a vX.Y.Z -m "Arena vX.Y.Z"
 git push origin main --follow-tags
+```
 
-# 2. prove the release before anything leaves the machine
+`--follow-tags` matters here for a second reason now: the workflow runs `check-release.mjs`
+before it publishes anything, and that gate refuses a version whose tag does not exist and
+does not serve it. A version bump pushed without its tag is rejected loudly rather than
+published quietly.
+
+**A package is published only when something it carries has moved.** The workflow asks
+whether `plugin.json`'s version is already on the registry, and if it is not, whether
+anything in `scripts/ci/arena/package-inputs.mjs` has changed since the tag of the version
+that is. So a release touching only React publishes only React, and the Angular package
+keeps its number rather than shipping an identical tree under a new one. That is why the two
+packages can sit at different versions, and both `PACKAGE.md` files point a reader at
+[`../.github/workflows/README.md`](../.github/workflows/README.md) for the explanation.
+
+Three things about the publish itself, each of which has a way of going wrong:
+
+- **Publish from inside `dist/`.** The root `package.json` is private and npm would refuse it.
+  The workflow packs inside `dist/` and publishes the tarball.
+- **Do not pass `--access public`.** Both manifests already carry it in `publishConfig`.
+- **Do not pass `--provenance`.** Under a trusted publisher the attestation is generated
+  automatically, and the flag is not what turns it on.
+
+### Publishing by hand
+
+Still possible, and the fallback when the workflow cannot run:
+
+```bash
 bun scripts/check/arena/check-release.mjs
 bun run build                   # the generated sources build:packages reads
 bun run build:packages          # the manifests take the version from plugin.json here
 bun run check:packages          # and this fails if they did not
 
-# 3. publish, from INSIDE each dist, never from the repository root
 npm login                       # a two-hour session; 2FA is enforced on publish
 cd frameworks/react/dist   && npm publish --dry-run && npm publish
 cd ../../angular/dist      && npm publish
 ```
 
-Four things about that last step, each of which has a way of going wrong:
-
-- **Publish from inside `dist/`.** The root `package.json` is private and npm would refuse it.
-- **Do not pass `--access public`.** Both manifests already carry it in `publishConfig`.
-- **Do not pass `--provenance`.** It needs OIDC and fails from a laptop.
-- **React first.** If something is wrong, find it in the 73 kB package rather than halfway
-  through.
+React first: if something is wrong, find it in the smaller package rather than halfway
+through. A publish by hand carries no provenance, because that needs the OIDC token only a
+runner has.
 
 ### A 404 right after publishing is not a failure
 
@@ -175,26 +192,35 @@ a successful publish, `npm view` and `npm owner ls` answer 404 while the package
 published, because those read a CDN that has not caught up. Measured on the 5.0.0 release:
 five minutes, with the two packages appearing a minute apart from each other.
 
-The authenticated API is what answers truthfully, and it is the only check worth running:
-
-```bash
-npm access list packages @dravensoft   # lists what EXISTS, whatever the CDN says
-```
+This is why the publish workflow tolerates exactly one error. Its guard reads `npm view`, so
+a re-run inside that window is told the version is absent, builds, and then meets
+`cannot publish over the previously published versions`. That message alone exits green;
+every other failure is red. It is safe because the scope is ours, so the only way that
+version can already exist is that we published it.
 
 Read the publish log rather than the next command's output. A publish that worked ends with
-`PUT 200`, `exit 0` and `info ok`, and the `401` above it is not an error: it is the 2FA
-handshake starting, before npm retries with the validated session.
+`PUT 200`, `exit 0` and `info ok`. By hand, the `401` above it is not an error either: it is
+the 2FA handshake starting, before npm retries with the validated session.
 
-### What trusted publishing would take
+Nothing verifies after publishing. `npm access list packages @dravensoft` lists what exists
+whatever the CDN says, and it is the right check from a laptop, where there is a session. A
+runner has no long-lived credential and its token is scoped to the publish, so there the exit
+code is the check.
 
-`permissions: id-token: write` on a GitHub-hosted runner, plus a trusted publisher configured
-in **each package's** settings on npmjs.com. That configuration is why the first publish had
-to be manual: a package nobody has published has no settings to configure. Now that both
-exist, the bootstrap problem is gone and the switch can be made at any time. Self-hosted
-runners are not supported.
+### What trusted publishing needs
 
-Whatever the mechanism, it inherits the existing release rule: the version moves in
-`plugin.json`, `marketplace.json` and the README header together, `CHANGELOG.md` records it,
-`source.ref` names the tag, and `check-release.mjs` refuses the combination that fails
-silently. The two manifests take that same version from `plugin.json` at assembly, so a
-published package can never disagree with the tag it was cut from.
+`permissions: id-token: write` on a GitHub-hosted runner, npm 11.5.1 or newer on Node 22.14
+or newer, and a trusted publisher configured in **each package's** settings on npmjs.com.
+Self-hosted runners are not supported. The image ships an older npm, so each publish job
+installs a current one and asserts the version rather than assuming it.
+
+**The workflow file name is the package's identity to npm**, exactly and case-sensitively:
+the publisher on npmjs.com names `npm-publish-react-package.yml` or
+`npm-publish-angular-package.yml`. Renaming one revokes that package's right to publish, and
+nothing in this repository would notice.
+
+The mechanism inherits the release rule it always had: the version moves in `plugin.json`,
+`marketplace.json` and the README header together, `CHANGELOG.md` records it, `source.ref`
+names the tag, and `check-release.mjs` refuses the combination that fails silently. The two
+manifests take that same version from `plugin.json` at assembly, so a published package can
+never disagree with the tag it was cut from.

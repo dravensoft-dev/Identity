@@ -10,7 +10,7 @@ const TREE = { forms: ['button'] };
 
 const PAGE =
   '<!doctype html><html><head><meta charset="utf-8"><title>arena-button</title></head>'
-  + `<body><script type="module" src="../../../../../${BUNDLE_DIR}/Button.card.entry.js"></script></body></html>`;
+  + `<body><script type="module" src="../../../${BUNDLE_DIR}/Button.card.entry.js"></script></body></html>`;
 
 const ENTRY =
   "import '@angular/compiler';\n"

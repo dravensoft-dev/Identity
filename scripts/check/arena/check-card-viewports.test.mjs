@@ -9,7 +9,7 @@ import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
 import { connect } from '../../lib/arena/cdp.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import {
-  parseDsCard, classify, summarizeCards, skipExitCode, findCardPages, UNDER_RUN_SLACK,
+  parseDsCard, classify, summarizeCards, findCardPages, UNDER_RUN_SLACK,
   measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch, MEASURE_SCRIPT,
 } from './check-card-viewports.mjs';
 
@@ -222,12 +222,6 @@ test('a page that timed out without ever stabilizing is a skip-class condition, 
   assert.equal(r.status, 'unrendered');
   assert.match(r.message, /never stabilized/i, 'the message says plainly that the page never settled');
   assert.match(r.message, /Feedback\.card\.html/, 'the message names the page');
-});
-
-test('skipExitCode is 2 normally and 1 under strict', () => {
-  assert.equal(skipExitCode({}), 2);
-  assert.equal(skipExitCode({ ARENA_CHECK_STRICT: '1' }), 1);
-  assert.equal(skipExitCode({ CI: 'true' }), 1);
 });
 
 test('findCardPages finds every page that declares, and nothing that does not', () => {

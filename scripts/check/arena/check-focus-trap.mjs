@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { startStaticServer } from '../../lib/arena/static-server.mjs';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
 import { connect } from '../../lib/arena/cdp.mjs';
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const NAVIGATE_TIMEOUT_MS = 30_000;
@@ -136,7 +137,7 @@ async function walkTrap(cdp, url, trap) {
 }
 
 function skip(reason) {
-  const code = process.env.ARENA_CHECK_STRICT === '1' || process.env.CI === 'true' ? 1 : 2;
+  const code = skipExitCode();
   console.error(`check-focus-trap: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   process.exit(code);
 }

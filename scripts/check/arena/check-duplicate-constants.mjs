@@ -7,6 +7,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, extname, relative } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { emittedTree } from '../../lib/arena/layers.mjs';
 
 const EXEMPT = new Map([
   ['SSR_VIEWPORT_H',
@@ -40,6 +41,7 @@ export function* sourceFiles(dir) {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
     const path = join(dir, entry);
+    if (path === emittedTree()) continue;
     if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
     if (!SCAN_EXT.has(extname(entry))) continue;
     if (/^tokens\.generated\./i.test(entry)) continue;

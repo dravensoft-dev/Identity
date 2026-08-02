@@ -8,7 +8,7 @@
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { join, relative, sep } from 'node:path';
+import { join, relative, sep, posix } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
@@ -17,7 +17,7 @@ import {
 
 export const NAME = '@dravensoft/arena-angular';
 export const LAYER = 'frameworks/angular';
-export const STAGING = 'build/angular-package';
+export const STAGING = 'frameworks/angular/build/package';
 
 export const TAILWIND_SPECIFIER = /(from\s*['"])\.\.\/\.\.\/\.\.\/\.\.\/tailwind\//g;
 
@@ -49,10 +49,14 @@ export const RUNTIME_DEPENDENCIES = {
   tslib: '^2.8.1',
 };
 
+export function fromStaging(target) {
+  return posix.relative(STAGING, target);
+}
+
 export function ngPackageConfig() {
   return {
-    $schema: '../../node_modules/ng-packagr/ng-package.schema.json',
-    dest: '../../frameworks/angular/dist',
+    $schema: fromStaging('node_modules/ng-packagr/ng-package.schema.json'),
+    dest: fromStaging(`${LAYER}/dist`),
     lib: { entryFile: 'index.ts' },
     allowedNonPeerDependencies: Object.keys(RUNTIME_DEPENDENCIES),
     assets: [],
