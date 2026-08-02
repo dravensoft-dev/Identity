@@ -87,7 +87,6 @@ completeSale(): void {
 }
 ```
 
-They are methods rather than members because none of the nine contract forms is imperative, and
-`autoFocus` would answer a different question: it fires once at mount, and chaining sales needs
-focus back after **every** completion. `contracts/api/README.md` states the rule and
-`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` is what allows exactly these two.
+They are methods rather than members because no member is imperative, and `autoFocus` would
+answer a different question: it fires once at mount, and chaining sales needs focus back after
+**every** completion. These two are the whole surface; `Input` exposes no other method.

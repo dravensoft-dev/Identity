@@ -48,7 +48,7 @@ both refusable, and `Table.cases.test.ts` asserts the count so it cannot drift b
 
 Below `--bp-md` the row renders as a card with **no role and no tab stop**, so a row carrying
 `(click)` is reachable by pointer and not by keyboard. The row cannot decide the shape from
-whether anything is listening, R6 in `contracts/api/README.md` forbids exactly that, and
+whether anything is listening, which no render may follow from, and
 `OutputEmitterRef.listeners` is private here anyway. Making every card row a button instead would
 put a dead tab stop on every row of every table that is not clickable. The binding declares
 `divergesFrom: "button"`, and the bounded consequence is that a card row with `(click)` bound

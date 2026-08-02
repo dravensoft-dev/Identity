@@ -15,19 +15,19 @@ they are real `mat-button`s wearing Arena.
 the title; below `--bp-sm` the row always stacks and `align` has no effect. `arena-page-head`
 applies no outer bottom margin; the parent composes that spacing.
 
-Import `ArenaActions` from `frameworks/angular/ProjectionMarkers` (or the
-layer barrel) alongside `PageHead` in the host component's `imports`,
+Import `ArenaActions` from `@dravensoft/arena-angular` alongside `PageHead` in the
+host component's `imports`,
 `actions` is a directive, not a plain attribute, because it is how the page head
 detects that actions were projected at all. Without it the attribute is inert, the
 actions wrapper never renders, and the buttons silently disappear. `ArenaActions` is
 shared: every primitive with a plural, toolbar-shaped projected slot imports the same
 directive rather than declaring its own.
 
-The measurement helper is public too. `containerWidth()` and `readBreakpoint()` are
-exported from `frameworks/angular/ContainerSize` for a consumer building
-their own responsive component: call both from an injection context (a field
-initializer or the constructor), render the wide layout while the width is still
-`null`, and compare against the breakpoint token rather than writing a media query.
+The measurement helper is public too. `containerWidth()` is exported from
+`@dravensoft/arena-angular` for a consumer building their own responsive component: call it
+from an injection context (a field initializer or the constructor), render the wide layout
+while the width is still `null`, and compare against the breakpoint token rather than writing
+a media query.
 
 `containerWidth()` measures the caller's own host by default and takes an `ElementRef` when
 the box to measure is a different one, so a component whose responsive question is about an

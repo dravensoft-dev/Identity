@@ -224,9 +224,51 @@ To avoid a flash on first paint, apply the class before your stylesheet loads:
 </script>
 ```
 
+## What the package exports besides components
+
+Four small surfaces reach the package root beside the components, each answering a question a
+consumer cannot answer from outside. Everything here imports from `@dravensoft/arena-react`.
+
+**The theme surface**, above: `initArenaTheme`, `useArenaTheme`, `getArenaTheme`,
+`setArenaTheme`, `toggleArenaTheme`, `arenaPalettes` and the `ArenaPalette` /
+`ArenaThemeConfig` types.
+
+**Two measurements, and they answer different questions.**
+
+| | returns | reach for it |
+| --- | --- | --- |
+| `useContainerWidth(ref?)` | `[ref, width]`: attach the ref to the box, read the width a `ResizeObserver` reports | a component or a panel that has to fit the room it was given |
+| `useViewportBelow(name)` | a boolean over `not all and (min-width: N)` | a page's own layout |
+
+**`width` is `null` until the first measurement**, so render the wide branch while it is, rather
+than the narrow one: a panel that flashes into its phone shape on every mount is worse than one
+that settles into it.
+
+`name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components
+branch on, which is the point: a media query condition holds no `var()`, so a threshold cannot
+be named from a stylesheet at all. `useViewportBelow` is the exact complement of "at least this
+wide" rather than a `max-width` an epsilon short of it. **Never branch a component on
+the viewport**: it is wrong the first time somebody puts it in a narrow column. If your app
+swaps its stylesheet at runtime, call `forgetBreakpoints()` afterwards to drop the cached
+thresholds.
+
+**The chart ramp, for a legend or a chip you draw yourself.** `catColor(slot)` returns the
+custom property for a slot, `catSurface(slot)` the fill and border pair for a chip carrying that
+identity, `catSlotFor(key)` assigns a stable slot from a string, and `CAT_SLOTS` is how many
+there are. The ramp's order is its identity, so a slot means the same thing in every chart on
+the screen.
+
+**`isPrimaryActivation(event)`**, the predicate behind the anchor rule: true for a primary
+click with no modifier, false for every modified click, middle click and context menu. Use it if
+you draw an anchor of your own beside Arena's and want the same split.
+
+Every other symbol reaching the root is an internal of this layer, exported because the barrel
+is generated wholesale rather than curated, and carries no compatibility promise. The set is
+`ROOT_TS` in `scripts/build/react/build-react-package.mjs` in the repository.
+
 ## What is in the package
 
-Every component, its types, the four layer helpers, the invariant stylesheets, and the
+Every component, its types, the layer helpers above, the invariant stylesheets, and the
 `arena-theme` command. No tests, no demo pages, no font binaries, and no icons.
 
 ## Why might this package's latest version not match Arena's latest version?

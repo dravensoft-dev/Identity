@@ -28,9 +28,9 @@ supplies the state.
 - `confirm` **replaces** the two: nothing is applied, `requestChange` fires instead, and the host
   opens a `ConfirmDialog` and sets `state` itself on confirmation. The requested value is always
   the negation of the current one, so the event carries no payload.
-- **`confirm` alone diverts the activation**, never whether anything is listening, R6 in
-  `contracts/api/README.md`. `confirm` set with no `(requestChange)` binding is a switch that
-  does nothing at all. That is the accepted cost of R6 and the one worth paying, because what
+- **`confirm` alone diverts the activation**, never whether anything is listening.
+  `confirm` set with no `(requestChange)` binding is a switch that
+  does nothing at all. That is the accepted cost of that rule and the one worth paying, because what
   it replaced applied a guarded change silently. **No runtime guard can catch it**: "is anything
   subscribed?" is precisely the question R6 says a component may not ask.
   `Switch.compliance.test.ts` pins it, so the fallback cannot come back unnoticed.

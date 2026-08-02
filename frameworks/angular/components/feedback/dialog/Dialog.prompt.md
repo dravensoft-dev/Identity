@@ -25,7 +25,7 @@ default and a `92vw` cap, so a wide dialog still fits a narrow viewport. Pass a 
 
 The footer is projected through the `[footer]` marker and is **optional**, with nothing marked,
 the action row is not rendered at all rather than rendered empty. **Import `ArenaFooter` from
-`frameworks/angular/ProjectionMarkers` in the component that writes the marker.** The gate is a
+`@dravensoft/arena-angular` in the component that writes the marker.** The gate is a
 `contentChild(ArenaFooter)`, which resolves the directive rather than the attribute, so an
 un-imported marker leaves the query null and the whole footer silently unrendered, no error, no
 template diagnostic, since a bare `footer` attribute on a `<div>` is valid HTML whether or not a
@@ -33,7 +33,7 @@ directive matches it. The component cannot detect it, because it cannot tell "th
 imported" from "nothing was projected". `test/ProjectionMarkers.test.ts` catches every consumer
 inside this repository; nothing can reach one outside it.
 
-Focus is Arena's, in `frameworks/angular/FocusTrap.ts`, and it implements
+Focus is Arena's own, and it implements
 `contracts/behaviour/dialog-modal.json` clause by clause. Opening moves focus to the first
 focusable element inside the panel; closing returns it to whatever held focus before. Tab and
 Shift+Tab wrap at the panel's edges, and `bun run check:focus-trap` presses a real Tab in real

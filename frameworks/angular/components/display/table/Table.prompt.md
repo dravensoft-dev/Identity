@@ -28,7 +28,7 @@ Cells are **positional**: the nth cell takes the nth column.
   satisfies it.
 - Put your own components in a cell: an `arena-badge` for a status, an `arena-button` for
   an action. That is what the compound shape is for; a column carries no render function.
-- Numeric data and codes in `mono` columns with `align: 'right'`.
+- Numeric data and codes in `mono` columns with `align: 'right'`. `mono` is the mono face and the gold ink together, and the ink is the half that does not travel: gold reads as an identifier, so a total in gold inside a card says the wrong thing. For a figure you draw outside a table, put `.arena-num` on it, which is the same face and the same digit alignment with no colour.
 - Mark the actions column `mobileLayout: 'block'`. Its buttons name themselves, and pairing
   them with an "ACTIONS" label reads as a mistake.
 - Don't set `responsive="false"` to "keep it looking like a table" on a phone. A table
@@ -56,7 +56,7 @@ columns, and the cursor is clamped against the row it is actually in.
 
 Card mode answers none of this: a card row here carries no role and no tab stop, so a row
 with `(click)` is pointer-only below `--bp-md`. That is not a choice: the shape cannot be
-derived from whether anything is listening (R6 in `contracts/api/README.md`), and making
+derived from whether anything is listening, and making
 every card row a button would put a dead tab stop on every row of every table that is not
 clickable. `TableRow.behaviour.json` states it. The bounded consequence: a consumer who
 binds `(click)` on a card row gets a row a keyboard user cannot reach below `--bp-md`.

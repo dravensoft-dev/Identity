@@ -13,11 +13,10 @@ Breadcrumb navigation (H3). Gives an explicit return path when the hierarchy is 
 as indistinguishable landmarks while the requirement reads as met. Say which hierarchy this is
 a trail through ("Project navigation").
 
-A non-current crumb renders a real `<a href>`, and Arena splits its activations the way a
-router link does. A primary click with no modifier, and Enter, are cancelled and reported
-through `onNavigate(crumb)`, which carries the crumb alone and no DOM event: route from there
-and the browser does not navigate underneath you. Ctrl-click, middle-click and open-in-new-tab
-are the browser's, report nothing, and keep working for a consumer who wires no handler.
+A non-current crumb renders a real `<a href>` and splits its activations. The plain one is
+reported through `onNavigate(crumb)`, which carries the crumb alone and no DOM event: route
+from there and the browser does not navigate underneath you. The rest keep working for a
+consumer who wires no handler.
 
 **Do / Don't**
 - The last item is the current location: no link, styled in `--bone`.

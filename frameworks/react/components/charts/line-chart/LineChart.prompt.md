@@ -22,7 +22,7 @@ A line for a value over an ordered sequence, time, builds, releases. Hovering an
 - Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed.
 - Don't stack `area` fills for several series, because they occlude each other and the reader cannot recover the values. Use plain lines, or small multiples.
 - Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `number[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
-- Don't omit `labels` or `values`. Both are required props, `LineChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, which `contracts/api/README.md` states under required-ness. A chart with no data is a caller bug, not a state to render.
+- Don't omit `labels` or `values`. Both are required props, `LineChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
 - Don't pass more `labels` than `values`. A point is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn with no point above it.
 
 

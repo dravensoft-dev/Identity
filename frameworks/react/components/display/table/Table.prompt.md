@@ -26,7 +26,7 @@ It is a **compound** component: `columns` says how each column is headed and set
 - `label` is required and names the grid for a screen reader. Say what the rows *are*, as in "Recent deployments" or "Team members", and never "Table". There is nothing to derive it from, which is why it throws when omitted rather than falling back.
 - Put your own components in a cell: a `Badge` for a status, a `Button` for an action. That is what the compound shape is for. A column carries **no** `render`, and passing one does nothing.
 - `key` goes on the `TableRow`. It is React's own reconciliation, not an Arena member; there is no `getRowKey`.
-- Numeric data and codes in `mono` columns with `align:'right'`.
+- Numeric data and codes in `mono` columns with `align:'right'`. `mono` is the mono face and the gold ink together, and the ink is the half that does not travel: gold reads as an identifier, so a total in gold inside a card says the wrong thing. For a figure you draw outside a table, take the face alone: `style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}`, which aligns a column of figures by digit the way the table does.
 - Statuses with `Badge`, not loose text.
 - Don't use it for layout; it's for real tabular data.
 - Mark the actions column `mobileLayout:'block'`. Its buttons name themselves, and pairing them with an "ACTIONS" label reads as a mistake.

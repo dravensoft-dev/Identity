@@ -32,7 +32,7 @@ What "into the chip" means depends on the shape. A chip with no action panel *is
   </>} />
 ```
 
-**The boolean is what draws the kebab, not the slot being filled.** `actionsEnabled` with an empty `actions` draws a kebab over an empty panel; that is a consumer mistake rather than a state Arena hides, and it is deliberate. Nothing here is derived from whether a slot was filled or a listener was bound, which is R6 in `contracts/api/README.md`, and the same reason `Alert.dismissible` and `Toast.dismissible` are booleans.
+**The boolean is what draws the kebab, not the slot being filled.** `actionsEnabled` with an empty `actions` draws a kebab over an empty panel; that is a consumer mistake rather than a state Arena hides, and it is deliberate. Nothing here is derived from whether a slot was filled or a listener was bound, which is the same reason `Alert.dismissible` and `Toast.dismissible` are booleans.
 
 **`interactive` is what makes the chip a button, not `onClick`.** R6 again: the rendered element cannot depend on whether anything is listening, so activation is a member you declare. It is the same member `TableRow` carries, for the same reason, so the two families have one shape. **Pass `interactive` alongside `onClick`, or the chip is inert**: a `<div>` with no role, nothing to activate and nothing to disable, which is exactly what a read-only schedule wants and what makes it announce events rather than a screenful of buttons that do nothing.
 

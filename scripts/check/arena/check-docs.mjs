@@ -1,8 +1,9 @@
-/* Holds the three documentation norms nothing else checks: every .md under
- * MAX_DOCUMENT_CHARS, no banned punctuation in a document's prose, and the
+/* Holds the four documentation norms nothing else checks: every .md under
+ * MAX_DOCUMENT_CHARS, no banned punctuation in a document's prose, the
  * comment rule, which lets scripts and tests carry one header of at most
- * HEADER_MAX_LINES and every other hand-written source none. A file a script
- * generates is outside the comment rule and is never read. */
+ * HEADER_MAX_LINES and every other hand-written source none, and the branch
+ * boundary, which keeps a contributor path out of a consumer's last stop.
+ * A file a script generates is outside the comment rule and is never read. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
@@ -72,6 +73,17 @@ export function allowsHeader(repoRelativePath) {
 function isPragma(text) {
   return /^\/[/*]\s*(@ts-|eslint-|prettier-|c8 |istanbul )/.test(text);
 }
+
+export const CONSUMER_LAST_STOP = '.prompt.md';
+
+export const CONTRIBUTOR_PATHS = [
+  [/\bscripts\/[\w./-]+/g, 'a path under scripts/, which no consumer of Arena has'],
+  [/\bcontracts\/[a-z-]+\/README\.md\b/g, 'a normative contract README, which the router says not to read'],
+  [/\bframeworks\/[a-z-]+\/README\.md\b/g, "a layer README, which is about changing Arena rather than using it"],
+  [/\bframeworks\/PACKAGING\.md\b/g, 'the packaging document, which is about publishing Arena rather than using it'],
+  [/\bframeworks\/[a-z-]+\/[A-Z][\w.]*\.[jt]sx?\b/g,
+    'a layer-root source file, which a consumer reaches by importing the package rather than by path'],
+];
 
 export const MEMBER_DOC_TREE = /^frameworks\/[^/]+\/components\//;
 
@@ -171,10 +183,29 @@ export function commentRuleProblems(root = ROOT) {
   return { problems, scanned };
 }
 
-export function zeroScanProblems({ documents, sources }) {
+export function consumerBranchProblems(root = ROOT) {
+  const scanned = documents(root).filter((p) => p.endsWith(CONSUMER_LAST_STOP));
+  const problems = [];
+  for (const path of scanned) {
+    const rel = relative(root, path);
+    const source = readFileSync(path, 'utf8');
+    for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
+      for (const hit of source.match(pattern) ?? []) {
+        problems.push(
+          `${rel}: cites "${hit}", ${reason}. A prompt is the consumer's last stop: `
+          + 'state the consequence here, and leave the reason on the contributor branch',
+        );
+      }
+    }
+  }
+  return { problems, scanned: scanned.length };
+}
+
+export function zeroScanProblems({ documents, sources, prompts }) {
   const problems = [];
   if (documents === 0) problems.push('found no .md files at all -- the document walk reached nothing');
   if (sources === 0) problems.push('found no source files at all -- the comment walk reached nothing');
+  if (prompts === 0) problems.push('found no .prompt.md files at all -- the consumer branch reached nothing');
   return problems;
 }
 
@@ -182,8 +213,15 @@ function main() {
   const sizes = documentSizeProblems();
   const punctuation = punctuationProblems();
   const comments = commentRuleProblems();
-  const empty = zeroScanProblems({ documents: sizes.scanned, sources: comments.scanned });
-  const problems = [...empty, ...sizes.problems, ...punctuation.problems, ...comments.problems];
+  const branch = consumerBranchProblems();
+  const empty = zeroScanProblems({
+    documents: sizes.scanned,
+    sources: comments.scanned,
+    prompts: branch.scanned,
+  });
+  const problems = [
+    ...empty, ...sizes.problems, ...punctuation.problems, ...comments.problems, ...branch.problems,
+  ];
 
   if (problems.length > 0) {
     for (const problem of problems) console.error(`check-docs: ${problem}`);
@@ -192,7 +230,8 @@ function main() {
   }
   console.log(
     `check-docs: ${sizes.scanned} document(s) under ${MAX_DOCUMENT_CHARS} characters and clear of `
-    + `banned punctuation; ${comments.scanned} hand-written source(s) hold to the comment rule`,
+    + `banned punctuation; ${comments.scanned} hand-written source(s) hold to the comment rule; `
+    + `${branch.scanned} prompt(s) cite no contributor path`,
   );
 }
 

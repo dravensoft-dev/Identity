@@ -21,8 +21,8 @@ exists, a bare error state ships no dead space for a retry it does not offer.
 </arena-error-state>
 ```
 
-Import `ArenaSecondaryAction` from `frameworks/angular/ProjectionMarkers`
-(or the layer barrel) alongside `ErrorState` in the host component's `imports`,
+Import `ArenaSecondaryAction` from `@dravensoft/arena-angular` alongside `ErrorState`
+in the host component's `imports`,
 `secondaryAction` is a directive, not a plain attribute, because it is how the error
 state detects that a secondary action was projected at all.
 

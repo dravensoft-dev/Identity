@@ -230,6 +230,73 @@ To avoid a flash on first paint, apply the class in `index.html` before your sty
 </script>
 ```
 
+## What the package exports besides components
+
+Five small surfaces reach the package root beside the components, each answering a question a
+consumer cannot answer from outside. Everything here imports from `@dravensoft/arena-angular`.
+
+**The projection markers, and one of them is not optional.** `ArenaAction`, `ArenaActions`,
+`ArenaBrand`, `ArenaFooter` and `ArenaSecondaryAction` are the directives behind the `[action]`,
+`[actions]`, `[brand]`, `[footer]` and `[secondaryAction]` attributes. **Put the marker your
+template writes in that component's own `imports`.** A component detects a projected slot with a
+`contentChild` on the directive, so an un-imported marker leaves the query null and the slot
+silently unrendered: no error and no template diagnostic, because a bare `footer` attribute on a
+`<div>` is valid HTML whether or not a directive matches it. The component cannot tell an
+un-imported marker from an unfilled slot, so nothing can warn you.
+
+**The theme surface**, above: `provideArenaThemes`, `ThemeService`, `themeClass` and the
+`ArenaPalette` / `ArenaThemeConfig` types.
+
+**Two measurements, and they answer different questions.**
+
+| | returns | reach for it |
+| --- | --- | --- |
+| `containerWidth(ref?)` | `Signal<number \| null>` over the host's own box, or the `ElementRef` you pass | a component or a panel that has to fit the room it was given |
+| `viewportBelow(name)` | `Signal<boolean>` over `not all and (min-width: N)` | a page's own layout |
+
+Call either from an injection context, a field initializer or the constructor: `DestroyRef`
+disconnects the observer and `afterNextRender` decides when there is a box to measure at all.
+**The width is `null` until the first measurement**, so render the wide branch while it is,
+rather than the narrow one: a panel that flashes into its phone shape on every mount is worse
+than one that settles into it.
+
+`name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token
+Arena's own components branch on, which is the point: a media query condition holds no `var()`,
+so a threshold cannot be named from a stylesheet at all, and an app writing CSS in a `styles:`
+block has no other way to reach it. `viewportBelow` is the exact complement of the `md:` variant
+rather than a `max-width` an epsilon short of it. **Never branch a component on the viewport**:
+it is wrong the first time somebody puts it in a narrow column. If your app swaps its stylesheet
+at runtime, call `forgetBreakpoints()` afterwards to drop the cached thresholds.
+
+**The chart ramp, for a legend or a chip you draw yourself.** `catColor(slot)` returns the
+custom property for a slot, `catSurface(slot)` the fill and border pair for a chip carrying that
+identity, `catSlotFor(key)` assigns a stable slot from a string, and `CAT_SLOTS` is how many
+there are. The ramp's order is its identity, so a slot means the same thing in every chart on
+the screen.
+
+**`isPrimaryActivation(event)`**, the predicate behind the anchor rule: true for a primary
+click with no modifier, false for every modified click, middle click and context menu. Use it if
+you draw an anchor of your own beside Arena's and want the same split.
+
+`ARENA_ICONS` is the role-to-Phosphor map Arena's own components draw from, as
+`{ role, phosphor, weight }`. Read it when you want your icon for a role to match Arena's.
+
+Every other symbol reaching the root is an internal of this layer, exported because the barrel
+is not curated, and carries no compatibility promise.
+
+## One stylesheet gives you a treatment, not a component
+
+`css/numerals.css` holds `.arena-num`: the mono face and `tabular-nums`, and no colour. Put it
+on a figure you draw yourself, in a definition list, a KPI or a cart line, and a column of them
+aligns by digit the way a table's does.
+
+It is already inside the bundled utility sheet, so importing the file separately is only for an
+app compiling its own utilities from the `@theme` preset.
+
+It carries no ink on purpose. A table column's `mono` is this treatment **plus** the gold, and
+the gold is what stops the treatment travelling: gold reads as an identifier, so a sale total in
+gold inside a card says the wrong thing.
+
 ## What is in the package
 
 Every component in Angular Package Format, the shared Tailwind recipes they read, the

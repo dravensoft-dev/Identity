@@ -17,7 +17,7 @@ sibling `BulkActionBar.variants.ts` recipe.
 ```
 
 `clearable` (default `true`) gates whether Clear is drawn. Every layer gates on this member
-and never on whether anything listens for `clear`, R6 in `contracts/api/README.md`.
+and never on whether anything listens for `clear`.
 
 ### It stacks when its own container is narrow
 

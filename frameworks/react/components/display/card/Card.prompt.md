@@ -37,11 +37,9 @@ refuses activation through `aria-disabled` and prevents the anchor's default.
 </Card>
 ```
 
-**A router owns the plain click, and the browser owns the rest.** A primary click with no
-modifier, and Enter, are cancelled and reported through `onClick`, so your router's navigate
-in that handler is the whole bridge and the page does not reload. Ctrl-click, meta-click,
-shift-click, a middle click and the context menu are the browser's: they open the `href`
-themselves and fire nothing, which is why the member is worth having over `interactive`. Bind
+**`href` reports its plain activation through `onClick`**, so your router's navigate in that
+handler is the whole bridge and the page does not reload. The modified clicks stay the
+browser's and fire nothing, which is why the member is worth having over `interactive`. Bind
 nothing and the card is a plain link that navigates the document.
 
 **Don't wrap a `Card` in your router's `Link`.** That nests an anchor inside an anchor, which

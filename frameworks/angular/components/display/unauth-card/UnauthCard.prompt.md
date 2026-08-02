@@ -20,8 +20,8 @@ the sibling `UnauthCard.variants.ts` recipe.
 </div>
 ```
 
-Import `ArenaBrand` and `ArenaFooter` from `frameworks/angular/ProjectionMarkers`
-(or the layer barrel) alongside `UnauthCard` in the host component's `imports`,
+Import `ArenaBrand` and `ArenaFooter` from `@dravensoft/arena-angular` alongside
+`UnauthCard` in the host component's `imports`,
 `brand` and `footer` are directives, not plain attributes, because they are how the panel
 detects that something was actually projected into each slot. Both wrappers carry their
 own margin, so a card that omits one ships no dead space for it.

@@ -10,6 +10,7 @@ import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
+  consumerBranchProblems, CONSUMER_LAST_STOP, CONTRIBUTOR_PATHS,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -250,10 +251,58 @@ test('allowsHeader covers scripts, a .test. infix and a test/ directory', () => 
 });
 
 test('a walk that reaches nothing is a failure, not a vacuous pass', () => {
-  assert.deepEqual(zeroScanProblems({ documents: 1, sources: 1 }), []);
-  assert.match(zeroScanProblems({ documents: 0, sources: 1 })[0], /no \.md files at all/);
-  assert.match(zeroScanProblems({ documents: 1, sources: 0 })[0], /no source files at all/);
-  assert.equal(zeroScanProblems({ documents: 0, sources: 0 }).length, 2);
+  assert.deepEqual(zeroScanProblems({ documents: 1, sources: 1, prompts: 1 }), []);
+  assert.match(zeroScanProblems({ documents: 0, sources: 1, prompts: 1 })[0], /no \.md files at all/);
+  assert.match(zeroScanProblems({ documents: 1, sources: 0, prompts: 1 })[0], /no source files at all/);
+  assert.match(zeroScanProblems({ documents: 1, sources: 1, prompts: 0 })[0], /no \.prompt\.md files at all/);
+  assert.equal(zeroScanProblems({ documents: 0, sources: 0, prompts: 0 }).length, 3);
+});
+
+test('a prompt citing a contributor path is a problem, and each hit is named', () => {
+  const root = tree({
+    'frameworks/react/components/a/A.prompt.md':
+      'It is a member because R6 in `contracts/api/README.md` forbids it, and\n'
+      + '`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` allows the two.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 2);
+  assert.ok(problems.some((p) => p.includes('contracts/api/README.md')));
+  assert.ok(problems.some((p) => p.includes('scripts/lib/arena/api-surface.mjs')));
+  for (const problem of problems) assert.match(problem, /consumer's last stop/);
+  rmSync(root, { recursive: true });
+});
+
+test('a layer README, the packaging document and a layer-root source are contributor paths too', () => {
+  const root = tree({
+    'frameworks/angular/components/a/A.prompt.md':
+      'See `frameworks/angular/README.md`, `frameworks/PACKAGING.md` and `frameworks/angular/FocusTrap.ts`.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 3);
+  assert.ok(problems.some((p) => p.includes('FocusTrap.ts')),
+    'a layer-root source is reached by importing the package, so naming its path sends a consumer nowhere');
+  rmSync(root, { recursive: true });
+});
+
+test('the rule reaches prompts alone, and a sibling of the component is not a contributor path', () => {
+  const root = tree({
+    'frameworks/react/README.md': 'Read `scripts/build/react/build-demos.mjs` for the emit.\n',
+    'frameworks/react/components/a/A.prompt.md':
+      'Open `frameworks/react/components/a/A.card.html`, and import from `@dravensoft/arena-react`.\n',
+  });
+  const { problems, scanned } = consumerBranchProblems(root);
+  assert.deepEqual(problems, []);
+  assert.equal(scanned, 1, 'only the prompt is read, so a contributor document may cite what it likes');
+  rmSync(root, { recursive: true });
+});
+
+test('the boundary reads one file suffix and a reason-carrying list, both by name', () => {
+  assert.equal(CONSUMER_LAST_STOP, '.prompt.md');
+  assert.equal(CONTRIBUTOR_PATHS.length, 5);
+  for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
+    assert.ok(pattern.global, 'a non-global pattern reports only the first hit on a page');
+    assert.match(reason, /\w/);
+  }
 });
 
 test('a shebang may precede the header, because a bin entry point is run by the shell', () => {

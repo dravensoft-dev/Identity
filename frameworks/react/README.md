@@ -100,6 +100,27 @@ everything else is the browser's. `Card`, `Breadcrumbs`, `SideNavItem` and `Comm
 read it, `contracts/api/README.md` states the rule, and `test/AnchorActivation.dom.test.tsx`
 holds each activation separately.
 
+**A compound family injects downward, direct children only, one hop**, and that is what makes
+`SideNav` nest to any depth with **no context anywhere**: a section or a collapsible re-injects
+into its own children with `depth + 1`. The shared helper is
+`components/navigation/side-nav/SideNavInject.tsx`, which covers that family and no more, so the
+placement rule sends it to the family's parent directory. **Its `.tsx` extension is
+load-bearing**: `check:dimensions` never opens a `.js`, and its `indentFor()` produces a governed
+`padding-inline-start`. It is a `.tsx` under `components/` that is **not a component**, since a
+component is a **directory**, in `reactComponents()` and in every count of the set.
+
+**One hop is also the limit, and a consumer's own wrapper component between two levels breaks
+the chain. So does a fragment.** `React.Children.toArray` flattens a nested array and does *not*
+flatten a `<>…</>`, so a fragment arrives as one opaque child that `cloneElement` decorates
+uselessly. Items go as siblings or in an array, never wrapped, and the fragment half is easy to
+miss because the array half works.
+
+**And a guard must count what the render path counts.** `React.Children.count()` counts a bare
+`false` as one child where `toArray()` drops it, so a `count()`-based "this must not be empty"
+guard passes the commonest conditional-render idiom, `{isAdmin && <SideNavItem …/>}` with the
+condition false, straight through to the empty render the guard exists to refuse. Use
+`toArray().length`.
+
 **`UseDialogModal.js` implements `contracts/behaviour/dialog-modal.json` for this layer, and
 that contract is its only authority**, covering `focus.trap`, `focus.onOpen`, `focus.onClose` and
 `keyboard.Escape`, in one hook because all three consumers need all four. Escape always reports

@@ -59,7 +59,6 @@ function completeSale() {
 <Input ref={search} label="Search" value={query} onChange={setQuery} />
 ```
 
-They are a handle rather than props because none of the nine contract forms is imperative, and
-an `autoFocus` prop would answer a different question: it fires once at mount, and chaining
-sales needs focus back after **every** completion. `contracts/api/README.md` states the rule and
-`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` is what allows exactly these two.
+They are a handle rather than props because no member is imperative, and an `autoFocus` prop
+would answer a different question: it fires once at mount, and chaining sales needs focus back
+after **every** completion. These two are the whole handle; `Input` exposes nothing else.

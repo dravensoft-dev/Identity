@@ -6,7 +6,7 @@ Week or day schedule on a time grid: a toolbar, one column per day, events posit
 
 Two things this default is not. It is not a `'UTC'` fallback, which would be arbitrary, wrong for almost every reader, and would produce silently the very defect the member exists to prevent. And it is **not safe under server rendering**: on a server it resolves to the *server's* zone and then to the client's on hydration, so a server-rendered calendar must pass `timeZone` explicitly. Same shape as `useContainerWidth` reporting `null` before it has measured.
 
-Copy `frameworks/react/DataVisuals.js` and `frameworks/react/UseContainerWidth.js` alongside it: `Calendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view.
+`Calendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view, so both travel with it: importing from `@dravensoft/arena-react` brings them, and both are exported for a legend or a responsive panel of your own.
 
 ```tsx
 <Calendar

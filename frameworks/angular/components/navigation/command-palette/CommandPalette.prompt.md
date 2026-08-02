@@ -44,12 +44,11 @@ destinations owes a keyboard user. It keeps `role="option"`, because the listbox
 requires that of every row and losing it would break the arrow walk for the whole list: a
 screen reader announces the row as an option rather than as a link, and that is the trade.
 
-**With `route`, the mouse and the keyboard do the same thing, and that is the point.** A
-primary click with no modifier and Enter both cancel the row's anchor and report through
-`(run)`, so a host that navigates in its `(run)` handler navigates exactly once, whichever way
-the reader activated the row. Ctrl-click, meta-click, shift-click and a middle click are the
-browser's: they open the destination themselves, fire nothing, and leave the palette open,
-because a reader who asked for a second tab did not ask to leave this one.
+**With `route`, the mouse and the keyboard do the same thing, and that is the point.** The
+row's plain activation reports through `(run)`, so a host that navigates in its `(run)` handler
+navigates exactly once, whichever way the reader activated the row. A modified click opens the
+destination itself and **leaves the palette open**, because a reader who asked for a second tab
+did not ask to leave this one.
 
 `maxResults` caps how many matches the list shows. **Reach for it instead of trimming
 `commands` before you pass them**, which is the thing that does not work: a list cut to the

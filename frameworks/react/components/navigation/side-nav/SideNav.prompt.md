@@ -16,11 +16,9 @@ the same shape as `Table`/`TableRow` and `RadioGroup`/`Radio`, one size down.
 
 An item's click reports `onNav(id)` -- the activated item's `id`, with no DOM event.
 There is no item datum to carry: you wrote the element, so you already hold
-everything on it. On an item with `href`, Arena splits the activations the way a router
-link does: a primary click with no modifier, and Enter, are cancelled and reported through
-`onNav`, so routing from there does not race the browser; ctrl-click, middle-click and
-open-in-new-tab are the browser's, report nothing, and keep working for a consumer who
-wires no handler.
+everything on it. An item with `href` splits its activations: the plain one is reported
+through `onNav`, so routing from there does not race the browser, and the rest keep working
+for a consumer who wires no handler.
 
 An item with `href` renders an `<a>`; without one it renders a `<button>`. The active
 item takes `--crimson-soft` behind `--crimson` text at `--fw-semibold`; the rest are

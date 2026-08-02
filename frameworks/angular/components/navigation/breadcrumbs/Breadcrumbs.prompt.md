@@ -13,16 +13,15 @@ like `"Breadcrumb"` written straight into the `host` block names the
 WIDGET rather than the trail and leaves two of these on one page indistinguishable as
 landmarks. Say which hierarchy this is a trail through ("Project navigation").
 
-A crumb renders as a real `<a href>`, and Arena splits its activations the way a router link
-does. A primary click with no modifier, and Enter, are cancelled and reported through
-`navigate`, which carries the clicked `Crumb` alone: route from there and the browser does not
-navigate underneath you. Ctrl-click, middle-click and open-in-new-tab are the browser's, report
-nothing, and keep working for a consumer who wires no listener at all.
+A crumb renders as a real `<a href>` and splits its activations. The plain one is reported
+through `navigate`, which carries the clicked `Crumb` alone: route from there and the browser
+does not navigate underneath you. The rest keep working for a consumer who wires no listener
+at all.
 
-**Do not put `routerLink` on `arena-breadcrumbs`.** It would not work: `RouterLink` decides
-whether it is on an anchor from the host's `tagName`, and the anchor here is inside the
-component, so it would ignore every modifier key and add a second tab stop over the crumb's own
-link. Route in the handler instead:
+**Do not put `routerLink` on `arena-breadcrumbs`.** `RouterLink` decides whether it is on an
+anchor from the host's `tagName`, and the anchor here is inside the component, so it would
+ignore every modifier key and add a second tab stop over the crumb's own link. Route in the
+handler instead:
 
 ```html
 <arena-breadcrumbs ariaLabel="Project navigation" [items]="[

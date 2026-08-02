@@ -24,7 +24,7 @@ Bars for comparing a value across categories. Dependency-free SVG: it reads `var
 - Don't reach past eight categories. Nine bars in eight slots means two of them lie about being the same.
 - Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed.
 - Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `number[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
-- Don't omit `labels` or `values`. Both are required props, `BarChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, which `contracts/api/README.md` states under required-ness. A chart with no data is a caller bug, not a state to render.
+- Don't omit `labels` or `values`. Both are required props, `BarChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
 - Don't pass more `labels` than `values`. A bar is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn without a bar to sit under.
 
 

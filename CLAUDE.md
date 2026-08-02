@@ -40,13 +40,40 @@ It ships as three things at once from the same tree:
 - two **npm packages**, `@dravensoft/arena-react` and `@dravensoft/arena-angular`, assembled by `bun run build:packages` into `frameworks/<layer>/dist/`;
 - a standalone **Agent Skill** (`SKILL.md`).
 
-**`SKILL.md` routes and states no rule twice.** It is the root of the *consumer* branch of the
-documentation, the way this file is the root of the contributor one, and the two branches are
-almost disjoint: an agent building with Arena reads the router, then
-`frameworks/Catalog.generated.md`, then one component's `.prompt.md`, and needs none of the
-normative READMEs under `contracts/api/`, `contracts/behaviour/` or `frameworks/`. Keep it that
-way. **A rule that binds a consumer belongs in `SKILL.md` or in a `.prompt.md`, and a rule
-about changing Arena belongs here**; a rule written into both goes stale in one of them.
+## Where a new document goes
+
+**Two branches, and a fact belongs to exactly one.** `SKILL.md` roots the *consumer* branch the
+way this file roots the contributor one, and they are almost disjoint by design, because the
+cost of the consumer branch is paid on every build: an agent building with Arena reads the
+router, then `frameworks/Catalog.generated.md`, then one component's `.prompt.md`, and reaches
+`contracts/api/components/` only where a prompt leaves a question open. It reads no normative
+README, which is why the router names them and says not to. **A rule written into both branches
+goes stale in one of them.** The four rules below say which branch, and where on it.
+
+**The question that decides the branch is who has to act on the fact**, never which directory
+the code sits in. A helper under `frameworks/react/` that a consumer imports is a consumer
+fact; a token under `contracts/design/` that only a generator reads is a contributor one.
+
+**Anything a package ships needs a home on the consumer branch**: an exported symbol, a file
+under `css/`, a class a consumer writes. That home is the layer's `PACKAGE.md`, the only
+consumer document a layer owns and the page npm shows. **A layer's `README.md` is not one**,
+because the router forbids reading it, so a shipped thing documented only there is a thing
+nobody can find. Derive what ships rather than trusting a list: `ROOT_TS` in
+`scripts/build/react/build-react-package.mjs`, and every `copy(` in
+`scripts/build/angular/build-angular-package.mjs`.
+
+**A rule binding more than one component is the router's, stated once**; a rule binding one
+component is that component's `.prompt.md`, in each layer's own idiom. A prompt states the local
+consequence and **cites no contributor document**: `check:docs` fails one naming a path under
+`scripts/`, or a `README.md` under `contracts/` or `frameworks/`, or `frameworks/PACKAGING.md`.
+A prompt that tells a consumer to import something names the package, never a repository path.
+
+**A `description` in `contracts/api/` is layer-neutral prose that reaches every layer's
+generated types.** One naming a class, a package path or a single layer's idiom is emitted into
+the other layer as a sentence that is false there, with every gate green, because `check:api`
+compares the two copies and never reads either for meaning. Verify with
+`grep -n '<phrase>' frameworks/*/Api.generated.ts` and put the layer's half in that layer's
+`.prompt.md`.
 
 **A published Arena carries the language and never the skin**, which is the decision the
 whole npm channel follows from: the palettes and the fonts arrive as an `arena.config.json`
@@ -358,28 +385,11 @@ ship an invalid degenerate render**: with no children `Tabs` draws an empty tabl
 tabpanel, because a panel whose `aria-labelledby` points at a tab that does not exist is worse
 than an absent one.
 
-**The `SideNav` family is the recursive case, and the layers solve it in opposite directions.**
-In React nesting is arbitrary, to any depth, with **no context anywhere**, because injection is
-**direct children only, one hop**, and a section or a collapsible re-injects into its own children
-with `depth + 1`. Angular pushes nothing: each container re-provides `SideNavState` at `depth + 1`
-and a row **pulls** the nearest. React's shared helper is
-`frameworks/react/components/navigation/side-nav/SideNavInject.tsx`, which covers that family and
-no more, so the placement rule sends it to the family's parent directory. **Its `.tsx` extension
-is load-bearing**: `check:dimensions` never opens a `.js`, and its `indentFor()` produces a
-governed `padding-inline-start`. It is a `.tsx` under `components/` that is **not a component**,
-since a component is a **directory**, in `reactComponents()` and in every count of the set.
-
-Every compound family shares one limit: **a consumer's own wrapper component between two levels
-breaks the chain, and so does a fragment.** `React.Children.toArray` flattens a nested array and
-does *not* flatten a `<>…</>`, so a fragment arrives as one opaque child that `cloneElement`
-decorates uselessly. Write items as siblings or in an array, never wrapped; the fragment half is
-easy to miss because the array half works.
-
-**And a guard must count what the render path counts.** `React.Children.count()` counts a bare
-`false` as one child where `toArray()` drops it, so a `count()`-based "this must not be empty"
-guard passes the commonest conditional-render idiom, `{isAdmin && <SideNavItem …/>}` with the
-condition false, straight through to the empty render the guard exists to refuse. Use
-`toArray().length`.
+**The `SideNav` family is the recursive case, and the layers solve it in opposite directions**,
+one pushing down and one pulling up, each in its own README. **Every compound family shares one
+limit**: a consumer's own wrapper component between two levels breaks the chain, and it is the
+pushing layer's alone, since nothing is pushed in the other. `frameworks/react/README.md`
+carries that limit, the fragment half of it, and the counting hazard in a guard against it.
 
 `Table.label` is the pattern for a member that only a human can supply: it names the grid for
 assistive technology, it is `required: true`, and it is **guarded at runtime** rather than
@@ -488,17 +498,11 @@ a test asserting it would pass identically against a perfect trap and against no
 interior is `check:focus-trap`'s: real Chromium over each declared page, one real Tab press per
 stop, one page per layer that binds the pattern.
 
-**Components carry no CSS classes.** Each `frameworks/react/components/**/*.tsx` renders with
-inline `style` objects reading the custom properties (`background: 'var(--crimson)'`), and
-handles hover/active/focus with local `useState`. There is no `.btn` class to target; theming
-happens entirely through token values. Keep new components self-contained the same way, with
-`Button.tsx` as the reference shape.
-
-**The one exception: a `<style>` tag injected once**, for what an inline style genuinely cannot
-express, meaning `@keyframes` and vendor pseudo-elements. **Never a `<style>` rendered inside
-the component's own markup**, which ships one tag per instance and leaks the CSS into the
-element's `textContent`. [`frameworks/react/README.md`](./frameworks/react/README.md) carries
-the injection pattern, and how little to inject.
+**A component is self-contained, and no layer targets another's markup.** How that is spelt is
+each layer's own: React renders inline `style` objects reading the custom properties and carries
+**no class at all**, Angular renders the shared recipe's class string. Both README files carry
+the layer's shape, and React's carries the one exception, a `<style>` tag injected once for what
+an inline style cannot express, with the pattern and how little to inject.
 
 **Every animation answers `prefers-reduced-motion`**, and what it answers depends on what the
 motion means. [`contracts/design/README.md`](./contracts/design/README.md) states the four

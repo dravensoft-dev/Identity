@@ -85,13 +85,11 @@ does.
 </arena-card>
 ```
 
-**A router owns the plain click, and the browser owns the rest.** A primary click with no
-modifier, and Enter, are cancelled and reported through `(click)`, so `router.navigateByUrl`
-in that handler is the whole bridge and the page does not reload. Ctrl-click, meta-click,
-shift-click, a middle click and the context menu are the browser's: they open the `href`
-themselves and fire nothing, which is why the member is worth having over `interactive`.
-Bind nothing and the card is a plain link that navigates the document, which is the right
-shape outside a single-page application.
+**`href` reports its plain activation through `(click)`**, so `router.navigateByUrl` in that
+handler is the whole bridge and the page does not reload. The modified clicks stay the
+browser's and fire nothing, which is why the member is worth having over `interactive`. Bind
+nothing and the card is a plain link that navigates the document, which is the right shape
+outside a single-page application.
 
 **`(click)` on `arena-card` is two bindings wearing one name, and the card resolves it.** Angular
 subscribes the binding to the component's `click` output *and* adds a native listener for the DOM

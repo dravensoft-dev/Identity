@@ -18,10 +18,10 @@ For **high-impact** toggles (H5) add `confirm`: an activate no longer fires
 the requested value is always `!state`), so the host can open a ConfirmDialog and push
 `state` itself once the user confirms. **`confirm` alone is what diverts the activation**,
 never whether a handler was passed: `confirm` set with no `onRequestChange` is a switch that
-does nothing at all. That is the accepted cost of R6 in `contracts/api/README.md`: no render
-or behaviour is derived from whether a listener is bound, and it is the one worth paying,
-because what it replaced applied a guarded change silently. **No runtime guard can catch it**:
-"is anything listening?" is precisely the question R6 says a component may not ask.
+does nothing at all. That is the accepted cost of the rule that no render or behaviour follows
+from whether a listener is bound, and it is the one worth paying, because what it replaced
+applied a guarded change silently. **No runtime guard can catch it**: "is anything listening?"
+is precisely the question a component may not ask.
 `Switch.dom.test.` pins it, so the fallback cannot come back unnoticed.
 
 ```tsx

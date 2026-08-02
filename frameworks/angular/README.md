@@ -66,6 +66,13 @@ family draws one. The category is the one
 `CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
+**A compound family pushes nothing, so its recursive case costs no helper.** `SideNav` nests to
+any depth because each container re-provides `SideNavState` at `depth + 1` and a row **pulls**
+the nearest, which is the whole mechanism: an item reads its own indent from the injector rather
+than being handed one. A consumer's own wrapper component between two levels is therefore
+harmless here, since it interrupts nothing that travels. **The coordination is a member of no
+contract**, the way `Table`/`TableRow` and `RadioGroup`/`Radio` are not.
+
 The layer spans all six categories the layout rule allows: `brand`, `charts`, `display`,
 `feedback`, `forms` and `navigation`. **Read the set from the tree
 rather than from a list here**, because a list here rots and nothing checks it:
