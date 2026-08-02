@@ -1,13 +1,17 @@
 /* Assembles @dravensoft/arena-react into frameworks/react/dist/. A component source goes
  * through Bun.Transpiler, the same path build-demos.mjs uses, and its declaration is EMITTED
- * by tsc rather than copied, so it cannot disagree with the implementation. A relative source
- * specifier ending in .ts, .tsx, .jsx or .js becomes .js: rewriteRelativeImportExtensions does
- * not reach declaration output, so an unrewritten one names a file the package lacks. */
+ * by tsc rather than copied, so it cannot disagree with the implementation. Every relative
+ * specifier lands as .js: tsc's own rewrite does not reach declaration output, and this layer
+ * compiles under moduleResolution bundler, where an extension is optional and a consumer's
+ * node16 resolver refuses one that is missing. Whether either rewrite was right is not taken
+ * on trust; unresolvedProblems resolves every specifier against what was emitted. The manifest
+ * states the entry declaration twice, in exports and at the root, because a consumer on
+ * moduleResolution node reads no exports and npm's registry page reads only the root field. */
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, relative, sep } from 'node:path';
+import { join, relative, dirname, sep } from 'node:path';
 import { tscBin } from '../../check/react/check-react-types.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
@@ -51,8 +55,28 @@ export function untypedProblems(compiled, dir) {
     .map((rel) => `${rel} ships with no declaration beside it, so the package would ship it untyped`);
 }
 
+export const MODULE_EXTENSION = /\.[jt]sx?$/;
+
+export const RELATIVE_SPECIFIER = /(from\s*|import\s*\(\s*)(['"])(\.[^'"]*)(['"])/g;
+
 export function rewriteSourceSpecifiers(code) {
-  return code.replace(/(from\s*['"])(\.[^'"]+?)\.[jt]sx?(['"])/g, '$1$2.js$3');
+  return code.replace(RELATIVE_SPECIFIER, (_whole, keyword, open, specifier, close) =>
+    `${keyword}${open}${specifier.replace(MODULE_EXTENSION, '')}.js${close}`);
+}
+
+export function relativeSpecifiers(code) {
+  return [...code.matchAll(RELATIVE_SPECIFIER)].map((m) => m[3]);
+}
+
+export function unresolvedProblems(dir) {
+  const problems = [];
+  for (const path of distFiles(dir, (p) => p.endsWith('.js') || p.endsWith('.d.ts'))) {
+    for (const specifier of relativeSpecifiers(readFileSync(path, 'utf8'))) {
+      if (existsSync(join(dirname(path), specifier))) continue;
+      problems.push(`${relative(dir, path)} names ${specifier}, which resolves to no file in the package`);
+    }
+  }
+  return problems;
 }
 
 export function assembleModules(root, dir) {
@@ -92,6 +116,8 @@ export function assembleModules(root, dir) {
 
   const untyped = untypedProblems(compiled, dir);
   if (untyped.length) throw new Error(`build-react-package:\n  ${untyped.join('\n  ')}`);
+  const unresolved = unresolvedProblems(dir);
+  if (unresolved.length) throw new Error(`build-react-package:\n  ${unresolved.join('\n  ')}`);
   return { written, compiled, declarations };
 }
 
@@ -103,6 +129,7 @@ export function manifest(root = repoRoot) {
     type: 'module',
     sideEffects: ['*.css'],
     ...baseManifest(root),
+    types: './Index.generated.d.ts',
     exports: {
       '.': { types: './Index.generated.d.ts', import: './Index.generated.js' },
       './arena.css': './arena.css',

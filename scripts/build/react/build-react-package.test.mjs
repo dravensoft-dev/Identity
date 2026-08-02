@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { rewriteSourceSpecifiers, untypedProblems, isSource, manifest, NAME, ROOT_JS, ROOT_TS, LAYER } from './build-react-package.mjs';
+import {
+  rewriteSourceSpecifiers, untypedProblems, unresolvedProblems, relativeSpecifiers,
+  isSource, manifest, NAME, ROOT_JS, ROOT_TS, LAYER,
+} from './build-react-package.mjs';
 import { version } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -49,6 +52,8 @@ test('the manifest names the package, its entry and its types', () => {
   assert.equal(m.type, 'module');
   assert.equal(m.exports['.'].types, './Index.generated.d.ts');
   assert.equal(m.exports['.'].import, './Index.generated.js');
+  assert.equal(m.types, './Index.generated.d.ts',
+    'restated at the root, because a consumer on moduleResolution: node reads no exports and npm reads only this field');
 });
 
 test('the version is stamped from plugin.json rather than written here', () => {
@@ -104,6 +109,45 @@ test('a compiled module with no declaration beside it never ships', () => {
     const problems = untypedProblems(['components/A.js', 'components/B.js'], dir);
     assert.equal(problems.length, 1);
     assert.match(problems[0], /components\/B\.js ships with no declaration/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('an extensionless specifier gains .js, because node16 infers no extension from a declaration', () => {
+  assert.equal(
+    rewriteSourceSpecifiers("import type { Tone } from '../../../Api.generated';"),
+    "import type { Tone } from '../../../Api.generated.js';",
+  );
+  assert.equal(
+    rewriteSourceSpecifiers("import type { CatSlot } from './Api.generated';"),
+    "import type { CatSlot } from './Api.generated.js';",
+  );
+  assert.equal(rewriteSourceSpecifiers("from './Api.generated.js'"), "from './Api.generated.js'",
+    'a dotted stem is not an extension, so the rewrite is idempotent rather than a doubling');
+});
+
+test('a type-position dynamic import is a specifier too, and tsc writes them into declarations', () => {
+  assert.equal(
+    rewriteSourceSpecifiers("declare const x: import('./Api.generated').Tone;"),
+    "declare const x: import('./Api.generated.js').Tone;",
+  );
+  assert.deepEqual(relativeSpecifiers("import('./A.js');\nexport * from './B.js';\nimport 'react';"),
+    ['./A.js', './B.js']);
+});
+
+test('a specifier naming nothing in the package fails the build rather than the consumer', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'arena-unresolved-'));
+  try {
+    mkdirSync(join(dir, 'components'), { recursive: true });
+    writeFileSync(join(dir, 'Api.generated.js'), 'export const a = 1;\n');
+    writeFileSync(join(dir, 'components', 'A.d.ts'), "export type { Tone } from '../Api.generated.js';\n");
+    assert.deepEqual(unresolvedProblems(dir), []);
+
+    writeFileSync(join(dir, 'components', 'B.d.ts'), "export type { Tone } from '../Api.generated';\n");
+    const problems = unresolvedProblems(dir);
+    assert.equal(problems.length, 1);
+    assert.match(problems[0], /B\.d\.ts names \.\.\/Api\.generated, which resolves to no file/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

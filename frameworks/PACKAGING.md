@@ -61,9 +61,13 @@ Neither half compiles anything, because the two layers need different compilers.
 
 **React** goes through `Bun.Transpiler`, the same path `build-demos.mjs` already uses, and
 each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
-implementation it describes. There is exactly one rewrite: a relative source specifier, in any of `.ts`, `.tsx`, `.jsx`
-or `.js`, becomes `.js`, because inside the package none of those extensions resolves; only
-the compiled `.js` does. The entry point is
+implementation it describes. There is exactly one rewrite, and it normalises every relative
+specifier to `.js`: one carrying `.ts`, `.tsx`, `.jsx` or `.js` is retargeted, and one carrying
+no extension gains it. Inside the package only the compiled `.js` resolves, and a consumer on
+`node16` infers no extension from a declaration, where this layer's own `bundler` resolution
+makes it optional. Neither half is taken on trust: `unresolvedProblems` resolves every specifier
+in every emitted module and declaration against what the package holds, so one naming nothing
+fails the build rather than the consumer's editor. The entry point is
 `Index.generated.ts`, the barrel `build:react-barrel` derives from the component
 directories, and it goes through that same compile, so the package exports
 `Index.generated.js` beside the declaration `tsc` emits for it.
@@ -110,7 +114,7 @@ suite against a fixture holding exactly the file that would otherwise fail:
 ## The version
 
 `.claude-plugin/plugin.json` is the authority, as it already is for the plugin, the
-marketplace, the README header and the tag. `baseManifest()` stamps it into both packages,
+marketplace, the README's artifact list and the tag. `baseManifest()` stamps it into both packages,
 so no manifest is ever hand-versioned and the two cannot drift apart.
 
 ## What `check:packages` holds
@@ -138,9 +142,9 @@ What a release does by hand is move the surfaces and push the tag; everything af
 green run of `Arena main`.
 
 ```bash
-# the six surfaces, in one commit, then the tag on it
+# the surfaces, in one commit, then the tag on it
 #   plugin.json (the authority), marketplace.json version AND source.ref,
-#   the README header, and CHANGELOG's [Unreleased] renamed to the version
+#   and the README's artifact list
 git tag -a vX.Y.Z -m "Arena vX.Y.Z"
 git push origin main --follow-tags
 ```
@@ -189,8 +193,8 @@ runner has.
 
 **The registry has two read paths and they do not move together.** For several minutes after
 a successful publish, `npm view` and `npm owner ls` answer 404 while the package is perfectly
-published, because those read a CDN that has not caught up. Measured on the 5.0.0 release:
-five minutes, with the two packages appearing a minute apart from each other.
+published, because those read a CDN that has not caught up. Measured on a release: five
+minutes, with the two packages appearing a minute apart from each other.
 
 This is why the publish workflow tolerates exactly one error. Its guard reads `npm view`, so
 a re-run inside that window is told the version is absent, builds, and then meets
@@ -220,7 +224,7 @@ the publisher on npmjs.com names `npm-publish-react-package.yml` or
 nothing in this repository would notice.
 
 The mechanism inherits the release rule it always had: the version moves in `plugin.json`,
-`marketplace.json` and the README header together, `CHANGELOG.md` records it, `source.ref`
+`marketplace.json` and the README's artifact list together, `source.ref`
 names the tag, and `check-release.mjs` refuses the combination that fails silently. The two
 manifests take that same version from `plugin.json` at assembly, so a published package can
 never disagree with the tag it was cut from.

@@ -60,7 +60,7 @@ maps the rest of the repository.
 ## Documentation rules
 
 - **Every `.md` file stays under 60,000 characters.** `SIZE_EXEMPT` in `check-docs.mjs` names
-  the three exempt by charter and says why each is one. Measure the way the gate does, with
+  what is exempt by charter and says why each one is. Measure the way the gate does, with
   `node -e "console.log(require('fs').readFileSync('X','utf8').length)"`, and never with
   `wc -m`, which counts bytes: a file of multi-byte characters reads hundreds over a limit it
   is comfortably under. `check:docs` fails hard rather than warning, so an overrun surfaces at
@@ -76,8 +76,8 @@ maps the rest of the repository.
   contains.
 - **Documentation is written in the present tense** and describes what Arena is, never what
   it was, when a part of it arrived, or which part is newest. A retired token, a fixed defect,
-  a former directory layout and a batch number belong in the commit log and `CHANGELOG.md`,
-  which is where the history already is. The reason a rule exists is not history and stays:
+  a former directory layout and a batch number belong in the commit log, which is where the
+  history already is, and is dated. The reason a rule exists is not history and stays:
   state it as a property of the thing, not as an incident.
 - **The best comment is the one not written.** A method carries its own context through its
   name. The only exception is `scripts/` and test files, which may carry **one** comment,
@@ -654,7 +654,7 @@ gate cannot join `GATES` and then run in no job.
 file name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
 secondary dotted segment stays `lowerCamelCase`**, as in `Badge.manifest.json` and `StatCard.variants.ts`.
 Capital-initial is the rule and PascalCase is how a multi-word stem is *formed* under it, which is
-why a conventional all-caps document name needs no dispensation: `README.md` and `CHANGELOG.md`
+why a conventional all-caps document name needs no dispensation: `README.md` and `DOUBTS.md`
 comply as they stand.
 
 A layer lays its components out as `frameworks/<layer>/components/<category>/<component-kebab>/`,
@@ -735,9 +735,9 @@ can afford at one run per commit.
   is silently spliced away: the message lands with the name it was quoting missing, and nothing
   errors. Use `git commit -q -F - <<'MSG' … MSG` and verify with `git log -1 --format=%B`.
   **`git merge` does not accept `-F -`**, so use `--no-commit`, then commit.
-- **A release moves six things, and the tag is the one the other five are pinned to.** The version string lives in
-  `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the README header; log the
-  change in `CHANGELOG.md`; and because the plugin is served **from the tag**
+- **A release moves five things, and the tag is the one the other four are pinned to.** The version string lives in
+  `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the README's artifact list.
+  Because the plugin is served **from the tag**
   (`marketplace.json` → `source.ref`), that ref must name the release tag and the tag must exist on
   the release commit. Do all of it in the release commit, then tag it. **Because a published tag
   is a promise about the tree it resolves to, history is never rewritten.** `git filter-repo` and
@@ -747,11 +747,6 @@ can afford at one run per commit.
   `plugin.json` at assembly, and `check:packages` fails a manifest that disagrees. They are
   published **last**, by the workflow that fires on a green `main` after the tag lands, and only
   the one whose layer changed; `frameworks/PACKAGING.md` carries the sequence and the traps.
-- **Anything landing on `main` after a tag goes under `## [Unreleased]`**, and a release is cut by
-  renaming that heading to the version. Filing it under the last version instead describes a tree
-  nobody has: the plugin is served from the tag, so the release is frozen the moment it is cut.
-  `check-release.mjs` reads the first *versioned* entry, so `[Unreleased]` on top is expected and
-  never a failure.
 - **Forgetting the `ref` fails silently**, which is why it is machine-checked. The marketplace
   would advertise the new version while Claude Code keeps fetching the old tag, reads the *old*
   `plugin.json` there, and resolves the old version: the manifest's version always wins, so the
@@ -793,8 +788,7 @@ grep -rn --binary-files=without-match "\b$X\b" \
     CLAUDE.md DOUBTS.md contracts/api/ contracts/behaviour/ docs/ frameworks/ scripts/
 ```
 
-Drop by hand the hits under `X`'s **own** files, and the hits in `CHANGELOG.md`, a frozen record
-of what shipped at a tag. **Scope a worklist by its path list and never by piping `grep -n`
+Drop by hand the hits under `X`'s **own** files. **Scope a worklist by its path list and never by piping `grep -n`
 through `grep -v`**: `-n` prints `path:line:CONTENT`, so a filter after it drops hits by their
 *text*, which silently excludes any directory whose name the filter happens to match.
 

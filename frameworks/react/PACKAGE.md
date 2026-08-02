@@ -175,8 +175,9 @@ export function Fleet({ rotors }) {
 }
 ```
 
-Every component is imported from the package root. Types ship with it, hand-written per
-component rather than inferred, so an editor tells you what a component takes.
+Every component is imported from the package root. Types ship with it, emitted from the
+components' own source rather than written beside it, so an editor tells you what a component
+takes and no declaration can disagree with the implementation it describes.
 
 ## Switch palettes
 

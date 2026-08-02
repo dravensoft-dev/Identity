@@ -87,6 +87,13 @@ would mean the change is never published at all. What each package carries is
 `scripts/ci/arena/package-inputs.mjs`, whose suite holds the list to what the assemblers
 actually read.
 
+**Whatever it answers, the guard writes that answer to the run summary**: the version on the
+registry, the version in this tree, the decision, and the reason for it. The common answer is
+that there is nothing to publish, and an answer readable only by opening a log is one nobody
+reads. These runs are not jobs of `Arena main` and never appear in its panel, because a
+`workflow_run` workflow is a separate run; each publish job is on its own workflow's page, and
+the summary is what that page says without being unfolded.
+
 When the guard says yes, the publish job runs `check-release.mjs` first, so a version bump
 pushed without its tag is refused loudly rather than published quietly. Then it builds,
 assembles, holds the manifests, and packs. The tarball and a small record of what was
@@ -113,16 +120,17 @@ stamped from it at assembly. They are never hand-versioned, so a published packa
 disagree with the tag it was cut from. What differs is not the number but **which numbers
 exist**.
 
-Suppose Arena is at 5.0.0 with both packages published there. A release at 5.1.0 changes
-the React layer and nothing in Angular: `@dravensoft/arena-react` is published at 5.1.0, and
-`@dravensoft/arena-angular` stays at 5.0.0, because republishing it would ship an identical
-tree under a new number. A release at 5.2.0 touches Angular: it goes to 5.2.0 and skips
-5.1.0, which never existed for that package.
+Suppose both packages are published at the version Arena currently carries. The next release
+changes the React layer and nothing in Angular: `@dravensoft/arena-react` is published at the
+new version, and `@dravensoft/arena-angular` keeps the one it has, because republishing it
+would ship an identical tree under a new number. The release after that touches Angular, so
+it goes to the version current by then and skips the one in between, which never existed for
+that package.
 
 So the newest version of a package is the version of the last Arena release that changed it.
 A gap in the sequence is the record of a release that left it alone, and two packages at
 different versions are two packages that last changed at different times. Both are always
-built from the same tree, and `CHANGELOG.md` is where a release says what moved.
+built from the same tree.
 
 ## Notes on the runner
 

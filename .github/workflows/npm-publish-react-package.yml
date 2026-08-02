@@ -50,15 +50,31 @@ jobs:
           echo "version=$VERSION"     >> "$GITHUB_OUTPUT"
           echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
 
+          decision () {
+            {
+              echo "## $PACKAGE"
+              echo
+              echo "| | |"
+              echo "|---|---|"
+              echo "| Registry | ${PUBLISHED:-none} |"
+              echo "| This tree | $VERSION |"
+              echo "| Decision | **$1** |"
+              echo
+              echo "$2"
+            } >> "$GITHUB_STEP_SUMMARY"
+          }
+
           if [ "$PUBLISHED" = "$VERSION" ]; then
             echo "publish=false" >> "$GITHUB_OUTPUT"
             echo "$PACKAGE is already at $VERSION; nothing to publish."
+            decision "no publish" "The registry already serves $VERSION."
             exit 0
           fi
 
           if [ -z "$PUBLISHED" ]; then
             echo "publish=true" >> "$GITHUB_OUTPUT"
             echo "$PACKAGE has never been published; publishing $VERSION."
+            decision "publish" "$PACKAGE has never been published."
             exit 0
           fi
 
@@ -69,6 +85,7 @@ jobs:
             echo "publish=true" >> "$GITHUB_OUTPUT"
             echo "v$PUBLISHED does not resolve here, so there is no baseline to diff against."
             echo "Handing the decision to check-release, which refuses a release the tag does not serve."
+            decision "publish" "v$PUBLISHED does not resolve here, so there is no baseline to diff against, and check-release decides."
             exit 0
           fi
 
@@ -80,10 +97,12 @@ jobs:
             echo "Nothing $PACKAGE carries has moved since v$PUBLISHED, so it keeps that version"
             echo "while Arena moves to $VERSION. That divergence is expected and documented in"
             echo ".github/workflows/README.md."
+            decision "no publish" "Nothing $PACKAGE carries has moved since v$PUBLISHED, so it keeps that version while Arena moves to $VERSION."
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
             echo "Changed since v$PUBLISHED:"
             echo "$CHANGED"
+            decision "publish" "Changed since v$PUBLISHED: $(echo "$CHANGED" | wc -l | tr -d ' ') file(s)"
           fi
 
   publish:
@@ -183,3 +202,11 @@ jobs:
             exit 0
           fi
           exit $CODE
+
+      - name: what the registry now serves
+        run: |
+          set -euo pipefail
+          {
+            echo "\`$PACKAGE@${{ needs.guard.outputs.version }}\` is on the registry, from commit"
+            echo "\`${{ github.event.workflow_run.head_sha || github.sha }}\`."
+          } >> "$GITHUB_STEP_SUMMARY"

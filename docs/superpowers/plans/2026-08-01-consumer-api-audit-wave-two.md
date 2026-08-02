@@ -196,8 +196,7 @@ bind, and that is not an omission.
 ## Step 11 · Documentation sweep
 
 For every component this wave touches, run the grep `DOUBTS.md` prescribes and read every
-hit, dropping by hand the ones under the component's own files and the ones in
-`CHANGELOG.md`. File the wave under `## [Unreleased]`.
+hit, dropping by hand the ones under the component's own files.
 
 ---
 

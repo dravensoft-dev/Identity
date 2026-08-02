@@ -54,8 +54,8 @@ so a fact about one of them goes to its layer README or its prompt, never into t
 ## What this file is not
 
 **It is not a changelog.** A fixed defect is neither wrong, incomplete nor unverified, and a
-paragraph explaining how it was fixed is history. `CHANGELOG.md` and the commit log already hold
-that, and they hold it better, because they are dated.
+paragraph explaining how it was fixed is history. The commit log already holds that, and it
+holds it better, because it is dated.
 
 **It is not a home for prose that could be a check.** Prose is the cheapest place to put
 something, which is exactly why it accumulates: nothing ever fails because a paragraph goes

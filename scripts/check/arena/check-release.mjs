@@ -37,15 +37,24 @@ if (!check('marketplace entry', !!entry, entry ? `"${plugin.name}" found` : `no 
 
 check('marketplace version', entry.version === version, `${entry.version ?? '(unset)'} — plugin.json says ${version}`);
 
-const readme = read('README.md').match(/^#\s+.*\bv(\d+\.\d+\.\d+)\s*$/m);
-check('README header', readme?.[1] === version, readme ? `${readme[1]}` : 'no "# … vX.Y.Z" title found');
+const HEADING = 'Latest project artifacts';
+const LABEL = 'Repo/Claude Code plugin';
 
-const headings = [...read('CHANGELOG.md').matchAll(/^## \[([^\]]+)\]/gm)].map((m) => m[1]);
-const released = headings.find((h) => h.toLowerCase() !== 'unreleased');
-check('CHANGELOG top entry', released === version,
-  released
-    ? `[${released}]${headings[0] !== released ? ` — [${headings[0]}] sits above it, which is fine` : ''}`
-    : 'no "## [X.Y.Z]" entry found');
+const lines = read('README.md').split('\n');
+const opens = lines.findIndex((l) => new RegExp(`^##\\s+${HEADING}\\s*$`).test(l));
+const closes = lines.findIndex((l, i) => i > opens && /^##\s/.test(l));
+const artifacts = opens === -1 ? [] : lines.slice(opens + 1, closes === -1 ? lines.length : closes);
+
+if (check('README artifact list', opens !== -1, opens === -1 ? `no "## ${HEADING}" section found` : `${artifacts.filter((l) => l.trim()).length} entr(ies)`)) {
+  const stated = artifacts.join('\n').match(new RegExp(`^-\\s+\\*\\*${LABEL}\\*\\*:\\s*(\\S+)`, 'm'))?.[1];
+  check('the repo and the plugin move together', stated === version, stated ?? `no "- **${LABEL}**: X.Y.Z" line found`);
+
+  const restated = artifacts.filter((l) => /npm/i.test(l) && /\d+\.\d+\.\d+/.test(l));
+  check('a package version is linked, never restated', restated.length === 0,
+    restated.length
+      ? `${restated.length} line(s) write a version the registry decides: ${restated.map((l) => l.trim()).join(' | ')}`
+      : `${artifacts.filter((l) => /npm/i.test(l)).length} package(s) point at the registry, which is the authority on what is published`);
+}
 
 const source = entry.source;
 const pinned = source && typeof source === 'object';
@@ -60,7 +69,7 @@ if (pinned) {
 const commit = git('rev-list', '-n1', tag);
 if (check('tag exists', !!commit, commit ? `${tag} -> ${commit.slice(0, 7)}` : `${tag} not found — the release commit is not tagged yet`)) {
   const type = git('cat-file', '-t', git('rev-parse', tag) ?? '');
-  check('tag is annotated', type === 'tag', `${type ?? 'unknown'} — v1.0.0 set the convention: git tag -a ${tag} -m "Arena ${tag}"`, false);
+  check('tag is annotated', type === 'tag', `${type ?? 'unknown'}; the convention is annotated: git tag -a ${tag} -m "Arena ${tag}"`, false);
 
   const atTag = git('show', `${tag}:.claude-plugin/plugin.json`);
   if (check('plugin.json at the tag', !!atTag, atTag ? '' : `cannot read .claude-plugin/plugin.json at ${tag}`)) {
