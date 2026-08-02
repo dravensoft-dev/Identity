@@ -102,7 +102,7 @@ export function scanValue(prop, rawValue) {
   return null;
 }
 
-function skipString(text, i, quote) {
+export function skipString(text, i, quote) {
   for (let j = i + 1; j < text.length; j++) {
     if (text[j] === '\\') { j++; continue; }
     if (text[j] === quote) return j;
@@ -110,7 +110,7 @@ function skipString(text, i, quote) {
   return text.length - 1;
 }
 
-function blankComments(text) {
+export function blankComments(text) {
   let out = '';
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
@@ -139,7 +139,7 @@ function blankComments(text) {
   return out;
 }
 
-function readValue(text, start, stopChars) {
+export function readValue(text, start, stopChars) {
   let i = start, depth = 0;
   for (; i < text.length; i++) {
     const c = text[i];

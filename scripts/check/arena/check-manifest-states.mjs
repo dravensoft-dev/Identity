@@ -2,62 +2,27 @@
  * contracts/api/components/<Name>.json's `affordances` and no layer's source. Both halves run
  * one way only: a state modifier or an implementation the contract does not declare is
  * invented, while a declared affordance a layer does not implement may be composition.
- * Angular is not checkable here and that is structural, not an omission -- it realises an
- * affordance by rendering the manifest's own class, so asking it would be asking the manifest.
- * MANIFEST_COVERS exists because a manifest mirrors a rendered SURFACE: a compound family
- * draws several contracted components, and so does a component that composes one. */
+ * A layer that realises an affordance by rendering the manifest's own class is unaskable
+ * here, because asking it would be asking the manifest, and that is now both layers wherever
+ * a component renders its recipe. So the react half reads HAND_DRAWN, the components that
+ * write their own appearance and are therefore the only ones with an answer of their own; an
+ * empty HAND_DRAWN leaves that half with no subject and fails rather than passing. */
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
 import { manifestFiles } from '../../lib/tailwind/tailwind-compile.mjs';
+import {
+  HAND_DRAWN, MANIFEST_COVERS, categoryOf, coveredContracts, surfaceProblems,
+} from '../../lib/tailwind/manifest-surfaces.mjs';
 import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
+
+export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 const CONTRACTS_DIR = join(repoRoot, 'contracts/api/components');
 const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
-
-export const MANIFEST_COVERS = new Map([
-  ['Table', {
-    covers: ['Table', 'TableRow', 'TableCell'],
-    reason: 'One manifest draws the whole grid: the header and the empty state are Table\'s, the '
-      + 'interactive row is TableRow\'s and the cells are TableCell\'s.',
-  }],
-  ['Tabs', {
-    covers: ['Tabs', 'Tab'],
-    reason: 'The tablist and its tab buttons are Tabs\'; the panel is Tab\'s. The roving stop that '
-      + 'carries the focus ring sits on a tab, which is the member Tab contracts.',
-  }],
-  ['BottomNav', {
-    covers: ['BottomNav', 'BottomNavItem'],
-    reason: 'One manifest draws the whole bar -- the fixed row is BottomNav\'s and the equal '
-      + 'column, its glyph, its label and its badge are BottomNavItem\'s. The item carries no '
-      + 'manifest of its own because it has no surface of its own: it IS a column of the bar.',
-  }],
-  ['SideNav', {
-    covers: ['SideNav', 'SideNavItem', 'SideNavSection', 'SideNavCollapsible'],
-    reason: 'The family nests to any depth and one manifest holds every level of it -- the rail, a '
-      + 'destination row, a labelled group and a disclosure.',
-  }],
-  ['Calendar', {
-    covers: ['Calendar', 'CalendarEvent'],
-    reason: 'The grid and its chips are one surface: a chip is positioned as a share of the grid, '
-      + 'so its slots cannot live in a manifest of their own.',
-  }],
-  ['ConfirmDialog', {
-    covers: ['ConfirmDialog', 'Button'],
-    reason: 'The dialog draws the confirm action itself, because that action carries Arena\'s one '
-      + 'filled danger surface and a Button forwards no style. The cancel action is still an Arena '
-      + 'Button, and a manifest has no composition, so it types that button out as its own slot and '
-      + 'needs Button\'s affordance.',
-  }],
-  ['ErrorState', {
-    covers: ['ErrorState', 'Button'],
-    reason: 'The retry action is an Arena Button, typed out as a slot for the same reason '
-      + 'ConfirmDialog\'s is.',
-  }],
-]);
 
 export const EXEMPT = new Map([]);
 
@@ -100,10 +65,6 @@ export function classStringsBySlot(manifest) {
     for (const branch of Object.values(variantGroup))
       for (const [slot, cls] of Object.entries(branch || {})) add(slot, cls);
   return bySlot;
-}
-
-export function coveredContracts(name) {
-  return MANIFEST_COVERS.get(name)?.covers ?? [name];
 }
 
 export function readContract(name) {
@@ -180,6 +141,19 @@ export function zeroReactSourceProblems(count) {
     + 'rather than a clean pass'];
 }
 
+export function unaskedHandDrawn(asked, handDrawn = HAND_DRAWN) {
+  const seen = new Set(asked);
+  const problems = [...handDrawn.keys()]
+    .filter((name) => !seen.has(name))
+    .map((name) => `HAND_DRAWN names ${name} and no React source for it was read, so the react `
+      + 'half reported clean over a component it never opened');
+  if (handDrawn.size === 0) {
+    problems.push('HAND_DRAWN is empty, so the react half has no subject at all; a half with '
+      + 'nothing to ask is retired on the record, never left to pass over nothing');
+  }
+  return problems;
+}
+
 export function reactProblems(name, category) {
   const path = reactSourceFor(name, category);
   if (!path) return { findings: [], sites: 0 };
@@ -220,17 +194,24 @@ export function collect() {
       const missing = missingReactSource(name, category);
       if (missing) missingSources.push(missing);
       if (reactSourceFor(name, category)) sourcesRead += 1;
-      const result = reactProblems(name, category);
-      findings.push(...result.findings);
-      sites += result.sites;
     }
+
+  const asked = [];
+  for (const name of HAND_DRAWN.keys()) {
+    const category = categoryOf(name);
+    if (!category || !reactSourceFor(name, category)) continue;
+    asked.push(name);
+    const result = reactProblems(name, category);
+    findings.push(...result.findings);
+    sites += result.sites;
+  }
 
   return {
     findings,
     matchedKeys,
     sites,
     missingSources,
-    zeroSources: zeroReactSourceProblems(sourcesRead),
+    zeroSources: [...zeroReactSourceProblems(sourcesRead), ...unaskedHandDrawn(asked)],
   };
 }
 
@@ -240,10 +221,11 @@ export function staleExemptions(matchedKeys) {
 }
 
 export function staleCovers() {
-  return [...MANIFEST_COVERS].flatMap(([name, { covers }]) => {
+  const missingContract = [...MANIFEST_COVERS].flatMap(([name, { covers }]) => {
     const missing = covers.filter((c) => !readContract(c));
-    return missing.length ? [`${name} -> ${missing.join(', ')}`] : [];
+    return missing.length ? [`${name} -> ${missing.join(', ')} names no contract`] : [];
   });
+  return [...missingContract, ...surfaceProblems()];
 }
 
 function main() {
@@ -280,7 +262,7 @@ function main() {
     if (failed) console.error('');
     failed = true;
     for (const key of stale) console.error(`  stale EXEMPT: ${key} -- ${EXEMPT.get(key)}`);
-    for (const entry of staleCoverage) console.error(`  stale MANIFEST_COVERS: ${entry} names no contract`);
+    for (const entry of staleCoverage) console.error(`  stale surface map: ${entry}`);
   }
 
   if (failed) process.exit(1);

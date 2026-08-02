@@ -1,0 +1,345 @@
+/* Where a component's appearance comes from. The adoption half asks that every component in
+ * scope renders the manifest that draws its surface, in both layers; the literal half asks
+ * that the React layer types no appearance out by hand, and its rule is the migration's own
+ * line: a style property whose every branch is a literal belongs in the manifest, one that
+ * reads an identifier or an interpolation is a runtime computation and stays. Three blind
+ * spots, none closed here: a style object assembled by Object.assign or a computed spread, a
+ * literal reached through an unannotated lookup table, and Angular's [style.x]="<literal>",
+ * which is the blind spot check-dimension-literals already declares in its own header. */
+
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join, relative } from 'node:path';
+import { blankComments, expressionLeaves, readValue, skipString } from './check-dimension-literals.mjs';
+import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind/manifest-surfaces.mjs';
+import { kebab } from '../../lib/arena/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
+
+export const PENDING = new Map([
+  ['Card', 'group A, the pilot: still writes surface, border, shadow and both states as inline style objects'],
+
+  ['IconButton', 'group B: hover still lives in a useState rather than in the manifest\'s modifier'],
+  ['Breadcrumbs', 'group B: a crumb\'s hover still lives in a useState rather than in the manifest'],
+  ['SegmentedControl', 'group B: the hovered segment is tracked in a useState rather than drawn by a modifier'],
+  ['Menu', 'group B: the same, plus an injected <style> the manifest may absorb'],
+  ['CommandPalette', 'group B: the hovered row is tracked in a useState rather than drawn by a modifier'],
+  ['Tooltip', 'group B: the same; its open delay is behaviour and stays'],
+
+  ['Input', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
+  ['Textarea', 'group C: a native control\'s own chrome, with its focus ring still inline'],
+  ['Select', 'group C: a native control\'s own chrome, with its focus ring still inline'],
+  ['Checkbox', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
+  ['Radio', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
+  ['RadioGroup', 'group C: reads Radio\'s manifest and does not yet render it'],
+  ['Switch', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
+
+  ['Skeleton', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
+  ['Spinner', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
+  ['ProgressBar', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
+
+  ['Dialog', 'group F: the overlay stack, the scrim and the safe-area insets, still inline'],
+  ['ConfirmDialog', 'group F: the same, over the one filled danger surface in the system'],
+  ['Sheet', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
+  ['Onboarding', 'group F: the same, with a measured coachmark position that stays'],
+  ['ToastHost', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
+
+  ['Tabs', 'group G: the family parent, whose manifest its tab must read'],
+  ['Tab', 'group G: reads Tabs\' manifest and does not yet render it'],
+  ['BottomNav', 'group G: the family parent, whose bar its item must read as a column of'],
+  ['BottomNavItem', 'group G: reads BottomNav\'s manifest and does not yet render it'],
+  ['SideNav', 'group G: the family parent, whose appearance sits in a shared inject helper'],
+  ['SideNavItem', 'group G: reads SideNav\'s manifest through that helper'],
+  ['SideNavSection', 'group G: reads SideNav\'s manifest through that helper'],
+  ['SideNavCollapsible', 'group G: reads SideNav\'s manifest through that helper'],
+
+  ['Table', 'renders its manifest and still draws the roving grid focus ring as an inline '
+    + 'boxShadow, which is a state the manifest holds for every other grid slot'],
+  ['TableCell', 'the same residual ring as Table\'s, on the cell that carries it'],
+  ['Calendar', 'the same residual ring as Table\'s, on the hour cell that carries it'],
+
+  ['Avatar', 'group E: a flat surface still typed out inline'],
+  ['Badge', 'group E: a flat surface whose tone pairs are a lookup table rather than variants'],
+  ['StatCard', 'group E: a flat surface still typed out inline'],
+  ['UnauthCard', 'group E: the same, over a panel that mirrors Card\'s surface by hand'],
+  ['Alert', 'group E: a flat surface whose tone is a lookup table rather than a variant'],
+  ['EmptyState', 'group E: a flat surface still typed out inline'],
+  ['ErrorState', 'group E: a flat surface still typed out inline, over a retry Button its manifest types out'],
+  ['Toast', 'group E: a flat surface whose tone is a lookup table rather than a variant'],
+  ['PageHead', 'group E: the same, with a measured container width that stays'],
+  ['Pagination', 'group E: a flat surface still typed out inline'],
+  ['Grid', 'group E: the same, with computed column tracks that stay'],
+  ['AppLogo', 'group E: a flat surface still typed out inline'],
+  ['ChartCard', 'group E: the same; it has a manifest and draws no SVG, so it is in scope'],
+]);
+
+export const EXEMPT = new Map([]);
+
+const REACT_COMPONENTS = join(repoRoot, 'frameworks/react/components');
+const ANGULAR_COMPONENTS = join(repoRoot, 'frameworks/angular/components');
+
+const SKIPPED_DIRECTORIES = new Set(['dist', 'node_modules']);
+const SKIPPED_INFIXES = ['.test.', '.generated.', '.demo.'];
+const SOURCE_EXTENSIONS = ['.tsx', '.jsx', '.ts'];
+
+const STYLE_PROP = /style=\{\{/g;
+const ANNOTATION = /:\s*(?:React\.)?CSSProperties\b/g;
+const RETURNED_OBJECT = /(?:return\s*|=>\s*\()\{/g;
+const ENTRY_STOP = new Set([',', '}']);
+const KEY_STOP = new Set([':']);
+const LITERAL_LEAF = /^(?:-?\d*\.?\d+|true|false|null|undefined)$/;
+
+function balancedFrom(text, open) {
+  let depth = 0;
+  for (let i = open; i < text.length; i++) {
+    const c = text[i];
+    if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
+    if (c === '{') { depth++; continue; }
+    if (c === '}') { depth--; if (depth === 0) return i; }
+  }
+  return -1;
+}
+
+function nextBrace(text, from) {
+  for (let i = from; i < text.length; i++) {
+    const c = text[i];
+    if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
+    if (c === '{') return i;
+    if (c === ';' || c === '\n') {
+      if (c === ';') return -1;
+    }
+  }
+  return -1;
+}
+
+function isObjectLiteral(text, open) {
+  for (let i = open - 1; i >= 0; i--) {
+    const c = text[i];
+    if (c === ' ' || c === '\n' || c === '\t' || c === '\r') continue;
+    return c === '=' || c === '(' || c === ',';
+  }
+  return false;
+}
+
+export function styleObjectBodies(rawText) {
+  const text = blankComments(rawText);
+  const bodies = [];
+  const seen = new Set();
+  const push = (open) => {
+    if (open < 0 || seen.has(open)) return;
+    const close = balancedFrom(text, open);
+    if (close < 0) return;
+    seen.add(open);
+    bodies.push({ start: open + 1, text: text.slice(open + 1, close) });
+  };
+
+  for (const m of text.matchAll(STYLE_PROP)) push(m.index + 'style={'.length);
+
+  for (const m of text.matchAll(ANNOTATION)) {
+    const open = nextBrace(text, m.index + m[0].length);
+    if (open < 0) continue;
+    if (isObjectLiteral(text, open)) { push(open); continue; }
+    const close = balancedFrom(text, open);
+    if (close < 0) continue;
+    const body = text.slice(open, close);
+    for (const r of body.matchAll(RETURNED_OBJECT)) push(open + r.index + r[0].length - 1);
+  }
+
+  return bodies.sort((a, b) => a.start - b.start);
+}
+
+export function objectEntries(body) {
+  const entries = [];
+  let i = 0;
+  while (i < body.length) {
+    const c = body[i];
+    if (c === ' ' || c === '\n' || c === '\t' || c === '\r' || c === ',') { i++; continue; }
+    if (body.startsWith('...', i)) { i = readValue(body, i, ENTRY_STOP).end + 1; continue; }
+    const key = readValue(body, i, KEY_STOP);
+    if (key.end >= body.length) break;
+    const value = readValue(body, key.end + 1, ENTRY_STOP);
+    entries.push({ key: key.text.trim().replace(/^['"]|['"]$/g, ''), value: value.text.trim() });
+    i = value.end + 1;
+  }
+  return entries;
+}
+
+export function valueIsLiteral(raw) {
+  const leaves = expressionLeaves(raw);
+  if (leaves.length === 0) return false;
+  return leaves.every((leaf) => {
+    const t = leaf.trim();
+    if (t === '') return false;
+    if (LITERAL_LEAF.test(t)) return true;
+    const quote = t[0];
+    if (quote !== "'" && quote !== '"' && quote !== '`') return false;
+    if (skipString(t, 0, quote) !== t.length - 1) return false;
+    return !(quote === '`' && t.includes('${'));
+  });
+}
+
+export function literalStyleProblems(rawText, path) {
+  const problems = [];
+  for (const body of styleObjectBodies(rawText))
+    for (const { key, value } of objectEntries(body.text)) {
+      if (!key || /[(){}]/.test(key)) continue;
+      if (!valueIsLiteral(value)) continue;
+      if (EXEMPT.has(`${path}:${key}:${value}`)) continue;
+      problems.push({ path, key, value });
+    }
+  return problems;
+}
+
+export function sourceFiles(dir, found = []) {
+  if (!existsSync(dir)) return found;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (!SKIPPED_DIRECTORIES.has(entry.name)) sourceFiles(path, found);
+      continue;
+    }
+    if (!SOURCE_EXTENSIONS.some((e) => entry.name.endsWith(e))) continue;
+    if (SKIPPED_INFIXES.some((i) => entry.name.includes(i))) continue;
+    found.push(path);
+  }
+  return found;
+}
+
+export function reactSource(name) {
+  const category = categoryOf(name);
+  if (!category) return null;
+  const path = join(REACT_COMPONENTS, category, kebab(name), `${name}.tsx`);
+  return existsSync(path) ? path : null;
+}
+
+export function angularSource(name) {
+  const category = categoryOf(name);
+  if (!category) return null;
+  const path = join(ANGULAR_COMPONENTS, category, kebab(name), `${name}.ts`);
+  return existsSync(path) ? path : null;
+}
+
+export function componentDir(name) {
+  const category = categoryOf(name);
+  return category ? join(REACT_COMPONENTS, category, kebab(name)) : null;
+}
+
+export function directoryOf(path) {
+  return path.slice(0, path.lastIndexOf('/'));
+}
+
+export function adoptionProblems(name) {
+  const manifest = manifestFor(name);
+  if (!manifest) {
+    return [`${name}: no manifest draws its surface, and nothing in scope may be left with `
+      + 'nothing to render; declare it in HAND_DRAWN or give it a manifest'];
+  }
+  const problems = [];
+  const react = reactSource(name);
+  if (react) {
+    const text = readFileSync(react, 'utf8');
+    if (!/from '[^']*Tv\.generated/.test(text) || !text.includes(`${manifest}.manifest.generated`)) {
+      problems.push(`${name}: ${relative(repoRoot, react)} does not render its manifest -- it has to `
+        + `import tv from Tv.generated and ${manifest}.manifest.generated, and draw its slots`);
+    }
+  }
+  const angular = angularSource(name);
+  if (angular) {
+    const text = readFileSync(angular, 'utf8');
+    if (!/from '[^']*\.variants'/.test(text)) {
+      problems.push(`${name}: ${relative(repoRoot, angular)} does not render its manifest -- it has to `
+        + 'import the recipe built from it, its own .variants or the family parent\'s');
+    }
+  }
+  return problems;
+}
+
+export function pendingProblems(pending = PENDING, adopted = new Set(), scope = new Set(inScope())) {
+  const problems = [];
+  for (const [name, reason] of pending) {
+    if (!scope.has(name)) {
+      problems.push(`PENDING names ${name}, and no component in scope is called that`);
+      continue;
+    }
+    if (!reason?.trim()) problems.push(`PENDING names ${name} with no reason, and a reason is the whole entry`);
+    if (adopted.has(name)) {
+      problems.push(`PENDING names ${name}, and it already renders its manifest with no literal left -- `
+        + 'delete the entry, because an exception that has stopped being true is what this map exists to catch');
+    }
+  }
+  return problems;
+}
+
+export function collect() {
+  const scope = inScope();
+  const adoption = [];
+  const adopted = new Set();
+  for (const name of scope) {
+    const problems = adoptionProblems(name);
+    if (problems.length === 0) adopted.add(name);
+    if (PENDING.has(name)) continue;
+    adoption.push(...problems);
+  }
+
+  const files = sourceFiles(REACT_COMPONENTS);
+  const excused = new Set([...PENDING.keys(), ...HAND_DRAWN.keys()].map(componentDir).filter(Boolean));
+  const literals = [];
+  let scanned = 0;
+  for (const path of files) {
+    if (excused.has(directoryOf(path))) continue;
+    scanned += 1;
+    const rel = relative(repoRoot, path);
+    for (const { key, value } of literalStyleProblems(readFileSync(path, 'utf8'), rel))
+      literals.push(`${rel}: ${key}: ${value} is appearance typed out by hand; every branch of it is a `
+        + 'literal, so it belongs in the manifest');
+  }
+
+  const clean = new Set([...adopted].filter((name) => {
+    const dir = componentDir(name);
+    if (!dir) return true;
+    return files
+      .filter((path) => directoryOf(path) === dir)
+      .every((path) => literalStyleProblems(readFileSync(path, 'utf8'), relative(repoRoot, path)).length === 0);
+  }));
+
+  return {
+    adoption,
+    literals,
+    stale: pendingProblems(PENDING, clean),
+    files: files.map((p) => relative(repoRoot, p)),
+    walked: files.length,
+    scanned,
+    scope: scope.length,
+  };
+}
+
+export function zeroProblems({ scope, walked, scanned }) {
+  const problems = [];
+  if (scope === 0) problems.push('the scope is empty, so the adoption half asked nothing of anybody');
+  if (walked === 0) problems.push('the literal half walked 0 files, which is a failure rather than a clean pass');
+  if (scanned === 0) {
+    problems.push('every walked file was excused by PENDING or HAND_DRAWN, so the literal half read '
+      + 'nothing; a gate whose whole subject is excused reports nothing wrong with everything');
+  }
+  return problems;
+}
+
+function main() {
+  const found = collect();
+  const problems = [...zeroProblems(found), ...found.adoption, ...found.literals, ...found.stale];
+
+  if (problems.length > 0) {
+    console.error(`check-appearance: ${problems.length} problem(s)\n`);
+    for (const problem of problems) console.error(`  ${problem}`);
+    console.error('\nA component\'s appearance is its manifest\'s, in every layer. What stays inline is a');
+    console.error('value computed at runtime from data or from a measurement, and nothing else.');
+    process.exit(1);
+  }
+
+  const done = found.scope - PENDING.size;
+  console.log(`check-appearance: ${done} of ${found.scope} component(s) in scope render their manifest with `
+    + `no hand-written appearance left, ${PENDING.size} still pending on the record, `
+    + `${HAND_DRAWN.size} draw by hand by charter; ${found.scanned} of ${found.walked} React `
+    + 'source(s) read for a literal');
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

@@ -21,7 +21,9 @@ import {
   zeroReactSourceProblems,
   staleExemptions,
   staleCovers,
+  unaskedHandDrawn,
   collect,
+  HAND_DRAWN,
   MANIFEST_COVERS,
   FAMILIES,
   EXEMPT,
@@ -79,6 +81,7 @@ test('a manifest covers its own contract unless MANIFEST_COVERS says it draws a 
   assert.deepEqual(coveredContracts('Button'), ['Button']);
   assert.deepEqual(coveredContracts('Table'), ['Table', 'TableRow', 'TableCell']);
   assert.deepEqual(coveredContracts('ConfirmDialog'), ['ConfirmDialog', 'Button']);
+  assert.deepEqual(coveredContracts('Radio'), ['Radio', 'RadioGroup']);
   for (const [, { reason }] of MANIFEST_COVERS) assert.ok(reason.length > 40, 'every entry states why');
 });
 
@@ -124,12 +127,30 @@ test('and the same modifier passes once a contract declares the affordance', () 
 });
 
 test('THE OTHER HALF: React implementing an affordance its contract does not declare is invented too', () => {
-  const findings = reactProblems('Card', 'display').findings;
-  assert.deepEqual(findings, [], 'Card implements neither and declares neither');
+  const contract = JSON.parse(readFileSync(join(repoRoot, 'contracts/api/components/BarChart.json'), 'utf8'));
+  assert.ok(contract.affordances.includes('hover'), 'BarChart hovers, and the contract is where that is said');
+  assert.deepEqual(reactProblems('BarChart', 'charts').findings, []);
 
-  const contract = JSON.parse(readFileSync(join(repoRoot, 'contracts/api/components/Button.json'), 'utf8'));
-  assert.deepEqual(contract.affordances, ['hover'], 'Button hovers, and the contract is where that is said');
-  assert.deepEqual(reactProblems('Button', 'forms').findings, []);
+  const invented = reactProblems('BarChart', 'charts');
+  assert.ok(invented.sites > 0, 'a half examining zero sites finds zero violations by construction');
+});
+
+test('the react half asks only the components that draw by hand, because the rest answer with their manifest', () => {
+  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['BarChart', 'DoughnutChart', 'LineChart']);
+  assert.deepEqual(unaskedHandDrawn(['BarChart', 'DoughnutChart', 'LineChart']), []);
+});
+
+test('a hand-drawn component the react half never opened is a failure, not a clean pass', () => {
+  const problems = unaskedHandDrawn(['BarChart', 'DoughnutChart']);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /LineChart/);
+  assert.match(problems[0], /never opened/);
+});
+
+test('an empty HAND_DRAWN retires the react half rather than letting it pass over nothing', () => {
+  const problems = unaskedHandDrawn([], new Map());
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /no subject at all/);
 });
 
 test('a name with no React source is not a finding -- a layer may simply not implement it', () => {
