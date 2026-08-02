@@ -70,8 +70,18 @@ export function rowBadge(badge: number | undefined, active: boolean): React.Reac
   );
 }
 
-export function rowGlyph(icon: string | undefined): React.ReactElement | null {
+export const WEIGHTS = ['ph-thin', 'ph-light', 'ph-bold', 'ph-duotone', 'ph-fill'];
+
+export function activeWeight(icon: string): string {
+  const parts = icon.split(/\s+/).filter(Boolean);
+  if (parts.includes('ph-fill')) return icon;
+  const replaced = parts.map((part) => (WEIGHTS.includes(part) ? 'ph-fill' : part));
+  return replaced.includes('ph-fill') ? replaced.join(' ') : ['ph-fill', ...replaced].join(' ');
+}
+
+export function rowGlyph(icon: string | undefined, active = false): React.ReactElement | null {
   return icon
-    ? <i className={icon} aria-hidden="true" style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }} />
+    ? <i className={active ? activeWeight(icon) : icon} aria-hidden="true"
+        style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }} />
     : null;
 }

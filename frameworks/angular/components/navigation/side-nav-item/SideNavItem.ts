@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, forwardRef, inject, input } from '@angular/core';
 import { isPrimaryActivation } from '../../../AnchorActivation';
-import { SideNavChild, SideNavState, indentFor } from '../side-nav/SideNavState';
+import { SideNavChild, SideNavState, activeWeight, indentFor } from '../side-nav/SideNavState';
 import { sideNavStyles } from '../side-nav/SideNav.variants';
 
 @Component({
@@ -17,8 +17,8 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
       <a [class]="styles().item()" [href]="url" [style.paddingInlineStart]="indent()"
          [attr.aria-current]="current()" [attr.aria-disabled]="off()"
          (click)="activateAnchor($event)">
-        @if (icon(); as glyph) {
-          <i [class]="styles().icon() + ' ' + glyph" aria-hidden="true"></i>
+        @if (glyphClass(); as glyph) {
+          <i [class]="glyph" aria-hidden="true"></i>
         }
         {{ name() }}
         @if (count(); as tally) {
@@ -29,8 +29,8 @@ import { sideNavStyles } from '../side-nav/SideNav.variants';
       <button type="button" [class]="styles().item()" [style.paddingInlineStart]="indent()"
               [attr.aria-current]="current()" [attr.aria-disabled]="off()"
               (click)="activate($event)">
-        @if (icon(); as glyph) {
-          <i [class]="styles().icon() + ' ' + glyph" aria-hidden="true"></i>
+        @if (glyphClass(); as glyph) {
+          <i [class]="glyph" aria-hidden="true"></i>
         }
         {{ name() }}
         @if (count(); as tally) {
@@ -45,7 +45,7 @@ export class SideNavItem {
   readonly id = input.required<string>();
   /** What the item reads, and the whole of its accessible name unless a badge adds a count to it. Required and falsy-guarded for the same reason. */
   readonly label = input.required<string>();
-  /** A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph. */
+  /** A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph. **The ACTIVE row is drawn in the filled weight, and there is no member for it**: the item whose id matches SideNav.active swaps whatever weight the string carries for `ph-fill`, so a consumer passes one string per destination rather than two and a conditional. It is Arena's convention, so Arena applies it, the same judgement that inverted PageHead's guidance rather than adding a boolean whose false nobody wants. Pass `ph-fill` yourself and nothing changes, since the swap is idempotent. */
   readonly icon = input<string>();
   /** A count drawn at the row's trailing edge -- pending orders, unread notices. Zero draws nothing, because a badge reading 0 is a mark that says there is nothing to mark; above 99 it reads "99+", so a four-digit count cannot widen the column. A number rather than a string, because the two rules above are arithmetic and a caller who has already formatted the value has taken them away. It is NOT hidden from assistive technology, so the row announces "Orders 12": a count a screen-reader user cannot hear is a count that is not there, and aria-hidden on it would trade a real loss for a tidier name. What the 12 counts stays unsaid, because nothing can derive it and no member states it -- say it in the label where it matters. */
   readonly badge = input<number>();
@@ -70,6 +70,12 @@ export class SideNavItem {
       throw new Error('SideNavItem: `id` is required, and is what `active` and `nav` identify this row by');
     }
     return key === this.nav.activeId();
+  });
+
+  protected readonly glyphClass = computed(() => {
+    const glyph = this.icon();
+    if (!glyph) return null;
+    return `${this.styles().icon()} ${this.on() ? activeWeight(glyph) : glyph}`;
   });
 
   protected readonly current = computed(() => (this.on() ? 'page' : null));

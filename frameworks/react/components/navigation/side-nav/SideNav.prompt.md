@@ -107,3 +107,15 @@ yours in either design; what is left is one comparison:
 ```tsx
 const active = DESTINATIONS.find((d) => pathname.startsWith(d.href))?.id;
 ```
+
+### The active row is filled, and you pass one string
+
+The item whose `id` matches `active` draws its glyph in `ph-fill`, whatever weight the string
+carries. Pass `icon="ph-bold ph-house"` once per destination; do not concatenate a weight
+yourself against a condition, which is Arena's own convention reimplemented in every project
+that adopts it. The swap is idempotent, so passing `ph-fill` yourself changes nothing.
+
+Every `ph-` name in this repository is checked against the installed `@phosphor-icons/web` by
+`bun run check:icons`, so a typo fails the build instead of rendering an empty box. That gate
+reaches Arena's tree and not yours; run the same check in your own if a wrong name would be
+expensive.
