@@ -1,0 +1,240 @@
+/* The playground pages' chrome, shared by every generated demo page in every
+ * framework layer.
+ *
+ * It lives here rather than in a layer because check:layer-independence scans
+ * both trees textually and its exemption map is empty: a stylesheet under
+ * frameworks/react/ that frameworks/angular/ also linked would be a coupling the
+ * gate exists to kill. Outside frameworks/ there is nothing to couple, and the
+ * two layers then render the same page furniture from the same bytes, which is
+ * the whole reason a difference seen on one page is a difference in a component.
+ *
+ * Every control below is plain HTML rather than an Arena component. The panel
+ * sits beside the thing under test, so a panel built from the library would
+ * change appearance with the change being examined, and in the Angular layer it
+ * would drag the library into a harness that has to stay independent of it.
+ */
+
+.pg-page {
+  margin: 0;
+  padding: var(--sp-6);
+  background: var(--bg);
+  color: var(--text-strong);
+  font-family: var(--font-body);
+  line-height: var(--lh-body);
+}
+
+.pg-head {
+  margin: 0 0 var(--sp-5);
+  max-width: 60ch;
+}
+
+.pg-eyebrow {
+  margin: 0 0 var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pg-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-tight);
+  line-height: var(--lh-tight);
+}
+
+.pg-note {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-body);
+}
+
+.pg-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+@media (max-width: 60rem) {
+  .pg-shell { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The stage is deliberately plain: a surface tint here would sit behind every
+ * component and make one layer's transparency look like the other's fill. */
+.pg-stage {
+  min-height: calc(var(--sp-24) * 2);
+  padding: var(--sp-5);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--panel);
+}
+
+.pg-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-card);
+  position: sticky;
+  top: var(--sp-6);
+  max-height: calc(100vh - var(--sp-12));
+  overflow-y: auto;
+}
+
+@media (max-width: 60rem) {
+  .pg-panel { position: static; max-height: none; }
+}
+
+.pg-panel-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pg-knob {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.pg-knob-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.pg-knob-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-strong);
+}
+
+.pg-knob-form {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--mute);
+}
+
+.pg-knob-doc {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* A required member cannot be unbound, so it carries no presence box and says
+ * so rather than showing a disabled control nobody can explain. */
+.pg-knob-pinned .pg-knob-form { color: var(--gold); }
+
+.pg-field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface-input);
+  color: var(--text-strong);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+
+.pg-field:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+textarea.pg-field {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  min-height: calc(var(--sp-16) + var(--sp-4));
+  resize: vertical;
+}
+
+.pg-field-invalid { border-color: var(--danger); }
+
+.pg-check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-body);
+}
+
+.pg-presence {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pg-log {
+  margin: var(--sp-6) 0 0;
+  padding: var(--sp-4);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--panel);
+}
+
+.pg-log-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.pg-log-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-height: calc(var(--sp-24) + var(--sp-16));
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.pg-log-row { color: var(--text-body); }
+.pg-log-name { color: var(--accent); }
+.pg-log-empty { color: var(--mute); }
+
+.pg-reset {
+  align-self: flex-start;
+  padding: var(--sp-1) var(--sp-3);
+  background: transparent;
+  color: var(--text-muted);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.pg-reset:hover { color: var(--text-strong); }
+
+.pg-reset:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-reset { transition: none; }
+}
