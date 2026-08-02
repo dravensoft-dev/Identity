@@ -11,6 +11,8 @@ import { assertSameNode } from '../../../test/NodeAssert';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { BulkActionBar } from './BulkActionBar';
+import { bulkActionBarStyles } from './BulkActionBar.variants';
+import type { BulkAction } from '../../../Api.generated';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'navigation/bulk-action-bar/BulkActionBar.behaviour.json');
@@ -88,4 +90,26 @@ test('an empty selection drops the role and the label, not only the contents', (
   } finally {
     fixture.destroy();
   }
+});
+
+test('the Clear output was renamed from `cleared` to `clear`, per the API contract\'s event binding', () => {
+  const fixture = render(3);
+  try {
+    const instance = fixture.componentInstance;
+    assert.equal(typeof instance.clear, 'object', '`clear` must exist and be an OutputEmitterRef');
+    assert.equal('cleared' in instance, false, 'the pre-contract `cleared` name must be gone, not merely aliased');
+  } finally { fixture.destroy(); }
+});
+
+test('classesFor still resolves a destructive action\'s classes to the same recipe output after the BulkAction retype', () => {
+  const fixture = render(3);
+  try {
+    const instance = fixture.componentInstance as unknown as {
+      classesFor(action: BulkAction): { action(): string };
+    };
+    const viaMethod = instance.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
+    const viaRecipe = bulkActionBarStyles({ destructive: true }).action();
+    assert.equal(viaMethod, viaRecipe,
+      'the wide shape is what the recipe default resolves, so the two must agree there');
+  } finally { fixture.destroy(); }
 });

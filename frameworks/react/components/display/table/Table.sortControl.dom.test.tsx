@@ -115,8 +115,9 @@ test('a sort aimed at a column that is not sortable warns once, instead of drawi
     render({ sort: { column: 1, direction: 'asc' } });
     assert.equal(messages.length, 1,
       'no caret, no target and no message is the silent way to be misconfigured');
-    assert.match(messages[0], /"Status"/, 'the message must name the column it landed on');
-    assert.match(messages[0], /sortable/);
+    const [first = ''] = messages;
+    assert.match(first, /"Status"/, 'the message must name the column it landed on');
+    assert.match(first, /sortable/);
 
     cleanup();
     render({ sort: { column: 1, direction: 'asc' } });

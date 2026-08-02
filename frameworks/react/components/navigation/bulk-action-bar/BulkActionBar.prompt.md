@@ -11,6 +11,18 @@ Bulk actions (H7). Appears when there's a selection and operates on the set. Com
 
 `clearable` (default `true`) gates the Clear control; pass `clearable={false}` to hide it entirely.
 
+### It stacks when its own container is narrow
+
+`layout` defaults to `auto`, which measures **the bar's own container** rather than the viewport
+and drops the count, the actions and Clear onto separate rows below `--bp-sm`. Set `inline` when
+the bar sits somewhere you know is wide.
+
+**Stacking reorders nothing**, and that is the whole reason the member exists rather than a
+consumer reaching in with CSS. Reordering the bar's children by position moves what is on screen
+and leaves the tab sequence where it was, so the focus order and the reading order stop matching,
+and it breaks again the next time anything inside the bar moves. Both layers assert that the
+control order is identical in the two shapes.
+
 **Do / Don't**
 - Mark `destructive` on irreversible actions and chain it with `ConfirmDialog`.
 - Don't fire bulk actions without confirmation or without leaving `onClear` to undo the selection.
