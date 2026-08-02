@@ -17,6 +17,7 @@ import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs.ts
 import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed.tsx';
 import { Table } from '../components/display/table/Table.tsx';
 import { Pagination } from '../components/navigation/pagination/Pagination.tsx';
+import { Sheet } from '../components/feedback/sheet/Sheet.tsx';
 
 interface MemberSpec { form?: string; type?: string; required?: boolean; description?: string }
 const CONTRACTS = join(REACT_COMPONENTS, '../../../contracts/api/components');
@@ -30,6 +31,7 @@ const WITH_A_BLANK_NAME = new Map([
   ['ActivityFeed', () => <ActivityFeed label={BLANK} items={[]} />],
   ['Table', () => <Table label={BLANK} columns={[{ header: 'A' }]} />],
   ['Pagination', () => <Pagination ariaLabel={BLANK} page={1} pageCount={3} />],
+  ['Sheet', () => <Sheet open title={BLANK}>Two line items.</Sheet>],
 ]);
 
 export function guardedNames(dir: string, read = readFileSync, list = readdirSync) {

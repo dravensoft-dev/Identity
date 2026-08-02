@@ -24,6 +24,7 @@
     "ErrorState",
     "Onboarding",
     "ProgressBar",
+    "Sheet",
     "Spinner",
     "Toast",
     "ToastHost",

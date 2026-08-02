@@ -5,6 +5,7 @@ export * from './empty-state';
 export * from './error-state';
 export * from './onboarding';
 export * from './progress-bar';
+export * from './sheet';
 export * from './spinner';
 export * from './toast';
 export * from './toast-host';

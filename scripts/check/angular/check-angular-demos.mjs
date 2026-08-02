@@ -21,6 +21,7 @@ export const PAGED = new Set([
   'Select',
   'Toast',
   'ToastHost',
+  'Sheet',
   'Menu',
   'ProgressBar',
   'Spinner',

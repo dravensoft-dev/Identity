@@ -1,0 +1,37 @@
+<!-- @dsCard group="Tailwind" viewport="860x488" name="Sheet" subtitle="A non-modal edge panel, open and folded, rendered from Sheet.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../../intro/styles.css">
+<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+
+const manifest = await (await fetch('./Sheet.manifest.json')).json();
+
+function sheet({ placement = 'bottom', title, body, collapsed = false }) {
+  const c = classesFor(manifest, { placement, open: true });
+  const head = el('div', { class: c.head },
+    el('button', { class: c.trigger, type: 'button', 'aria-expanded': String(!collapsed) },
+      el('span', { text: title }),
+      el('i', { class: `${c.caret} ph-bold ${collapsed ? 'ph-caret-up' : 'ph-caret-down'}`, 'aria-hidden': 'true' })),
+    el('button', { class: c.close, type: 'button', 'aria-label': 'Close' },
+      el('i', { class: 'ph-bold ph-x', 'aria-hidden': 'true' })));
+  const parts = [head];
+  if (!collapsed) parts.push(el('div', { class: c.body, role: 'group', text: body }));
+  parts.push(el('div', { class: c.foot }, el('span', { class: 'font-mono text-ctl-sm text-base-content/62', text: 'Bs. 1 480,00' })));
+  return el('div', { class: c.root.replace(/\bfixed\b/, 'relative') }, ...parts);
+}
+
+mountSpecimen({ sections: [
+  section('Open, and folded — the header and the footer stay either way', [
+    sheet({ placement: 'end', title: 'Cart', body: 'Two line items, and the total below stays put while this scrolls.' }),
+    sheet({ placement: 'end', title: 'Cart', body: '', collapsed: true }),
+  ]),
+  section('No scrim, no modality — the page behind is untouched', [
+    el('div', { class: 'font-body text-sm text-base-content/62' },
+      'The recipe pins the panel with `fixed`; this specimen swaps that one utility for `relative` so both '
+      + 'states fit in one card. Everything else, including the stacking slot, is the manifest as shipped.'),
+  ]),
+]});
+</script></body></html>
