@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A publish run says what it decided without being unfolded.** The guard writes the version on
+  the registry, the version in the tree, its decision and the reason to the run summary, and the
+  publish job records what the registry now serves. The common answer is that there is nothing to
+  publish, and that answer used to live only in a log nobody opens. A `workflow_run` workflow is
+  a separate run and never appears in the panel of the run that triggered it, so its own page is
+  the only place the answer can be.
+
 ### Fixed
 
 - **A publish workflow can be dispatched by hand.** `workflow_run` reaches only a workflow

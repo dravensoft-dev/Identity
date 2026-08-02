@@ -87,6 +87,13 @@ would mean the change is never published at all. What each package carries is
 `scripts/ci/arena/package-inputs.mjs`, whose suite holds the list to what the assemblers
 actually read.
 
+**Whatever it answers, the guard writes that answer to the run summary**: the version on the
+registry, the version in this tree, the decision, and the reason for it. The common answer is
+that there is nothing to publish, and an answer readable only by opening a log is one nobody
+reads. These runs are not jobs of `Arena main` and never appear in its panel, because a
+`workflow_run` workflow is a separate run; each publish job is on its own workflow's page, and
+the summary is what that page says without being unfolded.
+
 When the guard says yes, the publish job runs `check-release.mjs` first, so a version bump
 pushed without its tag is refused loudly rather than published quietly. Then it builds,
 assembles, holds the manifests, and packs. The tarball and a small record of what was
