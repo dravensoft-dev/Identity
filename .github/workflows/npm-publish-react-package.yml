@@ -9,6 +9,7 @@ on:
     workflows: ["Arena main"]
     types: [completed]
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,7 +26,7 @@ env:
 jobs:
   guard:
     name: is there anything to publish
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
@@ -34,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
           fetch-tags: true
       - uses: oven-sh/setup-bun@v2
@@ -96,7 +97,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
           fetch-tags: true
       - uses: oven-sh/setup-bun@v2
@@ -136,7 +137,7 @@ jobs:
             --arg package "$PACKAGE" \
             --arg version "${{ needs.guard.outputs.version }}" \
             --arg published "${{ needs.guard.outputs.published }}" \
-            --arg commit "${{ github.event.workflow_run.head_sha }}" \
+            --arg commit "${{ github.event.workflow_run.head_sha || github.sha }}" \
             --arg run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             '{package: $package, version: $version, previous: $published, commit: $commit, run: $run}' \
             > publish-record.json

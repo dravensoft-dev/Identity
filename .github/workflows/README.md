@@ -68,6 +68,14 @@ suite would otherwise print a confident table of zeros.
 
 Each fires on a green `Arena main`, guards, and usually does nothing.
 
+**Each is also dispatchable by hand**, and that path exists because the automatic one has a
+gap nothing in this repository can close: `workflow_run` reaches only a workflow already
+registered on the default branch, so the push that first puts one there cannot dispatch it,
+and re-running that push replays the original event rather than asking the question again.
+A release whose event is missed that way has no other way through. A manual run is safe for
+the same reason an automatic one is: the guard and `check-release.mjs` both run, so the
+answer to "is there anything to publish" is reached identically whoever asked.
+
 The guard asks two questions in order. Is `plugin.json`'s version already on the registry?
 Then there is nothing to do, which is almost every push. Otherwise, has anything this
 package carries moved since the tag of the version that **is** on the registry? If not, this

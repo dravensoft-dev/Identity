@@ -4,6 +4,18 @@ All notable changes to Arena, the Dravensoft Design System, are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **A publish workflow can be dispatched by hand.** `workflow_run` reaches only a workflow
+  already registered on the default branch, so the push that first puts one there cannot
+  dispatch it, and re-running that push replays the original event rather than asking again. A
+  release whose event falls in that gap had no other way through. Both publish workflows take
+  `workflow_dispatch` now, reading `github.sha` where the automatic path reads the triggering
+  run's head. The guard and `check-release.mjs` run either way, so a manual run publishes
+  exactly what an automatic one would and refuses exactly what it would refuse.
+
 ## [5.1.0] - 2026-08-01
 
 ### Added
