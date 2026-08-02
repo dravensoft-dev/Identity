@@ -17,6 +17,13 @@ const EXEMPT = new Map([
    + 'number nobody chose into the Overview beside values that were chosen. Onboarding is the one '
    + 'component that compares against viewport HEIGHT; the reserve it subtracts IS a token '
    + '(--onboarding-height-reserve).'],
+  ['NARROW_WIDTH',
+   'A test fixture width, and only ever that: it is the container size a suite reports through a '
+   + 'stubbed ResizeObserver so a responsive branch can be reached at all, since happy-dom has one '
+   + 'that never fires. It is not a decision anybody made about layout, and the number that IS the '
+   + 'decision is the breakpoint the branch compares against, which is a token both layers read. '
+   + 'The suites deliberately do not agree on it either, since a value below the threshold is the '
+   + 'whole requirement, so drift between the layers costs nothing here.'],
 ]);
 
 export function numericConstants(source) {

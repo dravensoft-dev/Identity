@@ -8,12 +8,12 @@ provider to wrap your tree in.
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
 
-**No Tailwind here, and Phosphor is required.** This layer styles itself with inline style
-objects reading the token custom properties, so it carries neither `tailwind-variants` nor
-`tailwind-merge`; the Angular package does, because its components are class strings from a
-shared recipe layer. What both packages share is the icon coupling: every `icon` member is a
-Phosphor class name a component renders, so `@phosphor-icons/web` is a peer dependency and
-not an option.
+**No CSS toolchain, and Phosphor is required.** Every component styles itself with inline
+style objects reading Arena's token custom properties, so this package brings no utility
+sheet, no class names and no styling runtime with it: the only stylesheet you import is the
+token one. What it does require is the icon font. Every `icon` member is a Phosphor class
+name a component renders, never an SVG it bundles, so `@phosphor-icons/web` is a peer
+dependency and not an option.
 
 ## It works with the repository, and that is the point
 
