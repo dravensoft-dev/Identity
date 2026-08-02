@@ -34,6 +34,7 @@
   "lh": {
     "$type": "number",
     "$description": "Line heights",
+    "root": { "$value": 1.5, "$description": "What every element inherits until something declares otherwise. It is not a role like the three below, which a component picks on purpose; it is the floor, and it exists because a floor that each platform gets from somewhere else is a floor the two do not share. Tailwind's preflight sets exactly this number, so the Angular layer already had it and React, which loads no preflight, inherited the browser's `normal` instead: the same text stood about 7% shorter there, across 94 slots in 32 components, and nothing said so. Arena declares it now, in contracts/design/reset.css, so both layers inherit one value. The number matches what was already shipping rather than being chosen afresh." },
     "tight": { "$value": 0.98 },
     "snug": { "$value": 1.15 },
     "body": { "$value": 1.6 }
