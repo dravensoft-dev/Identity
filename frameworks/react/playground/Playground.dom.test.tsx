@@ -4,9 +4,10 @@ import React from 'react';
 import { mount, cleanup, act } from '../test/Harness.tsx';
 import { Playground } from './Playground.tsx';
 import {
-  baseState, readState, writeSearch, boundValues, applyBind, encode, decode, usePlayground,
-} from './PlaygroundState.ts';
-import type { Knob, KnobModel, PlaygroundState } from './PlaygroundState.ts';
+  baseState, readState, writeSearch, boundValues, applyBind, encode, decode,
+} from './PlaygroundCodec.generated.ts';
+import { usePlayground } from './PlaygroundState.ts';
+import type { Knob, KnobModel, PlaygroundState } from './PlaygroundCodec.generated.ts';
 
 afterEach(cleanup);
 

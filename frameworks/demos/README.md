@@ -13,6 +13,15 @@ per layer is a copy that can disagree. It is not under `contracts/` because a fi
 normative: a seed is an example, and `check-contracts.mjs` holds `contracts/api` to exactly
 `components/` and `types/`.
 
+**`PlaygroundCodec.ts` beside the fixtures is the second thing here, and it is code rather than
+data.** What a knob holds, whether it is bound and how both round-trip through a query string
+are authored once and emitted into every layer as `PlaygroundCodec.generated.ts` by
+`bun run generate:playgrounds`. It is here for the same reason the fixtures are: two
+hand-written copies of `decode()` that drift render the **same URL** differently in each layer,
+which is the one failure this whole arrangement exists to prevent, and no gate would see it,
+since each layer would compile and each suite would pass. Only a person holding two pages side
+by side would notice. Edit the source, never a copy.
+
 `check:playgrounds` reads every file here against its contract and fails on anything the
 contract does not license. A fixture is type-checked rather than merely parsed, because a
 component drawn from a wrong seed still draws: the page renders, it lies, and no other gate

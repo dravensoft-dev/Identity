@@ -20,7 +20,7 @@ case fails until it is argued for.
 
 | domain | scripts | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 3 | writes into the framework layers, plus `contracts/` |
+| [`arena/`](./arena/README.md) | 4 | writes into the framework layers, plus `contracts/` |
 | [`core/`](./core/README.md) | 2 | `contracts/` and `assets/`, which the design layer owns |
 | `react/`, `angular/`, `tailwind/` | none | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 

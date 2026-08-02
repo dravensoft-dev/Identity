@@ -7,6 +7,13 @@
     "tsBuildInfoFile": "./build/demo/tsc/.tsbuildinfo"
   },
   "files": [],
-  "include": ["./components/**/*.ts", "./*.ts"],
-  "exclude": ["./**/*.test.ts", "./build/**"]
+  "include": [
+    "./components/**/*.ts",
+    "./playground/**/*.ts",
+    "./*.ts"
+  ],
+  "exclude": [
+    "./**/*.test.ts",
+    "./build/**"
+  ]
 }

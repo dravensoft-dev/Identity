@@ -31,6 +31,10 @@ export const UNTRACKED = {
     'the compiled sibling of a component source, read only by a demo page.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
+  'frameworks/react/playground/PlaygroundCodec.generated.ts':
+    'the URL codec, emitted into every layer from frameworks/demos/PlaygroundCodec.ts so the same '
+    + 'link cannot resolve to two different views. check:playgrounds holds each copy to the source.',
+  'frameworks/angular/playground/PlaygroundCodec.generated.ts': 'the same file, emitted into the other layer.',
   'frameworks/react/playground/*.generated.js':
     'the same, for the harness every generated demo page mounts. It is not part of the package: '
     + 'tsconfig.dist.json excludes the directory and no barrel exports it.',

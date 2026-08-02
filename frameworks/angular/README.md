@@ -113,6 +113,24 @@ consumers are the three charts **and** `arena-calendar-event`, which reads `catC
 chip's identity colour. The name matches the placement: a module a schedule grid consumes is
 not "chart internals".
 
+`playground/` sits beside them and is the one directory here that never ships: the package
+build stages nothing under it and `index.ts` names none of it. It holds the harness every
+generated demo page mounts, `Playground.ts` for the panel and the event log and
+`PlaygroundState.ts` for the store behind them. Its classes are `intro/playground.css`'s, which
+sits outside every layer so each harness draws the same frame from the same bytes, and a
+difference seen between two layers is then a difference in the component rather than in the
+furniture around it.
+
+**`PlaygroundCodec.generated.ts` beside them is a copy, not a source.** What a knob holds,
+whether it is bound and how both round-trip through a query string is authored once in
+`frameworks/demos/PlaygroundCodec.ts` and emitted into every layer, because two hand-written
+copies of `decode()` that drift render the **same URL** differently in each layer, which is the
+one failure the arrangement exists to prevent and the one nothing else would catch: each layer
+would compile, each suite would pass, and only a person holding two pages side by side would
+see it. `check:playgrounds` holds each copy to the source and to the other copy.
+`Playground.test.ts` asserts the codec again here rather than trusting the other layer's suite,
+because this copy is what this layer compiles.
+
 **`viewportBelow(name)` answers the other half of the breakpoint question, and it is a
 different question.** `containerWidth` measures a box, which is what a component needs, because
 a component may be rendered anywhere and the viewport says nothing about how much room it was

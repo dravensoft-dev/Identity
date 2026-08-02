@@ -88,7 +88,7 @@ function stage(root) {
 
   const layer = join(root, LAYER);
   const staged = [];
-  for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html'))) {
+  for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html') && !p.includes('/playground/'))) {
     const rel = relative(layer, file).split(sep).join('/');
     const depth = rel.split('/').length - 1;
     const text = readFileSync(file, 'utf8');

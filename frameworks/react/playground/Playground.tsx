@@ -1,22 +1,15 @@
 import React from 'react';
-import type { Knob, KnobField, KnobModel, Option, Playground as PlaygroundHandle } from './PlaygroundState.ts';
+import { linesToList, listToLines, optionFor } from './PlaygroundCodec.generated.ts';
+import type { Knob, KnobField, KnobModel, Option } from './PlaygroundCodec.generated.ts';
+import type { Playground as PlaygroundHandle } from './PlaygroundState.ts';
 
-export type { Knob, KnobField, KnobModel, Option } from './PlaygroundState.ts';
-export type { PlaygroundState, LogEntry, Playground as PlaygroundHandle } from './PlaygroundState.ts';
+export type { Knob, KnobField, KnobModel, Option, PlaygroundState, LogEntry } from './PlaygroundCodec.generated.ts';
+export type { Playground as PlaygroundHandle } from './PlaygroundState.ts';
 
 export interface PlaygroundProps {
   model: KnobModel;
   play: PlaygroundHandle;
   children?: React.ReactNode;
-}
-
-function linesToList(text: string, itemForm: 'string' | 'number' | undefined): unknown[] {
-  const lines = text.split('\n').map((line) => line.trim()).filter((line) => line.length > 0);
-  return itemForm === 'number' ? lines.map((line) => Number(line)) : lines;
-}
-
-function listToLines(value: unknown): string {
-  return Array.isArray(value) ? value.map((item) => String(item)).join('\n') : '';
 }
 
 function OptionList({ options }: { options: Option[] }) {
@@ -40,7 +33,7 @@ function FieldRow({ knob, field, play }: { knob: Knob; field: KnobField; play: P
       {field.options
         ? (
           <select className="pg-field" value={String(current ?? '')}
-            onChange={(e) => write(field.options?.find((o) => String(o) === e.target.value) ?? e.target.value)}>
+            onChange={(e) => write(optionFor(field.options, e.target.value))}>
             <OptionList options={field.options} />
           </select>
         )
@@ -72,7 +65,7 @@ function Control({ knob, play }: { knob: Knob; play: PlaygroundHandle }) {
   if (knob.control === 'select') {
     return (
       <select id={id} className="pg-field" disabled={disabled} value={String(value ?? '')}
-        onChange={(e) => play.setValue(knob.member, knob.options?.find((o) => String(o) === e.target.value) ?? e.target.value)}>
+        onChange={(e) => play.setValue(knob.member, optionFor(knob.options, e.target.value))}>
         <OptionList options={knob.options ?? []} />
       </select>
     );

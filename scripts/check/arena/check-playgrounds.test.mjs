@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   coverageProblems, shapeProblems, seedProblems, slotProblems, bindProblems, hostProblems,
   valueProblems, objectProblems, nodeProblems, fixtureProblems, citationProblems,
-  loadContracts, loadFixtures, loadTypes, citingFiles, basenameIndex,
+  loadContracts, loadFixtures, loadTypes, citingFiles, basenameIndex, emissionProblems,
 } from './check-playgrounds.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -200,4 +200,27 @@ test('every real fixture in the tree holds against its real contract', () => {
   const problems = [...real].flatMap(([name, contract]) =>
     fixtureProblems(name, contract, fixtures.get(name), real, realTypes));
   assert.deepEqual(problems, []);
+});
+
+test('the codec emission is compared against the source, so a hand-edited copy fails', () => {
+  assert.deepEqual(emissionProblems(root), []);
+  const files = new Map([['frameworks/react/playground/PlaygroundCodec.generated.ts', 'not what is on disk']]);
+  assert.match(emissionProblems(root, files)[0], /stale — run bun run generate:playgrounds/);
+});
+
+test('a missing copy is named with the command that writes it', () => {
+  const files = new Map([['frameworks/react/playground/Nothing.generated.ts', 'x']]);
+  assert.match(emissionProblems(root, files)[0], /missing — run bun run generate:playgrounds/);
+});
+
+test('copies that are not byte-identical fail, which is the claim the whole emission exists to make', () => {
+  const files = new Map([
+    ['frameworks/react/playground/PlaygroundCodec.generated.ts', 'a'],
+    ['frameworks/angular/playground/PlaygroundCodec.generated.ts', 'b'],
+  ]);
+  assert.ok(emissionProblems(root, files).some((p) => /the same URL can resolve to two different views/.test(p)));
+});
+
+test('an emission of nothing is a failure rather than a clean pass', () => {
+  assert.match(emissionProblems(root, new Map())[0], /an empty emit is a failure/);
 });
