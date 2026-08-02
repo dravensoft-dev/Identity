@@ -28,10 +28,6 @@ const AUTHORED_TWICE = 'React authors this component\'s appearance as inline sty
 export const DIVERGENT = new Map([
   ['Calendar', `3331 pixels across the grid. ${AUTHORED_TWICE}`],
   ['CalendarEvent', `3294 pixels across the grid it is drawn into. ${AUTHORED_TWICE}`],
-  ['DoughnutChart', '2 pixels on the ring, worst channel 46, at a single point of one arc. The three SVG '
-    + 'charts carry no manifest by design and are outside the migration, so this one is measured and not '
-    + 'yet explained: it is most likely a rounding difference in a path coordinate, and it is declared here '
-    + 'rather than tolerated silently, because a threshold that hid it would hide a real one-pixel defect too.'],
 ]);
 
 export function pairPages(pages = pagePaths()) {
