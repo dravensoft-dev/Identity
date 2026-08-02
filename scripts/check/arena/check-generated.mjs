@@ -34,6 +34,8 @@ export const UNTRACKED = {
   'frameworks/react/DataVisuals.generated.js':
     'a compiled layer-root helper a demo page loads. A browser cannot execute TypeScript, so a '
     + 'page importing one needs it compiled.',
+  'frameworks/react/AnchorActivation.generated.js':
+    'the same, for the predicate that decides which activation of an anchor is the router\'s.',
   'frameworks/react/Theme.generated.js': 'the same, for the theme helper.',
   'frameworks/react/UseContainerWidth.generated.js': 'the same, for the container-width hook.',
   'frameworks/react/UseDialogModal.generated.js': 'the same, for the modal focus helper.',

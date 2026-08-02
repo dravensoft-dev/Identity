@@ -78,6 +78,23 @@ if it and this paragraph ever disagree, the file wins. Every value in it is a
 `var()` into a token, and each animation answers `prefers-reduced-motion` on its
 own terms: decorative motion stops, motion that reports work slows.
 
+## The one hand-authored treatment, and why it is not a manifest slot
+
+`Numerals.css` holds `.arena-num`: the mono face and `tabular-nums`, and no colour. It is here
+for the same reason the keyframes are, that it belongs to no surface. A manifest mirrors a
+surface and this is a treatment, applied to whatever figure a consumer is drawing themselves,
+in a definition list, a KPI or a cart line.
+
+It exists because `TableColumn.mono` does two things, the mono face **and** the gold ink, and
+the ink is what stops the treatment travelling: gold reads as an identifier, so a sale total in
+gold inside a card says the wrong thing. `mono` is this utility plus the ink, and
+`Table.manifest.json`'s mono slots carry the same `tabular-nums`, so a column of figures aligns
+by digit in both places.
+
+**A second one is not free.** Every rule here is a class nothing gates against a contract, so
+the bar for adding another is that it belongs to no surface at all and that some component's
+own treatment is defined as it plus something.
+
 ## Arbitrary values are a build failure
 
 `bun run check:arbitrary` fails on any bracket carrying a raw literal such as
@@ -145,8 +162,9 @@ extension it is itself a failure.
 
 **Directories are `kebab-case` and lowercase; a file name begins with a capital, and a
 multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
-`lowerCamelCase`.** So the layer root's seven source files are `Tv.ts`,
-`ManifestClasses.js`, `Theme.css`, `Utilities.generated.css`, `Animations.css`, `Specimen.css` and
+`lowerCamelCase`.** So the layer root's eight source files are `Tv.ts`,
+`ManifestClasses.js`, `Theme.css`, `Utilities.generated.css`, `Animations.css`, `Numerals.css`,
+`Specimen.css` and
 `Specimen.js`. This file sits beside them and complies as it stands, `README` being a
 capital-initial name like any other, and a component's three files sit together in one
 directory:

@@ -10,7 +10,7 @@
     "width": { "form": "primitive", "type": "string",
                "description": "A CSS width for the column. Omit to let the table distribute." },
     "mono": { "form": "primitive", "type": "boolean", "default": false,
-              "description": "Draw this column's cells in the mono face and the gold ink -- for identifiers and figures." },
+              "description": "Draw this column's cells in the mono face, figure-aligned, and in the gold ink -- for identifiers and figures. It is the `.arena-num` utility plus the ink, and the split is worth knowing, because the ink is what stops the treatment travelling: gold reads as an identifier, so a sale total in gold inside a card says the wrong thing. For a figure outside a table, reach for the utility, which is the same face and the same digit alignment and no colour." },
     "sortable": { "form": "primitive", "type": "boolean", "default": false,
                   "description": "Whether this column's header is an activation target. A declared boolean rather than \"is sortChange bound?\" -- R6, the same reason TableRow.interactive is one. It costs no tab stop: the header row is already row 0 of the grid's roving cursor, so a sortable header is activated with Enter or Space on the cell the user is already on. Without Table.sort no header is a target however many columns declare it, because a control that draws a direction it does not know is worse than no control." },
     "mobileLayout": { "form": "enum", "type": "TableCellLayout", "default": "row",

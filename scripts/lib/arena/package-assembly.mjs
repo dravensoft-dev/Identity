@@ -26,6 +26,7 @@ export const CSS_CHAIN = [
   { from: 'contracts/design-generated/spacing.generated.css', to: 'css/spacing.css' },
   { from: 'contracts/design-generated/effects.generated.css', to: 'css/effects.css' },
   { from: 'contracts/design/colors.css', to: 'css/colors.css' },
+  { from: 'contracts/design/environment.css', to: 'css/environment.css' },
 ];
 
 export const arenaCssHeader = (name) => [
@@ -33,7 +34,8 @@ export const arenaCssHeader = (name) => [
   '   Import this FIRST, then the file arena-theme wrote from your arena.config.json,',
   '   whose palette and font values are meant to win. reset.css leads so anything can',
   '   override it, and colors.css derives its muted levels from --color-base-content,',
-  '   so it follows the palette rather than defining one. */',
+  '   so it follows the palette rather than defining one. environment.css composes the',
+  "   device's safe-area insets with the spacing scale and defines no length of its own. */",
 ].join('\n');
 
 export function excluded(name) {

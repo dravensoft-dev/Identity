@@ -15,7 +15,7 @@ export const GENERATED = 'design-generated';
 export const SHAPE = new Map([
   ['api', { dirs: ['components', 'types'], files: ['README.md'], ext: null }],
   ['behaviour', { dirs: [], files: ['README.md'], ext: '.json' }],
-  ['design', { dirs: [], files: ['README.md', 'TokenTypes.md', 'colors.css', 'reset.css'], ext: '.json' }],
+  ['design', { dirs: [], files: ['README.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], ext: '.json' }],
 ]);
 
 export function rootProblems(entries) {

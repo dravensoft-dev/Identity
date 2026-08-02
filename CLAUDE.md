@@ -135,9 +135,10 @@ unstyled, **silently**.
 ## Architecture
 
 **Tokens are the only styling layer, and their values are DTCG JSON.** `intro/styles.css` does
-nothing but `@import` seven files split across two directories: `contracts/design-generated/`,
-which holds five CSS files, and `contracts/design/`, which holds two hand-authored ones:
-`reset.css`, imported **first** so anything can override it, and `colors.css`. Four of those five
+nothing but `@import` eight files split across two directories: `contracts/design-generated/`,
+which holds five CSS files, and `contracts/design/`, which holds three hand-authored ones:
+`reset.css`, imported **first** so anything can override it, plus `colors.css` and
+`environment.css`. Four of those five
 carry the `.generated.` infix, so the name says it: their
 values are authored in strictly-conformant DTCG 2025.10 JSON under `contracts/design/` and
 emitted by `bun run generate:tokens`. Edit the JSON and rebuild.
@@ -156,13 +157,17 @@ skin value; `palette.generated.css` is imported before it. `fonts.generated.css`
 `scripts/generate/core/fetch-fonts.mjs`.
 
 **The layer contract.** DTCG owns *values*; the composition layer owns *how values are
-combined at runtime*. Two things DTCG deliberately does not model, and that therefore live
+combined at runtime*. Three things DTCG deliberately does not model, and that therefore live
 in each platform's own idiom: the runtime colour derivations (`color-mix`, in
-`contracts/design/colors.css`) and `@font-face` bundling (`contracts/design-generated/fonts.generated.css`).
+`contracts/design/colors.css`), `@font-face` bundling
+(`contracts/design-generated/fonts.generated.css`), and the device's own geometry, meaning the
+safe-area insets a browser resolves per device at paint, which have no value until there is a
+screen and so give DTCG nothing to hold (`contracts/design/environment.css`, where each is a
+`max()` of the token that applies with no inset and what the device reports).
 A new framework target rebuilds that thin layer in its idiom on top of the same standard
 values, and never re-defines a value.
 
-**A third thing lives in the composition layer: a token whose consumer is JavaScript rather
+**A fourth thing lives in the composition layer: a token whose consumer is JavaScript rather
 than CSS.** A token flagged `$extensions["com.dravensoft.arena"].script: true` emits twice: the
 custom property it always would have, and a bare number exported from each layer's
 `Tokens.generated.*`. Emission is **per layer** so a component's import never crosses the

@@ -36,8 +36,12 @@
   "gutter": { "$type": "dimension", "$value": { "value": 88, "unit": "px" } },
   "layout": {
     "$type": "dimension",
-    "$description": "Application frame. The width of the console shell's navigation column:\nexample code, and therefore the width a consumer copies.",
-    "sidebar": { "$value": { "value": 232, "unit": "px" } }
+    "$description": "Application frame. Example code, and therefore the numbers a consumer\ncopies. Arena draws neither of these itself: the sidebar is the console shell's\nand the bar is a phone shell's, and they are declared for the same reason --z-nav\nis, because the frame a consumer builds is part of the system and every one of\nthem otherwise invents its own number.",
+    "sidebar": { "$value": { "value": 232, "unit": "px" }, "$description": "The width of the console shell's navigation column." },
+    "bar": {
+      "$value": { "value": 64, "unit": "px" },
+      "$description": "The height of a fixed bottom navigation bar, the row of destinations a\nphone shell puts at the foot of the screen. It is read from outside the bar as often\nas inside it: the page reserves it as bottom padding so the last row is not covered,\nand a stack of toasts sits above it rather than under it, so a bar whose height only\nthe bar knows is a number retyped in three files. The safe-area inset is NOT included:\nadd var(--pad-safe-bottom) to it, since a value that already carried the inset could\nnot be used as a plain height. Not script-readable: nothing computes a position from\nit, a stylesheet holds every use, and a number bound at import time could not\nre-densify."
+    }
   },
   "bp": {
     "$type": "dimension",

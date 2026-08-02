@@ -50,7 +50,7 @@ The other two levels have no such directory because they emit nothing outside
 `Tokens.generated.*`, but those are emitted **per layer**, into the layer that consumes
 them, so a component's import never crosses a contract boundary. What makes `design`
 different is that its CSS ships to consumers directly: `intro/styles.css` imports all
-five, plus the hand-authored `design/colors.css`.
+five, plus the hand-authored `design/colors.css` and `design/environment.css`.
 
 So `design-generated/` is a fact about what this one level emits, not a convention
 waiting to be applied to the other two. `contracts/api-generated/` would be empty.
@@ -95,13 +95,14 @@ framework is added without touching the language.
 **The language**
 
 - `intro/styles.css`: the global entry point, `@import`s only. Consumers link this file.
-  Its seven `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
+  Its eight `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
 - `contracts/design/`: the DTCG 2025.10 source of every token value (`*.json`),
   `README.md` (the normative design specification), `TokenTypes.md` (the `$type` map and the
-  strict 2025.10 value formats), and two hand-authored
-  stylesheets: `colors.css` (aliases and `color-mix` derivations) and `reset.css`
-  (`box-sizing: border-box`, the box model both layers share). Neither is a value, which is why
-  neither is DTCG: values are what `design/` governs, and how a value is combined at runtime
+  strict 2025.10 value formats), and three hand-authored
+  stylesheets: `colors.css` (aliases and `color-mix` derivations), `environment.css` (the
+  `env()` safe-area insets composed with the spacing scale) and `reset.css`
+  (`box-sizing: border-box`, the box model both layers share). None is a value, which is why
+  none is DTCG: values are what `design/` governs, and how a value is combined at runtime
   belongs to each platform's own idiom.
 - `contracts/design-generated/`: the five built CSS files, `fonts.generated.css` (from
   `fetch-fonts.mjs`), plus `palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and

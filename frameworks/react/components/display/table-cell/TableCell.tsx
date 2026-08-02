@@ -28,6 +28,7 @@ export const CELL_BASE: React.CSSProperties = {
 
 export const valueStyle = (column: Pick<TableColumn, 'mono'>): React.CSSProperties => ({
   fontFamily: column.mono ? 'var(--font-mono)' : 'var(--font-body)',
+  fontVariantNumeric: column.mono ? 'tabular-nums' : undefined,
   color: column.mono ? 'var(--gold)' : 'var(--bone-dim)',
 });
 

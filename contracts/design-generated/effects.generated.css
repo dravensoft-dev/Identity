@@ -93,10 +93,11 @@
      Dialog and ConfirmDialog both sat at 1000, and ConfirmDialog opens from a
      Dialog, so it worked only by accident of mount order; Toast, the one thing
      that must float above everything, declared nothing at all. The order, least
-     to most interruptible: nav < dropdown < tooltip < modal < modal-nested <
-     palette < onboarding < toast.
+     to most interruptible: nav < sheet < dropdown < tooltip < modal <
+     modal-nested < palette < onboarding < toast.
    */
-  --z-nav:800; /* Fixed page navigation: a bottom bar, a sticky top bar. Arena draws none of these; the slot exists because the invariant is system-wide and a consumer's own shell is part of the system. Below dropdown, so a Menu opened from the bar covers it rather than resolving by DOM order, which is the failure this family was created to end */
+  --z-nav:800; /* Fixed page navigation: a bottom bar, a sticky top bar. Arena draws none of these; the slot exists because the invariant is system-wide and a consumer's own shell is part of the system. Below dropdown, so a Menu opened from the bar covers it rather than resolving by DOM order, which is the failure this family was created to end. A shell drawn against this slot also reads --pad-safe-bottom, in contracts/design/environment.css, and --layout-bar for its own height */
+  --z-sheet:850; /* A non-modal panel anchored to an edge: a cart, a filter drawer, a detail pane that leaves the page usable behind it. Arena draws none of these either, and the slot exists for the same reason nav does. Above nav, because a sheet that slides over a fixed bar and lands under it is the failure; below dropdown, because a Menu opened from inside the sheet belongs over it. It is NOT modal: a panel that takes the whole interaction is a Dialog, which is two slots higher and has a scrim to say so */
   --z-dropdown:900; /* Menu's panel: a dropdown anchored to its trigger */
   --z-tooltip:950; /* above dropdown, so a tooltip on a menu item wins */
   --z-modal:1000; /* Dialog */
