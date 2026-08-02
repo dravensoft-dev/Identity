@@ -32,15 +32,17 @@ export const PROSE_EXEMPT = {
 export const BANNED_PUNCTUATION = [['—', 'an em dash']];
 
 const SOURCE_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js'];
-const SCANNED_TREES = ['scripts', 'frameworks'];
+export const SCANNED_TREES = ['scripts', 'frameworks', '.github'];
 const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'dist']);
+
+export const READ_DESPITE_THE_DOT = new Set(['.gitkeep', '.github']);
 
 export { emittedTree };
 
 function walk(dir, keep, emitted) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') && entry.name !== '.gitkeep') continue;
+    if (entry.name.startsWith('.') && !READ_DESPITE_THE_DOT.has(entry.name)) continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       if (SKIPPED_DIRECTORIES.has(entry.name) || full === emitted) continue;

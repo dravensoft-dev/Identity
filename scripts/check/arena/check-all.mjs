@@ -1,24 +1,25 @@
-/* Runs every gate and the test suite unconditionally: one failure does not stop the
- * rest. A gate whose runtime dependency is missing exits 2 and is reported SKIP,
- * making the whole run INCOMPLETE rather than green.
- * testStep() below is the single authority for how the test suite is invoked, and
- * why it is two bun processes: --preload installs happy-dom PROCESS-wide, and a DOM
- * installed for a whole invocation also replaces Bun's own fetch, which turns
- * scripts/lib/arena/static-server.test.mjs's fetch assertion into a cross-origin
- * failure -- so scripts/ rides the DOM-free invocation, not the preloaded one. The
- * Angular emit is safe in either: its TestBed registration site is guarded rather
- * than throwing on a second call. Read the args here, never reconstruct them. */
+/* Runs the selected gates and the test suite: one failure does not stop the rest, and with
+ * no argument the selection is every domain, which is what `bun run check` gets. A gate whose
+ * runtime dependency is missing exits 2 and is reported SKIP, making the run INCOMPLETE.
+ * testStep() below is the single authority for how the test suite is invoked, and why it is
+ * two bun processes: --preload installs happy-dom PROCESS-wide, and a DOM installed for a
+ * whole invocation also replaces Bun's own fetch, which turns
+ * scripts/lib/arena/static-server.test.mjs's fetch assertion into a cross-origin failure --
+ * so scripts/ rides the DOM-free invocation, not the preloaded one. The Angular emit is safe
+ * in either: its TestBed registration site is guarded rather than throwing on a second call.
+ * Read the args here, never reconstruct them. */
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { DOMAINS } from '../../lib/arena/domains.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const checkRoot = join(here, '..');
 
-export const DOMAINS = ['core', 'react', 'angular', 'tailwind', 'arena'];
+export { DOMAINS };
 
 export const GATES = [
   { name: 'check:docs', file: 'arena/check-docs.mjs' },
@@ -56,6 +57,32 @@ export const GATES = [
   { name: 'check:assertions', file: 'angular/check-assertions.mjs' },
   { name: 'check:cdk', file: 'angular/check-cdk.mjs' },
 ];
+
+export function gatesFor(domains) {
+  const unknown = domains.filter((d) => !DOMAINS.includes(d));
+  if (unknown.length > 0) {
+    throw new Error(`check-all: no domain called ${unknown.join(', ')}; the five are ${DOMAINS.join(', ')}`);
+  }
+  const selected = GATES.filter((g) => domains.includes(g.file.split('/')[0]));
+  if (selected.length === 0) {
+    throw new Error(`check-all: ${domains.join(', ')} selected no gate, and a run of nothing reports nothing wrong with everything`);
+  }
+  return selected;
+}
+
+export function parseCheckArgs(argv) {
+  let domains = DOMAINS;
+  let tests = true;
+  for (const arg of argv) {
+    if (arg === '--no-tests') { tests = false; continue; }
+    if (arg.startsWith('--domain=')) {
+      domains = arg.slice('--domain='.length).split(',').map((d) => d.trim()).filter(Boolean);
+      continue;
+    }
+    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b> and --no-tests`);
+  }
+  return { domains, tests };
+}
 
 export function testStep({ isBun, testFiles }) {
   if (isBun) return [
@@ -107,11 +134,29 @@ export function testFilesUnder(dir) {
 }
 
 function main() {
-  const results = GATES.map(({ name, file }) => runStep(name, [join(checkRoot, file)]));
+  let selection;
+  try {
+    selection = parseCheckArgs(process.argv.slice(2));
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
 
-  const isBun = Boolean(process.versions.bun);
-  const testFiles = testFilesUnder(join(repoRoot, 'scripts')).sort();
-  for (const { name, args } of testStep({ isBun, testFiles })) results.push(runStep(name, args));
+  let gates;
+  try {
+    gates = gatesFor(selection.domains);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+
+  const results = gates.map(({ name, file }) => runStep(name, [join(checkRoot, file)]));
+
+  if (selection.tests) {
+    const isBun = Boolean(process.versions.bun);
+    const testFiles = testFilesUnder(join(repoRoot, 'scripts')).sort();
+    for (const { name, args } of testStep({ isBun, testFiles })) results.push(runStep(name, args));
+  }
 
   console.log(`\n${'-'.repeat(60)}`);
   console.log(summarize(results));

@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Arena has CI.** Four workflows under `.github/workflows/`. A pull request builds once and
+  then fans out over four test jobs, `core` always and the three layers by what the diff
+  reaches; `main` runs every gate and the whole suite and reports the passes per domain; and two
+  publish workflows fire on a green `main`, each publishing its package over OIDC only when
+  something that package carries has moved since the version already on the registry. So a
+  package's latest version is the last release that changed it, and the two can differ.
+  `.github/workflows/README.md` says why, and both `PACKAGE.md` files point a consumer at it.
+- **A fourth phase under `scripts/`, `ci/`.** What a runner asks and no gate answers: which
+  layers a diff reaches, what the suite reported per domain, what each package is assembled
+  from. Every rule lives in a module with a suite beside it rather than in YAML, because a
+  routing rule nothing tests reports green over a tree it never opened. `check-all.mjs` gained
+  `--domain=` and `--no-tests`, and its suite asserts the four CI jobs partition `GATES`, so a
+  gate cannot land and then run in no job. `check:docs` now reads `.github/`.
+
 - **`Table` sorts and pages.** `TableColumn.sortable` plus `Table.sort`/`sortChange` and
   `Table.page`/`pageChange`. Both are controlled, because Table does not hold the rows: it draws
   the caret, sets `aria-sort`, draws its own `Pagination` named from `label`, and says what was
@@ -42,6 +56,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Angular's build output moved into the layer that emits it**, from `/build/` to
+  `frameworks/angular/build/{demo,test,package}/`, dropping the `angular-` prefix that named
+  nothing there. The exclusion keeping it out of every walk is anchored to that path rather than
+  to the directory name, and lives once as `emittedTree()` in `lib/arena/layers.mjs`: a walker
+  skipping every directory called `build` would also skip `scripts/build/`, the phase directory.
 - **An empty `Table` draws no grid at all**, header row included, in both layers. A `role="grid"`
   holding neither a header nor a row is a degenerate render, and a column head over a "no
   results" sentence describes a table that is not there. Measured rather than argued: across

@@ -221,6 +221,10 @@ To avoid a flash on first paint, apply the class before your stylesheet loads:
 Every component, its types, the four layer helpers, the invariant stylesheets, and the
 `arena-theme` command. No tests, no demo pages, no font binaries, and no icons.
 
+## Why might this package's latest version not match Arena's latest version?
+
+[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/README.md#why-are-the-published-package-versions-not-identical)
+
 ## License
 
 MIT. See the repository.

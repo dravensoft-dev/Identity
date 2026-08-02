@@ -10,6 +10,7 @@ scripts/
   build/      compiles: JSX to JS, TypeScript to ESM, a CSS layer, a vendor bundle
   generate/   emits source from data: DTCG JSON to CSS, contracts to types, fonts
   check/      the gates
+  ci/         what a runner asks: what to run, what the suite reported, what to publish
 ```
 
 Each phase has its own README, and each `<phase>/<domain>/` that holds scripts has a table
@@ -19,9 +20,10 @@ saying why every file in it exists.
   A fresh clone must build before `bun run demos` or `bun run check` mean anything.
 - [`generate/README.md`](./generate/README.md): why generate is not build.
 - [`check/README.md`](./check/README.md): the shape of a gate, and the SKIP protocol.
+- [`ci/README.md`](./ci/README.md): what a runner asks, and why the answers carry suites.
 - [`lib/README.md`](./lib/README.md): the bottom of the graph, and how a module is placed.
 
-`lib/` and the three phases all hold the same five domains, and **all five exist even when
+`lib/` and the four phases all hold the same five domains, and **all five exist even when
 empty**: a `.gitkeep` marks a combination nothing occupies yet, so the shape stays legible
 rather than implied:
 
@@ -47,8 +49,10 @@ and `repo-root.mjs`, because it belongs to no layer in particular. Never place a
 and is still `core`.
 
 **An npm script's prefix names its phase directory.** `bun run generate:tokens` runs something
-under `generate/`, `bun run build:demos` something under `build/`. Three gates have no npm
-script and are run by path: `check-ramp`, `check-text-contrast` and `check-release`.
+under `generate/`, `bun run build:demos` something under `build/`. The reverse does not hold:
+a script worth running only from a workflow needs no entry. `check-release` is the one gate
+run by path, and under `ci/` only `summarize-tests` has a script, because the other two read
+stdin or are imported.
 
 ## Rules a script here holds to
 

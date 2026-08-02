@@ -1,0 +1,212 @@
+name: Arena PR
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUN_VERSION: 1.3.14
+  CHROME_PATH: /usr/bin/google-chrome
+
+jobs:
+  changes:
+    name: route
+    runs-on: ubuntu-latest
+    outputs:
+      react: ${{ steps.layers.outputs.react }}
+      angular: ${{ steps.layers.outputs.angular }}
+      tailwind: ${{ steps.layers.outputs.tailwind }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - id: layers
+        run: |
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
+            | bun scripts/ci/arena/changed-layers.mjs >> "$GITHUB_OUTPUT"
+
+  build:
+    name: build
+    needs: [changes]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-cache-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+
+      - name: build
+        run: bun run build
+
+      - name: the build is idempotent, so a tracked file it rewrote is a generator out of step
+        run: git diff --exit-code
+
+      - name: assemble both packages, so check:packages reads two manifests rather than none
+        run: bun run build:packages
+
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            frameworks/**/*.generated.*
+            frameworks/react/dist
+            frameworks/angular/dist
+            frameworks/angular/build
+          key: arena-build-${{ github.run_id }}-${{ github.run_attempt }}
+
+  test-core:
+    name: test core
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-cache-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            frameworks/**/*.generated.*
+            frameworks/react/dist
+            frameworks/angular/dist
+            frameworks/angular/build
+          key: arena-build-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+
+      - name: gates (core and the cross-layer arena domain)
+        run: bun scripts/check/arena/check-all.mjs --domain=core,arena --no-tests
+
+      - name: suites under scripts/
+        run: bun run test:scripts
+
+  test-react:
+    name: test react
+    needs: [changes, build]
+    if: needs.changes.outputs.react == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-cache-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            frameworks/**/*.generated.*
+            frameworks/react/dist
+            frameworks/angular/dist
+            frameworks/angular/build
+          key: arena-build-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+
+      - name: gates
+        run: bun scripts/check/arena/check-all.mjs --domain=react --no-tests
+
+      - name: suites with no DOM
+        run: bun run test:react
+
+      - name: DOM suites, in a process of their own
+        run: bun run test:react-dom
+
+  test-angular:
+    name: test angular
+    needs: [changes, build]
+    if: needs.changes.outputs.angular == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-cache-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            frameworks/**/*.generated.*
+            frameworks/react/dist
+            frameworks/angular/dist
+            frameworks/angular/build
+          key: arena-build-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+
+      - name: gates
+        run: bun scripts/check/arena/check-all.mjs --domain=angular --no-tests
+
+      - name: suites, off the ngc emit
+        run: bun run test:angular
+
+  test-tailwind:
+    name: test tailwind
+    needs: [changes, build]
+    if: needs.changes.outputs.tailwind == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-cache-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            frameworks/**/*.generated.*
+            frameworks/react/dist
+            frameworks/angular/dist
+            frameworks/angular/build
+          key: arena-build-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
+
+      - name: gates
+        run: bun scripts/check/arena/check-all.mjs --domain=tailwind --no-tests
+
+  pr-gate:
+    name: pr
+    needs: [changes, build, test-core, test-react, test-angular, test-tailwind]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: a skipped job is green, so the result of every job is read rather than its status
+        run: |
+          echo '${{ toJSON(needs) }}'
+          if ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}; then
+            echo "pr-gate: at least one job failed or was cancelled"
+            exit 1
+          fi
+          echo "pr-gate: every job that ran passed"

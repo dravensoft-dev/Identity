@@ -230,6 +230,10 @@ Every component in Angular Package Format, the shared Tailwind recipes they read
 compiled utility sheet, the invariant stylesheets, and the `arena-theme` command. No tests,
 no demo pages, no font binaries, and no icons.
 
+## Why might this package's latest version not match Arena's latest version?
+
+[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/README.md#why-are-the-published-package-versions-not-identical)
+
 ## License
 
 MIT. See the repository.

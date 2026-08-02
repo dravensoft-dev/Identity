@@ -101,6 +101,13 @@ rather than a gate.
 `check-all.test.mjs` asserts every gate names one of the five domains and points at
 `<domain>/<gate>.mjs`, so a gate landing outside the grid fails rather than running unnoticed.
 
+The domain is also what a narrowed run selects on. `check-all.mjs` takes `--domain=core,arena`
+and `--no-tests`, and `gatesFor()` refuses a name outside `DOMAINS` and a selection matching no
+gate, because a run of nothing reports nothing wrong with everything. CI is its only caller,
+and its four jobs partition this table: `core` takes `core/` and `arena/`, since the fifteen
+cross-layer gates are questions no single layer can answer. That partition is asserted too, so
+a gate cannot join `GATES` and then run in no job.
+
 ## Adding a gate
 
 Put it in `check/<domain>/`, add it to `GATES` with its domain in the path, give it an npm
@@ -109,4 +116,5 @@ literal value, so the count and the order move in the same commit.
 
 `check-release` is the one script with no npm entry and no place in `GATES`: it is run by path
 before publishing, because it asserts what the *tag* hands out and there is nothing to assert
-until one exists.
+until one exists. Each publish workflow runs it first, so a version bump pushed without its tag
+is refused rather than published.

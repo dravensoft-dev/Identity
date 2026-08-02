@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
-  isGenerated, allowsHeader, MEMBER_DOC_TREE,
+  isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -200,6 +200,30 @@ test('the Angular emit is skipped by its anchored path, so the scripts phase dir
   const { problems } = commentRuleProblems(root);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /scripts\/build\/react\/build-demos\.mjs/);
+  rmSync(root, { recursive: true });
+});
+
+test('a dotted entry is skipped, and the two that are read are named rather than guessed at', () => {
+  assert.deepEqual([...READ_DESPITE_THE_DOT].sort(), ['.github', '.gitkeep']);
+  assert.ok(SCANNED_TREES.includes('.github'), 'a source file under .github is held to the comment rule');
+});
+
+test('a document under .github is governed, and one under any other dotted directory is not', () => {
+  const root = tree({
+    '.github/workflows/README.md': 'A workflow README with an em dash — right here.\n',
+    '.claude/settings.md': 'A local note with an em dash — right here.\n',
+  });
+  const { problems } = punctuationProblems(root);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /\.github\/workflows\/README\.md/);
+  rmSync(root, { recursive: true });
+});
+
+test('a document under .github is held to the size limit too', () => {
+  const root = tree({ '.github/workflows/README.md': 'x'.repeat(MAX_DOCUMENT_CHARS + 1) });
+  const { problems } = documentSizeProblems(root);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /\.github\/workflows\/README\.md: 60001 characters/);
   rmSync(root, { recursive: true });
 });
 
