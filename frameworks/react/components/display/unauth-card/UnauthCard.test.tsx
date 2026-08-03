@@ -66,6 +66,7 @@ test('it renders Card rather than a second panel definition', () => {
 
   assert.match(
     html,
-    /overflow:hidden"><div style="padding:calc\(var\(--sp-1\) \* 5\)"><div style="padding:calc\(var\(--sp-1\) \* 4\)"/
+    /class="[^"]*\boverflow-hidden\b[^"]*"><div class="p-5">/,
+    'the panel inside is Card\'s own root and body, drawn from Card\'s manifest rather than typed out here',
   );
 });

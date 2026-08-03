@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Card.manifest.generated.ts';
 
 export interface CardProps {
 
@@ -29,15 +31,15 @@ export interface CardProps {
   onClick?: () => void;
 }
 
+const cardStyles = tv(manifest);
+
 export function Card({
   children, title, eyebrow, action, floating = false, accent = false,
   interactive = false, disabled = false, href, onClick,
 }: CardProps) {
-  const [hover, setHover] = useState(false);
-  const [focus, setFocus] = useState(false);
-
   const target = href !== undefined;
   const acts = interactive || target;
+  const styles = cardStyles({ accent, floating, interactive: acts });
 
   const activate = () => {
     if (acts && !disabled) onClick?.();
@@ -50,41 +52,23 @@ export function Card({
     activate();
   };
 
-  const live = acts && !disabled;
-
   const shared = {
     'aria-disabled': acts && disabled ? true as const : undefined,
-    onMouseEnter: () => setHover(true),
-    onMouseLeave: () => setHover(false),
-    onFocus: () => setFocus(true),
-    onBlur: () => setFocus(false),
-      style: { background: live && hover ? 'var(--panel)' : 'var(--surface-card)',
-        border: 'var(--bw) solid ' + (accent ? 'var(--crimson)' : 'var(--color-base-300)'),
-        borderRadius: 'var(--r-lg)', boxShadow: floating ? 'var(--shadow-2)' : 'none',
-        outline: live && focus ? 'var(--bw-2) solid var(--crimson)' : 'none',
-        outlineOffset: focus ? 'var(--sp-1)' : 0,
-        cursor: acts ? (disabled ? 'not-allowed' : 'pointer') : 'auto',
-        opacity: acts && disabled ? 0.45 : 1,
-        textAlign: 'left' as const,
-        textDecoration: 'none',
-        display: 'block',
-        color: 'inherit',
-        transition: 'background var(--dur-fast) var(--ease-out)',
-        overflow: 'hidden' },
+    className: styles.root(),
   };
 
   const body = (
     <>
       {(title || eyebrow || action) && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 5) 0' }}>
+        <div className={styles.head()}>
           <div>
-            {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 1.5)' }}>{eyebrow}</div>}
-            {title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h4)', color: 'var(--bone)' }}>{title}</div>}
+            {eyebrow && <div className={styles.eyebrow()}>{eyebrow}</div>}
+            {title && <div className={styles.title()}>{title}</div>}
           </div>
           {action}
         </div>
       )}
-      <div style={{ padding: 'calc(var(--sp-1) * 5)' }}>{children}</div>
+      <div className={styles.body()}>{children}</div>
     </>
   );
 
