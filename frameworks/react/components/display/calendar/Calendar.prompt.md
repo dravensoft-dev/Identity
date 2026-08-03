@@ -21,6 +21,27 @@ Two things this default is not. It is not a `'UTC'` fallback, which would be arb
 </Calendar>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Calendar.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `children` | slot |  |  | One CalendarEvent per event. Calendar reads each one's start, end and colorId and settles where the chip goes, what colour it takes and how the keyboard reaches it; the chip itself is CalendarEvent's. |
+| `timeZone` | primitive | `string` |  | IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs (a Madrid timetable read from Tokyo), and when server-rendering, where the reader's zone is not knowable. |
+| `anchorDate` | primitive | `string` |  | ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. |
+| `view` | enum | `CalendarView` |  | Omit to derive from the CONTAINER width: day below --bp-md, else week. |
+| `dayStart` | primitive | `string` |  | HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. |
+| `dayEnd` | primitive | `string` | `"23:00"` | HH:MM the grid ends at. |
+| `weekStartsOn` | primitive | `number` | `1` | 0 = Sunday … 6 = Saturday. |
+| `hideEmptyWeekend` | primitive | `boolean` | `true` | Drop Sunday from the week unless an event falls on it. |
+| `dayInteractive` | primitive | `boolean` | `false` | Whether a day can be activated. A boolean rather than "is `dateClick` bound?", per R6, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> (the keyboard's route to the date, and the one element that already names it), and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. |
+| `onDateClick` | event | `string` |  | A day header or column background was activated; carries the ISO date. Never emitted unless `dayInteractive`. |
+| `onRangeChange` | event | `string` |  | The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta. |
+| `actions` | slot |  |  | Right-aligned in the toolbar, beside the range title. |
+
+<!-- @api end -->
+
 The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChange` reports the new anchor date; take it as the cue to refetch. Pass `anchorDate` only when you want to drive the date yourself; it wins whenever it changes.
 
 **Keyboard.** The grid is one tab stop, not one per event (`dayInteractive` adds the header strip's, above it). Tab lands on a single hour cell; a *row is a day*, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.

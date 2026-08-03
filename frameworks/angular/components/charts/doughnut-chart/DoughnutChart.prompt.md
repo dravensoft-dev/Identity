@@ -10,6 +10,24 @@ the ring.
 <arena-doughnut-chart [labels]="regions" [values]="revenue" seriesLabel="Revenue" valueSuffix=" €" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/DoughnutChart.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `labels*` | array | `string[]` |  | One label per slice, in the same order as `values`. A label with no value at its index is dropped. |
+| `values*` | array | `number[]` |  | The parts, which are read as shares of their own total. A negative value floors at zero; a total of zero paints nothing. |
+| `seriesLabel*` | primitive | `string` |  | Names the chart for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a chart is about is editorial, the same reason Table.label is required. |
+| `slots` | array | `number[]` |  | Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point. |
+| `valueSuffix` | primitive | `string` |  | Appended verbatim to every number the chart draws: the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. |
+| `valuePrefix` | primitive | `string` |  | Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. |
+| `legendLayout` | enum | `ChartLegendLayout` | `"auto"` | How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. |
+| `sliceActivate` | event | `number` |  | A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. |
+| `valueFormat` | object | `NumberFormat` |  | How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. |
+
+<!-- @api end -->
+
 `valueSuffix` is appended verbatim to the legend value and to the numbers table, write the
 space yourself. `valuePrefix` is drawn before the number the same way, for a currency that precedes its
 amount. Between them, `valueFormat` says how the number itself is written: the locale, the

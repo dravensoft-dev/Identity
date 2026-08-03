@@ -1,6 +1,5 @@
 Arena tooltip, a short label revealed on pointer intent, bone over dark. Standalone, `OnPush`,
-signal I/O. Styling is the sibling `Tooltip.variants.ts` recipe; the component carries no CSS
-classes of its own. Wrap the element the tooltip describes; Arena draws the bubble and names it
+signal I/O. Wrap the element the tooltip describes; Arena draws the bubble and names it
 from `label`.
 
 The bubble is positioned by `@angular/cdk/overlay`, not by the wrapper, so it escapes an
@@ -17,6 +16,17 @@ Arena does not hand-roll here; focus and roles stay Arena's. The app must import
   <span tabindex="0">p95</span>
 </arena-tooltip>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Tooltip.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | The bubble's text. Arena draws the bubble; the consumer names it. |
+| `content*` | slot |  |  | The element the tooltip describes and attaches to. |
+
+<!-- @api end -->
 
 **Do / Don't**
 - Project exactly **one** element, and one that can take an attribute. Arena writes

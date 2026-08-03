@@ -1,7 +1,7 @@
 # Arena, the React layer
 
 > **For whoever works on this layer.** Building an app with it instead? Read [`PACKAGE.md`](./PACKAGE.md) to install it,
-> [`../Catalog.generated.md`](../Catalog.generated.md) to find a component, and that component's `.prompt.md` to use it.
+> [`SKILL.md`](./SKILL.md) to find a component, and that component's `.prompt.md` to use it.
 
 The React primitives, the example Console app, and the shared modules both of them read.
 Every value here comes from `contracts/design/`; this layer introduces no design decision
@@ -196,7 +196,11 @@ focus navigation, which nothing here implements and happy-dom does not have; a t
 would pass identically against a perfect trap and against none. `bun run check:focus-trap` is
 what covers it: real Chromium over each declared page, one real Tab press per stop.
 
-- `ui-kits/console/`: the Delivery Console example app (login → dashboard → project).
+- `ui-kits/console/`: the Delivery Console example app (login → dashboard → project). Its
+  `index.entry.tsx` and the compiled sibling beside it keep their lowercase names by
+  inheritance: a demo page's composition script takes the stem of the page it composes, and
+  that page is `index.html`, which is the name an HTTP directory index is answered by. Renaming
+  the pair would stop serving the app at `/frameworks/react/ui-kits/console/`.
 - `vendor/`: a generated CommonJS→ESM bundle of React for the demo pages'
   importmap (`build-vendor.mjs`, guarded by `check:vendor`).
 - `test/`: the harness (`Harness.tsx`, `Preload.js`, `AssertPattern.tsx`) and the suites

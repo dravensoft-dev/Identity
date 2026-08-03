@@ -5,6 +5,23 @@ Ephemeral notification. Use `actionLabel` + `onAction` to give the user an out: 
 <Toast tone="danger" persist title="Pipeline failed" message="e2e tests in checkout" actionLabel="View logs" onAction={openLogs} dismissible onClose={dismiss} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Toast.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title` | primitive | `string` |  | The bold lead line. |
+| `message` | primitive | `string` |  | The body. |
+| `tone` | enum | `ToastTone` | `"neutral"` | The side bar's colour, and whether the toast announces assertively. |
+| `actionLabel` | primitive | `string` |  | The label of the single inline action: Undo, Retry, View logs. Absent renders no action. |
+| `onAction` | event |  |  | The inline action was activated. |
+| `persist` | primitive | `boolean` | `false` | Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. |
+| `dismissible` | primitive | `boolean` | `false` | Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. |
+| `onClose` | event |  |  | The × was activated. |
+
+<!-- @api end -->
+
 The action is a label and an event, never one object: an object member is pure data with known
 fields, and a callback is not data; `Alert` takes the same pair for the same reason.
 

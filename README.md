@@ -51,8 +51,9 @@ starting on the wrong branch is how a short question turns into a long read.
 
 **Building something with Arena.** [`SKILL.md`](./SKILL.md) is the router, and it answers
 each question with one file. From it:
-[`frameworks/Catalog.generated.md`](./frameworks/Catalog.generated.md) is every component in
-one read, each component's `.prompt.md` is how to use that one, and
+[`frameworks/SKILL.md`](./frameworks/SKILL.md) is every component in one read and
+`frameworks/<layer>/SKILL.md` is the same list under your own framework's names, each
+component's `.prompt.md` is how to use that one, and
 [`frameworks/react/PACKAGE.md`](./frameworks/react/PACKAGE.md) or
 [`frameworks/angular/PACKAGE.md`](./frameworks/angular/PACKAGE.md) is how to install it.
 

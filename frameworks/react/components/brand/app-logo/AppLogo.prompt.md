@@ -8,6 +8,20 @@ Dravensoft's by accident.
   name="Draven" dim="soft" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/AppLogo.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `mark*` | slot |  |  | The mark, as an asset the consumer supplies. Required: Arena ships MIT and a default would ship Dravensoft's trademark to whoever never read the API. The slot sizes the mark; a mark that brings its own dimensions fights the lock-up. |
+| `name*` | primitive | `string` |  | The product name, or its first half when `dim` carries the second. |
+| `dim` | primitive | `string` |  | The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome, which is why there is no `variant` member: the mark's ink and this are the same two decisions. |
+| `size` | enum | `LogoSize` | `"md"` | Both halves at once: the mark's slot and the wordmark. |
+| `orientation` | enum | `Orientation` | `"horizontal"` | Mark beside the name, or above it. |
+
+<!-- @api end -->
+
 `size` picks both halves at once, the mark's slot and the wordmark's size. It is a
 fixed repertoire, not a ratio: `sm` (30/17) sits beside a product name in an
 application frame, `md` (40/24) heads a signed-out panel, `lg` (54/34) is the brand

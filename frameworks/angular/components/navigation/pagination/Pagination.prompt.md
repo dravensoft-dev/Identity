@@ -8,6 +8,19 @@ Jumps between pages of a large set, the companion to a table or a long list. It 
                   (change)="page.set($event)" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Pagination.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `page*` | primitive | `number` |  | The current page, 1-based. |
+| `pageCount*` | primitive | `number` |  | How many pages there are. Required, and guarded at runtime: a Pagination with no page count renders a window over nothing. |
+| `ariaLabel*` | primitive | `string` |  | Names this navigation landmark. Required, and guarded at runtime: two paginated tables in one dashboard is a routine layout, and a shared constant name leaves them indistinguishable while satisfying the requirement mechanically. It was optional with a "Pagination" default for one batch, which narrowed the gap rather than closing it: a name the caller omits is still the constant. Say what is being paged: "Deployments", not "Pages". |
+| `change` | event | `number` |  | A page was chosen; carries the new 1-based page. Never fires for the current page, nor for a page outside 1..pageCount. |
+
+<!-- @api end -->
+
 `page`, `pageCount` and `ariaLabel` are all required, and the last two are **guarded at
 runtime** rather than defaulted. `input.required` only proves something was bound:
 `[ariaLabel]="row.title"` with an empty title, or `[pageCount]="0"`, both satisfy it and

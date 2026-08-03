@@ -13,6 +13,23 @@ const [step, setStep] = useState(0);
   ]} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Onboarding.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `open*` | primitive | `boolean` |  | Whether the tour is shown. Closed renders nothing, scrim included. |
+| `steps*` | array | `OnboardingStep[]` |  | The tour, in order. An empty tour renders nothing. |
+| `index` | primitive | `number` | `0` | Which step is current. The host owns it and answers next/back. |
+| `anchor` | object | `OnboardingAnchor` |  | Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. |
+| `onNext` | event |  |  | Next was activated on a step that is not the last. |
+| `onBack` | event |  |  | Back was activated on a step that is not the first. |
+| `onSkip` | event |  |  | Skip was activated, or the scrim was clicked. |
+| `onDone` | event |  |  | The final step's confirming control was activated. |
+
+<!-- @api end -->
+
 **Behaviour.** The coachmark is a modal dialog and behaves like one: opening moves focus to
 the first control inside it, Tab is trapped at both ends of that set, closing restores focus
 to whatever had it before, and **Escape dismisses through `onSkip`**: the same channel the
@@ -28,9 +45,7 @@ dialog and its dots as two different things rather than as the same string twice
 **Checked in Chromium by hand**, because native sequential focus navigation is the browser's
 and no suite in this repo drives one: with the tour open, Tab repeatedly through Back / Skip /
 Next and confirm focus never leaves the coachmark, then Shift+Tab back through it. The
-boundary wraps at either end are covered by
-`frameworks/react/components/feedback/onboarding/Onboarding.dom.test.tsx`;
-the interior is this check.
+boundary wraps at either end are covered by a render suite; the interior is this check.
 
 **Do / Don't**
 - Max 3–5 steps, and store that it was already completed so it isn't repeated.

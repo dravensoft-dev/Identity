@@ -1,10 +1,9 @@
 Arena surface container, the hairline border on the base surface scale, with an
-optional header. Standalone, `OnPush`, signal inputs. Styling is the sibling
-`Card.variants.ts` table, compiled from `Card.manifest.json` in the shared design
-layer; the component carries no CSS classes of its own. **The root slot is NOT host-bound**, and that is
-forced rather than chosen: `click` is an output whose name is also a native DOM event, and Angular
-installs both a DOM listener and an output subscription for such a name, so a host that both
-listens and emits re-enters its own listener on every emission. The recipe lands on an inner
+optional header. Standalone, `OnPush`, signal inputs. **The root slot is NOT host-bound**,
+and that is forced rather than chosen: `click` is an output whose name is also a native DOM
+event, and Angular installs both a DOM listener and an output subscription for such a name, so
+a host that both
+listens and emits re-enters its own listener on every emission. Arena's own styling lands on an inner
 `<div>` that stops propagation, the shape `arena-side-nav-item` and `arena-table-row` already
 take, and the host goes `display: contents`.
 
@@ -18,6 +17,25 @@ take, and the host goes `display: contents`.
 
 <arena-card interactive [title]="'checkout-api'" (click)="open(service)">Healthy, 14 replicas</arena-card>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Card.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | The card's body, below the optional header. |
+| `interactive` | primitive | `boolean` | `false` | Whether the whole card is one activation target, which is the ordinary shape of a list on a phone. A boolean rather than "is `click` bound?" -- R6, the same reason TableRow.interactive is one. An interactive card is a role="button" tab stop with an Enter/Space handler and the surface's own hover and focus states; a non-interactive one is inert and adds no tab stop, because a dead stop on every card of every list is worse than the gap it would close. It is a ROLE rather than a <button> element for the same reason TableRow's card shape is: a card body may hold controls of its own, and a control inside a control is reachable by nobody. |
+| `disabled` | primitive | `boolean` | `false` | Whether an interactive card is drawn but cannot be activated. It reflects through aria-disabled rather than any native attribute, and the card stays in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. Without `interactive` there is nothing to disable and the card is inert already. |
+| `href` | primitive | `string` |  | Present => the card renders an <a>; absent, with `interactive`, a role="button". The same split, and the same reason, as SideNavItem.href: a control that navigates must be a link, openable in a new tab, address copyable, announced as a link, and none of that can be rebuilt on a div. A primary click with no modifier is cancelled and reported through `click`, so a router owns it; ctrl, meta, shift, alt, a middle click and a context menu stay the browser's and report nothing. It implies interaction on its own, so `interactive` is not also required, and with `disabled` it refuses activation through aria-disabled the way an item does. The card's own content still holds whatever controls it holds; a control inside the anchor is a control inside a link, which is the price of making the whole surface the target and the reason `interactive` exists as the alternative. |
+| `action` | slot |  |  | Right-aligned in the header, beside the title. Arena draws the header row; the consumer draws what sits in it. |
+| `title` | primitive | `string` |  | Header title. Absent, along with eyebrow and action, renders no header block at all. |
+| `eyebrow` | primitive | `string` |  | Mono uppercase label above the title, in the accent colour. |
+| `floating` | primitive | `boolean` | `false` | Adds the warm shadow. Depth comes from the shadow and the surface scale, never a gradient. |
+| `accent` | primitive | `boolean` | `false` | Draws the border in the accent colour instead of the surface hairline. |
+| `click` | event |  |  | An interactive card was activated, by pointer or by Enter or Space. With `href` it is also how the card reports the one activation a router owns, a primary click or Enter with no modifier, and Arena has already cancelled the anchor's own navigation by the time it fires; a modified or middle click is the browser's and does not fire it at all. No payload, because the consumer wrote this element and already holds what it is about. |
+
+<!-- @api end -->
 
 **`interactive` makes the whole card one activation target**, which is the ordinary shape of a
 list on a phone, and it is a declared boolean rather than "is `(click)` bound?" for R6's reason,
@@ -41,9 +59,9 @@ render, the card is a plain surface.
   leaves a real `title` attribute on the host, and the browser draws a tooltip over
   the whole card. `[title]="'X'"` does not. This is layer-wide rather than Card's
   own: Angular writes a static attribute during the creation pass whether or not it
-  also matches an input. This host clears it (`'[attr.title]': 'null'`) and
-  `test/HostClassBinding.test.ts` holds that layer-wide in both directions, so the
-  binding above is the clearer spelling rather than a workaround.
+  also matches an input. This host clears it (`'[attr.title]': 'null'`), which the
+  layer holds in both directions, so the binding above is the clearer spelling rather
+  than a workaround.
 - Depth comes from `floating`'s warm shadow and the `base-100`→`base-200`→`base-300`
   surface scale. Never a gradient.
 - Reach for `accent` to mark one card among several as the current or featured one;
@@ -95,9 +113,9 @@ outside a single-page application.
 subscribes the binding to the component's `click` output *and* adds a native listener for the DOM
 event of the same name, so a click that reaches the host is counted twice. The card stops
 propagation on its own anchor, which is what makes `(click)` fire exactly once for the activation
-it owns and not at all for the ones it leaves to the browser. `AnchorActivation.test.ts` pins both
-halves; the consequence for you is that a click delegated from an ancestor of the card never sees
-an activation the card handled.
+it owns and not at all for the ones it leaves to the browser. Both halves are pinned; the
+consequence for you is that a click delegated from an ancestor of the card never sees an
+activation the card handled.
 
 **Do not put `routerLink` on `arena-card`.** It would not work: `RouterLink` decides whether
 it is on an anchor from the host's `tagName`, and `arena-card` is neither an `<a>` nor a
@@ -114,7 +132,6 @@ it is a control inside a link, which is exactly the nesting `interactive` was ma
 **How it is built, and why that is worth knowing.** The card projects into two slots, and
 Angular hands projected content to the first matching one, so two branches cannot each carry
 their own `<ng-content>`. Both projections live in one `<ng-template>` that whichever branch
-renders stamps out with `ngTemplateOutlet`. `CardProjection.test.ts` is the suite that earns
-this: it toggles `href` at runtime in both directions and asserts the content survives, once,
-inside the new root. Nothing in Angular's documentation settles that, and an empty card would
+renders stamps out with `ngTemplateOutlet`. Toggling `href` at runtime in either direction
+keeps the content, once, inside the new root, and that is asserted rather than assumed. Nothing in Angular's documentation settles that, and an empty card would
 be a silent failure.

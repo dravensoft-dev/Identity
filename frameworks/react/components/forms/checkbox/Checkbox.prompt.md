@@ -6,6 +6,22 @@ A single checkbox. Checked shows a crimson fill with a check. `onChange` carries
 <Checkbox checked disabled label="Locked by policy" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Checkbox.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `checked` | primitive | `boolean` | `false` | Whether it is ticked. |
+| `label` | primitive | `string` |  | Text beside the box. |
+| `disabled` | primitive | `boolean` | `false` | Blocks toggling and dims it. |
+| `required` | primitive | `boolean` | `false` | Must be checked for the form to submit. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `value` | primitive | `string` |  | The value submitted under `name` when checked. |
+| `onChange` | event | `boolean` |  | Toggled; carries the new checked state. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Read the boolean the handler hands you (`onChange={next => …}`); there is no event to reach into, so `e.target.checked` reaches nothing.
 - Use `name` and `value` together when the checkbox is submitted by a real form: `value` is the string sent under `name` while the box is ticked, and it is not the checked state.

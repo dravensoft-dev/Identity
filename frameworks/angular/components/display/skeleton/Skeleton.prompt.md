@@ -2,9 +2,8 @@ Arena loading placeholder. It reserves the layout the real content will occupy, 
 table or a dashboard fills in rather than jumping. `variant="text"` with `lines`
 renders a stack whose last line is short, the way a paragraph ends; `line`, `block`
 and `circle` are single shapes. `width`, `height` and `radius` are CSS strings that
-override the recipe's per-variant defaults; each applies only where the shape has
-something to override; see the table below. Styling is the sibling
-`Skeleton.variants.ts` recipe.
+override the per-variant defaults; each applies only where the shape has
+something to override; see the table below.
 
 ```html
 <arena-skeleton variant="text" [lines]="3" />
@@ -13,6 +12,20 @@ something to override; see the table below. Styling is the sibling
 <arena-skeleton variant="block" width="12rem" height="72px" radius="var(--r-lg)" />
 <arena-skeleton variant="circle" width="40px" />
 ```
+
+<!-- @api GENERATED from contracts/api/components/Skeleton.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `variant` | enum | `SkeletonVariant` | `"block"` | The shape the placeholder reserves. |
+| `width` | primitive | `string` |  | CSS width, e.g. "100%" or "12rem". Defaults to full width. |
+| `height` | primitive | `string` |  | CSS height. Defaults per variant. For the `circle` variant a single diameter is what is wanted, so `height` wins over `width` when both are set. |
+| `lines` | primitive | `number` | `3` | Number of rows when variant="text". The last runs short. |
+| `radius` | primitive | `string` |  | CSS border radius. Defaults to a small token radius. |
+
+<!-- @api end -->
 
 | variant | `width`        | `height`       | `radius`             |
 |---------|----------------|----------------|-----------------------|

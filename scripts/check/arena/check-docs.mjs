@@ -75,6 +75,21 @@ function isPragma(text) {
 }
 
 export const CONSUMER_LAST_STOP = '.prompt.md';
+export const CONSUMER_INDEX = 'SKILL.md';
+export const CONSUMER_TREE = `frameworks${sep}`;
+
+export const BRANCH_SWITCH = {
+  'SKILL.md':
+    'the root router is the switch between the two branches, and naming the contributor one is '
+    + 'how it sends a contributor away. Every consumer document below it is downstream of that '
+    + 'choice and has nobody left to redirect.',
+};
+
+export function isConsumerDocument(repoRelativePath) {
+  if (Object.hasOwn(BRANCH_SWITCH, repoRelativePath)) return false;
+  if (repoRelativePath.endsWith(CONSUMER_LAST_STOP)) return true;
+  return basename(repoRelativePath) === CONSUMER_INDEX && repoRelativePath.startsWith(CONSUMER_TREE);
+}
 
 export const CONTRIBUTOR_PATHS = [
   [/\bscripts\/[\w./-]+/g, 'a path under scripts/, which no consumer of Arena has'],
@@ -83,6 +98,15 @@ export const CONTRIBUTOR_PATHS = [
   [/\bframeworks\/PACKAGING\.md\b/g, 'the packaging document, which is about publishing Arena rather than using it'],
   [/\bframeworks\/[a-z-]+\/[A-Z][\w.]*\.[jt]sx?\b/g,
     'a layer-root source file, which a consumer reaches by importing the package rather than by path'],
+  [/\b[\w-]+(?:\.[\w-]+)*\.(?:test|spec)\.(?:[jt]sx?)?/g,
+    'a test file, which ships in no package and asserts something only this repository can run'],
+  [/\b[\w-]+\.variants\.ts\b/g,
+    "a layer's own styling recipe, which is compiled away before a package ships"],
+  [/\b[\w-]+\.manifest\.json\b/g,
+    'a Tailwind manifest, which is a source of the compiled stylesheet rather than a file a consumer has'],
+  [/\b[\w-]+\.generated\b(?!\.html)/g,
+    'a build product, which a consumer reaches by importing the package rather than by name. '
+    + 'A generated demo page is the exception, being the one a by-hand check opens'],
 ];
 
 export const MEMBER_DOC_TREE = /^frameworks\/[^/]+\/components\//;
@@ -184,7 +208,7 @@ export function commentRuleProblems(root = ROOT) {
 }
 
 export function consumerBranchProblems(root = ROOT) {
-  const scanned = documents(root).filter((p) => p.endsWith(CONSUMER_LAST_STOP));
+  const scanned = documents(root).filter((p) => isConsumerDocument(relative(root, p)));
   const problems = [];
   for (const path of scanned) {
     const rel = relative(root, path);
@@ -192,8 +216,8 @@ export function consumerBranchProblems(root = ROOT) {
     for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
       for (const hit of source.match(pattern) ?? []) {
         problems.push(
-          `${rel}: cites "${hit}", ${reason}. A prompt is the consumer's last stop: `
-          + 'state the consequence here, and leave the reason on the contributor branch',
+          `${rel}: cites "${hit}", ${reason}. A consumer document is a stop on the way to writing `
+          + 'a component: state the consequence here, and leave the reason on the contributor branch',
         );
       }
     }
@@ -209,6 +233,12 @@ export function zeroScanProblems({ documents, sources, prompts }) {
   return problems;
 }
 
+export function branchSwitchProblems(root = ROOT) {
+  return Object.keys(BRANCH_SWITCH)
+    .filter((rel) => !existsSync(join(root, rel)))
+    .map((rel) => `BRANCH_SWITCH exempts ${rel}, which is not there -- a stale exemption is worse than none`);
+}
+
 function main() {
   const sizes = documentSizeProblems();
   const punctuation = punctuationProblems();
@@ -220,7 +250,8 @@ function main() {
     prompts: branch.scanned,
   });
   const problems = [
-    ...empty, ...sizes.problems, ...punctuation.problems, ...comments.problems, ...branch.problems,
+    ...empty, ...branchSwitchProblems(), ...sizes.problems, ...punctuation.problems,
+    ...comments.problems, ...branch.problems,
   ];
 
   if (problems.length > 0) {
@@ -231,7 +262,7 @@ function main() {
   console.log(
     `check-docs: ${sizes.scanned} document(s) under ${MAX_DOCUMENT_CHARS} characters and clear of `
     + `banned punctuation; ${comments.scanned} hand-written source(s) hold to the comment rule; `
-    + `${branch.scanned} prompt(s) cite no contributor path`,
+    + `${branch.scanned} consumer document(s) cite no contributor path`,
   );
 }
 

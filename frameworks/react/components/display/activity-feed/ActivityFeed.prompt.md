@@ -10,6 +10,18 @@ each row.
 ]} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/ActivityFeed.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | Names the feed for assistive technology. Required, and guarded at runtime: nothing can derive it, and a feed is a landmark a reader navigates BY, so say what the events are about ("Deployment activity"), never "Activity feed". |
+| `items*` | array | `ActivityItem[]` |  | The events, newest first by convention. Each row is drawn by Arena; there is no per-item projection. |
+| `busy` | primitive | `boolean` | `false` | Whether a multi-step update to the feed is in progress, reflected as `aria-busy`. Set it while rows are being loaded or replaced and clear it once they settle, so a screen reader announces the settled feed rather than each intermediate state. It is an input rather than something Arena infers: only the host knows when its own loading has finished. |
+
+<!-- @api end -->
+
 `tone` is Badge's vocabulary: `neutral · accent · gold · success · warning · danger ·
 info`, and defaults to `accent`.
 

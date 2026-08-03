@@ -1,5 +1,5 @@
 Arena checkbox, one independent choice, checked showing a crimson fill with a tick. Standalone,
-`OnPush`, signal I/O. Styling is the sibling `Checkbox.variants.ts` recipe. The host stays bare
+`OnPush`, signal I/O. The host stays bare
 and out of layout: the root is a real `<label>` wrapping a real `<input type="checkbox">`, because
 that pairing is what gives the control its role, its name and Space-to-toggle without a single
 line of authored ARIA.
@@ -10,6 +10,22 @@ line of authored ARIA.
 <arena-checkbox label="I accept the terms" required name="terms" value="yes"
                 [checked]="accepted()" (change)="accepted.set($event)" />
 ```
+
+<!-- @api GENERATED from contracts/api/components/Checkbox.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `checked` | primitive | `boolean` | `false` | Whether it is ticked. |
+| `label` | primitive | `string` |  | Text beside the box. |
+| `disabled` | primitive | `boolean` | `false` | Blocks toggling and dims it. |
+| `required` | primitive | `boolean` | `false` | Must be checked for the form to submit. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `value` | primitive | `string` |  | The value submitted under `name` when checked. |
+| `change` | event | `boolean` |  | Toggled; carries the new checked state. |
+
+<!-- @api end -->
 
 **Do / Don't**
 - It is **controlled**. `checked` is what the consumer owns and pushes back in; the component
@@ -24,7 +40,7 @@ line of authored ARIA.
   `<arena-checkbox>` itself.
 - `disabled` and `required` land on the native input, never as `aria-disabled` or
   `aria-required`. The native attributes are what the accessibility tree reads, what removes the
-  control from the Tab order, and what the recipe's `:disabled`-family utilities can match.
+  control from the Tab order, and what Arena's `:disabled`-family styling can match.
 - The box and the tick are decoration: the `<span>` carries the fill and the `<svg>` the tick,
   and neither is the control. Do not attach a click handler to either, because the `<label>` already
   forwards a click to the input, and a second handler double-toggles.

@@ -21,6 +21,22 @@ exists, a bare error state ships no dead space for a retry it does not offer.
 </arena-error-state>
 ```
 
+<!-- @api GENERATED from contracts/api/components/ErrorState.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `icon` | primitive | `string` |  | A Phosphor class name for the danger glyph Arena draws. |
+| `title` | primitive | `string` | `"Something went wrong"` | The headline: what failed. |
+| `message` | primitive | `string` |  | A sentence of detail under the title. |
+| `code` | primitive | `string` |  | A diagnostic/support code, shown monospaced. |
+| `retryLabel` | primitive | `string` |  | The label of the retry button Arena draws. Absent renders no retry. |
+| `retry` | event |  |  | The retry button was activated. |
+| `secondaryAction` | slot |  |  | An extra control beside the retry (e.g. a link to logs). |
+
+<!-- @api end -->
+
 Import `ArenaSecondaryAction` from `@dravensoft/arena-angular` alongside `ErrorState`
 in the host component's `imports`,
 `secondaryAction` is a directive, not a plain attribute, because it is how the error

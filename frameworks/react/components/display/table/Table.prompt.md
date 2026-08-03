@@ -22,6 +22,25 @@ It is a **compound** component: `columns` says how each column is headed and set
 </Table>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Table.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it; Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". |
+| `columns*` | array | `TableColumn[]` |  | The columns, in order. A column heads and sets its cells; it never says what goes in them. |
+| `children` | slot |  |  | The rows. One TableRow per row. Where a row sits, the columns its cells are set against and how the keyboard reaches them are Table's to decide and no row's to declare; how that reaches a row is each layer's own idiom. |
+| `empty` | slot |  |  | What shows when no row is written. In that state NO grid is drawn at all, header row included: a column head over a "no results" sentence describes a table that is not there, and a role="grid" holding neither a header nor a row is a degenerate render, the same judgement Tabs makes when it draws no panel for a tab that does not exist. Every layer falls back to the string 'No data.' when nothing is given, each in its own idiom for a default. Unlike Table.label this one IS derivable: 'No data.' states what happened rather than what the component is, which is the distinction that makes a fallback useful here and useless there. A consumer with a better sentence, what to do next or why the list is empty, projects it. |
+| `sort` | object | `TableSort` |  | Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target. |
+| `onSortChange` | event | `TableSort` |  | A sortable header was activated, carrying the column and the direction it should become: the same column flips, a different one starts ascending. Table never reorders anything itself, so a consumer who ignores this event gets a caret that moves and rows that do not, which is why the member is controlled rather than a starting value. |
+| `page` | object | `TablePage` |  | Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`, which is what gives that required name its uniqueness on a page with two paged tables. Absent, no pager is drawn and the projected rows are the whole list. |
+| `onPageChange` | event | `number` |  | A page was chosen, carrying the new 1-based page. It also fires with 1 when the current page has gone PAST THE END, which is the only reset Table performs; a filter that leaves the page in range is silent, so returning the reader to page one on a change of criterion stays the consumer's, beside the criterion they hold. |
+| `sortControl` | enum | `TableSortControl` | `"auto"` | How the sort affordance is reached in CARD MODE, where there is no header row to activate and a `sortable` column therefore has no control under it at all. 'auto' draws one compact select above the cards, listing every sortable column in each direction, which is the shape a phone has room for; 'none' leaves card mode unsorted by hand, for a table whose order is the document's rather than the reader's. Above --bp-md the header row is the control and this member draws nothing. The header row does NOT come back below the breakpoint, because card mode exists for the one reason a grid does not fit. It is a member rather than something a consumer draws for themselves because the state it edits, TableSort, is Arena's: left to each consumer, the label, the option order and the way a direction is worded are invented once per project over a model they did not define. |
+| `responsive` | primitive | `boolean` | `true` | Card mode below --bp-md. Set false only when the columns are meaningless apart. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - `label` is required and names the grid for a screen reader. Say what the rows *are*, as in "Recent deployments" or "Team members", and never "Table". There is nothing to derive it from, which is why it throws when omitted rather than falling back.
 - Put your own components in a cell: a `Badge` for a status, a `Button` for an action. That is what the compound shape is for. A column carries **no** `render`, and passing one does nothing.
@@ -70,9 +89,9 @@ Card mode answers none of this. A card is a list item, and a list is traversed w
 
 ## Verifying the grid by hand
 
-`Table` has a render suite: `Table.cases.dom.test.` walks the grid cell by cell and
-renders both declared shapes, and `Table.test.tsx` covers the markup: the roles, the
-name, the `label` guard, the tab-stop count, and that the removed members reach nothing.
+`Table` has render suites: one walks the grid cell by cell and renders both declared shapes,
+and another covers the markup: the roles, the name, the `label` guard, the tab-stop count, and
+that the removed members reach nothing.
 The rule that a `grid` component was hand-tested *instead* is retired: a grid suite asserts at
 every cell that focus landed where the arrow should take it and that exactly one `tabindex="0"`
 exists and is that cell, with each edge clamp one extra press. **The bill is the press count**,

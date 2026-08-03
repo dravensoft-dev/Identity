@@ -10,6 +10,19 @@ they are real `mat-button`s wearing Arena.
 </arena-page-head>
 ```
 
+<!-- @api GENERATED from contracts/api/components/PageHead.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title*` | primitive | `string` |  | The page title. Required: a page head with no title is a bug, not a state. |
+| `subtitle` | primitive | `string` |  | A muted line under the title. |
+| `actions` | slot |  |  | Page-level controls, right-aligned in the head. |
+| `align` | enum | `PageHeadAlign` | `"start"` | Cross-axis alignment of the actions block against the title, wide layout only. |
+
+<!-- @api end -->
+
 `title` is required: a page head with no title is a bug, not a state. `align` (default
 `start`) governs only the wide layout's cross-axis alignment of the actions block against
 the title; below `--bp-sm` the row always stacks and `align` has no effect. `arena-page-head`
@@ -44,7 +57,7 @@ of them to import.
 - Keep the subtitle to one line of orientation. It is not the place for instructions.
 - Don't write a media query to stack it. It already stacks, on its own width, which is
   the measurement that is right more often.
-- Mark **each** control with `actions`, as siblings. The recipe lays them out in a wrapping
+- Mark **each** control with `actions`, as siblings. Arena lays them out in a wrapping
   row, and that row wraps its own children: a single `<div actions>` holding three buttons is
   one flex item, so it can never wrap, and three buttons overflow the page at 390px. One
   element per control is what makes the wrap reachable at all.

@@ -1,6 +1,5 @@
 Arena toast, an ephemeral notice with a tone-coloured side bar and one optional action.
-Standalone, `OnPush`, signal I/O. Styling is the sibling `Toast.variants.ts` recipe; the
-component carries no CSS classes of its own. The host **is** the card, so `<arena-toast>` is the
+Standalone, `OnPush`, signal I/O. The host **is** the card, so `<arena-toast>` is the
 element you place.
 
 It positions nothing and owns no clock. The host decides where the stack sits and when each
@@ -19,6 +18,23 @@ taken away on a timer.
                (action)="retry(notice)" (close)="drop(notice)" />
 }
 ```
+
+<!-- @api GENERATED from contracts/api/components/Toast.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title` | primitive | `string` |  | The bold lead line. |
+| `message` | primitive | `string` |  | The body. |
+| `tone` | enum | `ToastTone` | `"neutral"` | The side bar's colour, and whether the toast announces assertively. |
+| `actionLabel` | primitive | `string` |  | The label of the single inline action: Undo, Retry, View logs. Absent renders no action. |
+| `action` | event |  |  | The inline action was activated. |
+| `persist` | primitive | `boolean` | `false` | Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. |
+| `dismissible` | primitive | `boolean` | `false` | Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. |
+| `close` | event |  |  | The × was activated. |
+
+<!-- @api end -->
 
 **Tone decides how the message is announced, and that is the whole reason this primitive
 exists.** `tone="danger"` renders `role="alert"` with `aria-live="assertive"`, so a critical

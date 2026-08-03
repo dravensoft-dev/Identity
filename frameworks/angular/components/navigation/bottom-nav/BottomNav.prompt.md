@@ -1,6 +1,5 @@
 Arena bottom navigation, the bar of destinations pinned to the bottom of a phone screen. Standalone,
-`OnPush`, signal I/O. Styling is the sibling `BottomNav.variants.ts` recipe; the component carries no
-CSS classes of its own, and the host **is** the bar, so `<arena-bottom-nav>` is the element you place.
+`OnPush`, signal I/O. The host **is** the bar, so `<arena-bottom-nav>` is the element you place.
 
 Compound, the `arena-side-nav` shape and the opposite direction: nothing is pushed down. Each
 `arena-bottom-nav-item` injects the bar and pulls its signals, so a consumer's own wrapper component
@@ -14,6 +13,19 @@ between the two still works.
   <arena-bottom-nav-item id="more" icon="ph-bold ph-dots-three" label="More" />
 </arena-bottom-nav>
 ```
+
+<!-- @api GENERATED from contracts/api/components/BottomNav.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `active` | primitive | `string` |  | The id of the current destination. The BottomNavItem whose id matches is marked aria-current="page" and draws its glyph in the filled weight, and no item is marked when it names none of them. |
+| `ariaLabel*` | primitive | `string` |  | Names this navigation landmark. Required, and **guarded at runtime**: the guard trims before it decides, so a blank name is refused as well as an absent one, because a landmark present with no accessible name is the defect arriving through a value. A phone shell usually carries this bar AND a sidebar or a header, so two navigation landmarks share a page and the pattern asks each for a unique name; a constant default would satisfy the existence half and leave them indistinguishable. |
+| `content` | slot |  |  | The destinations. One BottomNavItem each; which id is active and how each reports `nav` are the parent's to settle, and none of it is a member here. |
+| `nav` | event | `string` |  | A destination was activated, carrying its id. Where the item has an href, Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate; a modified click, a middle click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a bar of real links. |
+
+<!-- @api end -->
 
 **It is not an `arena-side-nav` lying down.** A sidebar is a stack of indented rows with the glyph
 before the label and arbitrary nesting; this is a row of equal columns with the glyph above the label

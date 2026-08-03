@@ -7,6 +7,22 @@ Modal for confirmations and short forms. Overlay with blur.
 </Dialog>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Dialog.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `open*` | primitive | `boolean` |  | Whether the dialog is shown. The host owns it. |
+| `title*` | primitive | `string` |  | Names the dialog for assistive technology and heads it visually. Required: aria-labelledby points at it, and a modal with no name is worse than none at all. |
+| `eyebrow` | primitive | `string` |  | A short kicker above the title. |
+| `width` | primitive | `string` | `"calc(var(--sp-1) * 120)"` | A CSS width for the panel. It defaults to 480px, which each layer reaches in its own idiom, and the input overrides whichever. |
+| `children` | slot |  |  | The dialog's body. |
+| `footer` | slot |  |  | The action row, right-aligned. |
+| `onClose` | event |  |  | The dialog was dismissed -- by Escape or by a scrim click. No payload. |
+
+<!-- @api end -->
+
 `title` is **required** and throws when missing. It is what names the dialog for
 assistive technology, the panel's `aria-labelledby` points at it, and nothing
 can derive a name for a dialog, because its subject is editorial. `open` is

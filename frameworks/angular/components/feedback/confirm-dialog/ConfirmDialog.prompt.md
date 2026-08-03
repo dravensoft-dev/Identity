@@ -2,8 +2,7 @@ Arena confirmation for a high-consequence action. It does not close on click-out
 losing a half-finished decision to a stray click is the failure this component exists
 to prevent. `requireText` makes the user type a word before the confirm button
 enables. `destructive` turns the eyebrow red and gives the confirm button Arena's
-**only filled danger surface**. Styling is the sibling `ConfirmDialog.variants.ts`
-recipe.
+**only filled danger surface**.
 
 ```html
 <arena-confirm-dialog [open]="confirming()" [destructive]="true"
@@ -15,6 +14,25 @@ recipe.
   undone.
 </arena-confirm-dialog>
 ```
+
+<!-- @api GENERATED from contracts/api/components/ConfirmDialog.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `open*` | primitive | `boolean` |  | Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let a ConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog. |
+| `title*` | primitive | `string` |  | The dialog heading, and the name the panel's aria-labelledby points at. Required: nothing can derive a name for a confirmation, because its subject is editorial, and a modal announcing only its role is worse than none at all. |
+| `eyebrow` | primitive | `string` | `"Confirm"` | Small uppercase label above the title. |
+| `content` | slot |  |  | The dialog body: the question and any detail. |
+| `confirmLabel` | primitive | `string` | `"Confirm"` | The confirm button's label. |
+| `cancelLabel` | primitive | `string` | `"Cancel"` | The cancel button's label. |
+| `destructive` | primitive | `boolean` | `false` | Gives the confirm button Arena's only filled danger surface. |
+| `requireText` | primitive | `string` |  | Locks the confirm button until this exact word is typed. |
+| `cancel` | event |  |  | The dialog was dismissed -- by the Cancel action or by the Escape key, in both layers. A scrim click is deliberately NOT one of them: this component never closes on click-outside. No payload. |
+| `confirm` | event |  |  | The action was confirmed. |
+
+<!-- @api end -->
 
 `title` is **required**: the panel's `aria-labelledby` points at it, and nothing can
 derive a name for a confirmation because its subject is editorial. Escape dismisses
@@ -29,10 +47,9 @@ close, and Tab wraps at the panel's edges.
   `title` attribute, whose host here is the fixed full-viewport scrim, so the browser
   paints a tooltip over the **entire viewport** for as long as the dialog is open.
   `[title]="'Delete project X'"` or `[title]="projectName()"` sets the input alone.
-  This host clears the attribute (`'[attr.title]': 'null'`) and
-  `test/HostClassBinding.test.ts` holds that layer-wide in both directions, a primitive
-  taking the input and not clearing it fails, and so does one clearing an attribute it
-  takes no input for. The binding above is the clearer spelling, not a workaround.
+  This host clears the attribute (`'[attr.title]': 'null'`), which the layer holds in
+  both directions: a primitive taking the input and not clearing it fails, and so does
+  one clearing an attribute it takes no input for. The binding above is the clearer spelling, not a workaround.
 - Use `requireText` when the action is genuinely irreversible, and use the name of the
   thing being destroyed as the word.
 - Don't reach for `destructive` on a merely inconvenient action. The filled red is the

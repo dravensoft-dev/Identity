@@ -12,12 +12,11 @@ by Style Dictionary, and the scripts are tested with `bun test`, as is each fram
 from its own suites (`bun run test:scripts` / `test:react` / `test:react-dom` /
 `test:angular`, or `bun run test` for all four).
 
-Those four run in **two `bun test` processes**, not one, preceded by a build the Angular
-suites need before either process can see them, because the preload registers a DOM globally
-and must not share a process with the DOM-free suites. **The preload must never reach the
-DOM-free invocation and is mandatory for the DOM one**: without a DOM already installed,
-`react-dom` latches its `input`-event support false at module evaluation and an `onChange`
-handler receives a dispatched event **zero** times, silently.
+Those four run in **two `bun test` processes**, not one, preceded by a build the Angular suites
+need before either process can see them. **The preload must never reach the DOM-free invocation
+and is mandatory for the DOM one**: without a DOM already installed, `react-dom` latches its
+`input`-event support false at module evaluation and an `onChange` handler receives a dispatched
+event **zero** times, silently.
 [`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full.
 **The single authority for that command is `testStep()` in
 `scripts/check/arena/check-all.mjs`**, and its `.test.mjs` sibling asserts the args array by
@@ -45,9 +44,12 @@ It ships as three things at once from the same tree:
 **Two branches, and a fact belongs to exactly one.** `SKILL.md` roots the *consumer* branch the
 way this file roots the contributor one, and they are almost disjoint by design, because the
 cost of the consumer branch is paid on every build: an agent building with Arena reads the
-router, then `frameworks/Catalog.generated.md`, then one component's `.prompt.md`, and reaches
-`contracts/api/components/` only where a prompt leaves a question open. It reads no normative
-README, which is why the router names them and says not to. **A rule written into both branches
+router, then `frameworks/SKILL.md`, then its own layer's `SKILL.md` beside it, then one
+component's `.prompt.md`, and reaches `contracts/api/components/` only for the reasoning behind
+a member, since the prompt already states its type and its default. **Everything on that route
+after the router is under `frameworks/`**, and each stop narrows: what exists, what it is called
+here, how to write it. It reads no normative README, which is why the router names them and says
+not to. **A rule written into both branches
 goes stale in one of them.** The four rules below say which branch, and where on it.
 
 **The question that decides the branch is who has to act on the fact**, never which directory
@@ -55,18 +57,19 @@ the code sits in. A helper under `frameworks/react/` that a consumer imports is 
 fact; a token under `contracts/design/` that only a generator reads is a contributor one.
 
 **Anything a package ships needs a home on the consumer branch**: an exported symbol, a file
-under `css/`, a class a consumer writes. That home is the layer's `PACKAGE.md`, the only
-consumer document a layer owns and the page npm shows. **A layer's `README.md` is not one**,
-because the router forbids reading it, so a shipped thing documented only there is a thing
-nobody can find. Derive what ships rather than trusting a list: `ROOT_TS` in
+under `css/`, a class a consumer writes. That home is the layer's `PACKAGE.md`, which is the
+page npm shows; the layer's `SKILL.md` beside it is generated and indexes components alone.
+**A layer's `README.md` is neither**, because the router forbids reading it, so a shipped thing
+documented only there is a thing nobody can find. Derive what ships rather than trusting a list: `ROOT_TS` in
 `scripts/build/react/build-react-package.mjs`, and every `copy(` in
 `scripts/build/angular/build-angular-package.mjs`.
 
 **A rule binding more than one component is the router's, stated once**; a rule binding one
-component is that component's `.prompt.md`, in each layer's own idiom. A prompt states the local
-consequence and **cites no contributor document**: `check:docs` fails one naming a path under
-`scripts/`, or a `README.md` under `contracts/` or `frameworks/`, or `frameworks/PACKAGING.md`.
-A prompt that tells a consumer to import something names the package, never a repository path.
+component is that component's `.prompt.md`, in each layer's own idiom. **A consumer document
+cites no contributor one**: `check:docs` fails a prompt, or a `SKILL.md` under `frameworks/`,
+naming a path under `scripts/`, a `README.md` under `contracts/` or `frameworks/`, or
+`frameworks/PACKAGING.md`. The root router is the one carve-out, since naming that branch is how
+it redirects. Telling a consumer to import something names the package, never a path.
 
 **A `description` in `contracts/api/` is layer-neutral prose that reaches every layer's
 generated types.** One naming a class, a package path or a single layer's idiom is emitted into
@@ -430,19 +433,13 @@ through `act()`, so the fixture stays small and explicitly sized: three rows by 
 
 **A dimension in a framework layer is a token or a derivation of tokens. A bare literal is a
 bug.** This is machine-checked: `bun run check:dimensions` scans `frameworks/` for literals in
-the properties the token layer governs and fails on each. A value passes when it is
-`var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over one, zero, or a unit the token layer
-does not model (`%`, `ch`, `fr`, the viewport and angle units, since DTCG admits only `px` and
-`rem` in a dimension, plus `s`/`ms`, which this gate alone tolerates). **The same three shapes are
-what a Tailwind bracket may hold, and the two gates share the same unmodelled-unit list**, but
-they are not one list: this inline gate additionally tolerates `s`/`ms`, while the bracket gate
-does not, because `--dur-*` and `--loop-*` model duration.
+the properties the token layer governs and fails on each.
 
-**What the scan reaches, what it does not, and its two known blind spots are in
-[`scripts/check/arena/README.md`](./scripts/check/arena/README.md), beside the gate.** Read it
-before assuming a site is covered: the reason the three SVG charts write their static styling
-as camelCase `[style]` objects rather than as attributes is there, and it is not a style
-preference. A change to `EXEMPT` or `PASSTHROUGH` is a change to
+**Which shapes pass, which units it tolerates, what the scan reaches, what it does not, and its
+two known blind spots are in [`scripts/check/arena/README.md`](./scripts/check/arena/README.md),
+beside the gate.** Read it before assuming a site is covered: the reason the three SVG charts
+write their static styling as camelCase `[style]` objects rather than as attributes is there,
+and it is not a style preference. A change to `EXEMPT` or `PASSTHROUGH` is a change to
 `check-dimension-literals.test.mjs` too, since that suite asserts on both maps by name.
 
 **No gate compares a Tailwind manifest against a rendered component, and the mapping is not
@@ -513,11 +510,11 @@ decision, and a layer that disagrees with it is wrong.
 
 **Every React component is a trio, in the component's own directory**,
 `frameworks/react/components/<category>/<component-kebab>/`: `X.tsx` (implementation and its
-exported `XProps`), `X.prompt.md` (usage, examples, Do/Don't) and a fixture at
-`frameworks/demos/X.demo.json`. **The layer carries no hand-written `.d.ts`**: the published one
-is emitted from the source, so the two cannot disagree. **The demo page is not one of the
-three** and is generated into every layer; see below. Adding a component means adding the three
-and running the generator.
+exported `XProps`), `X.prompt.md` (its prose, its examples and its Do/Don't around a generated
+member table) and a fixture at `frameworks/demos/X.demo.json`. **The layer carries no
+hand-written `.d.ts`**: the published one is emitted from the source, so the two cannot
+disagree. **The demo page is not one of the three** and is generated into every layer; see
+below. Adding a component means adding the three and running the generators.
 
 **A new React component moves a literal count outside its own layer, and the React suite alone
 cannot see it move.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts
@@ -527,12 +524,20 @@ the args array in `testStep()`, because `bun test frameworks/react` never matche
 so it reports green over a tree whose test run is red. That is a different hazard from the
 two-invocation rule above: this one is about a path a narrowed invocation never matched.
 
-**A new component in either layer also moves `frameworks/Catalog.generated.md`**, the index
-every consumer reads before reaching for anything. It is generated, so nothing is written by
-hand: run `bun run generate:catalog`, which `bun run build` already does, and commit the
-result. It is **tracked**, unlike everything else a generator writes under `frameworks/`, because the
-plugin is served from the git tag where nothing runs a build, so an uncommitted catalog is a
-wrong answer handed to every reader of that tag. `check:catalog` fails a stale one.
+**A new component in either layer also moves the consumer branch's index tree**,
+`frameworks/SKILL.md` and one `SKILL.md` per layer, which is what every consumer reads before
+reaching for anything. It is generated, so nothing is written by hand: run
+`bun run generate:skills`, which `bun run build` already does, and commit the result. Those
+three are **tracked**, unlike everything else a generator writes under `frameworks/`, because
+the plugin is served from the git tag where nothing runs a build, so an uncommitted index is a
+wrong answer handed to every reader of that tag. `check:skills` fails a stale one and an
+untracked one.
+
+**A prompt's API table is generated too, and only that region of it.** Between the `@api`
+markers, `bun run generate:api` writes every contracted member under the names that layer binds,
+with its form, type, default and `description`; the prose around it stays hand-written.
+`check:prompts` holds each region to a fresh emit, so a member renamed or retyped surfaces as a
+stale table rather than as silence, and the fix is the contract.
 
 **The Angular layer's shape is a quartet**, the same three plus its recipe, in
 `frameworks/angular/components/<category>/<component-kebab>/`: a standalone `OnPush` component
@@ -543,13 +548,12 @@ slot to the host rather than rendering a wrapper div**, with a growing carve-out
 command for which components carry no recipe, and the carve-outs.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
-different guarantee, not merely a faster one.** `bun run build:angular-tests` compiles the whole
-test surface with `ngc --strictTemplates`, and every run target is that emit rather than the
-`.ts` sources, so a type error anywhere in it fails the *build* and no test executes at all.
-**A green compile is a claim about TYPES, never about behaviour.** One process means one
-document and one `TestBed` for the whole layer, so **state written onto that shared document
-outlives the file that wrote it** and every directly-created fixture must be `destroy()`-ed.
-[`frameworks/angular/README.md`](./frameworks/angular/README.md) carries all of it.
+different guarantee, not merely a faster one**: a type error anywhere in the test surface fails
+the *build* and no test executes at all, so **a green compile is a claim about TYPES, never
+about behaviour**. One process means one document and one `TestBed` for the whole layer, so
+**state written onto that shared document outlives the file that wrote it**.
+[`frameworks/angular/README.md`](./frameworks/angular/README.md) carries all of it, including
+what a directly-created fixture owes the next suite.
 
 **A specimen page** starts with an HTML comment
 `<!-- @dsCard group="…" viewport="WxH" name="…" subtitle="…" -->` that drives external card
@@ -572,10 +576,12 @@ keep one tracked: **the tag has to hand it to a reader directly**, true of
 would ship a tag whose `intro/styles.css` `@import`s resolve to nothing, unstyled and silent;
 or **a clone cannot reproduce it**, true of `assets/fonts/Fonts.generated.json`, whose rebuild
 needs the network. Everything a script writes under `frameworks/` is ignored, by one pattern,
-with a reason per family in `UNTRACKED`, **with one negation**:
-`frameworks/Catalog.generated.md` is the first reason rather than a hole in the second, and
-`check:catalog` asserts it is tracked because `check:generated` scans no `.md` and so cannot.
-So a fresh clone
+with a reason per family in `UNTRACKED`. **The consumer branch's index tree is not a hole in
+that**: the pattern reaches a `.generated.` name, `SKILL.md` is not one, and so the three are
+tracked by default, which is the first reason above. They keep that literal name for the
+mechanical reason the six naming exceptions below have, and it costs nothing, because
+`check:generated` scans no `.md` at all and `check:skills` holds their freshness and their
+tracking instead. So a fresh clone
 runs `bun run build` first; [`scripts/build/README.md`](./scripts/build/README.md) is the
 first-compile document, linked from the root README. `check:generated` holds both halves and
 names the two outputs that can hold neither infix nor header: the `assets/fonts/` binaries, and
@@ -687,18 +693,15 @@ list**, with `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort 
    explicit and the rename would compile; the exception is for the reader.
 4. `.gitkeep` (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
 5. **The three adopter-facing files under `frameworks/angular/theme/`**, which do not share one
-   reason. `arena-tailwind.css` and `arena-cdk.css` are named **inside an adopter's own source,
-   verbatim**: each is an `@import` in the host app's `styles.css`, so renaming one breaks every
-   app that has adopted Arena. **`no-fouc.html` is not a third instance of that**: the adopter
-   pastes the `<script>`'s *contents* and never names the file, so renaming it breaks a
-   documentation line rather than an app. **Not exempt:** `theme/ThemeService.ts` and
-   `icons/IconManifest.ts` are reached through `frameworks/angular/index.ts`, which no adopter writes.
-6. **`frameworks/react/ui-kits/console/index.entry.tsx` and its `index.entry.generated.js`.** It
-   inherits its exception, because a demo page's composition script takes the stem of the page it
-   composes, and that page is `index.html`, already exempt above. Renaming the pair would break
-   the HTTP directory index that serves the app at `/frameworks/react/ui-kits/console/`.
+   reason and are not the same case as the two layer-root modules beside them.
+   [`frameworks/angular/README.md`](./frameworks/angular/README.md) carries each reason and what
+   is **not** exempt.
+6. **`frameworks/react/ui-kits/console/index.entry.tsx` and its compiled sibling**, which inherit
+   the exception `index.html` already has above.
+   [`frameworks/react/README.md`](./frameworks/react/README.md) carries why.
 
-`frameworks/tailwind/` carries no lowercase-initial file at all.
+`frameworks/tailwind/` carries no lowercase-initial file at all, and the generated `SKILL.md`
+tree carries no dispensation, being capital-initial already.
 
 **`frameworks/Components.json` is the declaration and `check:structure` is the gate.** The file
 names each component's category once, so the category is not written once per layer with nothing

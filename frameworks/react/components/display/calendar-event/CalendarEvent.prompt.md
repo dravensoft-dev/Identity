@@ -9,6 +9,25 @@ One event on a `Calendar`'s schedule. It is a child of `Calendar` and nothing el
 </Calendar>
 ```
 
+<!-- @api GENERATED from contracts/api/components/CalendarEvent.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `id*` | primitive | `string` |  | Stable identity, so a host can switch on it rather than on the title. |
+| `title*` | primitive | `string` |  | What the chip reads. |
+| `start*` | primitive | `string` |  | ISO datetime the event begins. |
+| `end*` | primitive | `string` |  | ISO datetime the event ends. |
+| `colorId` | enum | `CatSlot` |  | Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. |
+| `interactive` | primitive | `boolean` | `false` | Whether the chip can be activated. A boolean rather than "is `click` bound?", per R6, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. |
+| `actionsEnabled` | primitive | `boolean` | `false` | Whether the chip shows its action button. A boolean rather than "is the actions slot filled?", per R6: projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. |
+| `actions` | slot |  |  | The action panel's content, revealed by the chip's action button. Rendered only while the panel is open, so a consumer's own controls never sit permanently in the grid's Tab sequence. |
+| `disabled` | primitive | `boolean` | `false` | Whether the chip is drawn but cannot be activated: an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. |
+| `onClick` | event |  |  | The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about. Never emitted while `disabled`. |
+
+<!-- @api end -->
+
 `id`, `title`, `start` and `end` are all required and **throw** when absent. `start` and `end` are ISO datetimes, read in the calendar's `timeZone` and never the reader's.
 
 **`onClick` carries no payload, deliberately.** You wrote this element, so your handler already closes over the record it came from, so `onClick={() => open(c)}` reaches the whole of `c` with no id-to-object lookup. A payload would have handed back the five fields you had just passed in.
@@ -71,8 +90,7 @@ implement. Serve the tree with `bun run demos`, open
 3. On a chip with a panel, clicking the kebab opens the panel below the chip,
    and every control in it is clickable. Check a SHORT event, 30 minutes or
    less, not only a long one. The geometry is what this step is for; the
-   keyboard route beside it is pinned by
-   `frameworks/react/test/PlacementAndBranches.dom.test.tsx`, because
+   keyboard route beside it is pinned by a render suite instead, because
    `CalendarEvent` binds `button` rather than `grid` and a chip mounted alone
    costs none of the RAM the grid rule exists to avoid.
 4. Escape with the panel open CLOSES the panel and puts focus back on the

@@ -11,6 +11,22 @@ the accessible name and the focus ring.
                          defaultValue="failing" (change)="filter.set($event)" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/SegmentedControl.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `options*` | array | `SegmentOption[]` |  | The options, in order. Two to four with one-word labels. |
+| `value` | primitive | `string` |  | The selected option's value. Omit and pass `defaultValue` to let it govern itself. |
+| `defaultValue` | primitive | `string` |  | The initially selected value when uncontrolled. Defaults to the first option. |
+| `size` | enum | `SegmentedControlSize` | `"md"` | Compact or default. |
+| `ariaLabel*` | primitive | `string` |  | Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. |
+| `name` | primitive | `string` |  | Shared name for the underlying radios; generated when omitted. |
+| `change` | event | `string` |  | A different option was chosen; carries its value. |
+
+<!-- @api end -->
+
 ```ts
 readonly ranges: SegmentOption[] = [
   { value: '24h', label: '24h' },
@@ -44,7 +60,7 @@ asserts the role by name rather than by pattern so that a regression reads as wh
 - Don't reach for it as a form field. It is a filter; a mutually exclusive answer inside a form,
   with labels that need room, is `arena-radio-group`.
 - Don't give the selected segment the brand colour. It lifts on `bg-neutral` with a shadow instead,
-  and the variants suite asserts that no arm of this recipe touches `primary` at all.
+  and no state of the control reaches for `primary` at all.
 
 **By hand, in real Chromium**: the platform behaviour above is what happy-dom cannot show. Run
 `bun run demos` and open

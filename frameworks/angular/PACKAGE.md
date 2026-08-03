@@ -205,7 +205,7 @@ import { Button, Tag, StatCard } from '@dravensoft/arena-angular';
       <arena-tag [tone]="rotor.grounded ? 'danger' : 'success'">{{ rotor.status }}</arena-tag>
     }
 
-    <arena-button icon="ph-plus" (press)="add()">Add a rotor</arena-button>
+    <arena-button icon="ph-plus" (click)="add()">Add a rotor</arena-button>
   `,
 })
 export class Fleet {

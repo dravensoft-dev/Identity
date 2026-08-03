@@ -24,7 +24,8 @@ export { DOMAINS };
 export const GATES = [
   { name: 'check:docs', file: 'arena/check-docs.mjs' },
   { name: 'check:generated', file: 'arena/check-generated.mjs' },
-  { name: 'check:catalog', file: 'arena/check-catalog.mjs' },
+  { name: 'check:skills', file: 'arena/check-skills.mjs' },
+  { name: 'check:prompts', file: 'arena/check-prompts.mjs' },
   { name: 'check:dtcg', file: 'core/check-dtcg.mjs' },
   { name: 'check:tokens', file: 'core/check-tokens-generated.mjs' },
   { name: 'check:script-tokens', file: 'arena/check-script-tokens.mjs' },

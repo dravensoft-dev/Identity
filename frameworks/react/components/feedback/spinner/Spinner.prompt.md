@@ -6,6 +6,18 @@ Indeterminate wait indicator, for the waits with no known percentage. Respects `
 <Spinner size="lg" tone="neutral" label="Connecting to the build server" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Spinner.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `size` | enum | `ControlSize` | `"md"` | Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text. |
+| `tone` | enum | `SpinnerTone` | `"accent"` | Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface. |
+| `label` | primitive | `string` | `"Loading"` | Accessible name, announced by the status role. Say what is loading when you can. |
+
+<!-- @api end -->
+
 **Do**
 - Reach for `ProgressBar` first. A spinner is the fallback for when no real percentage exists; a determinate bar communicates remaining time and a spinner cannot.
 - Give `label` the real subject ("Loading projects"), because it is the accessible name, and "Loading" alone tells a screen-reader user nothing.

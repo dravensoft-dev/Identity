@@ -8,6 +8,16 @@ full-width block, and shows whatever you put in it.
 <arena-table-cell><arena-button variant="ghost" size="sm">Details</arena-button></arena-table-cell>
 ```
 
+<!-- @api GENERATED from contracts/api/components/TableCell.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | What the cell shows: a value, or one of Arena's own components, such as a Badge for a status or a Button for an action. This is what the compound shape exists for. The consumer instantiates one element per cell, so nothing here is per-item projection. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Put a value in it, or one of Arena's own components: an `arena-badge` for a status, an
   `arena-button` for an action. This is why the table is a compound primitive at all: a

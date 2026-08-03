@@ -6,6 +6,16 @@ One cell of a `TableRow`. It draws the cell box, the padding, the alignment and 
 <TableCell><Button variant="ghost" size="sm">Details</Button></TableCell>
 ```
 
+<!-- @api GENERATED from contracts/api/components/TableCell.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `children` | slot |  |  | What the cell shows: a value, or one of Arena's own components, such as a Badge for a status or a Button for an action. This is what the compound shape exists for. The consumer instantiates one element per cell, so nothing here is per-item projection. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Put a value in it, or one of Arena's own components: a `Badge` for a status, a `Button` for an action. This member is why `Table` is a compound component at all: a column-level `render` function would be per-item projection, which the library does not do, where a cell **you** instantiate is just an element you wrote.
 - Don't set alignment, width or the mono face here. Those are the column's, so a column stays consistent down its whole length; a cell that styled itself would drift from its header.

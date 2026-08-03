@@ -10,7 +10,8 @@ import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
-  consumerBranchProblems, CONSUMER_LAST_STOP, CONTRIBUTOR_PATHS,
+  consumerBranchProblems, CONSUMER_LAST_STOP, CONSUMER_INDEX, CONTRIBUTOR_PATHS,
+  isConsumerDocument, BRANCH_SWITCH, branchSwitchProblems,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -268,7 +269,7 @@ test('a prompt citing a contributor path is a problem, and each hit is named', (
   assert.equal(problems.length, 2);
   assert.ok(problems.some((p) => p.includes('contracts/api/README.md')));
   assert.ok(problems.some((p) => p.includes('scripts/lib/arena/api-surface.mjs')));
-  for (const problem of problems) assert.match(problem, /consumer's last stop/);
+  for (const problem of problems) assert.match(problem, /leave the reason on the contributor branch/);
   rmSync(root, { recursive: true });
 });
 
@@ -284,6 +285,28 @@ test('a layer README, the packaging document and a layer-root source are contrib
   rmSync(root, { recursive: true });
 });
 
+test('a repository artefact is a contributor path too, wherever in the tree it sits', () => {
+  const root = tree({
+    'frameworks/angular/components/a/A.prompt.md':
+      'Styling is `A.variants.ts`, compiled from `A.manifest.json`; `A.compliance.test.ts` pins it,\n'
+      + 'and the type comes from `Api.generated.ts`.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 4);
+  for (const cited of ['A.variants.ts', 'A.manifest.json', 'A.compliance.test.', 'Api.generated']) {
+    assert.ok(problems.some((p) => p.includes(cited)), `nothing caught ${cited}`);
+  }
+  rmSync(root, { recursive: true });
+});
+
+test('a generated demo page is the one build product a prompt may name, being what a by-hand check opens', () => {
+  const root = tree({
+    'frameworks/react/components/a/A.prompt.md': 'Open `A.demo.generated.html` and check the focus ring.\n',
+  });
+  assert.deepEqual(consumerBranchProblems(root).problems, []);
+  rmSync(root, { recursive: true });
+});
+
 test('the rule reaches prompts alone, and a sibling of the component is not a contributor path', () => {
   const root = tree({
     'frameworks/react/README.md': 'Read `scripts/build/react/build-demos.mjs` for the emit.\n',
@@ -296,9 +319,51 @@ test('the rule reaches prompts alone, and a sibling of the component is not a co
   rmSync(root, { recursive: true });
 });
 
-test('the boundary reads one file suffix and a reason-carrying list, both by name', () => {
+test('an index under frameworks/ is a consumer document, and the root router is the one that is not', () => {
+  assert.equal(isConsumerDocument(join('frameworks', 'SKILL.md')), true);
+  assert.equal(isConsumerDocument(join('frameworks', 'react', 'SKILL.md')), true);
+  assert.equal(isConsumerDocument(join('frameworks', 'react', 'components', 'a', 'A.prompt.md')), true);
+  assert.equal(isConsumerDocument('SKILL.md'), false,
+    'the root router names the contributor branch to send a contributor away');
+  assert.equal(isConsumerDocument(join('frameworks', 'react', 'README.md')), false);
+  assert.equal(isConsumerDocument(join('docs', 'SKILL.md')), false, 'the tree decides, not the name alone');
+});
+
+test('an index citing a contributor path fails the same way a prompt does', () => {
+  const root = tree({
+    'frameworks/react/SKILL.md': 'Emitted by `scripts/generate/arena/generate-skills.mjs`.\n',
+    'frameworks/react/components/a/A.prompt.md': 'Import from `@dravensoft/arena-react`.\n',
+  });
+  const { problems, scanned } = consumerBranchProblems(root);
+  assert.equal(scanned, 2, 'the index and the prompt are both consumer documents');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /frameworks[\\/]react[\\/]SKILL\.md/);
+  rmSync(root, { recursive: true });
+});
+
+test('the root router may name the contributor branch, because naming it is how it redirects', () => {
+  const root = tree({
+    'SKILL.md': 'Do not read `frameworks/PACKAGING.md` to build something.\n',
+    'frameworks/react/components/a/A.prompt.md': 'Import from `@dravensoft/arena-react`.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.deepEqual(problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('an exemption naming a file that is not there is stale, and says so', () => {
+  const root = tree({ 'frameworks/react/components/a/A.prompt.md': 'x\n' });
+  assert.equal(branchSwitchProblems(root).length, Object.keys(BRANCH_SWITCH).length);
+  assert.match(branchSwitchProblems(root)[0], /stale exemption/);
+  rmSync(root, { recursive: true });
+});
+
+test('the boundary reads two file names and a reason-carrying list, all by name', () => {
   assert.equal(CONSUMER_LAST_STOP, '.prompt.md');
-  assert.equal(CONTRIBUTOR_PATHS.length, 5);
+  assert.equal(CONSUMER_INDEX, 'SKILL.md');
+  assert.deepEqual(Object.keys(BRANCH_SWITCH), ['SKILL.md']);
+  for (const reason of Object.values(BRANCH_SWITCH)) assert.match(reason, /\w/);
+  assert.equal(CONTRIBUTOR_PATHS.length, 9);
   for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
     assert.ok(pattern.global, 'a non-global pattern reports only the first hit on a page');
     assert.match(reason, /\w/);

@@ -10,6 +10,19 @@ does, all the way to one.
 </Grid>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Grid.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `min` | primitive | `string` | `"calc(var(--sp-1) * 50)"` | The narrowest a cell may be before the count drops. It is the one number this component takes and it is page geometry rather than a step on the spacing scale, which models rhythm and not the width of a card. It is clamped against the container, so a minimum wider than the room available yields one full-width column instead of overflowing it. |
+| `gap` | enum | `GridGap` | `"md"` | The air between cells, on both axes. Named steps rather than a length, because rhythm is what the spacing scale is for and a grid is where a hand-picked one shows worst. |
+| `maxWidth` | primitive | `string` |  | A ceiling on the grid's own width, centred in whatever contains it. Absent, it fills its container, which is what a grid nested inside a page should do; a page's own reading width is what this is for. |
+| `children` | slot |  |  | The cells, one per child. Nothing is wrapped and nothing is measured: a child is a grid item exactly as it was written, so a card, a chart or a definition list all lay out the same way. |
+
+<!-- @api end -->
+
 **It replaces a hand-written column list, not a `minmax(0, 1fr)` in one.** A fixed column count
 needs a threshold, and a threshold is a number somebody invented: six filter bars written by hand
 end up with three different ones and none of them matches `--bp-*`. Here the floor is `min` and it

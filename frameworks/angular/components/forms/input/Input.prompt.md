@@ -1,7 +1,7 @@
 Arena text field, label above, hint or error below, and a validation state the field wears.
-Standalone, `OnPush`, signal I/O. Styling is the sibling `Input.variants.ts` recipe; the host binds
-the root slot, so `<arena-input>` is itself the column its parent lays out. The control is a real
-`<input>`, named by a real `<label for>`.
+Standalone, `OnPush`, signal I/O. The host binds the root slot, so `<arena-input>` is itself
+the column its parent lays out. The control is a real `<input>`, named by a real
+`<label for>`.
 
 ```html
 <arena-input label="Project name" [value]="name()" (change)="name.set($event)"
@@ -16,6 +16,39 @@ the root slot, so `<arena-input>` is itself the column its parent lays out. The 
 <arena-input label="Slug" [value]="slug()" [error]="serverError()" (change)="slug.set($event)" />
 <arena-input label="Created" type="date" [value]="created()" readOnly />
 ```
+
+<!-- @api GENERATED from contracts/api/components/Input.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label` | primitive | `string` |  | Field label above the control. |
+| `id` | primitive | `string` |  | The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `in-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased. The derivation is normative, and the prefix differs per component on purpose: the same markup must get the same id in every layer, and an Input and a Textarea sharing a label must not collide. |
+| `hint` | primitive | `string` |  | A line of help under the field. |
+| `error` | primitive | `string` |  | Controlled error message; wins over `validate`. |
+| `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
+| `required` | primitive | `boolean` | `false` | Marks the label and the control required. |
+| `validate` | functionInput | `(value: string) => string` |  | Called on the value; returns the error message, or empty for valid. |
+| `validateOn` | enum | `ValidateOn` | `"blur"` | When `validate` runs. |
+| `type` | enum | `InputType` | `"text"` | Native input type. |
+| `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
+| `prefix` | primitive | `string` |  | Static text Arena draws before the value, e.g. `git@`. |
+| `value` | primitive | `string` |  | The controlled text. |
+| `disabled` | primitive | `boolean` | `false` | Blocks editing and dims it. |
+| `readOnly` | primitive | `boolean` | `false` | Shows the value but blocks editing. |
+| `placeholder` | primitive | `string` |  | Shown when empty. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `autoComplete` | primitive | `string` |  | The browser autofill hint. |
+| `min` | primitive | `string` |  | Minimum, for number/date types. |
+| `max` | primitive | `string` |  | Maximum, for number/date types. |
+| `step` | primitive | `string` |  | Step, for number/date types. |
+| `maxLength` | primitive | `number` |  | Caps the length. |
+| `pattern` | primitive | `string` |  | A regex the value must match. |
+| `change` | event | `string` |  | Edited; carries the new value. |
+| `blur` | event | `string` |  | Left the field; carries the value. |
+
+<!-- @api end -->
 
 **This is the repository's only `functionInput`.** `validate` is a function the consumer supplies
 and the component calls on the value; its signature is modelled in the contract
@@ -42,7 +75,7 @@ Return the message, or the empty string when the value is good.
   first keystroke instead; reach for it on a field with a cheap, obvious rule.
 - The valid state (green ring, check) is either `valid` set by the consumer, or a touched field
   whose validator returned nothing. It is not "the field has a value".
-- The focus ring is the recipe's, not the component's: the `field` slot carries `focus-within:`,
+- The focus ring is the field's, not the control's: the `field` slot carries `focus-within:`,
   so there is no focus signal to keep in sync with the DOM.
 - `id` is derived from `label` as `in-<slug>` when you do not pass one; the derivation
   `Input.json` states, so the same markup gets the same id in every layer. Pass `id` when two
@@ -63,7 +96,7 @@ Return the message, or the empty string when the value is good.
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
 open `/frameworks/angular/components/forms/input/Input.demo.generated.html`:
 - `type="date"`: the picker indicator is **visible** on the dark field and brightens on hover.
-  That is the shared manifest's `[&::-webkit-calendar-picker-indicator]:` block reading
+  That is Arena's own `[&::-webkit-calendar-picker-indicator]:` styling reading
   `--picker-invert`; without it the browser draws a black glyph on a dark surface. Toggle
   `.arena-light` on `<html>` and it must invert with the theme.
 - The gold focus ring appears on the field group, not on the input, and a valid field keeps its

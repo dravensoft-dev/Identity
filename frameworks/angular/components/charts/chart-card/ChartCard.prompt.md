@@ -10,6 +10,18 @@ own `role="img"`.
 </arena-chart-card>
 ```
 
+<!-- @api GENERATED from contracts/api/components/ChartCard.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title` | primitive | `string` |  | The card heading. Absent renders no head unless `actions` is present. |
+| `actions` | slot |  |  | Controls in the head row, right-aligned beside the title. |
+| `content` | slot |  |  | The chart (or any body) the card frames. |
+
+<!-- @api end -->
+
 Import `ArenaActions` from `@dravensoft/arena-angular` alongside `ChartCard` in the
 host component's `imports`,
 `actions` is a directive, not a plain attribute, because it is how the card

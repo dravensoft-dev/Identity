@@ -12,6 +12,19 @@ Actions menu on a trigger (overflow "⋮", more actions, context). Don't confuse
   ]} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Menu.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `trigger*` | slot |  |  | The element that opens the menu. The consumer draws it -- an IconButton with ph-dots-three-vertical, a secondary Button -- so it is a slot, and it carries its own accessible name. |
+| `items*` | array | `MenuItem[]` |  | The entries, in order: activatable rows, dividers and group headers. |
+| `align` | enum | `MenuAlign` | `"start"` | Which edge of the trigger the panel lines up with. |
+| `onSelect` | event | `MenuItem` |  | An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. |
+
+<!-- @api end -->
+
 An entry has no `onClick` of its own. Activating one reports `onSelect(item)` --
 the whole item, not a key into the list -- so the handler switches on whatever
 field it finds useful, usually `label`. There is deliberately no `id`:

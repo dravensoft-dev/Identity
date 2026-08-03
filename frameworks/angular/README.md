@@ -1,7 +1,7 @@
 # Arena, the Angular layer
 
 > **For whoever works on this layer.** Building an app with it instead? Read [`PACKAGE.md`](./PACKAGE.md) to install it,
-> [`../Catalog.generated.md`](../Catalog.generated.md) to find a component, and that component's `.prompt.md` to use it.
+> [`SKILL.md`](./SKILL.md) to find a component, and that component's `.prompt.md` to use it.
 
 **Published as `@dravensoft/arena-angular`.** [`PACKAGE.md`](./PACKAGE.md) is what a consumer
 reads, and the assembly copies it into `dist/` as the package README;
@@ -30,6 +30,15 @@ are. `bun run check:layer-independence` holds it, and `ALLOWED` is empty.
   `@angular/cdk`; read [CDK bridge](#cdk-bridge-supported-and-verified) for what that
   means and what it does not.**
 - `icons/IconManifest.ts`: the canonical Phosphor role→glyph map.
+
+**The three files under `theme/` keep their lowercase names, and they do not share one reason.**
+`arena-tailwind.css` and `arena-cdk.css` are named **inside an adopter's own source, verbatim**:
+each is an `@import` in the host app's `styles.css`, so renaming one breaks every app that has
+adopted Arena. **`no-fouc.html` is not a third instance of that**: the adopter pastes the
+`<script>`'s contents and never names the file, so renaming it breaks a documentation line
+rather than an app. **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are
+reached through `frameworks/angular/index.ts`, which no adopter writes.
+
 - `theme/ThemeService.ts` and `theme/no-fouc.html`: the signal theme service and the
   pre-paint snippet. It switches between **any number of named palettes**, because a
   consumer's `arena.config.json` declares as many as they like: the default palette sits on

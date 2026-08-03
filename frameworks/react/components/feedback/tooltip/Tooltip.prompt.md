@@ -4,6 +4,17 @@ Brief tooltip over icons/actions.
 <Tooltip label="Roll back to the previous build"><IconButton label="Roll back" icon="ph-bold ph-arrow-counter-clockwise" /></Tooltip>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Tooltip.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | The bubble's text. Arena draws the bubble; the consumer names it. |
+| `children*` | slot |  |  | The element the tooltip describes and attaches to. |
+
+<!-- @api end -->
+
 `label` is the bubble's text and is required; Arena draws the bubble, the consumer
 names it. It is a plain string, so markup inside a tooltip is not possible; a bubble
 is a short label, not a paragraph. The children are the element the tooltip describes

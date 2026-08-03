@@ -12,6 +12,23 @@ tour closes, Tab and Shift+Tab cycle inside the panel, and Escape reports `skip`
                   (skip)="touring.set(false)" (done)="finish()" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Onboarding.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `open*` | primitive | `boolean` |  | Whether the tour is shown. Closed renders nothing, scrim included. |
+| `steps*` | array | `OnboardingStep[]` |  | The tour, in order. An empty tour renders nothing. |
+| `index` | primitive | `number` | `0` | Which step is current. The host owns it and answers next/back. |
+| `anchor` | object | `OnboardingAnchor` |  | Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. |
+| `next` | event |  |  | Next was activated on a step that is not the last. |
+| `back` | event |  |  | Back was activated on a step that is not the first. |
+| `skip` | event |  |  | Skip was activated, or the scrim was clicked. |
+| `done` | event |  |  | The final step's confirming control was activated. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Keep a tour to three or four steps. The dots are a promise about how long this will
   take, and a tour that breaks that promise gets skipped.

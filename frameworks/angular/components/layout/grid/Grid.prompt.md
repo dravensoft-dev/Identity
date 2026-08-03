@@ -1,6 +1,5 @@
 Arena grid, the one that picks its own column count from the room it is in so nobody has to pick a
-breakpoint. Standalone, `OnPush`, signal I/O. Styling is the sibling `Grid.variants.ts` recipe; the
-component carries no CSS classes of its own, and the host **is** the grid, so `<arena-grid>` is the
+breakpoint. Standalone, `OnPush`, signal I/O. The host **is** the grid, so `<arena-grid>` is the
 element you place.
 
 ```html
@@ -10,6 +9,19 @@ element you place.
   <arena-stat-card label="Collected today" [value]="collected()" />
 </arena-grid>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Grid.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `min` | primitive | `string` | `"calc(var(--sp-1) * 50)"` | The narrowest a cell may be before the count drops. It is the one number this component takes and it is page geometry rather than a step on the spacing scale, which models rhythm and not the width of a card. It is clamped against the container, so a minimum wider than the room available yields one full-width column instead of overflowing it. |
+| `gap` | enum | `GridGap` | `"md"` | The air between cells, on both axes. Named steps rather than a length, because rhythm is what the spacing scale is for and a grid is where a hand-picked one shows worst. |
+| `maxWidth` | primitive | `string` |  | A ceiling on the grid's own width, centred in whatever contains it. Absent, it fills its container, which is what a grid nested inside a page should do; a page's own reading width is what this is for. |
+| `content` | slot |  |  | The cells, one per child. Nothing is wrapped and nothing is measured: a child is a grid item exactly as it was written, so a card, a chart or a definition list all lay out the same way. |
+
+<!-- @api end -->
 
 **It replaces a hand-written column list, not a `minmax(0, 1fr)` in one.** A fixed column count
 needs a threshold, and a threshold is a number somebody invented: six filter bars written by hand

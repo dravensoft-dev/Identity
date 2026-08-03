@@ -8,6 +8,18 @@ panel `Tabs` renders below the strip.
 </Tabs>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Tab.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `value*` | primitive | `string` |  | What this tab selects, and what the parent's `change` carries. |
+| `label*` | primitive | `string` |  | What the tab reads. Arena draws the button; the consumer names it. |
+| `children` | slot |  |  | What the panel shows while this tab is selected. Tabs places it; Tab never renders it, because a tabpanel may not sit inside a tablist. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Do give every tab a `value` and a `label`. Both are required and both are guarded: a blank one
   throws rather than drawing a nameless tab.

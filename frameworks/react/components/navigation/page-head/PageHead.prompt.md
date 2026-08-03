@@ -14,6 +14,19 @@ The title block at the top of a page: an `h1`, an optional muted subtitle, and t
 />
 ```
 
+<!-- @api GENERATED from contracts/api/components/PageHead.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title*` | primitive | `string` |  | The page title. Required: a page head with no title is a bug, not a state. |
+| `subtitle` | primitive | `string` |  | A muted line under the title. |
+| `actions` | slot |  |  | Page-level controls, right-aligned in the head. |
+| `align` | enum | `PageHeadAlign` | `"start"` | Cross-axis alignment of the actions block against the title, wide layout only. |
+
+<!-- @api end -->
+
 `align` (default `"start"`) governs only the wide layout's cross-axis alignment of the
 actions block against the title, `"start"` keeps actions top-aligned with a tall title,
 `"center"` vertically centers them against it. Below `--bp-sm` the row always stacks and

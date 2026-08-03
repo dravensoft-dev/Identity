@@ -22,13 +22,18 @@ read [`CLAUDE.md`](./CLAUDE.md) instead. It is the root of that branch and this 
 
 ## Start here, in this order
 
-1. **[`frameworks/Catalog.generated.md`](./frameworks/Catalog.generated.md)**: every component,
-   what it is, what it takes, and a link to each layer's usage document. One read tells you
-   what exists and what to reach for.
-2. **The component's own `.prompt.md`**, linked from the catalog: examples and the Do/Don't.
-   Read one per component you actually write, and no more.
-3. **`contracts/api/components/<Name>.json`** when you need a member's exact type, default or
-   reason. Read it only when the prompt leaves the question open.
+**Everything you need to build is under `frameworks/`, and each level of it narrows.**
+
+1. **[`frameworks/SKILL.md`](./frameworks/SKILL.md)**: every component Arena ships, by the
+   category it is filed under, with what each one is and what it takes. One read tells you what
+   exists and what to reach for.
+2. **`frameworks/<layer>/SKILL.md`**, linked from there: the same components under the names
+   your framework binds them to, each linking its own prompt. Read your layer's, and no other.
+3. **The component's own `.prompt.md`**, linked from that index: its members as a table, its
+   examples and its Do/Don't. Read one per component you actually write, and no more.
+
+A prompt states every member's type and default, so `contracts/api/components/<Name>.json` is
+only for the reasoning behind one, and you will rarely need it.
 
 ## The rules, and they are not style preferences
 
@@ -71,9 +76,11 @@ Every one of these is enforced somewhere, so breaking one is a defect rather tha
 
 | Question | Read |
 |---|---|
-| Which component do I need? Does one exist? | [`frameworks/Catalog.generated.md`](./frameworks/Catalog.generated.md) |
-| How do I use this component? | its `.prompt.md`, linked from the catalog |
-| What exactly does this member take? | `contracts/api/components/<Name>.json` |
+| Which component do I need? Does one exist? | [`frameworks/SKILL.md`](./frameworks/SKILL.md) |
+| What is it called in my framework, and where is its prompt? | `frameworks/<layer>/SKILL.md` |
+| How do I use this component? | its `.prompt.md`, linked from that index |
+| What exactly does this member take? | the members table in that same prompt |
+| Why does this member exist at all? | `contracts/api/components/<Name>.json` |
 | What else does the package export, besides components? | the layer's `PACKAGE.md`: the theme surface, the two measurements, the chart ramp helpers, and Angular's projection markers |
 | How do I size a page layout, or fit a panel to its own box? | the same section: `useViewportBelow` / `viewportBelow` for a page, `useContainerWidth` / `containerWidth` for a box |
 | What is the value of a token? | the DTCG JSON for its group in `contracts/design/` (`ls contracts/design/*.json`), which is the machine-readable form and is cheaper than the specification below. Two files hold what DTCG cannot: `contracts/design/colors.css` (the aliases such as `--crimson`, and the muted text levels) and `contracts/design/environment.css` (`--pad-safe-*`, the device's own insets composed with the spacing scale, for a shell you draw around Arena) |

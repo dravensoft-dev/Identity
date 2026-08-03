@@ -7,6 +7,27 @@ Styled native dropdown selector. `options` is an array of `{value, label}` objec
             {value:'qa',label:'QA'}]} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Select.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label` | primitive | `string` |  | Field label above the control. |
+| `placeholder` | primitive | `string` |  | An empty-valued first option, drawn before the choices and unselectable once a real one is made -- "Choose a customer". It is an option rather than an attribute because a native select has no placeholder, and it is what makes "nothing chosen yet" distinguishable from "the first choice". |
+| `options` | array | `SelectOption[]` | `[]` | The choices, drawn as native options. |
+| `value` | primitive | `string` |  | The selected option's value. |
+| `disabled` | primitive | `boolean` | `false` | Blocks the control and dims it. |
+| `required` | primitive | `boolean` | `false` | Must have a value for the form to submit. |
+| `hint` | primitive | `string` |  | A line of help under the field. |
+| `error` | primitive | `string` |  | Controlled error message. It is the whole validation surface here, unlike Input, which also takes a `validate` function: a native select offers a closed list, so there is no value to parse and nothing for a validator to reject that the options did not already prevent. |
+| `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
+| `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `onChange` | event | `string` |  | A different option was chosen; carries its value. |
+
+<!-- @api end -->
+
 `options` takes **only** `SelectOption` objects. The bare-string form
 (`options={['Production','Staging']}`) is gone: `(string | SelectOption)[]` is a union
 between two forms, which R5 forbids, and the object form carries strictly more,

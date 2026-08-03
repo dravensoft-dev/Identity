@@ -31,13 +31,13 @@ node_modules/
 # Everything a script writes under frameworks/ is read by Arena's own tooling or assembled
 # into a package, and is ignored. Each reason lives beside its pattern in UNTRACKED, in
 # scripts/check/arena/check-generated.mjs.
+#
+# The pattern reaches a .generated. name and nothing else, which is why the consumer branch's
+# generated indexes, frameworks/SKILL.md and one per layer, need no exception here: they are
+# tracked by default. They have to be, being the first thing an agent reads from the tag,
+# where nothing runs a build, and check:skills asserts it because no other gate can:
+# check:generated scans no .md.
 /frameworks/**/*.generated.*
-
-# The one exception under frameworks/, and it is the first rule above rather than a hole in
-# the second: the catalog is served to a reader from the tag, where nothing runs a build, so
-# ignoring it hands every consumer of the plugin an index that is not there. check:catalog
-# asserts it is tracked, because no other gate can: check:generated scans no .md.
-!/frameworks/Catalog.generated.md
 
 # Logs
 *.log

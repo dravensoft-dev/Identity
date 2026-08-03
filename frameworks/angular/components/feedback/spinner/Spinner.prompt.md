@@ -1,12 +1,23 @@
-Arena spinner, an indeterminate wait indicator. Standalone, `OnPush`, signal I/O. Styling is
-the sibling `Spinner.variants.ts` recipe; the component carries no CSS classes of its own. The
-host **is** the indicator, and it is the live region: `role="progressbar"`, `aria-live="polite"`
+Arena spinner, an indeterminate wait indicator. Standalone, `OnPush`, signal I/O. The host
+**is** the indicator, and it is the live region: `role="progressbar"`, `aria-live="polite"`
 and the accessible name all sit on it, with the spinning ring a decorative `aria-hidden` child.
 
 ```html
 <arena-spinner label="Fetching deployments" />
 <arena-spinner size="sm" tone="on-accent" label="Saving" />
 ```
+
+<!-- @api GENERATED from contracts/api/components/Spinner.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `size` | enum | `ControlSize` | `"md"` | Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text. |
+| `tone` | enum | `SpinnerTone` | `"accent"` | Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface. |
+| `label` | primitive | `string` | `"Loading"` | Accessible name, announced by the status role. Say what is loading when you can. |
+
+<!-- @api end -->
 
 It reports **no value at all**: no `aria-valuenow`, no `aria-valuemin`, no `aria-valuemax`,
 because a spinner is indeterminate by definition and ARIA expresses that by omitting the value.

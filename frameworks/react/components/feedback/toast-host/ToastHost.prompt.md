@@ -12,6 +12,17 @@ static flow quietly stops floating. This is what makes it a flex item.
 </ToastHost>
 ```
 
+<!-- @api GENERATED from contracts/api/components/ToastHost.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `placement` | enum | `ToastPlacement` | `"bottom-end"` | Which corner the stack is pinned to. A bottom placement clears the device's own bottom inset, so a stack on a phone never lands under the home indicator. |
+| `children` | slot |  |  | The notices, in the order they are read. The stack is a plain column and the visual order is the source order, whatever the corner: a reversed one would put the newest notice first on screen and last in the reading order, and the two must agree. Nothing here caps the count or times a dismissal, because the queue that produced these notices already holds their identity and their order, and a cap applied by the box that draws them would fight the queue that owns them. |
+
+<!-- @api end -->
+
 `placement` picks the corner: `top-start`, `top-end`, `bottom-start`, `bottom-end`, default
 `bottom-end`. The inline half is `start`/`end` rather than left/right, so a right-to-left document
 flips the stack with the text. A bottom placement stands off `max(var(--sp-6),
