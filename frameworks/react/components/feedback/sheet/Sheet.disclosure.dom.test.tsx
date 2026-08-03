@@ -63,8 +63,8 @@ test('collapsed folds the body and leaves the header and the footer where they w
   const trigger = triggerIn(root);
   assert.equal(trigger.getAttribute('aria-expanded'), 'false');
   const body = bodyIn(root);
-  assert.equal(body.hasAttribute('hidden'), true, 'a folded body is hidden, not absent');
-  assert.equal(body.style.display, 'none');
+  assert.equal(body.hasAttribute('hidden'), true,
+    'a folded body is hidden, not absent, and [hidden] is what takes it out of the flow');
   assert.ok(root.textContent?.includes('Cart'), 'a folded panel still says what it is');
   assert.ok(root.textContent?.includes('Checkout'), 'and still carries the action it exists for');
 });
@@ -104,11 +104,13 @@ test('a sheet is not a dialog: no role, no aria-modal, no scrim, and it takes no
     assert.equal(document.activeElement, anchor, 'sanity: focus starts on the anchor button');
 
     const root = mount(one());
-    const panel = root.querySelector<HTMLElement>('[style]')!;
+    const panel = root.firstElementChild as HTMLElement;
     assert.equal(panel.getAttribute('role'), null, 'a non-modal panel claims no dialog role');
     assert.equal(panel.getAttribute('aria-modal'), null);
-    assert.equal(panel.style.zIndex, 'var(--z-sheet)', 'a sheet belongs in its own slot, not the modal\'s');
-    assert.ok(!panel.style.backdropFilter, 'a sheet darkens nothing behind it');
+    const drawn = panel.className;
+    assert.ok(drawn.includes('z-sheet'), 'a sheet belongs in its own slot, not the modal\'s');
+    assert.ok(!drawn.includes('backdrop-blur'), 'a sheet darkens nothing behind it');
+    assert.ok(!drawn.includes('bg-scrim'), 'and lays no scrim over what it leaves usable');
     assert.equal(document.activeElement, anchor,
       'opening a panel that takes nothing away must not take focus either');
   } finally {

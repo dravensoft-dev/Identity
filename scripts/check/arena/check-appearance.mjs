@@ -19,7 +19,6 @@ export const PENDING = new Map([
 
 
 
-  ['Sheet', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
   ['Onboarding', 'group F: the same, with a measured coachmark position that stays'],
   ['ToastHost', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
 
