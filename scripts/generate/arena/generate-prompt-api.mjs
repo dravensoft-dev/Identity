@@ -34,7 +34,7 @@ export function signature(params = {}) {
 }
 
 export function typeCell(spec) {
-  if (spec.form === 'array') return `\`${typeOf(spec.of)}[]\``;
+  if (spec.form === 'array') return `\`readonly ${typeOf(spec.of)}[]\``;
   if (spec.form === 'consumerData') return `\`${CONSUMER_DATA}\``;
   if (spec.form === 'functionInput') return `\`(${signature(spec.params)}) => ${typeOf(spec.returns)}\``;
   if (spec.form === 'event') return spec.payload ? `\`${typeOf(spec.payload)}\`` : '';

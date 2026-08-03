@@ -47,9 +47,13 @@ Phosphor class name that a component renders, never an SVG it bundles, so withou
 stylesheet every icon is an empty box. Import it once from your global stylesheet:
 
 ```css
-@import '@phosphor-icons/web/src/bold/style.css';
-@import '@phosphor-icons/web/src/fill/style.css';
+@import '@phosphor-icons/web/bold';
+@import '@phosphor-icons/web/fill';
 ```
+
+Those are the subpaths Phosphor exports, and they are what a bundler resolves. A deeper path
+into the package, `@phosphor-icons/web/src/bold/style.css`, goes through its catch-all export
+instead and resolves to `src/src/bold/style.css`, which is not there.
 
 ## Declare your skin
 
@@ -94,9 +98,9 @@ three fonts served by Google Fonts, and it is enough to start:
     }
   ],
   "fonts": {
-    "display": { "family": "Archivo", "src": "https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&display=swap" },
-    "body": { "family": "Familjen Grotesk", "src": "https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400..900&display=swap" },
-    "mono": { "family": "Spline Sans Mono", "src": "https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400..900&display=swap" }
+    "display": { "family": "Archivo", "src": "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" },
+    "body": { "family": "Familjen Grotesk", "src": "https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700;800;900&display=swap" },
+    "mono": { "family": "Spline Sans Mono", "src": "https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600;700;800;900&display=swap" }
   }
 }
 ```

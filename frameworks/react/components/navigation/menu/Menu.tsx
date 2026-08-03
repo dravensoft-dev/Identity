@@ -12,7 +12,7 @@ export interface MenuProps {
   trigger: React.ReactNode;
 
   /** The entries, in order: activatable rows, dividers and group headers. */
-  items: MenuItem[];
+  items: readonly MenuItem[];
 
   /** Which edge of the trigger the panel lines up with. */
   align?: MenuAlign;

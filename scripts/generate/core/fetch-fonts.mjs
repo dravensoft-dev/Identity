@@ -2,20 +2,18 @@ import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { fontWeights, googleFontsUrl } from '../../lib/core/arena-config.mjs';
 
 const fontsDir = join(root, 'assets', 'fonts');
 const cssPath = join(root, 'contracts', 'design-generated', 'fonts.generated.css');
 
-const UA =
+export const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/120.0 Safari/537.36';
 
 export function families(root) {
   const src = JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
-  const weights = Object.entries(src.fw)
-    .filter(([k]) => !k.startsWith('$'))
-    .map(([, t]) => t.$value)
-    .sort((a, b) => a - b);
+  const weights = fontWeights(root);
   return Object.entries(src.font)
     .filter(([k]) => !k.startsWith('$'))
     .map(([, token]) => {
@@ -25,8 +23,7 @@ export function families(root) {
 }
 
 async function google(css, weights) {
-  const family = `${css.replace(/ /g, '+')}:wght@${weights.join(';')}`;
-  const url = `https://fonts.googleapis.com/css2?family=${family}&display=swap`;
+  const url = googleFontsUrl(css, weights);
   const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) throw new Error(`CSS fetch failed for ${css}: ${res.status}`);
   return res.text();

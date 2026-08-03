@@ -8,7 +8,7 @@ export type { SegmentOption };
 export interface SegmentedControlProps {
 
   /** The options, in order. Two to four with one-word labels. */
-  options: SegmentOption[];
+  options: readonly SegmentOption[];
 
   /** The selected option's value. Omit and pass `defaultValue` to let it govern itself. */
   value?: string;

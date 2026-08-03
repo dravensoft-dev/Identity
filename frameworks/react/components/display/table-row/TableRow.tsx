@@ -8,7 +8,7 @@ const rowStyles = arenaStyles(manifest);
 
 export interface TableRowInjected {
   rowIndex: number;
-  columns: TableColumn[];
+  columns: readonly TableColumn[];
   layout: 'table' | 'card';
   cursorCol: number | null;
   onCellFocus: (row: number, col: number) => void;

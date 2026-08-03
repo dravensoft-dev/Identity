@@ -2,7 +2,11 @@
  * it: check-packages.mjs, which runs the CLI over it and holds the result equivalent to the
  * Style Dictionary output, and the assembly, which writes it into each package as the
  * example a consumer starts from. Deriving it beats writing it twice, because the example
- * a reader copies is then the palette the gate proved. */
+ * a reader copies is then the palette the gate proved.
+ * A weight query is a list and never a `min..max` range: Google serves a range only when it
+ * lies inside that family's own wght axis and answers 400 otherwise, and Arena declares
+ * weights up to 900 across families whose axes stop at 700. A list is clamped to the
+ * nearest weight the family has, so one query holds for every family. */
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -20,20 +24,28 @@ export function paletteColors(root, theme) {
   return out;
 }
 
-export function fontEntries(root) {
-  const typography = JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
-  const weights = Object.entries(typography.fw)
-    .filter(([k]) => !k.startsWith('$'))
-    .map(([, t]) => t.$value)
+const typographyContract = (root) =>
+  JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
+
+export function fontWeights(root) {
+  return Object.entries(typographyContract(root).fw)
+    .filter(([key]) => !key.startsWith('$'))
+    .map(([, token]) => token.$value)
     .sort((a, b) => a - b);
-  const range = `${weights[0]}..${weights.at(-1)}`;
+}
+
+export function googleFontsUrl(family, weights) {
+  return `${GOOGLE_FONTS}?family=${family.replace(/ /g, '+')}:wght@${weights.join(';')}&display=swap`;
+}
+
+export function fontEntries(root) {
+  const weights = fontWeights(root);
 
   const out = {};
-  for (const [role, token] of Object.entries(typography.font)) {
+  for (const [role, token] of Object.entries(typographyContract(root).font)) {
     if (role.startsWith('$')) continue;
     const family = token.$value[0];
-    const query = `family=${family.replace(/ /g, '+')}:wght@${range}&display=swap`;
-    out[role] = { family, src: `${GOOGLE_FONTS}?${query}` };
+    out[role] = { family, src: googleFontsUrl(family, weights) };
   }
   return out;
 }

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   PACKAGES, GENERATED_PALETTE, distDir, stripAtStatements,
-  paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect,
+  paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect, styleProblems,
 } from './check-packages.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -55,6 +55,12 @@ test('an at-statement above the first block does not swallow the selector after 
   const withImports = `@import url('https://fonts.googleapis.com/css2?family=Archivo');\n${generated}`;
   assert.deepEqual(paletteEquivalenceProblems(generated, withImports).problems, []);
   assert.match(stripAtStatements(withImports), /^\s*:root\{/);
+});
+
+test('a semicolon inside a font URL does not leave the statement behind for the declaration parser', () => {
+  const query = "@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;900&display=swap');";
+  assert.deepEqual(paletteEquivalenceProblems(generated, `${query}\n${generated}`).problems, []);
+  assert.match(stripAtStatements(`${query}\n${generated}`), /^\s*:root\{/);
 });
 
 const manifest = (overrides = {}) => ({
@@ -186,4 +192,60 @@ test('the repository passes its own equivalence claim, over more than nothing', 
   const { problems, compared } = collect(root);
   assert.deepEqual(problems, []);
   assert.ok(compared > 0, `${GENERATED_PALETTE} yielded no declaration to compare`);
+});
+
+test('a stylesheet chain that resolves end to end reports nothing, and says how far it walked', () => {
+  const dir = assembled({
+    'arena.css': "@import './css/components.css';",
+    'css/components.css': "@import './components/button.css';\n@import './components/tag.css';",
+    'css/components/button.css': "@import '../prelude.css';",
+    'css/components/tag.css': "@import '../prelude.css';",
+    'css/prelude.css': ':root{}',
+  });
+  const { problems, walked } = styleProblems(PACKAGES[1], dir);
+  assert.deepEqual(problems, []);
+  assert.equal(walked, 5);
+  rmSync(dir, { recursive: true });
+});
+
+test('an import naming a file beside the barrel that lives a directory below it is caught', () => {
+  const dir = assembled({
+    'arena.css': "@import './css/components.css';",
+    'css/components.css': "@import './button.css';",
+    'css/components/button.css': '',
+  });
+  const { problems } = styleProblems(PACKAGES[1], dir);
+  assert.ok(problems.includes(
+    '@dravensoft/arena-angular: css/components.css imports ./button.css, which was never emitted',
+  ), problems.join('\n'));
+  rmSync(dir, { recursive: true });
+});
+
+test('a chain that leads nowhere fails rather than passing for having found no import', () => {
+  const dir = assembled({ 'arena.css': ':root{}' });
+  const { problems, walked } = styleProblems(PACKAGES[1], dir);
+  assert.equal(walked, 1);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /reaches no component stylesheet/);
+  rmSync(dir, { recursive: true });
+});
+
+test('a bare specifier is the consumer\'s to resolve and is never walked as a path', () => {
+  const dir = assembled({
+    'arena.css': "@import '@phosphor-icons/web/bold';\n@import url('https://fonts.googleapis.com/css2?family=Archivo');\n@import './css/components.css';",
+    'css/components.css': "@import './components/tag.css';",
+    'css/components/tag.css': '',
+  });
+  assert.deepEqual(styleProblems(PACKAGES[1], dir).problems, []);
+  rmSync(dir, { recursive: true });
+});
+
+test('a cycle terminates rather than walking the same sheet forever', () => {
+  const dir = assembled({
+    'arena.css': "@import './css/components.css';",
+    'css/components.css': "@import './components/tag.css';",
+    'css/components/tag.css': "@import '../components.css';",
+  });
+  assert.deepEqual(styleProblems(PACKAGES[1], dir).problems, []);
+  rmSync(dir, { recursive: true });
 });

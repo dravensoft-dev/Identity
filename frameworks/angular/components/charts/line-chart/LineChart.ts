@@ -149,9 +149,9 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
 })
 export class LineChart {
   /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
-  readonly labels = input.required<string[]>();
+  readonly labels = input.required<readonly string[]>();
   /** The plotted data, in order. One point per entry; a negative value clamps to the baseline. */
-  readonly values = input.required<number[]>();
+  readonly values = input.required<readonly number[]>();
   /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason Table.label is required. */
   readonly seriesLabel = input.required<string>();
   /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */

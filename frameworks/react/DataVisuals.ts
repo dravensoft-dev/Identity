@@ -55,7 +55,7 @@ export function toneColor(tone: Tone): string {
 
 export interface ResolveColorsOptions {
   slot?: number;
-  slots?: number[];
+  slots?: readonly number[];
   tone?: SeriesTone;
   count: number;
 }

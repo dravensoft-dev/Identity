@@ -14,7 +14,7 @@ export interface CommandPaletteProps {
   open: boolean;
 
   /** Every command the palette can find. Filtered by label and hint as the user types. */
-  commands: Command[];
+  commands: readonly Command[];
 
   /** The search field's placeholder. */
   placeholder?: string;

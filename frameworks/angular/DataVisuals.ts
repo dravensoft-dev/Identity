@@ -62,7 +62,7 @@ export function toneColor(tone: Tone): string {
 
 export function resolveColors(options: {
   slot?: number;
-  slots?: number[];
+  slots?: readonly number[];
   tone?: SeriesTone;
   count: number;
 }): string[] {
