@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Spinner.manifest.generated.ts';
 
 import type { ControlSize, SpinnerTone } from '../../../Api.generated';
 
@@ -15,41 +17,13 @@ export interface SpinnerProps {
 }
 
 
-let injected = false;
-function useSpinKeyframes() {
-  useEffect(() => {
-    if (injected || typeof document === 'undefined') return;
-    injected = true;
-    const s = document.createElement('style');
-    s.setAttribute('data-arena-spinner', '');
-    s.textContent =
-      '@keyframes arena-spinner{to{transform:rotate(360deg)}}' +
-      '.arena-spinner{animation:arena-spinner var(--loop-spin) linear infinite}' +
-      '@media (prefers-reduced-motion:reduce){.arena-spinner{animation-duration:var(--loop-reduced)}}';
-    document.head.appendChild(s);
-  }, []);
-}
-
-const SIZES = { sm: 'var(--icon-sm)', md: 'var(--sp-5)', lg: 'var(--sp-8)' };
-
-const TONES = {
-  accent: 'var(--crimson)',
-  gold: 'var(--gold)',
-  neutral: 'var(--mute)',
-  'on-accent': 'var(--on-accent)',
-};
+const spinnerStyles = tv(manifest);
 
 export function Spinner({ size = 'md', tone = 'accent', label = 'Loading' }: SpinnerProps) {
-  useSpinKeyframes();
-  const d = SIZES[size] || SIZES.md;
-  const color = TONES[tone] || TONES.accent;
+  const styles = spinnerStyles({ size, tone });
   return (
-    <span role="progressbar" aria-live="polite" aria-label={label} style={{ display: 'inline-flex', color }}>
-      <span className="arena-spinner" aria-hidden="true" style={{
-        width: d, height: d,
-        border: 'var(--bw-strong) solid currentColor', borderTopColor: 'transparent',
-        borderRadius: '50%', display: 'inline-block',
-      }} />
+    <span role="progressbar" aria-live="polite" aria-label={label} className={styles.root()}>
+      <span className={styles.circle()} aria-hidden="true" />
     </span>
   );
 }
