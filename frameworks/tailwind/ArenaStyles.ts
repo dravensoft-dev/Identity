@@ -22,12 +22,16 @@ export function arenaStyles<M extends ClassManifest>(manifest: M) {
   const slotNames = Object.keys(manifest.slots);
 
   return (chosen: Selection = {}): Slots<M> => {
-    const applied: Record<string, string[]> = {};
-    for (const slot of slotNames) applied[slot] = [manifest.slots[slot]];
+    const applied = new Map<string, string[]>();
+    for (const slot of slotNames) {
+      const base = manifest.slots[slot];
+      applied.set(slot, base ? [base] : []);
+    }
 
     const append = (classes: Partial<SlotClasses> | undefined) => {
       for (const [slot, name] of Object.entries(classes ?? {})) {
-        if (name && applied[slot]) applied[slot].push(name);
+        const into = applied.get(slot);
+        if (name && into) into.push(name);
       }
     };
 
@@ -53,7 +57,10 @@ export function arenaStyles<M extends ClassManifest>(manifest: M) {
     }
 
     const out: Record<string, () => string> = {};
-    for (const slot of slotNames) out[slot] = () => applied[slot].join(' ');
+    for (const slot of slotNames) {
+      const names = applied.get(slot) ?? [];
+      out[slot] = () => names.join(' ');
+    }
     return out as Slots<M>;
   };
 }

@@ -37,11 +37,14 @@ test('the two unmarked outputs are named by literal value, with a reason each', 
 test('every ignore pattern carries a reason, and each names a real tree', () => {
   assert.deepEqual(Object.keys(UNTRACKED).sort(), [
     'frameworks/angular/Api.generated.ts',
+    'frameworks/angular/ArenaStyles.generated.ts',
     'frameworks/angular/Tokens.generated.ts',
+    'frameworks/angular/components/**/*.classes.generated.ts',
     'frameworks/angular/components/**/*.demo.entry.generated.ts',
     'frameworks/angular/playground/PlaygroundCodec.generated.ts',
     'frameworks/react/AnchorActivation.generated.js',
     'frameworks/react/Api.generated.ts',
+    'frameworks/react/ArenaStyles.generated.ts',
     'frameworks/react/DataVisuals.generated.js',
     'frameworks/react/Index.generated.ts',
     'frameworks/react/Theme.generated.js',
@@ -51,6 +54,7 @@ test('every ignore pattern carries a reason, and each names a real tree', () => 
     'frameworks/react/UseContainerWidth.generated.js',
     'frameworks/react/UseDialogModal.generated.js',
     'frameworks/react/WarnOnce.generated.js',
+    'frameworks/react/components/**/*.classes.generated.ts',
     'frameworks/react/components/**/*.demo.entry.generated.tsx',
     'frameworks/react/components/**/*.generated.js',
     'frameworks/react/components/**/*.manifest.generated.ts',
@@ -59,8 +63,12 @@ test('every ignore pattern carries a reason, and each names a real tree', () => 
     'frameworks/react/ui-kits/**/*.generated.js',
     'frameworks/react/vendor/*.generated.js',
     'frameworks/tailwind/Breakpoints.generated.css',
+    'frameworks/tailwind/Components.generated.css',
+    'frameworks/tailwind/Prelude.generated.css',
     'frameworks/tailwind/Utilities.generated.css',
+    'frameworks/tailwind/components/**/*.classes.generated.ts',
     'frameworks/tailwind/components/**/*.manifest.generated.ts',
+    'frameworks/tailwind/components/**/*.styles.generated.css',
   ]);
   for (const [name, reason] of Object.entries(UNTRACKED)) {
     assert.ok(reason.length > 30, `${name} carries no real reason`);

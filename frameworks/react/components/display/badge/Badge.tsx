@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Badge.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Badge.classes.generated.ts';
 
 import type { Tone } from '../../../Api.generated';
 
@@ -15,7 +15,7 @@ export interface BadgeProps {
   dot?: boolean;
 }
 
-const badgeStyles = tv(manifest);
+const badgeStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);
 const toneOf = (tone: string | undefined): Tone | undefined =>
   (tone && TONES.includes(tone) ? tone as Tone : 'neutral');

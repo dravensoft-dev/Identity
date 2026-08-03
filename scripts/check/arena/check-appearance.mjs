@@ -171,7 +171,9 @@ export function directoryOf(path) {
 }
 
 export function reactRendersManifest(text, manifest) {
-  return /from '[^']*Tv\.generated/.test(text) && text.includes(`${manifest}.manifest.generated`);
+  const throughRecipe = /from '[^']*Tv\.generated/.test(text) && text.includes(`${manifest}.manifest.generated`);
+  const throughClasses = /from '[^']*ArenaStyles\.generated/.test(text) && text.includes(`${manifest}.classes.generated`);
+  return throughRecipe || throughClasses;
 }
 
 export function angularRendersManifest(text) {
@@ -188,7 +190,8 @@ export function adoptionProblems(name) {
   const react = reactSource(name);
   if (react && !reactRendersManifest(readFileSync(react, 'utf8'), manifest)) {
     problems.push(`${name}: ${relative(repoRoot, react)} does not render its manifest -- it has to `
-      + `import tv from Tv.generated and ${manifest}.manifest.generated, and draw its slots`);
+      + `import arenaStyles from ArenaStyles.generated and ${manifest}.classes.generated (or, until it `
+      + `is migrated, tv from Tv.generated and ${manifest}.manifest.generated), and draw its slots`);
   }
   const angular = angularSource(name);
   if (angular && !angularRendersManifest(readFileSync(angular, 'utf8'))) {

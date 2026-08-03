@@ -39,6 +39,7 @@ export function manifestModule(manifest, jsonFile) {
 export const CONSUMING_LAYERS = ['react'];
 export const CSS_CONSUMING_LAYERS = ['react', 'angular'];
 export const PRELUDE = 'frameworks/tailwind/Prelude.generated.css';
+export const BARREL = 'frameworks/tailwind/Components.generated.css';
 
 export function keyframesIn(css) {
   const blocks = [];
@@ -80,12 +81,17 @@ export function buildComponentCss(opts = {}) {
   const byComponent = new Map();
   for (const [file, manifest] of manifests) byComponent.set(kebab(manifest.component), file);
 
+  const sheets = [];
   for (const [name, rules] of components) {
     const file = byComponent.get(name);
     if (!file) throw new Error(`build-tailwind: ${name} has rules but no manifest to write them beside`);
     const rel = file.replace(/\.manifest\.json$/, '.styles.generated.css');
+    sheets.push(rel);
     out.set(join(root, rel), BANNER + componentSheet(rules, preludeSpecifier(rel)));
   }
+
+  const imports = sheets.sort().map((rel) => `@import './${rel.replace('frameworks/tailwind/', '')}';`);
+  out.set(join(root, BARREL), `${BANNER}@import './${basename(PRELUDE)}';\n${imports.join('\n')}\n`);
   return out;
 }
 

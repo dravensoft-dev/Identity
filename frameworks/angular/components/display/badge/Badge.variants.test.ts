@@ -4,38 +4,26 @@ import { badgeStyles } from './Badge.variants';
 
 const TONES = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'] as const;
 
-test('the root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
-  assert.match(badgeStyles().root(), /(?:^|\s)inline-flex(?=\s|$)/);
-});
-
 test('the default tone is neutral', () => {
   assert.equal(badgeStyles().root(), badgeStyles({ tone: 'neutral' }).root());
 });
 
-test('every tone keeps the shared chip base -- the pill radius and the mono uppercase micro-label', () => {
+test('every tone keeps the base class, so none of them draws the chip shape alone', () => {
   for (const tone of TONES) {
-    const root = badgeStyles({ tone }).root().split(/\s+/);
-    for (const shared of ['rounded-pill', 'font-mono', 'uppercase', 'text-ctl-xs', 'tracking-badge']) {
-      assert.ok(root.includes(shared), `tone ${tone}: ${shared} missing from "${root.join(' ')}"`);
-    }
+    assert.ok(badgeStyles({ tone }).root().split(/\s+/).includes('arena-badge__root'),
+      `tone ${tone} dropped the base class, so it would draw none of the shared chip`);
   }
 });
 
-test('the seven tones resolve to seven distinct roots -- none silently collapses onto another', () => {
+test('the seven tones resolve to seven distinct roots, none silently collapsing onto another', () => {
   const roots = new Set(TONES.map((tone) => badgeStyles({ tone }).root()));
   assert.equal(roots.size, TONES.length, `two tones resolved to the same classes: ${[...roots].join(' | ')}`);
 });
 
-test('danger carries the error ink on a soft tint, never a full-strength surface -- danger is outline', () => {
-  const root = badgeStyles({ tone: 'danger' }).root();
-  assert.match(root, /\btext-error\b/);
-  assert.match(root, /\bbg-error\/\d+\b/, 'the danger surface is a tint of --error, never the token at full strength');
-  assert.doesNotMatch(root, /\bbg-error\b(?!\/)/);
-});
-
-test('the dot inherits the tone ink rather than declaring a colour of its own', () => {
+test('the dot takes no tone of its own, so it can only inherit the ink around it', () => {
   for (const tone of TONES) {
-    assert.match(badgeStyles({ tone }).dot(), /\bbg-current\b/, `tone ${tone}: the dot paints its own colour`);
+    assert.equal(badgeStyles({ tone }).dot(), 'arena-badge__dot',
+      `tone ${tone}: the dot gained a class of its own instead of inheriting`);
   }
 });
 

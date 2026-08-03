@@ -8,22 +8,21 @@ test('Badge renders its content slot', () => {
   assert.match(renderToStaticMarkup(<Badge>DRAFT</Badge>), /DRAFT/);
 });
 
-test('Badge renders the pair its tone names, not the neutral default', () => {
+test('Badge renders the tone it was given, not the neutral default', () => {
   const danger = renderToStaticMarkup(<Badge tone="danger">X</Badge>);
-  assert.match(danger, /\bbg-error\/14\b/);
-  assert.match(danger, /\btext-error\b/);
-  assert.match(renderToStaticMarkup(<Badge tone="gold">X</Badge>), /\btext-secondary\b/);
-  assert.doesNotMatch(danger, /\btext-base-content\/82\b/);
+  assert.match(danger, /\barena-badge__root--tone-danger\b/);
+  assert.doesNotMatch(danger, /\barena-badge__root--tone-neutral\b/);
+  assert.match(renderToStaticMarkup(<Badge tone="gold">X</Badge>), /\barena-badge__root--tone-gold\b/);
 });
 
-test('an unknown tone falls back to neutral rather than drawing no colour at all', () => {
+test('an unknown tone falls back to neutral rather than drawing no tone at all', () => {
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
-  assert.match(renderToStaticMarkup(<Badge tone="chartreuse">X</Badge>), /\bbg-base-300\b/);
+  assert.match(renderToStaticMarkup(<Badge tone="chartreuse">X</Badge>), /\barena-badge__root--tone-neutral\b/);
 });
 
-test('Badge draws the dot only when asked, and it takes the tone from the text colour', () => {
-  assert.doesNotMatch(renderToStaticMarkup(<Badge>X</Badge>), /\bbg-current\b/);
-  assert.match(renderToStaticMarkup(<Badge dot>X</Badge>), /\bbg-current\b/);
+test('Badge draws the dot only when asked', () => {
+  assert.doesNotMatch(renderToStaticMarkup(<Badge>X</Badge>), /\barena-badge__dot\b/);
+  assert.match(renderToStaticMarkup(<Badge dot>X</Badge>), /\barena-badge__dot\b/);
 });
 
 test('Badge drops a consumer style object and a consumer attribute, each independently', () => {

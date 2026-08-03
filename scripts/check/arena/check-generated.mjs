@@ -88,6 +88,10 @@ export const UNTRACKED = {
     + 'every Tailwind theme indirection, so no adopter property can reach in. The package build '
     + 'collects these into css/components/; check:component-css holds each to the manifest it '
     + 'came from and check:style-parity holds it to what the recipe paints.',
+  'frameworks/tailwind/Components.generated.css':
+    'the barrel of every component sheet, in one import, which is what a specimen page and a '
+    + 'playground link and what the package ships as css/components.css. Importing it is the '
+    + 'zero-friction path; importing one sheet is what makes an adopter pay for what they use.',
   'frameworks/tailwind/Prelude.generated.css':
     'the @property registrations, the layer order and the keyframes every component sheet '
     + 'depends on, which is why each one imports it rather than documenting it: without the '
