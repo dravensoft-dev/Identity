@@ -18,7 +18,6 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 export const PENDING = new Map([
 
 
-  ['Skeleton', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
   ['Spinner', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
   ['ProgressBar', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
 
