@@ -1,4 +1,6 @@
 import React, { useId, useRef, useState } from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Tabs.manifest.generated.ts';
 
 export interface TabsProps {
 
@@ -27,6 +29,8 @@ interface TabInjected {
   panelId: string;
   onSelect: (value: string) => void;
 }
+
+const tabsStyles = tv(manifest);
 
 export function Tabs({ children, value, defaultValue, onChange }: TabsProps) {
 
@@ -59,11 +63,7 @@ export function Tabs({ children, value, defaultValue, onChange }: TabsProps) {
 
   return (
     <>
-      <div role="tablist" ref={listRef} onKeyDown={onKeyDown}
-        style={{
-          display: 'flex', gap: 'calc(var(--sp-1) * 1)',
-          borderBottom: 'var(--bw) solid var(--color-base-300)',
-        }}>
+      <div role="tablist" ref={listRef} onKeyDown={onKeyDown} className={tabsStyles().root()}>
         {items.map((child, i) => React.cloneElement(child, {
           selected: i === at,
 
@@ -80,7 +80,7 @@ export function Tabs({ children, value, defaultValue, onChange }: TabsProps) {
 
         <div key={child.key} role="tabpanel" tabIndex={i === at ? 0 : -1}
           id={panelId(i)} aria-labelledby={tabId(i)} hidden={i !== at}
-          style={{ paddingBlockStart: 'calc(var(--sp-1) * 5.5)', display: i === at ? 'block' : 'none' }}>
+          className={tabsStyles({ selected: i === at }).panel()}>
           {child.props.children}
         </div>
       ))}

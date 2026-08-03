@@ -20,8 +20,6 @@ export const PENDING = new Map([
 
 
 
-  ['Tabs', 'group G: the family parent, whose manifest its tab must read'],
-  ['Tab', 'group G: reads Tabs\' manifest and does not yet render it'],
   ['BottomNav', 'group G: the family parent, whose bar its item must read as a column of'],
   ['BottomNavItem', 'group G: reads BottomNav\'s manifest and does not yet render it'],
   ['SideNav', 'group G: the family parent, whose appearance sits in a shared inject helper'],

@@ -64,3 +64,19 @@ test('Tab drops a consumer attribute -- no {...rest} spread reaches the root', (
   const html = renderToStaticMarkup(<Tab value="ov" label="Overview" data-stray="x" />);
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root');
 });
+
+test('the selected tab wears the underline and the quiet one does not, from one recipe', () => {
+  const on = renderToStaticMarkup(<Tab value="a" label="Overview" selected />);
+  assert.match(on, /\bfont-semibold\b/);
+  assert.match(on, /shadow-\[inset_0_calc\(var\(--bw-strong\)\*-1\)_0_var\(--crimson\)\]/);
+
+  const off = renderToStaticMarkup(<Tab value="a" label="Overview" />);
+  assert.match(off, /\bfont-medium\b/);
+  assert.match(off, /\bshadow-none\b/);
+  assert.doesNotMatch(off, /inset_0_calc/);
+});
+
+test('focus is a modifier the button answers, so nothing reports it to a state', () => {
+  assert.match(renderToStaticMarkup(<Tab value="a" label="Overview" />),
+    /focus-visible:shadow-\[0_0_0_var\(--focus-width\)_var\(--gold-soft\)\]/);
+});
