@@ -50,6 +50,7 @@ export const GATES = [
   { name: 'check:compliance', file: 'arena/check-compliance.mjs' },
   { name: 'check:api', file: 'arena/check-api.mjs' },
   { name: 'check:playgrounds', file: 'arena/check-playgrounds.mjs' },
+  { name: 'check:citations', file: 'arena/check-citations.mjs' },
   { name: 'check:icons', file: 'arena/check-icons.mjs' },
   { name: 'check:fonts', file: 'core/check-fonts-generated.mjs' },
   { name: 'check:vendor', file: 'react/check-vendor-generated.mjs' },

@@ -1,11 +1,11 @@
 /* Asserts the playground fixtures against the API contracts they seed. There is no
  * exception map: a fixture supplies what a contract cannot invent, so a value it gets
  * wrong renders a page that lies while every other gate stays green. Type-checking a
- * seed is the whole point -- a component drawn from a bad seed still draws. The
- * citation check is here rather than in check:docs because it is the only mechanical
- * hold on a prompt naming a page path, and a moved page is exactly what this wave does.
- * The smoke phase needs a browser, because a page that mounts nothing is invisible to every
- * portable check here: the emitted source is what they compare, and a source that compiles
+ * seed is the whole point -- a component drawn from a bad seed still draws. The citation
+ * check left here is the half only this gate can make: whether a cited page is one a contract
+ * EMITS, and whether a bare filename names anything; a path that merely has to exist is
+ * check:citations'. The smoke phase needs a browser, because a page that mounts nothing is
+ * invisible to every portable check here: emitted source is what they compare, and one that compiles
  * can still throw on the first render. A page is probed once it is drawn plus a grace window,
  * never on a blind sleep, and a page that never draws still waits the whole deadline. */
 
@@ -364,15 +364,9 @@ export function citationProblems(base = root, files = citingFiles(base), names =
     for (const [line, text] of readFileSync(path, 'utf8').split('\n').entries()) {
       for (const cited of text.match(PATH_LIKE) ?? []) {
         const cleaned = cited.replace(/[.,;:)]+$/, '');
-        if (cleaned.endsWith('.demo.generated.html')) {
-          if (!pages.has(cleaned)) {
-            problems.push(`${rel}:${line + 1}: cites ${cleaned}, and no contract emits that page`);
-          }
-          continue;
-        }
-        if (cleaned.includes('.generated.')) continue;
-        if (existsSync(join(base, cleaned))) continue;
-        problems.push(`${rel}:${line + 1}: cites ${cleaned}, and nothing is there`);
+        if (!cleaned.endsWith('.demo.generated.html')) continue;
+        if (pages.has(cleaned)) continue;
+        problems.push(`${rel}:${line + 1}: cites ${cleaned}, and no contract emits that page`);
       }
       for (const cited of text.match(PAGE_LIKE) ?? []) {
         if (pageNames.has(cited) || names.has(cited)) continue;
@@ -527,7 +521,7 @@ async function main() {
     `check-playgrounds: ${fixtures.size} fixture(s) seed every contracted member a contract cannot invent, `
     + `${buildPlaygrounds().files.size} emitted file(s) match a fresh run and every page pair carries one model, `
     + `${pages.length} page(s) mount and draw with a clean console, `
-    + 'and every path cited from a layer exists',
+    + 'and every page a layer cites is one a contract emits',
   );
 }
 

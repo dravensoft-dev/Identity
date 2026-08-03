@@ -89,22 +89,23 @@ run. See [`../build/README.md`](../build/README.md).
 
 ## The five domains
 
-| domain | what a gate there reads |
-| --- | --- |
-| [`arena/`](./arena/README.md) | two or more layers at once, or the repository root |
-| [`tailwind/`](./tailwind/README.md) | the shared Tailwind layer |
-| [`angular/`](./angular/README.md) | the Angular layer |
-| [`core/`](./core/README.md) | `contracts/` and `assets/` only |
-| [`react/`](./react/README.md) | the React layer |
+**These counts are the one set in the repository written in prose and held by an assertion**, so
+they are numbers rather than a command: `check-all.test.mjs` derives each from `GATES` and fails
+this table when the two disagree. That is why they may be read, and why nobody should replace
+them with a `find`, which would trade a held claim for an unheld one.
 
-**Count them from `GATES` rather than from the directory**, because the two answer different
-questions and the difference is the whole point of the section above: a gate on disk that is
-registered nowhere runs in no job and is worth nothing. `arena/` alone holds two files that are
-not gates, `check-all.mjs`, the runner, and `check-release.mjs`, run by path:
+Counts are of **registered gates**; `arena/` alone holds two files that are not one:
+`check-release.mjs`, run by path rather than registered, and `check-all.mjs`, the runner
+rather than a gate. The distinction is the section above: a gate on disk that is registered
+nowhere runs in no job and is worth nothing, so the directory is not the authority here.
 
-```bash
-grep -oE "file: '[a-z]+/" scripts/check/arena/check-all.mjs | sort | uniq -c
-```
+| domain | gates | |
+| --- | --- | --- |
+| [`arena/`](./arena/README.md) | 22 | two or more layers at once, or the repository root |
+| [`tailwind/`](./tailwind/README.md) | 8 | the shared Tailwind layer |
+| [`angular/`](./angular/README.md) | 4 | the Angular layer |
+| [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |
+| [`react/`](./react/README.md) | 4 | the React layer |
 
 `check-all.test.mjs` asserts every gate names one of the five domains and points at
 `<domain>/<gate>.mjs`, so a gate landing outside the grid fails rather than running unnoticed.

@@ -80,6 +80,7 @@
     "check:compliance": "bun scripts/check/arena/check-compliance.mjs",
     "check:api": "bun scripts/check/arena/check-api.mjs",
     "check:playgrounds": "bun scripts/check/arena/check-playgrounds.mjs",
+    "check:citations": "bun scripts/check/arena/check-citations.mjs",
     "check:icons": "bun scripts/check/arena/check-icons.mjs",
     "check:focus-trap": "bun scripts/check/arena/check-focus-trap.mjs",
     "check:cards": "bun scripts/check/arena/check-card-viewports.mjs",
