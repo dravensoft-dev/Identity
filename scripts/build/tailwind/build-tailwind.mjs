@@ -20,7 +20,13 @@ export function buildTailwind(opts = {}) {
 }
 
 export function manifestModule(manifest, jsonFile) {
-  return `${manifestBanner(jsonFile)}export default ${JSON.stringify(manifest, null, 2)} as const;\n`;
+  const { compoundVariants, ...rest } = manifest;
+  if (!compoundVariants) {
+    return `${manifestBanner(jsonFile)}export default ${JSON.stringify(manifest, null, 2)} as const;\n`;
+  }
+  const entries = compoundVariants.map((entry) => `${JSON.stringify(entry, null, 2)} as const`).join(',\n');
+  return `${manifestBanner(jsonFile)}const compoundVariants = [\n${entries},\n];\n\n`
+    + `export default { ...(${JSON.stringify(rest, null, 2)} as const), compoundVariants };\n`;
 }
 
 export const CONSUMING_LAYERS = ['react'];

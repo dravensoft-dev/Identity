@@ -100,18 +100,21 @@ test('a min wider than any card still yields one clamped column rather than an o
 test('maxWidth caps and centres, and its absence leaves the grid filling its container', () => {
   const bare = render();
   try {
-    const style = gridOf(bare).getAttribute('style') ?? '';
+    const host = gridOf(bare);
+    const style = host.getAttribute('style') ?? '';
     assert.ok(!/max-width/.test(style), 'a grid with no ceiling must declare none and fill what contains it');
-    assert.ok(!/margin-inline/.test(style), 'and must not centre itself against nothing');
+    assert.ok(!/\bmx-auto\b/.test(host.getAttribute('class') ?? ''),
+      'and must not centre itself against nothing');
   } finally {
     bare.destroy();
   }
 
   const capped = render({ maxWidth: 'var(--container-max)' });
   try {
-    const style = capped.nativeElement.querySelector('arena-grid')!.getAttribute('style') ?? '';
-    assert.match(style, /max-width:\s*var\(--container-max\)/);
-    assert.match(style, /margin-inline:\s*auto/,
+    const host = capped.nativeElement.querySelector('arena-grid')!;
+    assert.match(host.getAttribute('style') ?? '', /max-width:\s*var\(--container-max\)/,
+      'the ceiling is the consumer\'s string and stays inline');
+    assert.match(host.getAttribute('class') ?? '', /\bmx-auto\b/,
       'a capped grid centres, or the ceiling reads as a left margin');
   } finally {
     capped.destroy();

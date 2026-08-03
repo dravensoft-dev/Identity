@@ -1,4 +1,6 @@
 import React from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Grid.manifest.generated.ts';
 
 import type { GridGap } from '../../../Api.generated';
 
@@ -17,21 +19,18 @@ export interface GridProps {
   children?: React.ReactNode;
 }
 
-const GAP: Record<GridGap, string> = {
-  none: 'var(--sp-0)',
-  sm: 'var(--sp-3)',
-  md: 'var(--sp-4)',
-  lg: 'var(--sp-6)',
-};
+const gridStyles = tv(manifest);
+const GAPS = Object.keys(manifest.variants.gap);
+const gapOf = (gap: string | undefined): GridGap =>
+  (gap && GAPS.includes(gap) ? gap as GridGap : 'md');
 
 export function Grid({ min = 'calc(var(--sp-1) * 50)', gap = 'md', maxWidth, children }: GridProps) {
   return (
-    <div style={{
-      display: 'grid', width: '100%',
-      gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}, 100%), 1fr))`,
-      gap: GAP[gap] || GAP.md,
-      maxWidth, marginInline: maxWidth ? 'auto' : undefined,
-    }}>
+    <div className={gridStyles({ gap: gapOf(gap), centred: maxWidth !== undefined }).root()}
+      style={{
+        gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}, 100%), 1fr))`,
+        maxWidth,
+      }}>
       {children}
     </div>
   );

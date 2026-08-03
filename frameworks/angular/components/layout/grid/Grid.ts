@@ -10,7 +10,6 @@ import { gridStyles } from './Grid.variants';
     '[class]': 'styles().root()',
     '[style.gridTemplateColumns]': 'tracks()',
     '[style.maxWidth]': 'maxWidth()',
-    '[style.marginInline]': 'maxWidth() ? "auto" : null',
   },
   template: `<ng-content />`,
 })
@@ -23,5 +22,5 @@ export class Grid {
   readonly maxWidth = input<string>();
 
   protected readonly tracks = computed(() => `repeat(auto-fit, minmax(min(${this.min()}, 100%), 1fr))`);
-  protected readonly styles = computed(() => gridStyles({ gap: this.gap() }));
+  protected readonly styles = computed(() => gridStyles({ gap: this.gap(), centred: this.maxWidth() !== undefined }));
 }

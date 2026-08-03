@@ -26,9 +26,6 @@ export const PENDING = new Map([
   ['TableCell', 'the same residual ring as Table\'s, on the cell that carries it'],
   ['Calendar', 'the same residual ring as Table\'s, on the hour cell that carries it'],
 
-  ['PageHead', 'group E: the same, with a measured container width that stays'],
-  ['Pagination', 'group E: a flat surface still typed out inline'],
-  ['Grid', 'group E: the same, with computed column tracks that stay'],
   ['AppLogo', 'group E: a flat surface still typed out inline'],
   ['ChartCard', 'group E: the same; it has a manifest and draws no SVG, so it is in scope'],
 ]);
