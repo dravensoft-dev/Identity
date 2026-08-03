@@ -92,6 +92,38 @@ order and a half that dropped it would sort Tailwind's own property fallbacks ab
 The halves are verbatim slices rather than a re-serialisation, which the paired suite asserts
 by reassembling them against the one file.
 
+## The class string is not the API, and that is a versioning statement
+
+Every component renders the class string of the recipe its surface is described by, so it is
+in the DOM and a consumer's own rule reaches it by specificity. That is not a hole to be
+closed. It is what rendering classes means, and the alternative, an inline style object that
+beats every author rule short of `!important`, was worse in every way that matters. What has
+to be written down is the promise, because the observable thing and the promised thing are not
+the same thing.
+
+**No contract names a class.** `contracts/api/components/<Name>.json` states members, and
+`check:api` reads the implementations for those members and cannot see a class at all. Nothing
+in the tree ties a slot's name, its class list, or the order those classes appear in to
+anything an adopter can rely on.
+
+So the policy is the short one: **a manifest may rename a slot, split it, merge it, re-order
+its classes or change which utility draws a value, in any release, and none of that is a
+breaking change.** It is an implementation moving. A consumer who wrote a rule against
+`.bg-base-200` on Arena's own element gets no deprecation and no warning, because there was
+never anything to deprecate.
+
+What IS the API is the list every gate already holds: the members in `contracts/api/`, the
+symbols each package exports, the files under `css/`, and the shape of `arena.config.json`.
+Re-skinning goes through the last of those, which is what it is for; content a consumer draws
+themselves is theirs, and their rules on their own elements are theirs too.
+
+**This is where the statement lives rather than only in each `PACKAGE.md`**, because the two
+say different things to different readers. A package's README tells an adopter what they may
+lean on. This tells us what we are free to change, and it is the reason a manifest edit ships
+in a patch. It is also the reason prefixing Arena's utilities, if that is ever worth doing,
+would be an implementation change and not a break: without this paragraph it would be a break
+nobody announced.
+
 **The Tailwind layer is still not a third package.** It is data travelling one way into
 Angular, the single edge `check:layer-independence` declares `ALLOWED`, and no consumer of
 the Angular package ever imports it by name.
@@ -160,6 +192,9 @@ suite against a fixture holding exactly the file that would otherwise fail:
 `.claude-plugin/plugin.json` is the authority, as it already is for the plugin, the
 marketplace, the README's artifact list and the tag. `baseManifest()` stamps it into both packages,
 so no manifest is ever hand-versioned and the two cannot drift apart.
+
+What makes a number a major is the API, and the class string is not part of it: see "The class
+string is not the API" above before treating a manifest edit as a break.
 
 ## What `check:packages` holds
 
