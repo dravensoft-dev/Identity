@@ -21,9 +21,9 @@ test('value selects the option whose `value` matches, and only it is checked and
       options={[{ value: 'ov', label: 'Overview' }, { value: 'dp', label: 'Deployments' }]} />,
   );
 
-  assert.match(html, /<label[^>]*var\(--shadow-1\)[^>]*>Deployments</);
+  assert.match(html, /<label[^>]*\bshadow-1\b[^>]*>Deployments</);
 
-  assert.equal((html.match(/var\(--shadow-1\)/g) || []).length, 1,
+  assert.equal((html.match(/\bshadow-1\b/g) || []).length, 1,
     'more than one segment wore the raised thumb');
   assert.equal((html.match(/checked=""/g) || []).length, 1,
     'more than one radio was checked');
@@ -72,4 +72,15 @@ test('SegmentedControl drops a consumer attribute -- the {...rest} escape is gon
     <SegmentedControl ariaLabel="A" options={[{ value: 'ov', label: 'Overview' }]} data-stray="x" />,
   );
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- the {...rest} escape is back');
+});
+
+test('the track takes its focus ring from focus-within, so no segment reports focus to a state', () => {
+  const html = renderToStaticMarkup(
+    <SegmentedControl ariaLabel="Time range" name="tr" value="ov"
+      options={[{ value: 'ov', label: 'Overview' }, { value: 'dp', label: 'Deployments' }]} />,
+  );
+  assert.match(html, /focus-within:border-secondary/);
+  assert.match(html, /hover:text-base-content\/82/, 'and an unselected segment lifts through a modifier');
+  assert.doesNotMatch(html, /<label[^>]*\bbg-neutral\b[^>]*>Deployments</,
+    'the unselected segment draws no thumb');
 });

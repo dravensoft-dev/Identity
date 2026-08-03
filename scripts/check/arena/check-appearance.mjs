@@ -16,7 +16,6 @@ import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const PENDING = new Map([
-  ['SegmentedControl', 'group B: the hovered segment is tracked in a useState rather than drawn by a modifier'],
   ['Menu', 'group B: the same, plus an injected <style> the manifest may absorb'],
   ['CommandPalette', 'group B: the hovered row is tracked in a useState rather than drawn by a modifier'],
   ['Tooltip', 'group B: the same; its open delay is behaviour and stays'],

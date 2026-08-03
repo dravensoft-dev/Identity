@@ -59,7 +59,7 @@ test('an empty items array is supplied-but-empty and stays legal', () => {
 
 test('the last crumb and the ones before it are two slots of one recipe', () => {
   const html = renderToStaticMarkup(
-    <Breadcrumbs ariaLabel="Where" items={[{ id: 'a', label: 'Root', href: '/a' }, { id: 'b', label: 'Here' }]} />,
+    <Breadcrumbs ariaLabel="Where" items={[{ label: 'Root', href: '/a' }, { label: 'Here' }]} />,
   );
   assert.match(html, /class="[^"]*\btext-base-content\/62\b[^"]*"[^>]*>Root/, 'a link crumb is dimmed');
   assert.match(html, /hover:text-base-content\/82/, 'and lifts on hover through a modifier, not a handler');
