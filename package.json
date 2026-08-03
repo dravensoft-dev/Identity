@@ -82,8 +82,6 @@
     "check:icons": "bun scripts/check/arena/check-icons.mjs",
     "check:focus-trap": "bun scripts/check/arena/check-focus-trap.mjs",
     "check:cards": "bun scripts/check/arena/check-card-viewports.mjs",
-    "check:parity": "bun scripts/check/arena/check-parity.mjs",
-    "probe:parity": "bun scripts/check/arena/parity-probe.mjs",
     "check:shared-arithmetic": "bun scripts/check/arena/check-shared-arithmetic.mjs",
     "check:packages": "bun scripts/check/arena/check-packages.mjs",
     "check": "bun scripts/check/arena/check-all.mjs",

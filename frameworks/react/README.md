@@ -50,8 +50,7 @@ with this arrangement.
 
 Both layers compose the same names, and neither is the other's authority: the manifest is.
 Where a manifest and a component disagreed, the manifest won, which is how `Card` came to draw
-a focus ring rather than an outline. `check:appearance` holds the arrangement, and
-`check:parity` renders the two pages and compares them.
+a focus ring rather than an outline. `check:appearance` holds the arrangement.
 
 **What stays an inline `style` is a value computed at runtime**, from data or from a
 measurement: a chip's position from an hour, a fill's width from a percentage, a coachmark's
@@ -73,7 +72,7 @@ base` where `button, input, select, textarea { font: inherit }` lives. Without t
 control fell back to 13.33px Arial with `line-height: normal`, so an `<i>` inside a `<button>`
 drew the same glyph at 13.33px where the other layer drew 16px, and a row whose height came
 from its label's line box stood 4px shorter per row. Neither showed up in a suite, because
-happy-dom has no layout; `check:parity` is what renders the two and compares them.
+happy-dom has no layout.
 
 **Nothing injects a `<style>` tag, and that is a claim rather than an accident.** Every
 keyframe animation is a utility in the compiled sheet this layer loads, carrying its own

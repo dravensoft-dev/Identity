@@ -72,3 +72,19 @@ Write what is wrong, what it costs, and the command that re-derives it. **Prefer
 a command.** Both are stale-proof, and a present-tense component name is not. Then ask once more
 whether a gate, a suite or a README would hold the same claim, because one of them almost always
 will.
+
+## Filed
+
+**Nothing verifies that a component paints the same thing in every framework layer.** Each layer
+carries one playground page per component, generated from the same model, and the pages differ in
+one path segment and take the same query string precisely so that a difference between them is a
+difference in the component. Nothing compares what they paint.
+
+What it costs: a divergence in geometry, in inherited typography or in a computed colour reaches
+an adopter with every gate green, because no suite can see one. The suites render under happy-dom,
+which has no layout, so both layers pass while they draw differently, and the only thing standing
+behind the claim that they agree is a person opening the pair side by side, which is not done per
+change and covers whichever components that person thought to open.
+
+Re-derive the surface with `find frameworks -name '*.demo.generated.html'`, and serve it with
+`bun run demos`.

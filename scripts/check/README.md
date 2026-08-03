@@ -47,9 +47,9 @@ pass" but "how many things did it look at, and is that the number I expect".
 
 ## Exit 2 means SKIP, and a skip is never green
 
-**Five** gates need a runtime dependency that plain node does not have: `check:cards`,
-`check:focus-trap` and `check:playgrounds` need a headless browser, `check:vendor` needs
-`Bun.build`, `check:demos` needs `Bun.Transpiler`. `check:playgrounds` runs its portable half
+**Six** gates need a runtime dependency that plain node does not have: `check:cards`,
+`check:focus-trap`, `check:playgrounds` and `check:style-parity` need a headless browser,
+`check:vendor` needs `Bun.build`, `check:demos` needs `Bun.Transpiler`. `check:playgrounds` runs its portable half
 first and reaches the browser only once that half is clean, so a fixture defect is reported on
 a machine with no browser at all. Where the dependency is missing the gate exits **2**, `check-all` marks
 it `SKIP`, and the whole run reports **INCOMPLETE** rather than passing.
@@ -95,7 +95,7 @@ rather than a gate.
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 21 | two or more layers at once, or the repository root |
+| [`arena/`](./arena/README.md) | 20 | two or more layers at once, or the repository root |
 | [`tailwind/`](./tailwind/README.md) | 8 | the shared Tailwind layer |
 | [`angular/`](./angular/README.md) | 4 | the Angular layer |
 | [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |

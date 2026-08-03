@@ -638,7 +638,7 @@ no new value**: add the token first, then reference it. Six gates hold it, `chec
 states what each reaches and what none of them does.
 
 `bun run check` runs every gate plus the test suite, without stopping at the first failure.
-**Six gates are not runtime-portable**: `check:cards`, `check:focus-trap`, `check:parity`,
+**Six gates are not runtime-portable**: `check:cards`, `check:focus-trap`,
 `check:playgrounds` and `check:style-parity`
 need a headless browser, `check:vendor` needs `Bun.build`, `check:demos` needs `Bun.Transpiler`. Where a
 dependency is missing the gate exits 2 and is reported `SKIP`, **except that the repository
