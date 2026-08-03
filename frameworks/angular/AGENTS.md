@@ -68,7 +68,7 @@ comm -23 <(find components -mindepth 2 -maxdepth 2 -type d -printf '%f\n' | sort
 The three SVG charts have no recipe at all, for the reason below. **A compound family's
 children have none either, because they import the parent's**: each `SideNav*` child imports
 `sideNavStyles` from `side-nav/SideNav.variants`, which is the recipe mirror of the rule
-`frameworks/tailwind/README.md` states for manifests, that a manifest mirrors a *surface* and a
+`frameworks/tailwind/AGENTS.md` states for manifests, that a manifest mirrors a *surface* and a
 family draws one. The category is the one
 `frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
 `CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
@@ -113,7 +113,7 @@ used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the 
 `[actions]`, `[brand]` and `[footer]` marker directives that let a component
 detect whether an optional slot was projected, so its spacing wrapper can be gated, each
 bare with no `arena-` prefix, because the attribute is the contract member's
-name, per `contracts/api/README.md`'s binding table) all have consumers in more than one category,
+name, per `contracts/api/AGENTS.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
 sits at the layer root beside them, and the rule puts it there in both layers now: its

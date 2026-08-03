@@ -252,7 +252,7 @@ The dividing line: **DTCG owns values; the composition layer owns how values are
 at runtime.** `contracts/design/colors.css` therefore holds no skin value, only references
 (`var(--color-primary)`) and `color-mix` compositions, and `environment.css` holds no length,
 only a token and what the device reports. The full `$type` table is
-`contracts/design/README.md`.
+`contracts/design/AGENTS.md`.
 
 **A swap is not done until it is measured**, and two scripts measure it. `bun scripts/check/core/check-ramp.mjs` holds the categorical ramp; `bun scripts/check/core/check-text-contrast.mjs` holds the text: the levels derived from `--color-base-content`, every `--color-*` / `--color-*-content` pair (all seven, at 4.5:1, because the pair is the contract a skin defines, so an illegible one fails before a component can inherit it), and the accents painted straight onto the base surfaces (`--color-error` as the danger outline). Both read the values out of `palette.generated.css` and hardcode nothing, so a new skin is one edit and two commands away from a real answer.
 

@@ -16,12 +16,12 @@ scripts/
 Each phase has its own README, and each `<phase>/<domain>/` that holds scripts has a table
 saying why every file in it exists.
 
-- [`build/README.md`](./build/README.md): **and how to compile Arena for the first time.**
+- [`build/AGENTS.md`](./build/AGENTS.md): **and how to compile Arena for the first time.**
   A fresh clone must build before `bun run demos` or `bun run check` mean anything.
-- [`generate/README.md`](./generate/README.md): why generate is not build.
-- [`check/README.md`](./check/README.md): the shape of a gate, and the SKIP protocol.
-- [`ci/README.md`](./ci/README.md): what a runner asks, and why the answers carry suites.
-- [`lib/README.md`](./lib/README.md): the bottom of the graph, and how a module is placed.
+- [`generate/AGENTS.md`](./generate/AGENTS.md): why generate is not build.
+- [`check/AGENTS.md`](./check/AGENTS.md): the shape of a gate, and the SKIP protocol.
+- [`ci/AGENTS.md`](./ci/AGENTS.md): what a runner asks, and why the answers carry suites.
+- [`lib/AGENTS.md`](./lib/AGENTS.md): the bottom of the graph, and how a module is placed.
 
 `lib/` and the four phases all hold the same five domains, and **all five exist even when
 empty**: a `.gitkeep` marks a combination nothing occupies yet, so the shape stays legible

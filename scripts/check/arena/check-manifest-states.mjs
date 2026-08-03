@@ -255,7 +255,7 @@ function main() {
     }
     console.error('\nEither the component genuinely presents the affordance -- declare it in the contract,');
     console.error('which licenses every layer at once -- or it does not and the state is invented.');
-    console.error('See frameworks/tailwind/README.md, "P1 -- invented states".');
+    console.error('See frameworks/tailwind/AGENTS.md, "P1 -- invented states".');
   }
 
   if (stale.length || staleCoverage.length) {

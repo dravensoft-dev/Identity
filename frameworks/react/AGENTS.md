@@ -6,7 +6,7 @@
 The React primitives, the example Console app, and the shared modules both of them read.
 Every value here comes from `contracts/design/`; this layer introduces no design decision
 of its own. For what those values mean, read
-[`contracts/design/README.md`](../../contracts/design/README.md).
+[`contracts/design/AGENTS.md`](../../contracts/design/AGENTS.md).
 
 **Published as `@dravensoft/arena-react`.** [`PACKAGE.md`](./PACKAGE.md) is what a consumer
 reads, and the assembly copies it into `dist/` as the package README;
@@ -153,7 +153,7 @@ it in a narrow column.
 **`AnchorActivation.ts` is the predicate behind the anchor convention**: an anchor Arena draws
 cancels a primary click with no modifier and reports through its own navigation event, and
 everything else is the browser's. `Card`, `Breadcrumbs`, `SideNavItem` and `CommandPalette` all
-read it, `contracts/api/README.md` states the rule, and `test/AnchorActivation.dom.test.tsx`
+read it, `contracts/api/AGENTS.md` states the rule, and `test/AnchorActivation.dom.test.tsx`
 holds each activation separately.
 
 **A compound family injects downward, direct children only, one hop**, and that is what makes
@@ -272,7 +272,7 @@ Bun's own transpiler and rewrites each relative import's `.tsx` extension to `.g
 
 **Those siblings are git-ignored**, along with the `vendor/` bundles: only demo pages read
 them. A fresh clone runs `bun run build` once; see
-[`../../scripts/build/README.md`](../../scripts/build/README.md).
+[`../../scripts/build/AGENTS.md`](../../scripts/build/AGENTS.md).
 
 **Editing a component `.tsx` means running `bun run build:demos` in the same tree.** The
 React DOM suites import the `.tsx` directly, so every test stays green with a stale `.js`

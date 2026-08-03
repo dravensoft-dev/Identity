@@ -42,7 +42,7 @@ So the packages ship everything that is invariant, and the consumer declares the
 
 A command in each package, `arena-theme`, turns that JSON into the missing stylesheet. Its
 source is `scripts/generate/core/arena-theme/`, described in
-[`scripts/generate/core/README.md`](../scripts/generate/core/README.md),
+[`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md),
 copied whole into `dist/bin/`.
 
 **Import order is what makes it work.** The consumer's generated file comes last, and its
@@ -251,7 +251,7 @@ anything in `scripts/ci/arena/package-inputs.mjs` has changed since the tag of t
 that is. So a release touching only React publishes only React, and the Angular package
 keeps its number rather than shipping an identical tree under a new one. That is why the two
 packages can sit at different versions, and both `PACKAGE.md` files point a reader at
-[`../.github/workflows/README.md`](../.github/workflows/README.md) for the explanation.
+[`../.github/workflows/AGENTS.md`](../.github/workflows/AGENTS.md) for the explanation.
 
 Three things about the publish itself, each of which has a way of going wrong:
 

@@ -300,12 +300,12 @@ test('a walk that reaches nothing is a failure, not a vacuous pass', () => {
 test('a prompt citing a contributor path is a problem, and each hit is named', () => {
   const root = tree({
     'frameworks/react/components/a/A.prompt.md':
-      'It is a member because R6 in `contracts/api/README.md` forbids it, and\n'
+      'It is a member because R6 in `contracts/api/AGENTS.md` forbids it, and\n'
       + '`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` allows the two.\n',
   });
   const { problems } = consumerBranchProblems(root);
   assert.equal(problems.length, 2);
-  assert.ok(problems.some((p) => p.includes('contracts/api/README.md')));
+  assert.ok(problems.some((p) => p.includes('contracts/api/AGENTS.md')));
   assert.ok(problems.some((p) => p.includes('scripts/lib/arena/api-surface.mjs')));
   for (const problem of problems) assert.match(problem, /leave the reason on the contributor branch/);
   rmSync(root, { recursive: true });
@@ -314,7 +314,7 @@ test('a prompt citing a contributor path is a problem, and each hit is named', (
 test('a layer README, the packaging document and a layer-root source are contributor paths too', () => {
   const root = tree({
     'frameworks/angular/components/a/A.prompt.md':
-      'See `frameworks/angular/README.md`, `frameworks/PACKAGING.md` and `frameworks/angular/FocusTrap.ts`.\n',
+      'See `frameworks/angular/AGENTS.md`, `frameworks/PACKAGING.md` and `frameworks/angular/FocusTrap.ts`.\n',
   });
   const { problems } = consumerBranchProblems(root);
   assert.equal(problems.length, 3);
@@ -347,7 +347,7 @@ test('a generated demo page is the one build product a prompt may name, being wh
 
 test('the rule reaches prompts alone, and a sibling of the component is not a contributor path', () => {
   const root = tree({
-    'frameworks/react/README.md': 'Read `scripts/build/react/build-demos.mjs` for the emit.\n',
+    'frameworks/react/AGENTS.md': 'Read `scripts/build/react/build-demos.mjs` for the emit.\n',
     'frameworks/react/components/a/A.prompt.md':
       'Open `frameworks/react/components/a/A.card.html`, and import from `@dravensoft/arena-react`.\n',
   });

@@ -79,7 +79,7 @@ export function classify(raw) {
       if (retType.form === 'slot') {
         throw new UnrecognisedShape(
           `a function returning a node is a per-item renderer, and a per-item renderer is not a member: `
-          + `the convention that removed ActivityFeed.renderItem removes it too (contracts/api/README.md). `
+          + `the convention that removed ActivityFeed.renderItem removes it too (contracts/api/AGENTS.md). `
           + `It IS a parameterised slot and R3 permits it -- Angular is what does not, because per-item `
           + `projection needs ngTemplateOutlet, which no binding-table row covers and no reader function reads: ${ts}`,
         );
@@ -381,7 +381,7 @@ export function templateSlots(source) {
     if (!select) { out.push({ name: 'content', form: 'slot', required: false }); continue; }
     const attribute = /^\[([\w-]+)\]$/.exec(select[1].trim());
     if (!attribute) {
-      throw new UnrecognisedShape(`ng-content select="${select[1]}" is not an attribute selector — see the binding table in contracts/api/README.md`);
+      throw new UnrecognisedShape(`ng-content select="${select[1]}" is not an attribute selector — see the binding table in contracts/api/AGENTS.md`);
     }
     out.push({ name: attribute[1], form: 'slot', required: false });
   }

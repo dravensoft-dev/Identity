@@ -318,7 +318,7 @@ Every component, its types, the layer helpers above, the invariant stylesheets, 
 
 ## Why might this package's latest version not match Arena's latest version?
 
-[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/README.md#why-are-the-published-package-versions-not-identical)
+[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/AGENTS.md#why-are-the-published-package-versions-not-identical)
 
 ## License
 

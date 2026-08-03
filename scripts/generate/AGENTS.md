@@ -2,7 +2,7 @@
 
 **Generate emits source from data.** The input is a declaration nobody wrote as code (DTCG
 JSON, an API contract, a font family list) and the output is source in a language a layer
-speaks. The distinction from [`../build/`](../build/README.md) is the input, not the output:
+speaks. The distinction from [`../build/`](../build/AGENTS.md) is the input, not the output:
 build starts from something already written in the target's idiom, generate starts from a fact
 about the design system and picks the idiom itself.
 
@@ -20,8 +20,8 @@ case fails until it is argued for.
 
 | domain | what a generator there writes |
 | --- | --- |
-| [`arena/`](./arena/README.md) | writes into the framework layers, plus `contracts/` |
-| [`core/`](./core/README.md) | `contracts/` and `assets/`, which the design layer owns |
+| [`arena/`](./arena/AGENTS.md) | writes into the framework layers, plus `contracts/` |
+| [`core/`](./core/AGENTS.md) | `contracts/` and `assets/`, which the design layer owns |
 | `react/`, `angular/`, `tailwind/` | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 
 **Count them rather than reading a figure here**, and note the count answers a different

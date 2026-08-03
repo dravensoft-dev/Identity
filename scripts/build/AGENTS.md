@@ -3,7 +3,7 @@
 **Build compiles an existing source into another form.** The input is already something a
 person wrote, a `.tsx`, a `.ts`, a Tailwind preset or a CommonJS package, and the output says
 the same thing in a form a browser or a test runner can load. Nothing here decides a value;
-that is [`../generate/`](../generate/README.md).
+that is [`../generate/`](../generate/AGENTS.md).
 
 Every output is named `<stem>.generated.<ext>`, so the name says a script writes it. Which of
 those are tracked and which are not is the separate question `.gitignore` answers, for one of
@@ -66,9 +66,9 @@ A script's domain is decided by what it **touches**, never by what it is about.
 
 | domain | what a build there compiles |
 | --- | --- |
-| [`angular/`](./angular/README.md) | the AOT emits: demo bundles, the package and the test surface |
-| [`react/`](./react/README.md) | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
-| [`tailwind/`](./tailwind/README.md) | the utility layer and the manifest modules |
+| [`angular/`](./angular/AGENTS.md) | the AOT emits: demo bundles, the package and the test surface |
+| [`react/`](./react/AGENTS.md) | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
+| [`tailwind/`](./tailwind/AGENTS.md) | the utility layer and the manifest modules |
 | `core/` | empty; `.gitkeep` marks the combination as unoccupied |
 | `arena/` | empty; no build touches two layers at once |
 
@@ -82,4 +82,4 @@ done
 ```
 
 `core` and `arena` exist even while empty so the grid stays legible rather than implied. See
-[`../README.md`](../README.md) for what each domain is allowed to read and write.
+[`../AGENTS.md`](../AGENTS.md) for what each domain is allowed to read and write.

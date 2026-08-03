@@ -33,13 +33,13 @@ paragraph does not. That is the entire argument for this order:
    `PASSTHROUGH`, `MANIFEST_COVERS`, `EXTERNAL_PROPERTIES`, `NOT_QUANTIFIED`, `PROSE_EXEMPT`: each entry
    names a case and says why, as a string value rather than a comment, and each gate's paired
    suite asserts on the map by name. **A stale entry fails its own gate.** See
-   [`scripts/check/README.md`](./scripts/check/README.md).
+   [`scripts/check/AGENTS.md`](./scripts/check/AGENTS.md).
 3. **A suite assertion.** A limit a test can pin is pinned. An assertion that a collision does
    *not* happen is worth more than a sentence saying it does not.
 4. **The normative document for that layer.** A structural limit belongs where the rule it
-   qualifies is stated: [`contracts/api/README.md`](./contracts/api/README.md),
-   [`contracts/behaviour/README.md`](./contracts/behaviour/README.md),
-   [`contracts/design/README.md`](./contracts/design/README.md), or the layer's own README under
+   qualifies is stated: [`contracts/api/AGENTS.md`](./contracts/api/AGENTS.md),
+   [`contracts/behaviour/AGENTS.md`](./contracts/behaviour/AGENTS.md),
+   [`contracts/design/AGENTS.md`](./contracts/design/AGENTS.md), or the layer's own README under
    `frameworks/`.
 5. **The component's `.prompt.md`.** A measured limit of one component, and every check only a
    person can run, such as whether a name is a good name, whether motion reads as intended or

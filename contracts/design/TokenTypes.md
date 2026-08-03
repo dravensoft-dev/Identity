@@ -1,7 +1,7 @@
 # Arena token type map (DTCG 2025.10)
 
 **Normative, and for whoever authors a token or targets a new platform.** What the values
-MEAN is [`README.md`](./README.md) beside this file; this document states what shape they
+MEAN is [`AGENTS.md`](./AGENTS.md) beside this file; this document states what shape they
 arrive in. A consumer reading a value out of the JSON needs neither: the JSON is the value.
 
 The table states the DTCG `$type` of every token group in `contracts/design/`. Consume these

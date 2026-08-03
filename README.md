@@ -42,7 +42,7 @@ bun add @phosphor-icons/web         # required: Arena renders icon class names, 
 
 ### Dependencies
 - **Fonts are self-hosted, and no CDN request is made.** Arena ships the Archivo / Familjen Grotesk / Spline Sans Mono `.woff2` binaries in `assets/fonts/`, and `contracts/design-generated/fonts.generated.css` declares them with `@font-face`, so they load from the same origin as the page that reads them. A package consumer names their own three families in `arena.config.json`, where `src` is either a stylesheet URL or a binary they host.
-- **Icons are [Phosphor Icons](https://phosphoricons.com) (MIT)**, and are not bundled. **Install the official package by default**, either `@phosphor-icons/web` (webfont) or `@phosphor-icons/react`, for full weight and tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See [Iconography](./contracts/design/README.md#iconography).
+- **Icons are [Phosphor Icons](https://phosphoricons.com) (MIT)**, and are not bundled. **Install the official package by default**, either `@phosphor-icons/web` (webfont) or `@phosphor-icons/react`, for full weight and tree-shaking flexibility. The CDN is a prototype-only convenience, not the default. See [Iconography](./contracts/design/AGENTS.md#iconography).
 
 ## Where to go next
 
@@ -60,23 +60,23 @@ component's `.prompt.md` is how to use that one, and
 **Working on Arena itself.** [`CLAUDE.md`](./CLAUDE.md) is the root of that branch, and
 everything below is reached through it.
 
-- [`scripts/build/README.md`](./scripts/build/README.md): **compile Arena for the first
+- [`scripts/build/AGENTS.md`](./scripts/build/AGENTS.md): **compile Arena for the first
   time**, meaning what a fresh clone must build before `bun run demos` or `bun run check`
   mean anything, and why some generated files are tracked and some are not.
 - [`frameworks/PACKAGING.md`](./frameworks/PACKAGING.md): the npm channel, meaning how the
   two packages are assembled from the tree in place, why a published Arena carries no skin,
   and what the consumer declares instead.
-- [`contracts/README.md`](./contracts/README.md): Arena's three contract levels, and a
+- [`contracts/AGENTS.md`](./contracts/AGENTS.md): Arena's three contract levels, and a
   map of everything in this repository.
-- [`contracts/design/README.md`](./contracts/design/README.md): **the normative design
+- [`contracts/design/AGENTS.md`](./contracts/design/AGENTS.md): **the normative design
   specification**, covering voice, type, color, spacing, motion, the danger convention,
   iconography and theming. [`contracts/design/TokenTypes.md`](./contracts/design/TokenTypes.md)
   beside it carries the DTCG token type map, for whoever authors a token.
-- [`frameworks/react/README.md`](./frameworks/react/README.md): the React layer.
-- [`frameworks/angular/README.md`](./frameworks/angular/README.md): the Angular layer,
+- [`frameworks/react/AGENTS.md`](./frameworks/react/AGENTS.md): the React layer.
+- [`frameworks/angular/AGENTS.md`](./frameworks/angular/AGENTS.md): the Angular layer,
   including how to adopt it.
-- [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md): the shared
+- [`frameworks/tailwind/AGENTS.md`](./frameworks/tailwind/AGENTS.md): the shared
   Tailwind layer.
-- [`frameworks/demos/README.md`](./frameworks/demos/README.md): the fixture behind every
+- [`frameworks/demos/AGENTS.md`](./frameworks/demos/AGENTS.md): the fixture behind every
   component's playground page, which is the one part of that page anybody writes.
 - [`DOUBTS.md`](./DOUBTS.md): what counts as a debt in Arena, and where the records live.

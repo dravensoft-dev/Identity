@@ -14,7 +14,7 @@ It is orthogonal to the other two. A green `check:api` says the surface matches.
 nothing about what the component does with it, exactly as `check:behaviour` is a
 coverage claim and never an accessibility one.
 
-Read this before adding a platform target, the way `contracts/design/README.md` is read
+Read this before adding a platform target, the way `contracts/design/AGENTS.md` is read
 before adding one to the token layer.
 
 ## The other two contracts are firm; this layer is additive

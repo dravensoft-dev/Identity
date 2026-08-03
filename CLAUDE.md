@@ -20,7 +20,7 @@ polyfill, under which a dispatched `input` or `change` reaches an `onChange` han
 times, silently. Registering happy-dom from a module body is too late, because ES imports
 evaluate first, and so is registering it from a module imported ahead of `react-dom/client`:
 both alternatives are measured and neither works, so do not retry them.
-[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full.
+[`frameworks/react/AGENTS.md`](./frameworks/react/AGENTS.md) carries the mechanism in full.
 **The single authority for that command is `testStep()` in
 `scripts/check/arena/check-all.mjs`**, and its `.test.mjs` sibling asserts the args array by
 literal value. Read it there rather than reconstructing one; a narrowed invocation matching
@@ -62,7 +62,7 @@ fact; a token under `contracts/design/` that only a generator reads is a contrib
 **Anything a package ships needs a home on the consumer branch**: an exported symbol, a file
 under `css/`, a class a consumer writes. That home is the layer's `PACKAGE.md`, which is the
 page npm shows; the layer's `SKILL.md` beside it is generated and indexes components alone.
-**A layer's `README.md` is neither**, because the router forbids reading it, so a shipped thing
+**A layer's `AGENTS.md` is neither**, because the router forbids reading it, so a shipped thing
 documented only there is a thing nobody can find. Derive what ships rather than trusting a list: `ROOT_TS` in
 `scripts/build/react/build-react-package.mjs`, and every `copy(` in
 `scripts/build/angular/build-angular-package.mjs`.
@@ -70,7 +70,7 @@ documented only there is a thing nobody can find. Derive what ships rather than 
 **A rule binding more than one component is the router's, stated once**; a rule binding one
 component is that component's `.prompt.md`, in each layer's own idiom. **A consumer document
 cites no contributor one**: `check:docs` fails a prompt, or a `SKILL.md` under `frameworks/`,
-naming a path under `scripts/`, a `README.md` under `contracts/` or `frameworks/`, or
+naming a path under `scripts/`, an `AGENTS.md` under `contracts/` or `frameworks/`, or
 `frameworks/PACKAGING.md`. The root router is the one carve-out, since naming that branch is how
 it redirects. Telling a consumer to import something names the package, never a path.
 
@@ -98,10 +98,10 @@ channel, and each package's consumer-facing README is authored as
 `frameworks/<layer>/PACKAGE.md` and copied into `dist/` at assembly, so `check:docs` reads
 the page npm shows.
 
-`contracts/design/README.md` is the normative design specification (voice, color, spacing,
+`contracts/design/AGENTS.md` is the normative design specification (voice, color, spacing,
 danger convention, iconography, theming). Treat it as the source of truth for any design
 decision, and update it in the same change whenever a token, component, or convention
-changes. The root `README.md` is Getting started and nothing more; `contracts/README.md`
+changes. The root `README.md` is Getting started and nothing more; `contracts/AGENTS.md`
 maps the rest of the repository.
 
 ## Documentation rules
@@ -140,7 +140,7 @@ maps the rest of the repository.
   contract names. A comment a gate keeps equal to its source cannot go quietly false, which is
   the whole reason the rule exists. **That shape and no other**: a `//` or a bare `/*` there
   still fails, as does a `/** … */` outside a component directory. `generate:api` writes them,
-  so nobody types one; `contracts/api/README.md` says why they must exist at all.
+  so nobody types one; `contracts/api/AGENTS.md` says why they must exist at all.
 - Knowledge a rename cannot express, such as a measurement, a vendor's behaviour, a pinned
   version or a constraint of a test environment, goes in the one header `scripts/` and test
   files are allowed, in a gate's own reason string, or in the component's `.prompt.md`.
@@ -182,7 +182,7 @@ which holds five CSS files, and `contracts/design/`, which holds three hand-auth
 carry the `.generated.` infix, so the name says it: their
 values are authored in strictly-conformant DTCG 2025.10 JSON under `contracts/design/` and
 emitted by `bun run generate:tokens`. Edit the JSON and rebuild.
-`contracts/design/README.md` states what those values MEAN and
+`contracts/design/AGENTS.md` states what those values MEAN and
 `contracts/design/TokenTypes.md` beside it is the normative table of which DTCG `$type` every
 token group uses. The split is by audience: a new platform target reads both, a consumer of a
 value reads neither, because the JSON is the value.
@@ -359,8 +359,8 @@ member at all**: it is a per-item renderer. R3 permits the shape, so R3 is not t
 reason is Angular, which has no answer for per-item projection short of a structural directive
 and `ngTemplateOutlet`, a binding no row of the table covers and no reader function reads.
 
-`contracts/api/README.md` is the normative statement and the first thing a new platform target
-reads, the way `contracts/design/README.md` is for the design layer. Shared objects and enums
+`contracts/api/AGENTS.md` is the normative statement and the first thing a new platform target
+reads, the way `contracts/design/AGENTS.md` is for the design layer. Shared objects and enums
 are declared once in `contracts/api/types/` and emitted **per layer** by `bun run generate:api`.
 The word *prop* never appears in a contract: it is React's vocabulary, and using it would
 already have chosen a layer.
@@ -397,7 +397,7 @@ than an absent one.
 **The `SideNav` family is the recursive case, and the layers solve it in opposite directions**,
 one pushing down and one pulling up, each in its own README. **Every compound family shares one
 limit**: a consumer's own wrapper component between two levels breaks the chain, and it is the
-pushing layer's alone, since nothing is pushed in the other. `frameworks/react/README.md`
+pushing layer's alone, since nothing is pushed in the other. `frameworks/react/AGENTS.md`
 carries that limit, the fragment half of it, and the counting hazard in a guard against it.
 
 `Table.label` is the pattern for a member that only a human can supply: it names the grid for
@@ -444,7 +444,7 @@ bug.** This is machine-checked: `bun run check:dimensions` scans `frameworks/` f
 the properties the token layer governs and fails on each.
 
 **Which shapes pass, which units it tolerates, what the scan reaches, what it does not, and its
-two known blind spots are in [`scripts/check/arena/README.md`](./scripts/check/arena/README.md),
+two known blind spots are in [`scripts/check/arena/AGENTS.md`](./scripts/check/arena/AGENTS.md),
 beside the gate.** Read it before assuming a site is covered: the reason the three SVG charts
 write their static styling as camelCase `[style]` objects rather than as attributes is there,
 and it is not a style preference. A change to `EXEMPT` or `PASSTHROUGH` is a change to
@@ -453,7 +453,7 @@ and it is not a style preference. A change to `EXEMPT` or `PASSTHROUGH` is a cha
 **No gate compares a Tailwind manifest against a rendered component, and the mapping is not
 one-to-one**: a manifest mirrors a *surface*, so a compound family's members share the parent's
 and the three SVG charts have none at all. **Derive that set rather than trusting a list**, with
-the `comm` command in [`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md), which
+the `comm` command in [`frameworks/tailwind/AGENTS.md`](./frameworks/tailwind/AGENTS.md), which
 also gives the two reasons. `check:tailwind` proves every class resolves; nothing proves a
 manifest still matches the contract it was written from, so check by hand when either has moved.
 
@@ -461,7 +461,7 @@ One narrow slice of that is machine-checked: `check:states` fails a `hover:`/`fo
 modifier no contract the manifest covers declares, and fails a React component implementing one
 its own contract does not declare. Both halves read `contracts/api/` and neither reads another
 layer. **It checks states only**, and nothing about whether a manifest's colors, sizes or slot
-structure still match; `frameworks/tailwind/README.md` carries why Angular is structurally
+structure still match; `frameworks/tailwind/AGENTS.md` carries why Angular is structurally
 unaskable and what `MANIFEST_COVERS` is for.
 
 **The Overview generates itself, and that is the point.** `intro/Arena - Overview.html` reads names
@@ -508,11 +508,11 @@ writes its appearance by hand, and `HAND_DRAWN`, in
 **A component's class TABLE is emitted per layer; its STYLESHEET is not.** A component imports
 the table, so the copy keeps that import inside the layer; a page only links the CSS, which is
 identical whoever renders it, so it lives once under `frameworks/tailwind/consume/`.
-[`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) has that directory and what
+[`frameworks/tailwind/AGENTS.md`](./frameworks/tailwind/AGENTS.md) has that directory and what
 a page links from it.
 
 **Every animation answers `prefers-reduced-motion`**, and what it answers depends on what the
-motion means. [`contracts/design/README.md`](./contracts/design/README.md) states the four
+motion means. [`contracts/design/AGENTS.md`](./contracts/design/AGENTS.md) states the four
 cases and the reason for each. It is stated there rather than per layer because it is a design
 decision, and a layer that disagrees with it is wrong.
 
@@ -552,7 +552,7 @@ stale table rather than as silence, and the fix is the contract.
 with an `arena-` selector and no component `styles`, its recipe, its prompt and an `index.ts`
 barrel, plus its behaviour binding and its own suites beside them. **A primitive binds its root
 slot to the host rather than rendering a wrapper div**, with a growing carve-out set.
-[`frameworks/angular/README.md`](./frameworks/angular/README.md) carries every file, the
+[`frameworks/angular/AGENTS.md`](./frameworks/angular/AGENTS.md) carries every file, the
 command for which components carry no recipe, and the carve-outs.
 
 **The Angular test harness compiles ahead of the run, AOT rather than JIT, and that is a
@@ -560,7 +560,7 @@ different guarantee, not merely a faster one**: a type error anywhere in the tes
 the *build* and no test executes at all, so **a green compile is a claim about TYPES, never
 about behaviour**. One process means one document and one `TestBed` for the whole layer, so
 **state written onto that shared document outlives the file that wrote it**.
-[`frameworks/angular/README.md`](./frameworks/angular/README.md) carries all of it, including
+[`frameworks/angular/AGENTS.md`](./frameworks/angular/AGENTS.md) carries all of it, including
 what a directly-created fixture owes the next suite.
 
 **A specimen page** starts with an HTML comment
@@ -590,7 +590,7 @@ tracked by default, which is the first reason above. They keep that literal name
 mechanical reason the six naming exceptions below have, and it costs nothing, because
 `check:generated` scans no `.md` at all and `check:skills` holds their freshness and their
 tracking instead. So a fresh clone
-runs `bun run build` first; [`scripts/build/README.md`](./scripts/build/README.md) is the
+runs `bun run build` first; [`scripts/build/AGENTS.md`](./scripts/build/AGENTS.md) is the
 first-compile document, linked from the root README. `check:generated` holds both halves and
 names the two outputs that can hold neither infix nor header: the `assets/fonts/` binaries, and
 `intro/support.js`, whose generator (`dc-runtime`) is not here, so it can never be ignored,
@@ -605,7 +605,7 @@ README's.
 
 **A demo page is generated, one per component per layer, and never hand-written.** It is
 emitted by `bun run generate:playgrounds` from the component's API contract and the fixture
-beside it in [`frameworks/demos/`](./frameworks/demos/README.md), which is where the one thing
+beside it in [`frameworks/demos/`](./frameworks/demos/AGENTS.md), which is where the one thing
 a contract cannot supply lives: a seed for a required member, the content of a slot, the host a
 compound child needs, and which event writes back into which knob. The two layers' pages differ
 in one path segment and take the same query string, so **a difference between them is a
@@ -635,26 +635,26 @@ Each layer has its own README; read it for the layer's shape.
 `frameworks/react/` puts components under `components/<category>/<component-kebab>/`, the
 Delivery Console under `ui-kits/console/`, the vendor bundles under `vendor/`, and the
 harness plus the suites belonging to no one component under `test/`.
-`frameworks/react/README.md` names what sits at the layer root and why each is there.
+`frameworks/react/AGENTS.md` names what sits at the layer root and why each is there.
 
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
 and standalone `OnPush` primitives styled by the class names the shared `frameworks/tailwind/`
 manifests compile into. Count the components with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
 behaviour only a browser can show is opened through its generated `<Component>.demo.generated.html`,
-and those pages carry **no** `@dsCard`. [`frameworks/angular/README.md`](./frameworks/angular/README.md)
+and those pages carry **no** `@dsCard`. [`frameworks/angular/AGENTS.md`](./frameworks/angular/AGENTS.md)
 says why, and names what sits at the layer root.
 
 `frameworks/tailwind/` is a **single shared** Tailwind v4 layer (`@theme` preset + per-component
 manifests), authored once because the token→utility mapping is pure CSS. Count the manifests with
 `find frameworks/tailwind/components -name '*.manifest.json' | wc -l`;
-[`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) names what sits at the layer
+[`frameworks/tailwind/AGENTS.md`](./frameworks/tailwind/AGENTS.md) names what sits at the layer
 root, and the three files a component keeps together.
 
 **The Tailwind layer derives every utility from an existing token and introduces no new hex and
 no new value**: add the token first, then reference it. Six gates hold it, `check:tailwind`,
 `check:coverage`, `check:arbitrary`, `check:radius`, `check:component-css` and
-`check:style-parity`, and `frameworks/tailwind/README.md`
+`check:style-parity`, and `frameworks/tailwind/AGENTS.md`
 states what each reaches and what none of them does.
 
 `bun run check` runs every gate plus the test suite, without stopping at the first failure.
@@ -664,20 +664,20 @@ need a headless browser, `check:vendor` needs `Bun.build`, `check:demos` needs `
 dependency is missing the gate exits 2 and is reported `SKIP`, **except that the repository
 declares itself strict**, so it fails instead. Every environment variable they read is declared
 in `scripts/lib/arena/arena-scripts-vars.mjs`, and a real one wins over it;
-`scripts/check/README.md` has the table.
+`scripts/check/AGENTS.md` has the table.
 
 **CI narrows that run by domain, never by gate name.** `check-all.mjs` takes `--domain=` and
 `--no-tests`, four jobs partition `GATES`, and `check-all.test.mjs` asserts the partition, so a
 gate cannot join `GATES` and then run in no job.
-[`.github/workflows/README.md`](./.github/workflows/README.md) has the four workflows, why the
+[`.github/workflows/AGENTS.md`](./.github/workflows/AGENTS.md) has the four workflows, why the
 `core` job runs on every change, and why the two packages sit at different versions.
 
 **One shape for every framework layer.** The rule: **directories are `kebab-case` and lowercase; a
 file name begins with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a
 secondary dotted segment stays `lowerCamelCase`**, as in `Badge.manifest.json` and `StatCard.variants.ts`.
 Capital-initial is the rule and PascalCase is how a multi-word stem is *formed* under it, which is
-why a conventional all-caps document name needs no dispensation: `README.md` and `DOUBTS.md`
-comply as they stand.
+why a conventional all-caps document name needs no dispensation: `README.md`, `AGENTS.md`
+and `DOUBTS.md` comply as they stand.
 
 A layer lays its components out as `frameworks/<layer>/components/<category>/<component-kebab>/`,
 and everything belonging to one component (its source, its types, its binding, its prompt, its
@@ -701,11 +701,11 @@ list**, with `find frameworks -type f -printf '%f\n' | grep -E '^[^A-Z]' | sort 
 4. `.gitkeep` (`frameworks/angular/.gitkeep`), which has no stem to capitalise.
 5. **The three adopter-facing files under `frameworks/angular/theme/`**, which do not share one
    reason and are not the same case as the two layer-root modules beside them.
-   [`frameworks/angular/README.md`](./frameworks/angular/README.md) carries each reason and what
+   [`frameworks/angular/AGENTS.md`](./frameworks/angular/AGENTS.md) carries each reason and what
    is **not** exempt.
 6. **`frameworks/react/ui-kits/console/index.entry.tsx` and its compiled sibling**, which inherit
    the exception `index.html` already has above.
-   [`frameworks/react/README.md`](./frameworks/react/README.md) carries why.
+   [`frameworks/react/AGENTS.md`](./frameworks/react/AGENTS.md) carries why.
 
 `frameworks/tailwind/` carries no lowercase-initial file at all, and the generated `SKILL.md`
 tree carries no dispensation, being capital-initial already.

@@ -85,7 +85,7 @@ compare what a generator *would* emit against what is on disk. For the first two
 committed, so the claim is "the committed copy is in sync with `contracts/`". For the last
 three the file is **git-ignored**, so the claim is narrower: *your working tree is built and
 current*. On a clone with no build they report their subject missing and name the command to
-run. See [`../build/README.md`](../build/README.md).
+run. See [`../build/AGENTS.md`](../build/AGENTS.md).
 
 ## The five domains
 
@@ -101,11 +101,11 @@ nowhere runs in no job and is worth nothing, so the directory is not the authori
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 22 | two or more layers at once, or the repository root |
-| [`tailwind/`](./tailwind/README.md) | 8 | the shared Tailwind layer |
-| [`angular/`](./angular/README.md) | 4 | the Angular layer |
-| [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |
-| [`react/`](./react/README.md) | 4 | the React layer |
+| [`arena/`](./arena/AGENTS.md) | 22 | two or more layers at once, or the repository root |
+| [`tailwind/`](./tailwind/AGENTS.md) | 8 | the shared Tailwind layer |
+| [`angular/`](./angular/AGENTS.md) | 4 | the Angular layer |
+| [`core/`](./core/AGENTS.md) | 5 | `contracts/` and `assets/` only |
+| [`react/`](./react/AGENTS.md) | 4 | the React layer |
 
 `check-all.test.mjs` asserts every gate names one of the five domains and points at
 `<domain>/<gate>.mjs`, so a gate landing outside the grid fails rather than running unnoticed.

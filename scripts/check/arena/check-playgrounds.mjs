@@ -349,7 +349,7 @@ export function* citingFiles(base = root) {
       if (entry === 'node_modules' || entry === 'dist' || entry === 'build' || entry === 'vendor') continue;
       const path = join(dir, entry);
       if (statSync(path).isDirectory()) { yield* walk(path); continue; }
-      if (entry.endsWith('.prompt.md') || entry === 'README.md') yield path;
+      if (entry.endsWith('.prompt.md') || entry === 'AGENTS.md') yield path;
     }
   };
   for (const tree of CITING_TREES) yield* walk(join(base, tree));

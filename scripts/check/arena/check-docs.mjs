@@ -111,8 +111,8 @@ export function isConsumerDocument(repoRelativePath) {
 
 export const CONTRIBUTOR_PATHS = [
   [/\bscripts\/[\w./-]+/g, 'a path under scripts/, which no consumer of Arena has'],
-  [/\bcontracts\/[a-z-]+\/README\.md\b/g, 'a normative contract README, which the router says not to read'],
-  [/\bframeworks\/[a-z-]+\/README\.md\b/g, "a layer README, which is about changing Arena rather than using it"],
+  [/\bcontracts\/[a-z-]+\/AGENTS\.md\b/g, 'a normative contract document, which the router says not to read'],
+  [/\bframeworks\/[a-z-]+\/AGENTS\.md\b/g, "a layer document, which is about changing Arena rather than using it"],
   [/\bframeworks\/PACKAGING\.md\b/g, 'the packaging document, which is about publishing Arena rather than using it'],
   [/\bframeworks\/[a-z-]+\/[A-Z][\w.]*\.[jt]sx?\b/g,
     'a layer-root source file, which a consumer reaches by importing the package rather than by path'],

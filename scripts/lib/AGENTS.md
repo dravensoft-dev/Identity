@@ -36,11 +36,11 @@ toolchains expect.
 
 | domain | what a module there speaks |
 | --- | --- |
-| [`arena/`](./arena/README.md) | belongs to no one layer: parsers, the browser harness, the tree's own facts |
-| [`core/`](./core/README.md) | speaks `contracts/`: DTCG, behaviour requirements, colour science |
-| [`tailwind/`](./tailwind/README.md) | compiles the Tailwind layer, for the gates that read it |
-| [`react/`](./react/README.md) | emits that layer's half of a playground, in that layer's idiom |
-| [`angular/`](./angular/README.md) | the same, for the other layer |
+| [`arena/`](./arena/AGENTS.md) | belongs to no one layer: parsers, the browser harness, the tree's own facts |
+| [`core/`](./core/AGENTS.md) | speaks `contracts/`: DTCG, behaviour requirements, colour science |
+| [`tailwind/`](./tailwind/AGENTS.md) | compiles the Tailwind layer, for the gates that read it |
+| [`react/`](./react/AGENTS.md) | emits that layer's half of a playground, in that layer's idiom |
+| [`angular/`](./angular/AGENTS.md) | the same, for the other layer |
 
 **Count them rather than reading a figure here**, which rots the first time a module lands:
 

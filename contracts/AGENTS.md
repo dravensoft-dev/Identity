@@ -1,17 +1,17 @@
 # Arena's contracts
 
 Three levels, one roof. Each states, once and neutrally, something every platform
-target implements, and each level's normative statement starts at the `README.md`
+target implements, and each level's normative statement starts at the `AGENTS.md`
 in its directory.
 
 | Level | Governs | Normative document |
 |---|---|---|
-| [`api/`](api/README.md) | the members a component's API presents | `api/README.md` |
-| [`behaviour/`](behaviour/README.md) | what a kind of component must do: roles, keys, focus, dismissal | `behaviour/README.md` |
-| [`design/`](design/README.md) | what a value is | `design/README.md`, plus [`design/TokenTypes.md`](design/TokenTypes.md) for the shape a value arrives in |
+| [`api/`](api/AGENTS.md) | the members a component's API presents | `api/AGENTS.md` |
+| [`behaviour/`](behaviour/AGENTS.md) | what a kind of component must do: roles, keys, focus, dismissal | `behaviour/AGENTS.md` |
+| [`design/`](design/AGENTS.md) | what a value is | `design/AGENTS.md`, plus [`design/TokenTypes.md`](design/TokenTypes.md) for the shape a value arrives in |
 
 **`design/` is the one level whose statement is two files, and the split is by audience
-rather than by topic.** `design/README.md` says what a value MEANS, which is what anyone
+rather than by topic.** `design/AGENTS.md` says what a value MEANS, which is what anyone
 choosing a colour or a spacing step needs; `design/TokenTypes.md` says what DTCG `$type` it
 carries and what shape it is authored in, which only somebody authoring a token or targeting
 a new platform needs. The other two levels are one file each because neither has a second
@@ -97,7 +97,7 @@ framework is added without touching the language.
 - `intro/styles.css`: the global entry point, `@import`s only. Consumers link this file.
   Its eight `@import`s resolve as `../contracts/…`, so it stays one directory below that parent.
 - `contracts/design/`: the DTCG 2025.10 source of every token value (`*.json`),
-  `README.md` (the normative design specification), `TokenTypes.md` (the `$type` map and the
+  `AGENTS.md` (the normative design specification), `TokenTypes.md` (the `$type` map and the
   strict 2025.10 value formats), and three hand-authored
   stylesheets: `colors.css` (aliases and `color-mix` derivations), `environment.css` (the
   `env()` safe-area insets composed with the spacing scale) and `reset.css`
@@ -125,12 +125,12 @@ framework is added without touching the language.
 
 **The framework layers**
 
-- [`frameworks/react/`](../frameworks/react/README.md): the React primitives, the
+- [`frameworks/react/`](../frameworks/react/AGENTS.md): the React primitives, the
   example Console app, and the shared layer-root modules.
-- [`frameworks/angular/`](../frameworks/angular/README.md): the Angular layer for an
+- [`frameworks/angular/`](../frameworks/angular/AGENTS.md): the Angular layer for an
   existing Angular 20+/Tailwind-v4 app, meaning Arena's own primitives, with `@angular/cdk`
   positioning the two that anchor an overlay to a trigger.
-- [`frameworks/tailwind/`](../frameworks/tailwind/README.md): a **shared**,
+- [`frameworks/tailwind/`](../frameworks/tailwind/AGENTS.md): a **shared**,
   token-derived Tailwind v4 layer, authored once rather than per framework because the
   token→utility mapping is pure CSS and a component's Tailwind recipe is data.
 - [`frameworks/PACKAGING.md`](../frameworks/PACKAGING.md): the npm channel, which belongs to

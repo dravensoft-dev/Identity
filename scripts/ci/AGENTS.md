@@ -26,5 +26,5 @@ domains exist and are empty, the way they are under every phase.
 running by hand: with no `GITHUB_STEP_SUMMARY` in the environment it prints the table to
 stdout. The other two read stdin or are imported, and are run by path.
 
-[`../../.github/workflows/README.md`](../../.github/workflows/README.md) is where the jobs
+[`../../.github/workflows/AGENTS.md`](../../.github/workflows/AGENTS.md) is where the jobs
 that call them are described.
