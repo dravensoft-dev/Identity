@@ -16,7 +16,6 @@ import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const PENDING = new Map([
-  ['CommandPalette', 'group B: the hovered row is tracked in a useState rather than drawn by a modifier'],
   ['Tooltip', 'group B: the same; its open delay is behaviour and stays'],
 
   ['Input', 'group C: a native control\'s own chrome, part of it in an injected <style>'],

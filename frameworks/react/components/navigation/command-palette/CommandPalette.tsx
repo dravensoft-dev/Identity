@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import { trapTabKey } from '../../../UseDialogModal.ts';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './CommandPalette.manifest.generated.ts';
 
 import type { Command } from '../../../Api.generated';
 
@@ -27,6 +29,8 @@ export interface CommandPaletteProps {
   onRun?: (command: Command) => void;
 }
 
+
+const paletteStyles = tv(manifest);
 
 let nextId = 0;
 
@@ -90,39 +94,35 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Tab' && panelRef.current) trapTabKey(panelRef.current, e, document.activeElement);
   };
+  const styles = paletteStyles({ open: true });
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-palette)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      paddingTop: '12vh', background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
+    <div onClick={onClose} className={styles.root()}>
       <div ref={panelRef} onKeyDown={onPanelKeyDown}
         onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Command palette"
-        style={{ width: 'calc(var(--sp-1) * 140)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)', borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
-          <i className="ph-bold ph-magnifying-glass" aria-hidden="true" style={{ color: 'var(--mute)', fontSize: 'var(--icon-lg)' }} />
+        className={styles.panel()}>
+        <div className={styles.search()}>
+          <i className={`ph-bold ph-magnifying-glass ${styles.searchIcon()}`} aria-hidden="true" />
           <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={placeholder}
             role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="true"
             aria-controls={listboxId} aria-label={placeholder || 'Search commands'}
             aria-activedescendant={i >= 0 && i < filtered.length ? optionId(i) : undefined}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: 'calc(var(--sp-1) * 0.5) calc(var(--sp-1) * 1.5)' }}>ESC</span>
+            className={styles.input()} />
+          <span className={styles.esc()}>ESC</span>
         </div>
-        <div id={listboxId} role="listbox" aria-label="Commands"
-          style={{ maxHeight: 'calc(var(--sp-1) * 80)', overflow: 'auto', padding: 'calc(var(--sp-1) * 1.5)' }}>
-          {filtered.length === 0 && <div style={{ padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)', fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', color: 'var(--mute)' }}>No results for "{q}".</div>}
+        <div id={listboxId} role="listbox" aria-label="Commands" className={styles.list()}>
+          {filtered.length === 0 && <div className={styles.empty()}>No results for "{q}".</div>}
           {groups.map((group) => (
-            <div key={group.name ?? ''} style={{ display: 'flex', flexDirection: 'column' }}
+            <div key={group.name ?? ''} className={styles.group()}
               role={group.name ? 'group' : undefined} aria-label={group.name ?? undefined}>
               {group.name && (
-                <span aria-hidden="true" style={{
-                  padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 3) calc(var(--sp-1) * 1.5)',
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', fontWeight: 'var(--fw-bold)',
-                  letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)',
-                }}>{group.name}</span>
+                <span aria-hidden="true" className={styles.groupLabel()}>{group.name}</span>
               )}
               {group.rows.map(({ command: c, index: idx }) => {
+                const on = idx === i;
                 const rowProps = {
                   id: optionId(idx),
                   role: 'option' as const,
-                  'aria-selected': idx === i,
+                  'aria-selected': on,
                   tabIndex: -1,
                   onMouseEnter: () => setI(idx),
                   onClick: (e: React.MouseEvent) => {
@@ -132,14 +132,13 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
                     }
                     run(c);
                   },
-                  style: { display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left' as const, padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer', textDecoration: 'none',
-                    background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' },
+                  className: `${styles.row()} ${on ? styles.rowActive() : styles.rowDefault()}`,
                 };
                 const body = (
                   <>
-                    {c.icon && <span style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }}><i className={c.icon} aria-hidden="true" /></span>}
-                    <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 'var(--fw-semibold)' : 'var(--fw-medium)' }}>{c.label}</span>
-                    {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{c.shortcut}</span>}
+                    {c.icon && <span className={styles.rowIcon()}><i className={c.icon} aria-hidden="true" /></span>}
+                    <span className={`${styles.rowLabel()} ${on ? styles.rowLabelActive() : styles.rowLabelDefault()}`}>{c.label}</span>
+                    {c.shortcut && <span className={styles.shortcut()}>{c.shortcut}</span>}
                   </>
                 );
                 return c.route
