@@ -25,12 +25,9 @@ test('every slot is optional — a bare panel of children still renders', () => 
 test('it constrains its own width and does not centre itself', () => {
   const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
 
-  assert.match(
-    html,
-    /max-width:calc\(var\(--sp-1\) \* 95 \+ var\(--sp-1\) \* 18 \+ var\(--bw\) \* 2\)/
-  );
-  assert.doesNotMatch(html, /justify-content/);
-  assert.doesNotMatch(html, /min-height/);
+  assert.match(html, /max-w-\[calc\(var\(--sp-1\)\*95\+var\(--sp-1\)\*18\+var\(--bw\)\*2\)\]/);
+  assert.doesNotMatch(html, /\bjustify-/, 'the card centres nothing; the page it sits on decides that');
+  assert.doesNotMatch(html, /\bmin-h-/);
 });
 
 test('eyebrow and title render as plain text', () => {

@@ -1,4 +1,6 @@
 import React from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Badge.manifest.generated.ts';
 
 import type { Tone } from '../../../Api.generated';
 
@@ -13,22 +15,16 @@ export interface BadgeProps {
   dot?: boolean;
 }
 
-const TONES = {
-  neutral: ['var(--color-base-300)', 'var(--bone-dim)'],
-  accent: ['var(--crimson-soft)', 'var(--crimson)'],
-  gold: ['var(--gold-soft)', 'var(--gold)'],
-  success: ['var(--success-soft)', 'var(--success)'],
-  warning: ['var(--warning-soft)', 'var(--warning)'],
-  danger: ['var(--danger-soft)', 'var(--danger)'],
-  info: ['var(--info-soft)', 'var(--info)'],
-};
+const badgeStyles = tv(manifest);
+const TONES = Object.keys(manifest.variants.tone);
+const toneOf = (tone: string | undefined): Tone | undefined =>
+  (tone && TONES.includes(tone) ? tone as Tone : 'neutral');
+
 export function Badge({ children, tone = 'neutral', dot = false }: BadgeProps) {
-  const [bg, fg] = TONES[tone] || TONES.neutral;
+  const styles = badgeStyles({ tone: toneOf(tone) });
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 2.5)',
-      background: bg, color: fg, borderRadius: 'var(--r-pill)',
-      fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase' }}>
-      {dot && <span style={{ width: 'calc(var(--sp-1) * 1.5)', height: 'calc(var(--sp-1) * 1.5)', borderRadius: '50%', background: fg }} />}
+    <span className={styles.root()}>
+      {dot && <span className={styles.dot()} />}
       {children}
     </span>
   );

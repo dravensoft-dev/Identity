@@ -7,8 +7,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  EXEMPT, PENDING, adoptionProblems, collect, literalStyleProblems, pendingProblems,
-  styleObjectBodies, valueIsLiteral,
+  EXEMPT, PENDING, adoptionProblems, angularRendersManifest, collect, literalStyleProblems,
+  pendingProblems, reactRendersManifest, styleObjectBodies, valueIsLiteral,
 } from './check-appearance.mjs';
 import { inScope } from '../../lib/tailwind/manifest-surfaces.mjs';
 
@@ -117,11 +117,21 @@ test('adoption reads the manifest a component has to render, its own or its pare
   assert.deepEqual(adoptionProblems('TableCell'), [], 'TableCell renders Table\'s');
 });
 
-test('a component that renders no manifest is named by the adoption half', () => {
-  const problems = adoptionProblems('Badge');
+test('a source that renders no manifest is what the adoption half reads for', () => {
+  const drawn = "import { tv } from '../../../Tv.generated.ts';\nimport m from './Badge.manifest.generated.ts';";
+  assert.equal(reactRendersManifest(drawn, 'Badge'), true);
+  assert.equal(reactRendersManifest(drawn, 'Card'), false, 'it has to be THIS component\'s manifest');
+  assert.equal(reactRendersManifest("const S = { background: 'var(--crimson)' };", 'Badge'), false);
+
+  assert.equal(angularRendersManifest("import { badgeStyles } from './Badge.variants';"), true);
+  assert.equal(angularRendersManifest("import { Component } from '@angular/core';"), false);
+});
+
+test('a component that draws by hand has no manifest to render, and is named for that instead', () => {
+  const problems = adoptionProblems('BarChart');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Badge/);
-  assert.match(problems[0], /Badge\.manifest\.generated/);
+  assert.match(problems[0], /BarChart/);
+  assert.match(problems[0], /HAND_DRAWN/);
 });
 
 test('running against the real tree leaves only what PENDING declares', () => {

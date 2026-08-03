@@ -26,10 +26,6 @@ export const PENDING = new Map([
   ['TableCell', 'the same residual ring as Table\'s, on the cell that carries it'],
   ['Calendar', 'the same residual ring as Table\'s, on the hour cell that carries it'],
 
-  ['Avatar', 'group E: a flat surface still typed out inline'],
-  ['Badge', 'group E: a flat surface whose tone pairs are a lookup table rather than variants'],
-  ['StatCard', 'group E: a flat surface still typed out inline'],
-  ['UnauthCard', 'group E: the same, over a panel that mirrors Card\'s surface by hand'],
   ['Alert', 'group E: a flat surface whose tone is a lookup table rather than a variant'],
   ['EmptyState', 'group E: a flat surface still typed out inline'],
   ['ErrorState', 'group E: a flat surface still typed out inline, over a retry Button its manifest types out'],
@@ -196,6 +192,14 @@ export function directoryOf(path) {
   return path.slice(0, path.lastIndexOf('/'));
 }
 
+export function reactRendersManifest(text, manifest) {
+  return /from '[^']*Tv\.generated/.test(text) && text.includes(`${manifest}.manifest.generated`);
+}
+
+export function angularRendersManifest(text) {
+  return /from '[^']*\.variants'/.test(text);
+}
+
 export function adoptionProblems(name) {
   const manifest = manifestFor(name);
   if (!manifest) {
@@ -204,20 +208,14 @@ export function adoptionProblems(name) {
   }
   const problems = [];
   const react = reactSource(name);
-  if (react) {
-    const text = readFileSync(react, 'utf8');
-    if (!/from '[^']*Tv\.generated/.test(text) || !text.includes(`${manifest}.manifest.generated`)) {
-      problems.push(`${name}: ${relative(repoRoot, react)} does not render its manifest -- it has to `
-        + `import tv from Tv.generated and ${manifest}.manifest.generated, and draw its slots`);
-    }
+  if (react && !reactRendersManifest(readFileSync(react, 'utf8'), manifest)) {
+    problems.push(`${name}: ${relative(repoRoot, react)} does not render its manifest -- it has to `
+      + `import tv from Tv.generated and ${manifest}.manifest.generated, and draw its slots`);
   }
   const angular = angularSource(name);
-  if (angular) {
-    const text = readFileSync(angular, 'utf8');
-    if (!/from '[^']*\.variants'/.test(text)) {
-      problems.push(`${name}: ${relative(repoRoot, angular)} does not render its manifest -- it has to `
-        + 'import the recipe built from it, its own .variants or the family parent\'s');
-    }
+  if (angular && !angularRendersManifest(readFileSync(angular, 'utf8'))) {
+    problems.push(`${name}: ${relative(repoRoot, angular)} does not render its manifest -- it has to `
+      + 'import the recipe built from it, its own .variants or the family parent\'s');
   }
   return problems;
 }

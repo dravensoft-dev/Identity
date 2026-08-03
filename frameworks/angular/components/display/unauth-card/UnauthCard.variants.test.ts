@@ -12,11 +12,18 @@ test('the root carries a display utility, so the host is not a zero-area inline 
   assert.match(unauthCardStyles().root(), /\bblock\b/);
 });
 
-test('the panel is a surface with a shadow, and the padding is the full 36px split across panel and body', () => {
+test('the panel is the surface and the elevation is the box around it, split so both layers can reach it', () => {
   const panel = unauthCardStyles().panel();
   assert.match(panel, /bg-base-200/);
-  assert.match(panel, /shadow-3/);
-  assert.match(panel, /\bp-5\b/);
+  assert.doesNotMatch(panel, /shadow-3/,
+    'the elevation sits on the root, because a layer that composes Card for this surface cannot '
+    + 'put a shadow-3 on it and the card as a whole is what floats');
+  assert.match(unauthCardStyles().root(), /shadow-3/);
+  assert.match(unauthCardStyles().root(), /\brounded-lg\b/, 'so the shadow is cast with the panel\'s own corners');
+});
+
+test('the padding is the full 36px split across panel and body', () => {
+  assert.match(unauthCardStyles().panel(), /\bp-5\b/);
   assert.match(unauthCardStyles().body(), /\bp-4\b/);
 });
 
