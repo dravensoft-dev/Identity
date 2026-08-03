@@ -19,7 +19,6 @@ export const PENDING = new Map([
 
 
 
-  ['ConfirmDialog', 'group F: the same, over the one filled danger surface in the system'],
   ['Sheet', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
   ['Onboarding', 'group F: the same, with a measured coachmark position that stays'],
   ['ToastHost', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
