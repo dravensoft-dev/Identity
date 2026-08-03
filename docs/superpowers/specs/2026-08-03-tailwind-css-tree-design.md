@@ -28,19 +28,23 @@ adopter can import one component's appearance without the other forty-two.
 
 ## What was measured
 
+Measured on the real emit, prelude included, not estimated.
+
 | artifact | raw | gzip |
 |---|---|---|
 | `Utilities.generated.css` today | 57,956 | 9,111 |
-| the 43 manifests compiled through `@apply`, before the strip | 167,930 | 13,210 |
-| the 43 manifests compiled through `@apply`, after the strip | 133,071 | 11,816 |
+| prelude and all 43 component sheets | 147,900 | 13,453 |
+| prelude and five component sheets | 30,799 | 4,292 |
+| prelude and one component sheet | 10,399 | 2,221 |
 | `tailwind-merge`, removed | 63,812 | 12,299 |
 | `tailwind-variants`, removed | 14,765 | 3,535 |
 
-The CSS does not get smaller. For the worst case, an adopter importing the whole barrel, it
-grows 2,705 bytes gzipped while 15,834 bytes of JavaScript leave, so the package is 13,129
-bytes lighter. Selective import turns the CSS column into a gain as well. **The weight
-argument rests on the JavaScript removed and on selective import, never on a smaller total
-sheet**, and stating it the other way around would be false.
+The CSS does not get smaller in the worst case. An adopter importing the whole barrel pays
+4,342 bytes more gzipped while 15,834 bytes of JavaScript leave, so that package is 11,492
+bytes lighter. An adopter importing five components is 20,653 bytes lighter, because the CSS
+column becomes a gain as well. **The weight argument rests on the JavaScript removed and on
+selective import, never on a smaller total sheet**, and stating it the other way around would
+be false.
 
 ## The finding that shapes the design
 

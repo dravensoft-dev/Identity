@@ -14,10 +14,10 @@ const CI_JOBS = {
 };
 
 test('GATES lists every check gate', () => {
-  assert.equal(GATES.length, 40);
+  assert.equal(GATES.length, 42);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:catalog', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:icons', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:parity', 'check:shared-arithmetic', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:catalog', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:component-css', 'check:style-parity', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:icons', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:parity', 'check:shared-arithmetic', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 

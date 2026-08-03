@@ -83,6 +83,24 @@ export const UNTRACKED = {
   'frameworks/tailwind/Utilities.generated.css':
     'the compiled utility layer, read only by the specimen pages. An adopter imports '
     + 'frameworks/angular/theme/arena-tailwind.css and compiles their own.',
+  'frameworks/tailwind/components/**/*.styles.generated.css':
+    'the CSS one component renders, compiled from its manifest through @apply and stripped of '
+    + 'every Tailwind theme indirection, so no adopter property can reach in. The package build '
+    + 'collects these into css/components/; check:component-css holds each to the manifest it '
+    + 'came from and check:style-parity holds it to what the recipe paints.',
+  'frameworks/tailwind/Prelude.generated.css':
+    'the @property registrations, the layer order and the keyframes every component sheet '
+    + 'depends on, which is why each one imports it rather than documenting it: without the '
+    + 'registrations every border and the focus ring are invalid at computed-value time.',
+  'frameworks/tailwind/components/**/*.classes.generated.ts':
+    'the manifest with each class string replaced by the Arena class name that draws it, which '
+    + 'is what a component composes at runtime now that nothing merges utilities.',
+  'frameworks/react/components/**/*.classes.generated.ts': 'the same file, emitted into the layer that renders it.',
+  'frameworks/angular/components/**/*.classes.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/ArenaStyles.generated.ts':
+    'the twenty-line factory that composes those names, emitted per layer so a component\'s '
+    + 'import never crosses a boundary. It replaces the two runtime dependencies outright.',
+  'frameworks/angular/ArenaStyles.generated.ts': 'the same file, emitted into the other layer.',
 };
 
 function walk(dir, root) {

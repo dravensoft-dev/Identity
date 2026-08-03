@@ -62,6 +62,8 @@
     "check:surface-parity": "bun scripts/check/tailwind/check-surface-parity.mjs",
     "check:radius": "bun scripts/check/tailwind/check-radius-tokens.mjs",
     "check:arbitrary": "bun scripts/check/tailwind/check-arbitrary-values.mjs",
+    "check:component-css": "bun scripts/check/tailwind/check-component-css.mjs",
+    "check:style-parity": "bun scripts/check/tailwind/check-style-parity.mjs",
     "check:docs": "bun scripts/check/arena/check-docs.mjs",
     "check:generated": "bun scripts/check/arena/check-generated.mjs",
     "check:catalog": "bun scripts/check/arena/check-catalog.mjs",

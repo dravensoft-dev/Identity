@@ -37,6 +37,8 @@ export const GATES = [
   { name: 'check:surface-parity', file: 'tailwind/check-surface-parity.mjs' },
   { name: 'check:radius', file: 'tailwind/check-radius-tokens.mjs' },
   { name: 'check:arbitrary', file: 'tailwind/check-arbitrary-values.mjs' },
+  { name: 'check:component-css', file: 'tailwind/check-component-css.mjs' },
+  { name: 'check:style-parity', file: 'tailwind/check-style-parity.mjs' },
   { name: 'check:dimensions', file: 'arena/check-dimension-literals.mjs' },
   { name: 'check:states', file: 'arena/check-manifest-states.mjs' },
   { name: 'check:appearance', file: 'arena/check-appearance.mjs' },
