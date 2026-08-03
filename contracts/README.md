@@ -145,9 +145,12 @@ top.
 - `Arena - Overview.html`: the token language, generated at runtime from
   `contracts/design/` and `contracts/design/colors.css`. Serve it with `bun run demos`.
 - `Dravensoft Identity.dc.html`: the approved identity manual.
-- Both load `styles.css`, `toggle.css` and their runtime (`theme.js`, `overview.js`,
-  `support.js`) as siblings, and reach `assets/`, `node_modules/` and `contracts/` with a
-  single `../`, which is why neither may leave this directory.
+- Both load `styles.css`, `toggle.css` and their runtime as siblings, and reach `assets/`,
+  `node_modules/` and `contracts/` with a single `../`, which is why neither may leave this
+  directory. **Neither may take the directory with it either**: every generated playground
+  page, in every framework layer, reaches back here for `playground.css` and `density.js`, so
+  the two pages are not the only thing a move breaks. List the runtime with
+  `ls intro/*.js intro/*.css` rather than from a list here.
 
 **At the root**
 

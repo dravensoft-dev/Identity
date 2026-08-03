@@ -14,10 +14,10 @@ from its own suites (`bun run test:scripts` / `test:react` / `test:react-dom` /
 
 Those four run in **two `bun test` processes**, not one, preceded by a build the Angular suites
 need before either process can see them. **The preload must never reach the DOM-free invocation
-and is mandatory for the DOM one**: without a DOM already installed, `react-dom` latches its
-`input`-event support false at module evaluation and an `onChange` handler receives a dispatched
-event **zero** times, silently.
-[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full.
+and is mandatory for the DOM one**, and getting that wrong costs an `onChange` handler every
+event it should have received, silently.
+[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full,
+including the two alternatives that are measured not to work.
 **The single authority for that command is `testStep()` in
 `scripts/check/arena/check-all.mjs`**, and its `.test.mjs` sibling asserts the args array by
 literal value. Read it there rather than reconstructing one; a narrowed invocation matching
@@ -160,9 +160,10 @@ bun run demos   # builds, serves the repo root on :8000, prints the entry points
 - `intro/Arena - Overview.html`: the token language, generated at runtime. **It shows no components on purpose**, because those belong to the framework layers.
 - `intro/Dravensoft Identity.dc.html`: the approved brand manual, and the only `dc-runtime` page.
 
-**`intro/` is one unit and neither page may leave it.** Each loads `styles.css` and its runtime as
-siblings and reaches `assets/`, `node_modules/`, `contracts/` with one `../`; moved, it renders
-unstyled, **silently**.
+**`intro/` is one unit, and more than its own two pages depend on it.** Each loads `styles.css`
+and its runtime as siblings and reaches `assets/`, `node_modules/`, `contracts/` with one
+`../`; moved, it renders unstyled, **silently**, and so does every generated playground in
+every layer, which reaches back here for the same runtime.
 
 ## Architecture
 
@@ -620,9 +621,8 @@ a fact missing from a contract.
 **Framework layers live under `frameworks/`.** The root holds only the framework-agnostic language
 (`contracts/`, holding all three contract levels, `api/`, `behaviour/` and `design/`, plus
 `design-generated/`; `assets/`; and `scripts/`, which sorts itself into `build/`, `generate/`,
-`check/` and `ci/` by domain and carries a README at every level) plus `intro/`, the browsable front: `styles.css`,
-`guidelines/`, the runtime (`theme.js`, `toggle.css`, `overview.js`, `support.js`) and the two
-pages it serves. **No `.html`, `.css` or `.js` sits loose at the repository root.**
+`check/` and `ci/` by domain and carries a README at every level) plus `intro/`, the browsable front: `styles.css`, `guidelines/`, the runtime and the two pages
+it serves. **No `.html`, `.css` or `.js` sits loose at the repository root.**
 
 Each layer has its own README; read it for the layer's shape.
 `frameworks/react/` puts components under `components/<category>/<component-kebab>/`, the
