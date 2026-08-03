@@ -18,7 +18,7 @@ export const REPORT_DIR = join('.cache', 'junit');
 export const EXPECTED_ROOTS = [
   'scripts/',
   'frameworks/react/',
-  'frameworks/angular/build/test/angular/',
+  'frameworks/angular/build/test/',
 ];
 
 export function stepsWithJunit(dir = REPORT_DIR) {

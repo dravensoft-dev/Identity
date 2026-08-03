@@ -8,12 +8,14 @@ import { join, relative } from 'node:path';
 import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.mjs';
+import { angularEmitRoot } from '../../lib/angular/emit-root.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 const PROJECT = 'frameworks/angular/tsconfig.demo.json';
 const OUT_DIR = join(repoRoot, 'frameworks', 'angular', 'build', 'demo');
 const TSC_DIR = join(OUT_DIR, 'tsc');
 const JS_DIR = join(OUT_DIR, 'js');
-const SRC_ROOT = join(repoRoot, 'frameworks');
+const LAYER_ROOT = join(repoRoot, 'frameworks', 'angular');
+const EMIT_DIR = angularEmitRoot(join(repoRoot, PROJECT));
 const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
 export const ENTRY_SUFFIXES = ['.demo.entry.generated.js'];
@@ -33,13 +35,13 @@ function pruneOrphans(dir) {
         walk(full);
         continue;
       }
-      const rel = relative(TSC_DIR, full);
+      const rel = relative(EMIT_DIR, full);
       let srcRel;
       if (rel.endsWith('.js.map')) srcRel = rel.slice(0, -'.js.map'.length) + '.ts';
       else if (rel.endsWith('.d.ts')) srcRel = rel.slice(0, -'.d.ts'.length) + '.ts';
       else if (rel.endsWith('.js')) srcRel = rel.slice(0, -'.js'.length) + '.ts';
       else continue;
-      if (!existsSync(join(SRC_ROOT, srcRel))) {
+      if (srcRel.startsWith('..') || !existsSync(join(LAYER_ROOT, srcRel))) {
         rmSync(full);
         pruned.push(relative(repoRoot, full));
       }
@@ -62,14 +64,14 @@ export function collectEntries(dir) {
   }
 }
 
-export function missingEntryProblems(sourceEntries, emittedEntries) {
+export function missingEntryProblems(sourceEntries, emittedEntries, emitDir = relative(repoRoot, EMIT_DIR)) {
   const emitted = new Set(emittedEntries.map((f) => f.slice(0, -'.js'.length)));
   const problems = [];
   for (const src of sourceEntries) {
     const stem = src.slice(0, -'.ts'.length);
     if (!emitted.has(stem)) {
       problems.push(
-        `${src} has no corresponding emit in frameworks/angular/build/demo/tsc/angular -- `
+        `${src} has no corresponding emit in ${emitDir} -- `
         + `ngc never compiled it (check tsconfig.demo.json's "include"), so its page loads nothing`,
       );
     }
@@ -124,8 +126,8 @@ async function main() {
   if (pruned.length > 0) console.log(`build-angular-demo: pruned ${pruned.length} orphaned output file(s)`);
 
   const emitProblems = missingEntryProblems(
-    collectSourceEntries(join(SRC_ROOT, 'angular')),
-    collectEntries(join(TSC_DIR, 'angular')).map((p) => relative(join(TSC_DIR, 'angular'), p)),
+    collectSourceEntries(LAYER_ROOT),
+    collectEntries(EMIT_DIR).map((p) => relative(EMIT_DIR, p)),
   );
   if (emitProblems.length > 0) {
     console.error(`\nbuild-angular-demo: ${emitProblems.length} page entr(y/ies) compiled into nothing:\n`);
@@ -133,7 +135,7 @@ async function main() {
     process.exit(1);
   }
 
-  const entrypoints = collectEntries(join(TSC_DIR, 'angular'));
+  const entrypoints = collectEntries(EMIT_DIR);
   if (entrypoints.length === 0) {
     console.error(
       'build-angular-demo: found 0 page entries to bundle. An empty result set is a failure, '

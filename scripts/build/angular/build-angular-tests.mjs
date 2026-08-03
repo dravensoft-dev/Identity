@@ -11,15 +11,16 @@ import { join, relative } from 'node:path';
 import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.mjs';
+import { angularEmitRoot } from '../../lib/angular/emit-root.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const PROJECT = 'frameworks/angular/tsconfig.test.json';
 const OUT_DIR = join(repoRoot, 'frameworks', 'angular', 'build', 'test');
 
-const SRC_ROOT = join(repoRoot, 'frameworks');
 const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
 const LAYER_ROOT = join(repoRoot, 'frameworks', 'angular');
+const EMIT_DIR = angularEmitRoot(join(repoRoot, PROJECT));
 const STAMP = join(OUT_DIR, '.arena-emit-stamp');
 const EXTERNAL_INPUTS = [
   join(repoRoot, 'package.json'),
@@ -39,13 +40,13 @@ function pruneOrphans(dir) {
         walk(full);
         continue;
       }
-      const rel = relative(OUT_DIR, full);
+      const rel = relative(EMIT_DIR, full);
       let srcRel;
       if (rel.endsWith('.js.map')) srcRel = rel.slice(0, -'.js.map'.length) + '.ts';
       else if (rel.endsWith('.d.ts')) srcRel = rel.slice(0, -'.d.ts'.length) + '.ts';
       else if (rel.endsWith('.js')) srcRel = rel.slice(0, -'.js'.length) + '.ts';
       else continue;
-      if (!existsSync(join(SRC_ROOT, srcRel))) {
+      if (srcRel.startsWith('..') || !existsSync(join(LAYER_ROOT, srcRel))) {
         rmSync(full);
         pruned.push(relative(repoRoot, full));
       }
@@ -83,14 +84,14 @@ function collectEmittedTests(dir) {
   }
 }
 
-export function missingEmitProblems(sourceTests, emittedTests) {
+export function missingEmitProblems(sourceTests, emittedTests, emitDir = relative(repoRoot, EMIT_DIR)) {
   const emittedStems = new Set(emittedTests.map((f) => f.slice(0, -'.js'.length)));
   const problems = [];
   for (const src of sourceTests) {
     const stem = src.slice(0, -'.ts'.length);
     if (!emittedStems.has(stem)) {
       problems.push(
-        `${src} has no corresponding .test.js in frameworks/angular/build/test/angular -- ` +
+        `${src} has no corresponding .test.js in ${emitDir} -- ` +
         `ngc never compiled it (check tsconfig.test.json's "include"), so this suite never runs`,
       );
     }
@@ -187,8 +188,8 @@ function verifyEmit() {
   }
 
   const emitProblems = missingEmitProblems(
-    collectTestSources(join(SRC_ROOT, 'angular')),
-    collectEmittedTests(join(OUT_DIR, 'angular')),
+    collectTestSources(LAYER_ROOT),
+    collectEmittedTests(EMIT_DIR),
   );
   if (emitProblems.length > 0) {
     console.error(`\nbuild-angular-tests: ${emitProblems.length} suite(s) compiled into nothing:\n`);

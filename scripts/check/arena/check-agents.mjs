@@ -22,8 +22,6 @@ export const SURVIVORS = new Map([
   ['frameworks/react/ui-kits/console/README.md',
    'the example application. It reads like a project README because it describes an app rather '
    + 'than a level of this tree.'],
-  ['frameworks/angular/build/package/README.md',
-   'ng-packagr output in a git-ignored staging tree. Nobody writes it and nothing should edit it.'],
 ]);
 
 export const SKIPPED_ANYWHERE = new Set(['node_modules', '.git']);

@@ -1,0 +1,49 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { join } from 'node:path';
+import { emitRoot, angularEmitRoot, declaredOption } from './emit-root.mjs';
+import { repoRoot } from '../arena/repo-root.mjs';
+
+const LAYER = '/repo/frameworks/angular';
+
+test('a rootDir that is the layer root puts the emit at outDir itself', () => {
+  assert.equal(
+    emitRoot({ rootDir: LAYER, outDir: `${LAYER}/build/test`, layerRoot: LAYER }),
+    join(LAYER, 'build', 'test'),
+  );
+});
+
+test('a rootDir one directory above the layer pushes the emit down into a named subtree', () => {
+  assert.equal(
+    emitRoot({ rootDir: '/repo/frameworks', outDir: `${LAYER}/build/test`, layerRoot: LAYER }),
+    join(LAYER, 'build', 'test', 'angular'),
+  );
+});
+
+test('a layer outside rootDir emits nowhere this can name, so it is refused rather than guessed', () => {
+  assert.throws(
+    () => emitRoot({ rootDir: '/repo/frameworks/react', outDir: `${LAYER}/build/test`, layerRoot: LAYER }),
+    /not under/,
+  );
+});
+
+test('the test surface emits where bun is pointed, so a rootDir edit cannot empty the tree unseen', () => {
+  assert.equal(
+    angularEmitRoot(join(repoRoot, 'frameworks', 'angular', 'tsconfig.test.json')),
+    join(repoRoot, 'frameworks', 'angular', 'build', 'test'),
+  );
+});
+
+test('the demo pages compile into the tree the bundler collects entries from', () => {
+  assert.equal(
+    angularEmitRoot(join(repoRoot, 'frameworks', 'angular', 'tsconfig.demo.json')),
+    join(repoRoot, 'frameworks', 'angular', 'build', 'demo', 'tsc'),
+  );
+});
+
+test('an option is read from the config that declares it, however far up the extends chain it sits', () => {
+  const layer = join(repoRoot, 'frameworks', 'angular');
+  assert.equal(declaredOption(join(layer, 'tsconfig.demo.json'), 'outDir').value, './build/demo/tsc');
+  assert.equal(declaredOption(join(layer, 'tsconfig.demo.json'), 'rootDir').value, '.');
+  assert.equal(declaredOption(join(layer, 'tsconfig.demo.json'), 'rootDir').dir, layer);
+});

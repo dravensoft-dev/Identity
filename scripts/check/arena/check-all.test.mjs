@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { angularEmitRoot } from '../../lib/angular/emit-root.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.mjs';
 
@@ -120,10 +121,16 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
-    ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test/angular',
+    ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test',
      '--path-ignore-patterns=**/*.dom.test.*'],
     ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.'],
   ]);
+});
+
+test('bun is pointed at the tree ngc actually emits, so a rootDir edit cannot run zero Angular suites', () => {
+  const emitted = relative(repoRoot, angularEmitRoot(join(repoRoot, 'frameworks', 'angular', 'tsconfig.test.json')));
+  const suites = testStep({ isBun: true, testFiles: [] }).find((s) => s.args[0] === 'test').args;
+  assert.ok(suites.includes(emitted.split(sep).join('/')), `testStep runs ${suites}, but ngc emits into ${emitted}`);
 });
 
 test('testStep runs `node --test` over the discovered files under node', () => {

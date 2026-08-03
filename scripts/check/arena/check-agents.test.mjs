@@ -37,7 +37,6 @@ test('SURVIVORS names every README.md kept, and says why each is not a contribut
   assert.deepEqual([...SURVIVORS.keys()], [
     'README.md',
     'frameworks/react/ui-kits/console/README.md',
-    'frameworks/angular/build/package/README.md',
   ]);
   for (const reason of SURVIVORS.values()) assert.ok(reason.length > 40, 'an entry states its reason');
 });

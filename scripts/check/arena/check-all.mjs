@@ -98,7 +98,7 @@ export function testStep({ isBun, testFiles }) {
   if (isBun) return [
     { name: 'build (ngc emit of the Angular test surface)', args: ['run', 'build:angular-tests'] },
     { name: 'test (bun test scripts/ + framework suites)',
-      args: ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test/angular',
+      args: ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test',
              '--path-ignore-patterns=**/*.dom.test.*'] },
     { name: 'test (React DOM suites, isolated)',
       args: ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.'] },

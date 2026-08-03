@@ -233,7 +233,7 @@ test('a hand-written file is read however loudly its header claims otherwise', (
 test('the Angular emit is skipped by its anchored path, so the scripts phase directory of the same name is still read', () => {
   const overLong = `/* ${'x\n * '.repeat(HEADER_MAX_LINES + 2)} */\nconst a = 1;\n`;
   const root = tree({
-    'frameworks/angular/build/test/angular/Emitted.js': overLong,
+    'frameworks/angular/build/test/Emitted.js': overLong,
     'scripts/build/react/build-demos.mjs': overLong,
   });
   const { problems } = commentRuleProblems(root);
