@@ -12,7 +12,9 @@ test('RadioGroup marks the child whose value matches, and only it', () => {
     <RadioGroup ariaLabel={LABEL} value="b"><Radio value="a" label="A" /><Radio value="b" label="B" /></RadioGroup>,
   );
 
-  assert.equal(html.match(/border-radius:50%;background:var\(--crimson\)/g)?.length, 1);
+  assert.equal(html.match(/class="size-2\.5 rounded-pill bg-primary"/g)?.length, 1,
+    'the filled dot is drawn once, on the child whose value matches');
+  assert.equal(html.match(/\bborder-primary\b/g)?.length, 1, 'and one ring takes the accent border');
 });
 
 test('RadioGroup gives its children a shared name so the native radios group', () => {
@@ -65,4 +67,20 @@ test('ariaLabel names the group, and `name` is not a label', () => {
   );
   assert.match(html, new RegExp(`<div role="radiogroup" aria-label="${LABEL}"`));
   assert.doesNotMatch(html, /aria-label="env"/, 'the form name must never reach a screen reader as the name');
+});
+
+test('the group draws its own column from Radio\'s manifest, which is the surface it belongs to', () => {
+  const html = renderToStaticMarkup(
+    <RadioGroup ariaLabel={LABEL}><Radio value="a" label="A" /></RadioGroup>,
+  );
+  assert.match(html, /<div role="radiogroup"[^>]*class="flex flex-col gap-3"/,
+    'RadioGroup carries no manifest of its own because it has no surface of its own');
+});
+
+test('the ring finds its own focus, so nothing injects a stylesheet to reach the input', () => {
+  const html = renderToStaticMarkup(
+    <RadioGroup ariaLabel={LABEL}><Radio value="a" label="A" /></RadioGroup>,
+  );
+  assert.match(html, /has\(~input:focus-visible\)/);
+  assert.doesNotMatch(html, /\barena-radio-ring\b/, 'the hook class the injected sheet needed is gone with it');
 });

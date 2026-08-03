@@ -1,4 +1,6 @@
 import React from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from '../radio/Radio.manifest.generated.ts';
 
 export interface RadioGroupProps {
 
@@ -19,6 +21,8 @@ export interface RadioGroupProps {
 }
 
 
+const radioStyles = tv(manifest);
+
 export function RadioGroup({ value, onChange, name, ariaLabel, children }: RadioGroupProps) {
   if (!ariaLabel?.trim()) throw new Error('RadioGroup: `ariaLabel` is required');
   const gname = name || 'rg-' + Math.random().toString(36).slice(2, 7);
@@ -27,7 +31,7 @@ export function RadioGroup({ value, onChange, name, ariaLabel, children }: Radio
       ? React.cloneElement(child, { name: gname, checked: child.props.value === value, onSelect: onChange })
       : child);
   return (
-    <div role="radiogroup" aria-label={ariaLabel} style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 3)' }}>
+    <div role="radiogroup" aria-label={ariaLabel} className={radioStyles().group()}>
       {items}
     </div>
   );
