@@ -16,7 +16,6 @@ import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const PENDING = new Map([
-  ['IconButton', 'group B: hover still lives in a useState rather than in the manifest\'s modifier'],
   ['Breadcrumbs', 'group B: a crumb\'s hover still lives in a useState rather than in the manifest'],
   ['SegmentedControl', 'group B: the hovered segment is tracked in a useState rather than drawn by a modifier'],
   ['Menu', 'group B: the same, plus an injected <style> the manifest may absorb'],
