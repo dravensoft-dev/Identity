@@ -46,7 +46,8 @@ literal value: a change confined to `frameworks/react/` breaks a suite under `sc
 
 **Which layers a diff reaches is decided by `scripts/ci/arena/changed-layers.mjs`**, not by
 a path filter written here, because that module has a suite and a YAML filter does not. Its
-least obvious rule is the one worth reading: a Tailwind edit routes to Angular too.
+least obvious rule is the one worth reading: a Tailwind edit routes to both other layers,
+because each compiles something that layer emits.
 
 **`pr-gate` is the single required check.** A job skipped by an `if` reports success to
 branch protection, so requiring `test-react` directly would be satisfied by a React change

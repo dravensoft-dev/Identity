@@ -1,7 +1,9 @@
 /* Which framework layers a diff reaches. The map is here rather than in YAML because a
  * routing rule nothing tests is a rule that reports green over a tree it never opened,
- * and because one of its entries is not obvious: a Tailwind edit routes to Angular too,
- * since every .variants.ts imports a generated manifest and ngc fails without it. */
+ * and because two of its entries are not obvious: a Tailwind edit routes to BOTH other
+ * layers. Angular reads a generated manifest from it and ngc fails without one; React
+ * compiles modules emitted into its own tree from it, and those are gitignored, so a
+ * manifest edit changes what React builds while nothing tracked under it moves. */
 
 import { fileURLToPath } from 'node:url';
 import { LAYERS } from '../../lib/arena/layers.mjs';
@@ -15,7 +17,11 @@ export const SHARED = {
 };
 
 export const LAYER_INPUTS = {
-  react: { 'frameworks/react/': 'its own layer' },
+  react: {
+    'frameworks/react/': 'its own layer',
+    'frameworks/tailwind/': 'the manifest modules and the recipe runtime are emitted into this '
+      + 'layer from there and are gitignored, so a manifest edit changes what React compiles',
+  },
   angular: {
     'frameworks/angular/': 'its own layer',
     'frameworks/tailwind/': 'every .variants.ts imports a generated manifest, so ngc fails without it',
