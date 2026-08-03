@@ -6,7 +6,8 @@
  * hold on a prompt naming a page path, and a moved page is exactly what this wave does.
  * The smoke phase needs a browser, because a page that mounts nothing is invisible to every
  * portable check here: the emitted source is what they compare, and a source that compiles
- * can still throw on the first render. */
+ * can still throw on the first render. A page is probed once it is drawn plus a grace window,
+ * never on a blind sleep, and a page that never draws still waits the whole deadline. */
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -386,8 +387,10 @@ export function citationProblems(base = root, files = citingFiles(base), names =
   return problems;
 }
 
-export const SMOKE_CONCURRENCY = 4;
-export const SMOKE_SETTLE_MS = 1_500;
+export const SMOKE_CONCURRENCY = 8;
+export const SMOKE_READY_MS = 10_000;
+export const SMOKE_GRACE_MS = 250;
+export const SMOKE_POLL_MS = 25;
 export const NAVIGATE_TIMEOUT_MS = 30_000;
 
 export function pagePaths(base = root, files = buildPlaygrounds(base).files) {
@@ -406,13 +409,27 @@ export function smokeProblems(page, seen) {
   return problems;
 }
 
-const PROBE = `(() => ({
-  mounted: Boolean(document.querySelector('.pg-title')),
-  knobs: document.querySelectorAll('.pg-knob-name').length,
-  staged: ((document.querySelector('.pg-stage')?.textContent ?? '').trim().length > 0)
-    || (document.querySelector('.pg-stage')?.children.length ?? 0) > 0,
-  errors: window.__arenaErrors ?? [],
-}))()`;
+const DRAWN = `(() => {
+  const stage = document.querySelector('.pg-stage');
+  return {
+    mounted: Boolean(document.querySelector('.pg-title')),
+    knobs: document.querySelectorAll('.pg-knob-name').length,
+    staged: ((stage?.textContent ?? '').trim().length > 0) || (stage?.children.length ?? 0) > 0,
+  };
+})()`;
+
+const PROBE = `(() => ({ ...${DRAWN}, errors: window.__arenaErrors ?? [] }))()`;
+
+export const READY = `new Promise((resolve) => {
+  const deadline = Date.now() + ${SMOKE_READY_MS};
+  const tick = () => {
+    const drawn = ${DRAWN};
+    if (drawn.mounted && drawn.staged && drawn.knobs > 0) { setTimeout(resolve, ${SMOKE_GRACE_MS}); return; }
+    if (Date.now() >= deadline) { resolve(); return; }
+    setTimeout(tick, ${SMOKE_POLL_MS});
+  };
+  tick();
+})`;
 
 const WATCH = "window.__arenaErrors=[];"
   + "addEventListener('error',(e)=>window.__arenaErrors.push('threw: '+String(e.message)));"
@@ -429,7 +446,7 @@ async function visit(cdp, url, page) {
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: WATCH }, sessionId);
     await cdp.send('Page.navigate', { url }, sessionId);
     const ev = (expression) => cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
-    await ev(`new Promise((r) => setTimeout(r, ${SMOKE_SETTLE_MS}))`);
+    await ev(READY);
     return smokeProblems(page, (await ev(PROBE)).result.value);
   } finally {
     try { await cdp.send('Target.closeTarget', { targetId }); } catch { void 0; }

@@ -1,6 +1,42 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { missingEmitProblems } from './build-angular-tests.mjs';
+import { missingEmitProblems, stalenessReason } from './build-angular-tests.mjs';
+
+const stamped = (mtimeMs, paths) => ({ mtimeMs, paths });
+
+test('stalenessReason returns null only when the stamp is strictly newer than every input it compiled', () => {
+  const inputs = [{ path: 'a.ts', mtimeMs: 10 }, { path: 'b.ts', mtimeMs: 19 }];
+  assert.equal(stalenessReason(inputs, stamped(20, ['a.ts', 'b.ts'])), null);
+});
+
+test('stalenessReason names the newest input, which is the one that decides', () => {
+  const inputs = [{ path: 'old.ts', mtimeMs: 1 }, { path: 'touched.ts', mtimeMs: 99 }];
+  const reason = stalenessReason(inputs, stamped(50, ['old.ts', 'touched.ts']));
+  assert.match(reason, /touched\.ts/);
+  assert.doesNotMatch(reason, /old\.ts/);
+});
+
+test('an equal timestamp rebuilds -- a one-second filesystem cannot tell which came first', () => {
+  assert.ok(stalenessReason([{ path: 'a.ts', mtimeMs: 42 }], stamped(42, ['a.ts'])));
+});
+
+test('a source added since the last emit rebuilds, however old it is', () => {
+  const reason = stalenessReason(
+    [{ path: 'a.ts', mtimeMs: 1 }, { path: 'new.ts', mtimeMs: 1 }],
+    stamped(500, ['a.ts']),
+  );
+  assert.match(reason, /new\.ts was not compiled/);
+});
+
+test('a source deleted since the last emit rebuilds, which no timestamp can see', () => {
+  const reason = stalenessReason([{ path: 'a.ts', mtimeMs: 1 }], stamped(500, ['a.ts', 'gone.ts']));
+  assert.match(reason, /gone\.ts is gone/);
+});
+
+test('no stamp rebuilds, and no input found rebuilds rather than skipping on a walk that saw nothing', () => {
+  assert.match(stalenessReason([{ path: 'a.ts', mtimeMs: 1 }], null), /no emit stamp/);
+  assert.match(stalenessReason([], stamped(100, [])), /no input was found/);
+});
 
 test('missingEmitProblems reports nothing when every source test has a matching emit', () => {
   const problems = missingEmitProblems(

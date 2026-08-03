@@ -4,7 +4,7 @@ import {
   coverageProblems, shapeProblems, seedProblems, slotProblems, bindProblems, hostProblems,
   valueProblems, objectProblems, nodeProblems, fixtureProblems, citationProblems,
   loadContracts, loadFixtures, loadTypes, citingFiles, basenameIndex, emissionProblems,
-  pagePaths, smokeProblems,
+  pagePaths, smokeProblems, READY, SMOKE_READY_MS, SMOKE_GRACE_MS,
 } from './check-playgrounds.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -254,4 +254,19 @@ test('anything the console reports is a problem, because a component can render 
 
 test('a page that mounts, draws and says nothing is clean', () => {
   assert.deepEqual(smokeProblems('X.html', { mounted: true, knobs: 3, staged: true, errors: [] }), []);
+});
+
+test('READY waits for the page to draw rather than for a fixed interval, so a fast page is not slept on', () => {
+  assert.match(READY, /drawn\.mounted && drawn\.staged && drawn\.knobs > 0/);
+  assert.match(READY, /setTimeout\(tick,/);
+});
+
+test('READY resolves at the deadline even when nothing draws, so a dead page is reported rather than hung on', () => {
+  assert.match(READY, new RegExp(`Date\\.now\\(\\) \\+ ${SMOKE_READY_MS}`));
+  assert.match(READY, /Date\.now\(\) >= deadline\) \{ resolve\(\); return; \}/);
+});
+
+test('READY holds a grace window open after the page draws, because an error can arrive after the first render', () => {
+  assert.ok(SMOKE_GRACE_MS > 0, 'probing the instant a page draws would miss anything thrown after it');
+  assert.match(READY, new RegExp(`setTimeout\\(resolve, ${SMOKE_GRACE_MS}\\)`));
 });

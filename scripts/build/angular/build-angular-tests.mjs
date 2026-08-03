@@ -1,6 +1,14 @@
+/* The emit is skipped when no input has moved since the last one, because `bun run test` and
+ * `bun run check` both run this first and the compile costs around 17 seconds against suites that
+ * cost around 12. Freshness is a stamp this script writes after a successful emit, never the
+ * outputs' own times: `ngc` is incremental and does not rewrite a file it did not change, so the
+ * oldest output stays as old as the last time that one file changed. An equal timestamp rebuilds.
+ * The stamp also records which inputs it compiled, because deleting a source bumps no surviving
+ * file's time and a compared timestamp alone would skip. `--force` compiles unconditionally. */
+
 import { spawnSync } from 'node:child_process';
 import { join, relative } from 'node:path';
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
@@ -10,6 +18,14 @@ const OUT_DIR = join(repoRoot, 'frameworks', 'angular', 'build', 'test');
 
 const SRC_ROOT = join(repoRoot, 'frameworks');
 const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
+
+const LAYER_ROOT = join(repoRoot, 'frameworks', 'angular');
+const STAMP = join(OUT_DIR, '.arena-emit-stamp');
+const EXTERNAL_INPUTS = [
+  join(repoRoot, 'package.json'),
+  join(repoRoot, 'bun.lock'),
+  fileURLToPath(import.meta.url),
+];
 
 function pruneOrphans(dir) {
   const pruned = [];
@@ -82,7 +98,64 @@ export function missingEmitProblems(sourceTests, emittedTests) {
   return problems;
 }
 
+function collectInputs() {
+  const out = [];
+  walk(LAYER_ROOT);
+  for (const path of EXTERNAL_INPUTS) if (existsSync(path)) out.push(stamp(path));
+  return out;
+
+  function walk(current) {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const full = join(current, entry.name);
+      if (full === EMITTED) continue;
+      if (entry.isDirectory()) { walk(full); continue; }
+      if (entry.name.endsWith('.ts') || entry.name.endsWith('.json')) out.push(stamp(full));
+    }
+  }
+}
+
+function stamp(path) {
+  return { path: relative(repoRoot, path), mtimeMs: statSync(path).mtimeMs };
+}
+
+function readStamp() {
+  if (!existsSync(STAMP)) return null;
+  try {
+    return { mtimeMs: statSync(STAMP).mtimeMs, paths: JSON.parse(readFileSync(STAMP, 'utf8')).paths };
+  } catch {
+    return null;
+  }
+}
+
+export function stalenessReason(inputs, stamped) {
+  if (stamped === null) return 'no emit stamp is present, so nothing is known about what was compiled';
+  if (inputs.length === 0) return 'no input was found to compare the emit against';
+  const compiled = new Set(stamped.paths ?? []);
+  const added = inputs.find((one) => !compiled.has(one.path));
+  if (added) return `${added.path} was not compiled into the last emit`;
+  if (compiled.size !== inputs.length) {
+    const present = new Set(inputs.map((one) => one.path));
+    return `${[...compiled].find((path) => !present.has(path))} is gone since the last emit`;
+  }
+  const newestInput = inputs.reduce((a, b) => (b.mtimeMs > a.mtimeMs ? b : a));
+  if (newestInput.mtimeMs >= stamped.mtimeMs) return `${newestInput.path} is not older than the last emit`;
+  return null;
+}
+
 function main() {
+  if (!process.argv.includes('--force')) {
+    const reason = stalenessReason(collectInputs(), readStamp());
+    if (reason === null) {
+      console.log(
+        'build-angular-tests: no input has moved since the last emit, so ngc is not run. '
+        + 'Compile anyway with --force.',
+      );
+      verifyEmit();
+      return;
+    }
+    console.log(`build-angular-tests: compiling, because ${reason}`);
+  }
+
   let bin;
   try {
     bin = ngcBin(repoRoot);
@@ -100,6 +173,11 @@ function main() {
     process.exit(r.status ?? 1);
   }
   console.log('build-angular-tests: the Angular test surface compiled to frameworks/angular/build/test');
+  verifyEmit();
+  writeFileSync(STAMP, JSON.stringify({ at: new Date().toISOString(), paths: collectInputs().map((one) => one.path) }));
+}
+
+function verifyEmit() {
   const pruned = pruneOrphans(OUT_DIR);
   if (pruned.length > 0) {
     console.log(`build-angular-tests: pruned ${pruned.length} orphaned output file(s):`);
