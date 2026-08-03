@@ -26,10 +26,6 @@ export const PENDING = new Map([
   ['TableCell', 'the same residual ring as Table\'s, on the cell that carries it'],
   ['Calendar', 'the same residual ring as Table\'s, on the hour cell that carries it'],
 
-  ['Alert', 'group E: a flat surface whose tone is a lookup table rather than a variant'],
-  ['EmptyState', 'group E: a flat surface still typed out inline'],
-  ['ErrorState', 'group E: a flat surface still typed out inline, over a retry Button its manifest types out'],
-  ['Toast', 'group E: a flat surface whose tone is a lookup table rather than a variant'],
   ['PageHead', 'group E: the same, with a measured container width that stays'],
   ['Pagination', 'group E: a flat surface still typed out inline'],
   ['Grid', 'group E: the same, with computed column tracks that stay'],
