@@ -17,7 +17,6 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const PENDING = new Map([
 
-  ['Checkbox', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
   ['Radio', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
   ['RadioGroup', 'group C: reads Radio\'s manifest and does not yet render it'],
   ['Switch', 'group C: a native control\'s own chrome, part of it in an injected <style>'],

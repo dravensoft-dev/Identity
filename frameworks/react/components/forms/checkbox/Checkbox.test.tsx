@@ -17,8 +17,22 @@ test('the native input carries no checked attribute when checked is false', () =
 test('checked draws the crimson fill; unchecked draws the input surface', () => {
   const on = renderToStaticMarkup(<Checkbox checked label="Notify" />);
   const off = renderToStaticMarkup(<Checkbox label="Notify" />);
-  assert.match(on, /background:var\(--crimson\)/);
-  assert.match(off, /background:var\(--surface-input\)/);
+  assert.match(on, /\bbg-primary\b/);
+  assert.match(on, /\bborder-primary\b/);
+  assert.match(off, /\bbg-base-300\b/);
+  assert.match(off, /\bborder-neutral\b/);
+});
+
+test('the focus ring is a selector on the box, so nothing injects a stylesheet to reach the input', () => {
+  const html = renderToStaticMarkup(<Checkbox label="Notify" />);
+  assert.match(html, /has\(~input:focus-visible\)/);
+  assert.doesNotMatch(html, /\barena-check-box\b/, 'the hook class the injected sheet needed is gone with it');
+});
+
+test('the check mark takes its size, its colour and its stroke from one slot', () => {
+  const html = renderToStaticMarkup(<Checkbox checked label="Notify" />);
+  assert.match(html, /<svg class="size-3 text-primary-content \[stroke-width:var\(--bw-strong\)\]"/);
+  assert.match(html, /stroke="currentColor"/, 'the path takes the colour the slot sets rather than naming one');
 });
 
 test('name, value and required reach the native input', () => {
