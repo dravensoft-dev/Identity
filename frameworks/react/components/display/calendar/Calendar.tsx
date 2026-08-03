@@ -142,7 +142,6 @@ export function Calendar({
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   const eventRefs = useRef(new Map<string, HTMLElement>());
-  const [gridFocused, setGridFocused] = useState(false);
   const [cursor, setCursor] = useState({ day: 0, hour: 0 });
 
   const curDay = Math.min(Math.max(cursor.day, 0), Math.max(days.length - 1, 0));
@@ -259,8 +258,6 @@ export function Calendar({
 }
           <div ref={gridRef} role="grid" aria-label={`Schedule grid, ${rangeTitle(days)}`}
             onKeyDown={onGridKeyDown}
-            onFocus={() => setGridFocused(true)}
-            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
             className={styles.grid()} style={{ gridTemplateColumns: TRACKS(days.length) }}>
             {hours.map((m) => (
               <div key={m} aria-hidden="true" className={styles.rule()} style={{ top: y(m) }} />
@@ -280,9 +277,7 @@ export function Calendar({
 
                       onFocus={() => { if (di !== curDay || si !== curHour) setCursor({ day: di, hour: si }); }}
                       className={styles.cell()}
-                      style={{ top: y(s.start), height: y(s.end) - y(s.start),
-                        boxShadow: isCursor && gridFocused
-                          ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined }} />
+                      style={{ top: y(s.start), height: y(s.end) - y(s.start) }} />
                   );
                 })}
               </div>

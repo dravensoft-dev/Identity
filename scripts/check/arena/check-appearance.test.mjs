@@ -1,16 +1,15 @@
 /* The classifier is the whole gate, so it is driven here by value rather than by the tree:
  * a property whose every branch is a literal is appearance somebody typed out, and one that
  * reads an identifier or an interpolation is a computation the manifest cannot hold. The two
- * maps are asserted by name for the reason every map in this tree is, and PENDING carries the
- * extra rule that an entry which has started passing has to be deleted rather than left. */
+ * one map left is asserted by name for the reason every map in this tree is: EXEMPT is empty,
+ * and that emptiness is the claim that every literal still standing is a computation. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  EXEMPT, PENDING, adoptionProblems, angularRendersManifest, collect, literalStyleProblems,
-  pendingProblems, reactRendersManifest, styleObjectBodies, valueIsLiteral,
+  EXEMPT, adoptionProblems, angularRendersManifest, collect, literalStyleProblems,
+  reactRendersManifest, styleObjectBodies, valueIsLiteral,
 } from './check-appearance.mjs';
-import { inScope } from '../../lib/tailwind/manifest-surfaces.mjs';
 
 const at = (path, text) => literalStyleProblems(text, path).map((p) => `${p.key}=${p.value}`);
 
@@ -91,27 +90,6 @@ test('EXEMPT is empty, and that is a claim: every literal left standing is a com
   assert.equal(EXEMPT.size, 0);
 });
 
-test('PENDING names only real components, and only ones in scope', () => {
-  const scope = new Set(inScope());
-  for (const [name, reason] of PENDING) {
-    assert.ok(scope.has(name), `PENDING names ${name}, which is not a component in scope`);
-    assert.ok(reason.trim().length > 30, `PENDING names ${name} with no reason worth the entry`);
-  }
-});
-
-test('a PENDING entry that has started passing is stale and fails, which is what empties the map', () => {
-  const problems = pendingProblems(new Map([['Tag', 'still hand-written']]), new Set(['Tag']));
-  assert.equal(problems.length, 1);
-  assert.match(problems[0], /Tag/);
-  assert.match(problems[0], /delete the entry/);
-});
-
-test('a PENDING entry naming no component at all fails', () => {
-  const problems = pendingProblems(new Map([['Crad', 'still hand-written']]), new Set());
-  assert.equal(problems.length, 1);
-  assert.match(problems[0], /Crad/);
-});
-
 test('adoption reads the manifest a component has to render, its own or its parent\'s', () => {
   assert.deepEqual(adoptionProblems('Tag'), [], 'Tag renders its own manifest in both layers');
   assert.deepEqual(adoptionProblems('TableCell'), [], 'TableCell renders Table\'s');
@@ -134,13 +112,12 @@ test('a component that draws by hand has no manifest to render, and is named for
   assert.match(problems[0], /HAND_DRAWN/);
 });
 
-test('running against the real tree leaves only what PENDING declares', () => {
-  const { adoption, literals, stale, walked, scanned } = collect();
+test('every component in scope renders its manifest and writes no appearance by hand', () => {
+  const { adoption, literals, walked, scanned } = collect();
   assert.ok(walked >= 55, 'the literal half walked almost nothing, so it proves almost nothing');
   assert.ok(scanned > 0, 'every file excused would leave this half reading nothing at all');
   assert.deepEqual(adoption, []);
   assert.deepEqual(literals, []);
-  assert.deepEqual(stale, []);
 });
 
 test('the literal half never walks dist/, which holds a copy of each layer', () => {

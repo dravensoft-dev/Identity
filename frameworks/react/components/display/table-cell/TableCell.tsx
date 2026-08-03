@@ -15,14 +15,13 @@ export interface TableCellInjected {
   column: TableColumn;
   layout: 'table' | 'card';
   tabIndex: number | undefined;
-  focused: boolean;
   onCellFocus: (() => void) | undefined;
 }
 
 
 
 export function TableCell({
-  children, column, layout = 'table', tabIndex, focused = false, onCellFocus,
+  children, column, layout = 'table', tabIndex, onCellFocus,
 }: TableCellProps & Partial<TableCellInjected>) {
 
   const c: Partial<TableColumn> = column ?? {};
@@ -53,8 +52,7 @@ export function TableCell({
       onFocus={onCellFocus ? (e) => { if (e.target === e.currentTarget) onCellFocus(); } : undefined}
       className={c.mono
         ? cellStyles({ narrow: false, align: c.align || 'left' }).tdMono()
-        : cellStyles({ narrow: false, align: c.align || 'left' }).td()}
-      style={{ boxShadow: focused ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined }}>
+        : cellStyles({ narrow: false, align: c.align || 'left' }).td()}>
       {children}
     </td>
   );

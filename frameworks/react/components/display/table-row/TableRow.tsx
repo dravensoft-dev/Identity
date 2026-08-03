@@ -11,7 +11,6 @@ export interface TableRowInjected {
   columns: TableColumn[];
   layout: 'table' | 'card';
   cursorCol: number | null;
-  gridFocused: boolean;
   onCellFocus: (row: number, col: number) => void;
 }
 
@@ -33,7 +32,7 @@ export interface TableRowProps {
 
 export function TableRow({
   children, onClick, interactive = false, disabled = false,
-  rowIndex = 0, columns = [], layout = 'table', cursorCol = null, gridFocused = false, onCellFocus,
+  rowIndex = 0, columns = [], layout = 'table', cursorCol = null, onCellFocus,
 }: TableRowProps & Partial<TableRowInjected>) {
 
   const cells = React.Children.toArray(children).map((child, ci) => (
@@ -43,7 +42,6 @@ export function TableRow({
         layout,
 
         tabIndex: layout === 'card' ? undefined : (ci === cursorCol ? 0 : -1),
-        focused: layout !== 'card' && ci === cursorCol && gridFocused,
         onCellFocus: layout === 'card' || !onCellFocus ? undefined : () => onCellFocus(rowIndex, ci),
       })
       : child

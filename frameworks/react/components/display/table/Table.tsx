@@ -104,7 +104,6 @@ export function Table({
   };
 
   const gridRef = useRef<HTMLTableElement | null>(null);
-  const [gridFocused, setGridFocused] = useState(false);
   const [cursor, setCursor] = useState({ row: 0, col: 0 });
 
   const cellCounts = rowEls.map((row) => (
@@ -184,12 +183,6 @@ export function Table({
     return c.sortable && sort ? `${base} ${tableStyles({ narrow: false }).thSortable()}` : base;
   };
 
-  const cellRing = (ri: number, ci: number): React.CSSProperties => ({
-    outline: 'none',
-    boxShadow: ri === curRow && ci === curCol && gridFocused
-      ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined,
-  });
-
   return (
     <div ref={ref} className={tableStyles({ narrow }).root()}>
       {narrow ? (
@@ -211,8 +204,6 @@ export function Table({
         <>
           <table role="grid" aria-label={label} ref={gridRef}
             onKeyDown={onGridKeyDown}
-            onFocus={() => setGridFocused(true)}
-            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
             className={tableStyles({ narrow: false }).table()}>
             <thead>
               <tr role="row" className={tableStyles({ narrow: false }).headRow()}>
@@ -221,7 +212,7 @@ export function Table({
                     aria-sort={sortStateOf(ci)}
                     onClick={c.sortable && sort ? () => onHeaderActivate(ci) : undefined}
                     className={headerClass(c)}
-                    style={{ width: c.width, ...cellRing(0, ci) }}>{c.header}{sortStateOf(ci) && sortStateOf(ci) !== 'none' && (
+                    style={{ width: c.width }}>{c.header}{sortStateOf(ci) && sortStateOf(ci) !== 'none' && (
                         <i aria-hidden="true"
                           className={`${tableStyles({ narrow: false }).sortCaret()} ${sort?.direction === 'asc' ? 'ph-bold ph-caret-up' : 'ph-bold ph-caret-down'}`} />
                       )}</th>
@@ -235,7 +226,6 @@ export function Table({
                   columns,
                   layout: 'table',
                   cursorCol: curRow === ri + 1 ? curCol : null,
-                  gridFocused,
                   onCellFocus,
                 })
                 : row))}

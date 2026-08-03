@@ -15,19 +15,6 @@ import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind
 import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
-export const PENDING = new Map([
-
-
-
-
-
-  ['Table', 'renders its manifest and still draws the roving grid focus ring as an inline '
-    + 'boxShadow, which is a state the manifest holds for every other grid slot'],
-  ['TableCell', 'the same residual ring as Table\'s, on the cell that carries it'],
-  ['Calendar', 'the same residual ring as Table\'s, on the hour cell that carries it'],
-
-]);
-
 export const EXEMPT = new Map([]);
 
 const REACT_COMPONENTS = join(repoRoot, 'frameworks/react/components');
@@ -211,22 +198,6 @@ export function adoptionProblems(name) {
   return problems;
 }
 
-export function pendingProblems(pending = PENDING, adopted = new Set(), scope = new Set(inScope())) {
-  const problems = [];
-  for (const [name, reason] of pending) {
-    if (!scope.has(name)) {
-      problems.push(`PENDING names ${name}, and no component in scope is called that`);
-      continue;
-    }
-    if (!reason?.trim()) problems.push(`PENDING names ${name} with no reason, and a reason is the whole entry`);
-    if (adopted.has(name)) {
-      problems.push(`PENDING names ${name}, and it already renders its manifest with no literal left -- `
-        + 'delete the entry, because an exception that has stopped being true is what this map exists to catch');
-    }
-  }
-  return problems;
-}
-
 export function collect() {
   const scope = inScope();
   const adoption = [];
@@ -234,12 +205,11 @@ export function collect() {
   for (const name of scope) {
     const problems = adoptionProblems(name);
     if (problems.length === 0) adopted.add(name);
-    if (PENDING.has(name)) continue;
     adoption.push(...problems);
   }
 
   const files = sourceFiles(REACT_COMPONENTS);
-  const excused = new Set([...PENDING.keys(), ...HAND_DRAWN.keys()].map(componentDir).filter(Boolean));
+  const excused = new Set([...HAND_DRAWN.keys()].map(componentDir).filter(Boolean));
   const literals = [];
   let scanned = 0;
   for (const path of files) {
@@ -251,18 +221,9 @@ export function collect() {
         + 'literal, so it belongs in the manifest');
   }
 
-  const clean = new Set([...adopted].filter((name) => {
-    const dir = componentDir(name);
-    if (!dir) return true;
-    return files
-      .filter((path) => directoryOf(path) === dir)
-      .every((path) => literalStyleProblems(readFileSync(path, 'utf8'), relative(repoRoot, path)).length === 0);
-  }));
-
   return {
     adoption,
     literals,
-    stale: pendingProblems(PENDING, clean),
     files: files.map((p) => relative(repoRoot, p)),
     walked: files.length,
     scanned,
@@ -275,15 +236,15 @@ export function zeroProblems({ scope, walked, scanned }) {
   if (scope === 0) problems.push('the scope is empty, so the adoption half asked nothing of anybody');
   if (walked === 0) problems.push('the literal half walked 0 files, which is a failure rather than a clean pass');
   if (scanned === 0) {
-    problems.push('every walked file was excused by PENDING or HAND_DRAWN, so the literal half read '
-      + 'nothing; a gate whose whole subject is excused reports nothing wrong with everything');
+    problems.push('every walked file was excused by HAND_DRAWN, so the literal half read nothing; '
+      + 'a gate whose whole subject is excused reports nothing wrong with everything');
   }
   return problems;
 }
 
 function main() {
   const found = collect();
-  const problems = [...zeroProblems(found), ...found.adoption, ...found.literals, ...found.stale];
+  const problems = [...zeroProblems(found), ...found.adoption, ...found.literals];
 
   if (problems.length > 0) {
     console.error(`check-appearance: ${problems.length} problem(s)\n`);
@@ -293,11 +254,9 @@ function main() {
     process.exit(1);
   }
 
-  const done = found.scope - PENDING.size;
-  console.log(`check-appearance: ${done} of ${found.scope} component(s) in scope render their manifest with `
-    + `no hand-written appearance left, ${PENDING.size} still pending on the record, `
-    + `${HAND_DRAWN.size} draw by hand by charter; ${found.scanned} of ${found.walked} React `
-    + 'source(s) read for a literal');
+  console.log(`check-appearance: ${found.scope} component(s) in scope render their manifest and write no `
+    + `appearance by hand, ${HAND_DRAWN.size} draw by hand by charter; ${found.scanned} of `
+    + `${found.walked} React source(s) read for a literal`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
