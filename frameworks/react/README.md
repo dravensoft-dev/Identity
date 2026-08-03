@@ -21,33 +21,62 @@ same problem differently, the contract is what makes the two answers comparable,
 implementation is the other's record. `bun run check:layer-independence` fails a file here that
 cites a sibling layer, by import or in prose.
 
-## Components carry no CSS classes
+## Components render their manifest's class string
 
-Each component renders with **inline `style` objects that read the CSS custom properties**
-(`background: 'var(--crimson)'`), and handles hover, active and focus with local
-`useState`. There is no `.btn` class to target; theming happens entirely through token
-values, so changing a token moves every component that reads it.
-`components/forms/button/Button.tsx` is the reference shape.
+Each component draws its appearance from the manifest that describes its surface, through
+`tv()` and the module generated beside it. Both are emitted **into this layer**, so the import
+crosses no boundary:
+
+```tsx
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Tag.manifest.generated.ts';
+
+const tagStyles = tv(manifest);
+const styles = tagStyles({ tone, disabled });
+<span className={styles.root()}>
+```
+
+`components/display/tag/Tag.tsx` is the reference shape. A compound child reaches the parent's
+manifest the same way, by importing `tv` and the parent's generated module rather than a
+sibling component's exported recipe, so no component depends on another's module:
+`components/display/calendar-event/CalendarEvent.tsx` is that shape.
+
+Both layers render the same recipe, and neither is the other's authority: the manifest is.
+Where a manifest and a component disagreed, the manifest won, which is how `Card` came to draw
+a focus ring rather than an outline. `check:appearance` holds the arrangement, and
+`check:parity` renders the two pages and compares them.
+
+**What stays an inline `style` is a value computed at runtime**, from data or from a
+measurement: a chip's position from an hour, a fill's width from a percentage, a coachmark's
+top clamped against `window.innerHeight`, a consumer's own width string. The operative rule is
+the gate's, and it needs no list of properties: *if every branch of the value is a literal it
+belongs in the manifest; if any branch reads an identifier or an interpolation it is a
+computation and stays*. A hover or focus colour is never a computation, and no component here
+keeps a `useState` to paint one.
+
+**A variant key the manifest does not declare resolves to no classes at all**, where a lookup
+table used to fall back through `|| TONES.neutral`. Where a member can carry a value the
+manifest has never heard of, the guard that answers it is **derived from the manifest** rather
+than written out beside it; `ActivityFeed`, `Badge`, `Alert`, `Toast`, `Avatar`, `ToastHost`
+and `Grid` all carry one.
 
 **What a component inherits is not the browser's.** The layer's pages and its package carry the
-compiled utility sheet for its `@layer base`, which is where `button, input, select, textarea {
-font: inherit }` lives. Without it a form control fell back to 13.33px Arial with
-`line-height: normal`, so an `<i>` inside a `<button>` drew the same glyph at 13.33px where the
-other layer drew 16px, and a row whose height came from its label's line box stood 4px shorter
-per row. Neither showed up in a suite, because happy-dom has no layout; `check:parity` is what
-renders the two and compares them.
+compiled utility sheet, which is both the utilities the manifests resolve to and the `@layer
+base` where `button, input, select, textarea { font: inherit }` lives. Without that base a form
+control fell back to 13.33px Arial with `line-height: normal`, so an `<i>` inside a `<button>`
+drew the same glyph at 13.33px where the other layer drew 16px, and a row whose height came
+from its label's line box stood 4px shorter per row. Neither showed up in a suite, because
+happy-dom has no layout; `check:parity` is what renders the two and compares them.
 
-**The one exception is a `<style>` tag injected once**, for what an inline style genuinely
-cannot express: `@keyframes`, and vendor pseudo-elements such as `Input`'s
-`::-webkit-calendar-picker-indicator`. The pattern is always a module-level `let injected =
-false` guard, a `useEffect`, and `document.head.appendChild`, never a `<style>` rendered
-inside the component's own markup, which would ship one tag per instance and leak the CSS
-into the element's `textContent`.
-
-Inject as little as the job needs. Prefer keyframes alone and leave the `animation`
-shorthand inline. Reach for a class of ours only when a selector is unavoidable (a media
-query that changes duration, a pseudo-element, a background the keyframes animate) and
-never as a shortcut around an inline style that would have worked.
+**Nothing injects a `<style>` tag, and that is a claim rather than an accident.** Every
+keyframe animation is a utility in the compiled sheet this layer loads, carrying its own
+`prefers-reduced-motion` branch, so `arena-menu`, `arena-pop`, `arena-fade`, `arena-shimmer`,
+`arena-spinner` and `arena-prog-indeterminate` are classes a manifest names.
+Every vendor pseudo-element and sibling selector is an arbitrary variant on a slot, so
+`Input`'s `::-webkit-calendar-picker-indicator` and `Checkbox`'s `:has(~ input:focus-visible)`
+are in the manifest too. A component that reaches for an injected sheet is a component whose
+manifest is short: grow the manifest, which moves both layers, rather than adding a rule only
+one of them can see.
 
 ## Every animation answers `prefers-reduced-motion`
 

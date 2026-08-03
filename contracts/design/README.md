@@ -92,7 +92,7 @@ What covers what is a system-wide invariant, not a per-component choice, so it i
 | `--z-onboarding` | 1200 | `Onboarding`'s coachmark card |
 | `--z-toast` | 1300 | `Toast`, which floats above everything, including onboarding, because a transient notice raised by an action taken inside a dialog must stay visible |
 
-`Onboarding`'s scrim is not a second token: it is one slot with two uses, so the relationship is expressed as a derivation at the point of use, `zIndex: 'calc(var(--z-onboarding) - 10)'`, rather than minted as its own step. That keeps "the scrim sits just under the coachmark" legible from the call site instead of requiring a reader to go find a second magic number nearby.
+`Onboarding`'s scrim is not a second token: it is one slot with two uses, and the two are separated by containment rather than by a number. The scrim takes the slot and the coachmark is drawn inside it, so it paints above by DOM order within one stacking context. That keeps "the scrim sits just under the coachmark" true by construction instead of requiring a second magic number nearby, and nothing else on the page can land between them, which is what a single slot means here.
 
 **The family declares the order; the values only preserve it.** Every overlay reads its step from this table rather than declaring a number of its own, which is what makes the relationships above enforceable: a tooltip resolves above a menu item by design rather than by DOM order, and `ConfirmDialog` sits above the `Dialog` it opens from rather than by accident of mount order. A component that hardcodes a `z-index` outside this scale is a defect.
 

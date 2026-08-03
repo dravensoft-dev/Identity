@@ -9,7 +9,7 @@
     "modal": { "$value": 1000, "$description": "Dialog" },
     "modal-nested": { "$value": 1050, "$description": "ConfirmDialog, which opens from a Dialog" },
     "palette": { "$value": 1100, "$description": "CommandPalette" },
-    "onboarding": { "$value": 1200, "$description": "the coachmark; the scrim beneath it derives at the point of use as calc(var(--z-onboarding) - 10): one slot, two uses" },
+    "onboarding": { "$value": 1200, "$description": "the coachmark and the scrim beneath it: one slot, two uses. The scrim takes the slot and the coachmark is drawn inside it, so the two are separated by containment rather than by a second number; nothing else on the page may sit between them, which is what a single slot means here" },
     "toast": { "$value": 1300, "$description": "floats above everything, including onboarding: a transient notice raised by an action taken inside a dialog must stay visible" }
   }
 }

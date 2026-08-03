@@ -499,11 +499,12 @@ a test asserting it would pass identically against a perfect trap and against no
 interior is `check:focus-trap`'s: real Chromium over each declared page, one real Tab press per
 stop, one page per layer that binds the pattern.
 
-**A component is self-contained, and no layer targets another's markup.** How that is spelt is
-each layer's own: React renders inline `style` objects reading the custom properties and carries
-**no class at all**, Angular renders the shared recipe's class string. Both README files carry
-the layer's shape, and React's carries the one exception, a `<style>` tag injected once for what
-an inline style cannot express, with the pattern and how little to inject.
+**A component is self-contained, and no layer targets another's markup.** Both layers render
+the shared recipe's class string, each reaching it in its own idiom, and what survives inline
+is a value computed at runtime from data or a measurement. `check:appearance` fails one that
+writes its appearance by hand, and `HAND_DRAWN`, in
+`scripts/lib/tailwind/manifest-surfaces.mjs`, names the three that still do with a reason
+each. Both README files carry the layer's shape.
 
 **Every animation answers `prefers-reduced-motion`**, and what it answers depends on what the
 motion means. [`contracts/design/README.md`](./contracts/design/README.md) states the four
@@ -760,8 +761,8 @@ can afford at one run per commit.
   advertised**.
 - **Charts** carry identity (the `--color-cat-*` ramp, in order, never cycled) or meaning (`tone`,
   the status colors), never both in one chart. Status colors are never series colors. One axis.
-- Responsive branches are JS, not media queries (inline styles cannot hold one), and measure the
-  **container** via `useContainerWidth`, never the viewport.
+- Responsive branches are JS, not media queries, and measure the **container** via
+  `useContainerWidth`: a media query can only ask about the viewport.
 
 ## Debt
 

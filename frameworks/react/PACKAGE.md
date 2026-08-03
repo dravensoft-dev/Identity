@@ -1,21 +1,27 @@
 # @dravensoft/arena-react
 
-Arena is Dravensoft's design system. This package is its React layer: 55 components styled
-entirely by design tokens, with no stylesheet to override and no theme provider to wrap your
-tree in.
+Arena is Dravensoft's design system. This package is its React layer: 55 components whose every
+value traces to a design token, with one stylesheet to import and no theme provider to wrap
+your tree in.
 
 **The package carries the language. It does not carry a skin.** Your palettes and your fonts
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
 
 **No CSS toolchain, and Phosphor is required.** The compiled utility sheet ships inside
-`arena.css`, so one import is still the whole of it and you compile nothing. It brings a
-browser base with it, which is the point of shipping it: a form control that inherits nothing
-falls back to the browser's own 13.33px Arial, and a `<button>` styled that way is 20% off in
-every measurement that matters. Arena's other layer has always had that base and this one now
-reads the same file, so the two render one component one way. What is not optional is the icon
-font: every `icon` member is a Phosphor class name a component renders, never an SVG it
-bundles, so `@phosphor-icons/web` is a peer dependency.
+`arena.css`, so one import is the whole of it and you compile nothing. That sheet is what draws
+the components: each one renders the class string of the shared recipe its surface is described
+by, and the utilities those classes resolve to are in the file. It brings a browser base with
+it too: a form control that inherits nothing falls back to the browser's own 13.33px Arial, and
+a `<button>` styled that way is 20% off in every measurement that matters. Arena's other layer
+reads the same file, so the two render one component one way.
+
+Because the components render classes, a rule of yours can reach them by specificity. Nothing
+stops you, and nothing supports you either: a class is not part of the API, no contract names
+one, and a manifest may rename a slot in any release. Re-skin through `arena.config.json`,
+which is what it is for. What is not optional is the icon font: every `icon` member is a
+Phosphor class name a component renders, never an SVG it bundles, so `@phosphor-icons/web` is
+a peer dependency.
 
 ## It works with the repository, and that is the point
 

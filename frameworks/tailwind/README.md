@@ -413,6 +413,15 @@ the manifest covers declares fails the build. Read the contract anyway, because 
 knows only that the affordance exists somewhere on the covered surface, never that
 this slot is where it belongs.
 
+The gate's other half asks a layer's own source the same question, and there is now almost
+nobody left to ask. A layer that realises an affordance by rendering the manifest's class has
+no answer of its own to give, because the answer is the manifest, and both layers do that
+wherever a component renders its recipe. So that half reads `HAND_DRAWN`, in
+`scripts/lib/tailwind/manifest-surfaces.mjs`, which is the set of components drawing their own
+appearance: the three SVG charts, whose geometry no class string can describe. An empty
+`HAND_DRAWN` fails rather than passing over nothing, so retiring that half would be a decision
+somebody has to write down.
+
 ## P2: hover on a disableable slot
 
 Any `hover:` on a slot that can also be `:disabled` must be guarded
