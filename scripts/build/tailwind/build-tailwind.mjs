@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { basename, dirname, join, relative, sep } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { compileLayer, compileEntry, layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 import {
   classesManifest, entryStylesheet, stripIndirection, stripProblems, themeMapFor,
@@ -39,9 +39,16 @@ export function manifestModule(manifest, jsonFile) {
 
 export const CONSUMING_LAYERS = ['react'];
 export const CSS_CONSUMING_LAYERS = ['react', 'angular'];
-export const PRELUDE = 'frameworks/tailwind/Prelude.generated.css';
-export const BARREL = 'frameworks/tailwind/Components.generated.css';
-export const PREFLIGHT = 'frameworks/tailwind/Preflight.generated.css';
+export const CONSUME = 'frameworks/tailwind/consume';
+export const PRELUDE = `${CONSUME}/Prelude.generated.css`;
+export const BARREL = `${CONSUME}/Components.generated.css`;
+export const PREFLIGHT = `${CONSUME}/Preflight.generated.css`;
+
+export function sheetPath(manifestFile) {
+  return manifestFile
+    .replace('frameworks/tailwind/components/', `${CONSUME}/components/`)
+    .replace(/\.manifest\.json$/, '.styles.generated.css');
+}
 
 export function keyframesIn(css) {
   const blocks = [];
@@ -87,24 +94,17 @@ export function buildComponentCss(opts = {}) {
   for (const [name, rules] of components) {
     const file = byComponent.get(name);
     if (!file) throw new Error(`build-tailwind: ${name} has rules but no manifest to write them beside`);
-    const rel = file.replace(/\.manifest\.json$/, '.styles.generated.css');
+    const rel = sheetPath(file);
     sheets.push(rel);
     out.set(join(root, rel), BANNER + componentSheet(rules, preludeSpecifier(rel)));
   }
 
-  const imports = sheets.sort().map((rel) => `@import './${rel.replace('frameworks/tailwind/', '')}';`);
+  const imports = sheets.sort().map((rel) => `@import './${rel.replace(`${CONSUME}/`, '')}';`);
   const barrel = `${BANNER}@import './${basename(PREFLIGHT)}';\n`
     + `@import './${basename(PRELUDE)}';\n${imports.join('\n')}\n`;
   out.set(join(root, BARREL), barrel);
   out.set(join(root, PREFLIGHT), BANNER + splitCompiledSheet(readFileSync(generatedPath({ root }), 'utf8')).base);
 
-  for (const layer of CSS_CONSUMING_LAYERS) {
-    for (const [file, content] of [...out]) {
-      const mirrored = relative(root, file).split(sep).join('/').replace('frameworks/tailwind/', `frameworks/${layer}/`);
-      if (mirrored.includes('/components/') && !existsSync(dirname(join(root, mirrored)))) continue;
-      out.set(join(root, mirrored), content);
-    }
-  }
   return out;
 }
 
@@ -179,8 +179,11 @@ function main() {
     ...buildManifestModules(), ...buildRecipeRuntime(),
     ...buildComponentCss(), ...buildClassModules(), ...buildStylesRuntime(),
   ];
-  for (const [filePath, content] of emitted) writeFileSync(filePath, content);
-  console.log(`build-tailwind: wrote ${emitted.length} generated file(s) beside the manifests and into each layer`);
+  for (const [filePath, content] of emitted) {
+    mkdirSync(dirname(filePath), { recursive: true });
+    writeFileSync(filePath, content);
+  }
+  console.log(`build-tailwind: wrote ${emitted.length} generated file(s) into ${CONSUME}/ and beside the manifests`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

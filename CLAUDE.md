@@ -453,13 +453,11 @@ also gives the two reasons. `check:tailwind` proves every class resolves; nothin
 manifest still matches the contract it was written from, so check by hand when either has moved.
 
 One narrow slice of that is machine-checked: `check:states` fails a `hover:`/`focus:`-family
-modifier on a slot when no contract the manifest covers declares that affordance, and fails a
-React component that implements one its own contract does not declare. Both halves read
-`contracts/api/`; neither reads another layer, and neither runs the other way, because a
-declared affordance a layer leaves to the child it composes is not a divergence. Angular is
-structurally unaskable, because it realises an affordance by rendering the manifest's own class.
-`MANIFEST_COVERS` carries the wider surfaces with a reason each. **This checks states only**, and
-nothing about whether a manifest's colors, sizes or slot structure still match.
+modifier no contract the manifest covers declares, and fails a React component implementing one
+its own contract does not declare. Both halves read `contracts/api/` and neither reads another
+layer. **It checks states only**, and nothing about whether a manifest's colors, sizes or slot
+structure still match; `frameworks/tailwind/README.md` carries why Angular is structurally
+unaskable and what `MANIFEST_COVERS` is for.
 
 **The Overview generates itself, and that is the point.** `intro/Arena - Overview.html` reads names
 and `$description`s from `contracts/design/*.json` and the alias names from `colors.css` (with
@@ -500,8 +498,13 @@ stop, one page per layer that binds the pattern.
 their own `arena-<manifest>__<slot>` class names, which the manifest's class string is compiled
 into, and what survives inline is a value computed at runtime from data or a measurement. `check:appearance` fails one that
 writes its appearance by hand, and `HAND_DRAWN`, in
-`scripts/lib/tailwind/manifest-surfaces.mjs`, names the three that still do with a reason
-each. Both README files carry the layer's shape.
+`scripts/lib/tailwind/manifest-surfaces.mjs`, names the three that still do with a reason each.
+
+**A component's class TABLE is emitted per layer; its STYLESHEET is not.** A component imports
+the table, so the copy keeps that import inside the layer; a page only links the CSS, which is
+identical whoever renders it, so it lives once under `frameworks/tailwind/consume/`.
+[`frameworks/tailwind/README.md`](./frameworks/tailwind/README.md) has that directory and what
+a page links from it.
 
 **Every animation answers `prefers-reduced-motion`**, and what it answers depends on what the
 motion means. [`contracts/design/README.md`](./contracts/design/README.md) states the four
@@ -558,7 +561,8 @@ measure by running the gate. Declaring far *more* height than it renders only wa
 **A page nobody crops declares none**: the Console is an app with its own scroll area, and a
 playground's height moves with every knob, so there is no fixed box to measure it against.
 What that costs is bought back by `check:playgrounds`, which loads all of them in a real
-browser and fails one that mounts nothing, draws no panel or says anything on the console.
+browser and fails one that mounts nothing, draws no panel, says anything on the console, or
+renders an `arena-*__*` class no stylesheet it links defines.
 
 **A file a script under `scripts/` writes is named `<stem>.generated.<ext>`, and that name is
 the whole rule**: `check:docs` reads it and never opens the file. Whether it is *tracked* is a
@@ -597,8 +601,11 @@ run, and each layer's knob model to the other's.
 
 **The layers are peers, and no layer is any other's authority.** A file under
 `frameworks/<A>` may not name layer B nor any of B's source files, by import or in prose;
-`check:layer-independence` fails one that does, and `EXEMPT` and `ALLOWED` are both empty:
-**no edge between two framework layers is authorised at all.** Where two layers answer the same question differently, the contract
+`check:layer-independence` fails one that does, judging a reference by where it **lands**, so a
+relative `../../../tailwind/` in an `href` is caught as prose naming the layer is. `ALLOWED` and
+`EXEMPT` are empty and `ALLOWED_SPECIFIERS` holds one pattern: **the only authorised edge is a
+page LINKING the generated CSS under `frameworks/tailwind/consume/`**. Where two layers answer
+the same question differently, the contract
 is what makes the answers comparable: a cross-layer *gate* under `scripts/check/arena/`
 reading several layers is that mechanism rather than an instance of the coupling, which is why
 `scripts/` is outside the gate's scope. A fact only recorded as "matching the other layer" is

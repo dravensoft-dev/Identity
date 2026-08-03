@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  EXTERNAL_PROPERTIES, THEME_NAMESPACES, collect, preludeProblems, propertiesIn,
-  selectorsIn, sheetPath, themeLeaks,
+  EXTERNAL_PROPERTIES, MANIFEST_FETCH, THEME_NAMESPACES, collect, preludeProblems, propertiesIn,
+  selectorsIn, themeLeaks,
 } from './check-component-css.mjs';
+import { sheetPath } from '../../build/tailwind/build-tailwind.mjs';
 
 test('the gate runs green over the tree as it stands', () => {
   const { manifests, problems } = collect();
@@ -11,10 +12,15 @@ test('the gate runs green over the tree as it stands', () => {
   assert.deepEqual(problems, []);
 });
 
-test('a stylesheet sits beside the manifest it came from', () => {
+test('a specimen\'s fetches are read whatever path they take, since the sheet it needs is the component\'s', () => {
+  const html = "await fetch('./UnauthCard.manifest.json'); await fetch( \"../../brand/app-logo/AppLogo.manifest.json\" )";
+  assert.deepEqual([...html.matchAll(MANIFEST_FETCH)].map((m) => m[2]), ['UnauthCard', 'AppLogo']);
+});
+
+test('a stylesheet lands under consume/, at the manifest\'s own category and directory', () => {
   assert.equal(
     sheetPath('frameworks/tailwind/components/display/badge/Badge.manifest.json'),
-    'frameworks/tailwind/components/display/badge/Badge.styles.generated.css',
+    'frameworks/tailwind/consume/components/display/badge/Badge.styles.generated.css',
   );
 });
 

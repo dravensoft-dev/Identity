@@ -158,6 +158,23 @@ extension it is itself a failure.
 3. Consume a component manifest from
    `./components/<category>/<component-kebab>/<Component>.manifest.json`.
 
+**A page rendering Arena's own components consumes `consume/` instead, and consumes nothing
+else.** That directory holds the compiled CSS, once, for every layer: `Preflight.generated.css`,
+`Prelude.generated.css`, one
+`consume/components/<category>/<component-kebab>/<Component>.styles.generated.css` per surface,
+and `Components.generated.css`, the barrel over all of them. Link the preflight plus the sheets
+for the surfaces the page actually draws, which is what a generated playground does; link the
+barrel when the page draws most of the library, which is what the Console does. Each component
+sheet `@import`s the prelude itself, so one alone is safe.
+
+**A surface a component renders inside ITSELF is one it draws**, and it is the half a page is
+most likely to miss, because nothing on the page names it: `Table` renders a `Pagination`
+whoever implements it, and `UnauthCard` renders a `Card` in one implementation and draws the
+same frame from its own manifest in another. `scripts/lib/arena/composed-surfaces.mjs` reads that
+from every implementation and **unions** it, so a page carries the same list wherever it is
+served, and `check:playgrounds` fails a page rendering an `arena-*__*` class no sheet it links
+defines, in a real browser, which is the only place the question has an answer.
+
 ## How this layer is laid out
 
 **Directories are `kebab-case` and lowercase; a file name begins with a capital, and a
@@ -175,6 +192,12 @@ components/display/badge/
     Badge.card.html              the specimen
 ```
 
+**The compiled stylesheet is the one thing that does not sit there**, because it is what every
+layer links rather than what one directory owns: it is emitted to
+`consume/components/display/badge/Badge.styles.generated.css`, at the same category and
+directory. `sheetPath()` in `scripts/build/tailwind/build-tailwind.mjs` is the single place that
+mapping is written, and the gates and both package builds go through it.
+
 The category comes from `frameworks/Components.json`, which declares it once for all three
 framework layers, and `bun run check:structure` fails a component directory that sits
 anywhere else. That gate says nothing about whether the category is the *right* one, which
@@ -185,9 +208,11 @@ removed wholesale becomes loud rather than quietly leaving the gate's scope. The
 `CLAUDE.md` carries the naming rule and its mechanical exceptions in full; count them there
 rather than here.
 
-A specimen sits two directories below the layer root, so every reference it makes out of
-its own directory, whether `intro/styles.css` or this layer's `Utilities.generated.css`,
-`Specimen.css` and `Specimen.js`, carries two `../` segments.
+A specimen sits three directories below the layer root, so every reference it makes to the layer
+root, whether `Specimen.css`, `Specimen.js` or `consume/Preflight.generated.css`, carries three
+`../` segments, and `intro/styles.css` carries five. Its own stylesheet is one of those root
+references and not a sibling: `../../../consume/components/<category>/<component-kebab>/`,
+which is the specimen's own directory read back under `consume/`.
 
 **Be exact about what catches a miscount, because `check:cards` catches less of it than
 it looks.** That gate loads each declaring page in headless Chromium, and the only status
@@ -201,6 +226,13 @@ declared strict setting turns into a failure, and which an environment exporting
 unstyled specimen that happens to fit its declared box passes outright, and one that
 under-runs only warns. What actually stands behind a correct specimen is the by-hand
 check: run `bun run demos` and open the page.
+
+**One shape of that IS caught, and it is the one a page adds by composing.** A specimen that
+`fetch`es a second manifest, as `UnauthCard` does `AppLogo` and `ToastHost` does `Toast`, renders
+a second component's classes and needs that component's sheet as well. `check:component-css`
+reads every `fetch` in the page and fails a missing link, because `check:cards` only sees such a
+page when the unstyled part happens to overrun the declared box, which is luck rather than
+coverage. It still says nothing about a link that is present and points at nothing.
 
 ## What ships here
 
@@ -272,8 +304,15 @@ A manifest is authored as Tailwind and never shipped as Tailwind. `bun run build
 translates each slot and each variant branch into an `@apply` rule under an
 `arena-<manifest>__<slot>` class name, compiles the lot, strips Tailwind's own theme
 indirection back to the Arena token behind it, and cuts the result into one stylesheet per
-component plus the prelude they share. What a component composes at runtime is the class
-names, never the utilities.
+component plus the prelude they share, all of it under `consume/`. What a component composes at
+runtime is the class names, never the utilities.
+
+**That output exists once and is linked, never copied.** A stylesheet emitted per consuming
+layer is a stylesheet that can be stale in one of them while the gates read another, and the
+copies were byte-identical anyway, since the class names a manifest compiles to say nothing
+about who renders them. The class TABLE is still emitted per layer, for the opposite reason: a
+component *imports* it, and an import that crosses a layer boundary is the coupling this
+repository does not have.
 
 ## Invariants the manifests must reproduce
 

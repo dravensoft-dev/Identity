@@ -405,6 +405,11 @@ export function smokeProblems(page, seen) {
   }
   if (seen.knobs === 0) problems.push(`${page}: drew no knob row, so the panel never read its model`);
   if (!seen.staged) problems.push(`${page}: drew an empty stage, so the component under test rendered nothing`);
+  for (const name of seen.undefinedClasses ?? []) {
+    problems.push(`${page}: renders .${name} and links no stylesheet defining it, so that part draws `
+      + 'unstyled with nothing in the console. The page links a sheet per surface it draws, and a '
+      + 'surface a component composes internally is one of them');
+  }
   for (const error of seen.errors) problems.push(`${page}: ${error}`);
   return problems;
 }
@@ -418,7 +423,20 @@ const DRAWN = `(() => {
   };
 })()`;
 
-const PROBE = `(() => ({ ...${DRAWN}, errors: window.__arenaErrors ?? [] }))()`;
+const UNDEFINED_CLASSES = `(() => {
+  const rendered = new Set();
+  for (const el of document.querySelectorAll('*'))
+    for (const c of el.classList) if (/^arena-[a-z0-9-]+__/.test(c)) rendered.add(c);
+  const defined = new Set();
+  const walk = (sheet) => { try { for (const rule of sheet.cssRules) {
+    if (rule.styleSheet) { walk(rule.styleSheet); continue; }
+    for (const m of (rule.cssText ?? '').matchAll(/\\.(arena-[a-z0-9_-]+__[a-z0-9_-]+)/g)) defined.add(m[1]);
+  } } catch { void 0; } };
+  for (const sheet of document.styleSheets) walk(sheet);
+  return [...rendered].filter((c) => !defined.has(c)).sort();
+})()`;
+
+const PROBE = `(() => ({ ...${DRAWN}, undefinedClasses: ${UNDEFINED_CLASSES}, errors: window.__arenaErrors ?? [] }))()`;
 
 export const READY = `new Promise((resolve) => {
   const deadline = Date.now() + ${SMOKE_READY_MS};

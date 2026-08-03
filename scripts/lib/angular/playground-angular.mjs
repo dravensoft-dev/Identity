@@ -6,7 +6,7 @@
  * this layer and none in the other. A marker directive is read from the layer's own source
  * rather than listed here, so a new one joins without an edit. */
 
-import { playgroundPage, UP } from '../arena/playground-page.mjs';
+import { playgroundPage, sheetLinks } from '../arena/playground-page.mjs';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
@@ -287,7 +287,7 @@ export function angularPage(model, banner) {
   return playgroundPage({
     component: model.component,
     banner,
-    head: `<link rel="stylesheet" href="${UP}frameworks/angular/Components.generated.css">\n`,
+    head: `${sheetLinks(model)}\n`,
     mount: '<demo-root></demo-root>',
     script: `../../../build/demo/js/${model.component}.demo.entry.generated.js`,
   });

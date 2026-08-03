@@ -159,8 +159,11 @@ test('the page mounts demo-root, loads its bundle and declares no card', () => {
   assert.match(page, /<demo-root><\/demo-root>/);
   assert.match(page, /build\/demo\/js\/Card\.demo\.entry\.generated\.js/);
   assert.doesNotMatch(page, /@dsCard/);
-  assert.match(page, /frameworks\/angular\/Components\.generated\.css/,
-    'a page links the stylesheet emitted into its own layer, so it crosses no boundary');
+  assert.match(page, /frameworks\/tailwind\/consume\/Preflight\.generated\.css/);
+  assert.match(page, /consume\/components\/display\/card\/Card\.styles\.generated\.css/,
+    'a page links the compiled CSS from the one place it exists, and only for what it draws');
+  assert.doesNotMatch(page, /consume\/Components\.generated\.css/,
+    'the barrel is for a page drawing most of the library, and this one draws two surfaces');
 });
 
 test('a void element is self-closing, because this layer refuses an end tag on one', () => {

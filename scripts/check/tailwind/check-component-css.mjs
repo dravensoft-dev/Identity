@@ -1,21 +1,23 @@
-/* Four claims about the CSS a component renders, none of which needs a browser. Every class
+/* Five claims about the CSS a component renders, none of which needs a browser. Every class
  * a manifest names has a rule, and every rule came from a manifest, so a renamed slot cannot
  * leave a component drawing a class nothing defines. No emitted file reads a Tailwind theme
  * property, which is the assertion that the strip ran and therefore that an adopter's own
  * `--spacing` cannot reach in. And every property the CSS does read resolves to a token Arena
  * ships, so a rule cannot quietly depend on something no package carries. The seven `arena-*`
  * animation utilities are excluded by name because `Animations.css` already owns that
- * namespace and they are rules no manifest can derive. */
+ * namespace and they are rules no manifest can derive. The fifth is the specimen's: a page
+ * links one sheet per manifest it fetches, since a missing link renders that part unstyled
+ * and check:cards only fails a page that overruns its box because of it. */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { arenaTokenNames } from '../../lib/core/arena-tokens.mjs';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 import { applyRules } from '../../lib/tailwind/component-css.mjs';
-import { PRELUDE } from '../../build/tailwind/build-tailwind.mjs';
+import { PRELUDE, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
 
 export const THEME_NAMESPACES = [
   'spacing', 'radius', 'text', 'z-index', 'leading', 'tracking', 'container',
@@ -25,8 +27,6 @@ export const THEME_NAMESPACES = [
 export const EXTERNAL_PROPERTIES = new Map([
   ['picker-invert', 'written by arena-theme into the consuming project\'s own stylesheet, never by the package'],
 ]);
-
-export const sheetPath = (manifestFile) => manifestFile.replace(/\.manifest\.json$/, '.styles.generated.css');
 
 export function selectorsIn(css) {
   return new Set([...css.matchAll(/\.(arena-[a-z0-9_-]+)/g)].map((m) => m[1]));
@@ -101,12 +101,38 @@ export function preludeProblems(base = root) {
   return problems;
 }
 
+export const MANIFEST_FETCH = /fetch\(\s*['"]([^'"]*?([A-Za-z]+)\.manifest\.json)['"]/g;
+
+export function specimenProblems(manifests, base = root) {
+  const problems = [];
+  for (const file of manifests.keys()) {
+    const specimen = file.replace(/\.manifest\.json$/, '.card.html');
+    const path = join(base, specimen);
+    if (!existsSync(path)) {
+      problems.push(`${specimen} is missing, so the surface beside it renders nowhere without a build`);
+      continue;
+    }
+    const html = readFileSync(path, 'utf8');
+    for (const [, , component] of html.matchAll(MANIFEST_FETCH)) {
+      const sheet = basename(sheetPath(`${component}.manifest.json`));
+      if (html.includes(`/${sheet}"`)) continue;
+      problems.push(`${specimen} renders ${component}'s classes and links no ${sheet}, so that part of `
+        + 'the page draws unstyled, which no gate reads as a failure unless it happens to overrun the '
+        + 'declared card box');
+    }
+  }
+  return problems;
+}
+
 export function collect(base = root) {
   const manifests = layerManifests(base);
   if (manifests.size === 0) {
     return { manifests, problems: ['no manifest was found at all, so this gate proves nothing'] };
   }
-  return { manifests, problems: [...sheetProblems(manifests, base), ...preludeProblems(base)] };
+  return {
+    manifests,
+    problems: [...sheetProblems(manifests, base), ...preludeProblems(base), ...specimenProblems(manifests, base)],
+  };
 }
 
 function main() {

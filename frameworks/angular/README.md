@@ -153,7 +153,10 @@ still fails the gate as an undeclared surface.
 A primitive defines no styling of its own. Its appearance is authored one layer over, as
 `frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`, and
 compiled from there into a stylesheet and a table of the class names that stylesheet defines.
-Both are emitted into THIS layer, beside the component, so nothing here reaches out:
+The TABLE is emitted into THIS layer, beside the component, so nothing here imports across a
+boundary. The stylesheet is not: it is the same bytes whoever renders it, so it exists once,
+under `frameworks/tailwind/consume/`, and a page links it there rather than carrying a copy
+that can go stale while the gates read another one.
 
 ```ts
 import { arenaStyles } from '../../../ArenaStyles.generated';

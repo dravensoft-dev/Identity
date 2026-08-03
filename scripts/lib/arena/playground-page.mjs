@@ -5,9 +5,38 @@
  * do. It lives under scripts/ because a cross-layer emitter is outside what
  * check:layer-independence scopes, being the mechanism that keeps the layers comparable. */
 
+import { HAND_DRAWN, categoryOf, manifestFor } from '../tailwind/manifest-surfaces.mjs';
+import { PREFLIGHT, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
+import { composedBy, composedGraph } from './composed-surfaces.mjs';
+import { kebab } from './layers.mjs';
+
 export const UP = '../../../../../';
 
 export const PHOSPHOR_WEIGHTS = ['bold', 'fill', 'duotone'];
+
+export function surfacesDrawn(model, graph = composedGraph(), root) {
+  const instantiated = [model.component, ...model.uses];
+  const surfaces = new Set();
+  for (const name of [...instantiated, ...composedBy(instantiated, graph)]) {
+    const manifest = manifestFor(name, root);
+    if (manifest) { surfaces.add(manifest); continue; }
+    if (!HAND_DRAWN.has(name)) {
+      throw new Error(`playground-page: ${model.component}'s page draws ${name}, and no manifest describes `
+        + 'its surface, so the page would link no stylesheet for it and render it unstyled, silently');
+    }
+  }
+  return [...surfaces].sort();
+}
+
+export function sheetLinks(model, graph, root) {
+  const link = (rel) => `<link rel="stylesheet" href="${UP}${rel}">`;
+  return [
+    link(PREFLIGHT),
+    ...surfacesDrawn(model, graph, root).map((name) => link(sheetPath(
+      `frameworks/tailwind/components/${categoryOf(name, root)}/${kebab(name)}/${name}.manifest.json`,
+    ))),
+  ].join('\n');
+}
 
 export function toggleDock() {
   return [

@@ -15,6 +15,7 @@ import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
 import { connect } from '../../lib/arena/cdp.mjs';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.mjs';
+import { sheetPath } from '../../build/tailwind/build-tailwind.mjs';
 
 export const PAGE = 'frameworks/tailwind/StyleParity.generated.html';
 const TIMEOUT_MS = 60_000;
@@ -23,7 +24,7 @@ export function sheetsFor(manifests) {
   return [
     '/intro/styles.css',
     '/frameworks/tailwind/Utilities.generated.css',
-    ...[...manifests.keys()].map((file) => `/${file.replace(/\.manifest\.json$/, '.styles.generated.css')}`),
+    ...[...manifests.keys()].map((file) => `/${sheetPath(file)}`),
   ];
 }
 

@@ -8,6 +8,7 @@ import { join, dirname, relative, sep, basename } from 'node:path';
 import { repoRoot } from './repo-root.mjs';
 import { kebab } from './layers.mjs';
 import { manifestFiles } from '../tailwind/tailwind-compile.mjs';
+import { CONSUME, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
 
 export const EXCLUDED_NAMES = new Set(['node_modules', 'dist', 'vendor', 'test', 'build']);
 
@@ -118,8 +119,8 @@ export const SHEET_BANNERS = {
 export function componentSheets(css, split, root = repoRoot) {
   const { base } = split(css);
   const dir = join(root, 'frameworks', 'tailwind');
-  const files = manifestFiles(join(dir, 'components'))
-    .map((file) => file.replace(/\.manifest\.json$/, '.styles.generated.css'));
+  const consume = join(root, ...CONSUME.split('/'));
+  const files = manifestFiles(join(dir, 'components')).map((file) => sheetPath(file));
   if (files.length === 0) {
     throw new Error('package-assembly: no component stylesheet was found, so the package would ship '
       + 'a barrel that imports nothing and every component would render unstyled');
@@ -132,7 +133,7 @@ export function componentSheets(css, split, root = repoRoot) {
   return [
     { to: join('css', 'base.css'), content: `${SHEET_BANNERS.base}\n${base}` },
     { to: join('css', 'numerals.css'), content: readFileSync(join(dir, 'Numerals.css'), 'utf8') },
-    { to: join('css', 'prelude.css'), content: readFileSync(join(dir, 'Prelude.generated.css'), 'utf8') },
+    { to: join('css', 'prelude.css'), content: readFileSync(join(consume, 'Prelude.generated.css'), 'utf8') },
     ...named,
     { to: join('css', 'components.css'), content: `${SHEET_BANNERS.components}\n${barrel}\n` },
   ];

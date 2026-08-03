@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { playgroundPage, toggleDock, UP, PHOSPHOR_WEIGHTS } from './playground-page.mjs';
+import {
+  playgroundPage, sheetLinks, surfacesDrawn, toggleDock, UP, PHOSPHOR_WEIGHTS,
+} from './playground-page.mjs';
 
 const page = (over = {}) => playgroundPage({
   component: 'Card', banner: '<!-- b -->\n', mount: '<div id="root"></div>', script: 'X.js', ...over,
@@ -42,4 +44,38 @@ test('only the mount, the head and the script differ between two layers\' pages'
 test('the banner is the first line, and the depth to intro/ is the same for every component directory', () => {
   assert.ok(page().startsWith('<!-- b -->\n'));
   assert.equal(UP, '../../../../../');
+});
+
+const NOTHING_COMPOSED = new Map();
+
+test('a compound child draws the surface its parent manifest describes, not one of its own', () => {
+  assert.deepEqual(surfacesDrawn({ component: 'TableRow', uses: ['Table', 'TableCell'] }, NOTHING_COMPOSED), ['Table']);
+  assert.deepEqual(surfacesDrawn({ component: 'Tab', uses: ['Tabs'] }, NOTHING_COMPOSED), ['Tabs']);
+});
+
+test('a component a page composes brings its own sheet, so nothing renders unstyled', () => {
+  assert.deepEqual(
+    surfacesDrawn({ component: 'Tooltip', uses: ['IconButton'] }, NOTHING_COMPOSED),
+    ['IconButton', 'Tooltip'],
+  );
+});
+
+test('a surface a component renders INSIDE itself is linked too, since no fixture can name it', () => {
+  const graph = new Map([['Table', new Set(['Pagination'])]]);
+  assert.deepEqual(surfacesDrawn({ component: 'Table', uses: [] }, graph), ['Pagination', 'Table']);
+});
+
+test('a hand-drawn chart contributes no sheet, and anything else with no surface is an error', () => {
+  assert.deepEqual(surfacesDrawn({ component: 'BarChart', uses: [] }, NOTHING_COMPOSED), []);
+  assert.throws(
+    () => surfacesDrawn({ component: 'Badge', uses: ['Nonexistent'] }, NOTHING_COMPOSED),
+    /render it unstyled/,
+  );
+});
+
+test('every page links the preflight, because a form control without it falls back to the browser\'s own size', () => {
+  const links = sheetLinks({ component: 'Badge', uses: [] }, NOTHING_COMPOSED);
+  assert.equal(links.split('\n').length, 2);
+  assert.match(links, new RegExp(`${UP}frameworks/tailwind/consume/Preflight\\.generated\\.css`));
+  assert.match(links, /consume\/components\/display\/badge\/Badge\.styles\.generated\.css/);
 });

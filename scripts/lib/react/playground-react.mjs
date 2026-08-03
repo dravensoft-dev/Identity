@@ -4,7 +4,7 @@
  * reaches JSX through JSON.stringify inside an expression container, which is one escaping
  * rule for every form rather than one per type. */
 
-import { playgroundPage, UP } from '../arena/playground-page.mjs';
+import { playgroundPage, sheetLinks, UP } from '../arena/playground-page.mjs';
 import { bindingName } from '../arena/api-surface.mjs';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
@@ -214,7 +214,7 @@ export function reactPage(model, banner) {
   return playgroundPage({
     component: model.component,
     banner,
-    head: `<link rel="stylesheet" href="${UP}frameworks/react/Components.generated.css">\n`
+    head: `${sheetLinks(model)}\n`
       + `<script type="importmap">\n${JSON.stringify(importmap, null, 2)}\n</script>\n`,
     mount: '<div id="root"></div>',
     script: `${model.component}.demo.entry.generated.js`,

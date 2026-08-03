@@ -83,20 +83,22 @@ export const UNTRACKED = {
   'frameworks/tailwind/Utilities.generated.css':
     'the compiled utility layer, read only by the specimen pages. An adopter imports '
     + 'frameworks/angular/theme/arena-tailwind.css and compiles their own.',
-  'frameworks/tailwind/components/**/*.styles.generated.css':
+  'frameworks/tailwind/consume/components/**/*.styles.generated.css':
     'the CSS one component renders, compiled from its manifest through @apply and stripped of '
-    + 'every Tailwind theme indirection, so no adopter property can reach in. The package build '
-    + 'collects these into css/components/; check:component-css holds each to the manifest it '
-    + 'came from and check:style-parity holds it to what the recipe paints.',
-  'frameworks/tailwind/Components.generated.css':
-    'the barrel of every component sheet, in one import, which is what a specimen page and a '
-    + 'playground link and what the package ships as css/components.css. Importing it is the '
-    + 'zero-friction path; importing one sheet is what makes an adopter pay for what they use.',
-  'frameworks/tailwind/Preflight.generated.css':
+    + 'every Tailwind theme indirection, so no adopter property can reach in. It sits under '
+    + 'consume/ rather than beside its manifest because every layer links THIS file: the whole '
+    + 'directory is the one consumption surface, so no copy of it can disagree with another. '
+    + 'The package build collects these into css/components/; check:component-css holds each to '
+    + 'the manifest it came from and check:style-parity holds it to what the recipe paints.',
+  'frameworks/tailwind/consume/Components.generated.css':
+    'the barrel of every component sheet, in one import, which is what a page drawing most of '
+    + 'the library links and what the package ships as css/components.css. A page that draws a '
+    + 'handful links those sheets instead, which is what makes it pay for what it renders.',
+  'frameworks/tailwind/consume/Preflight.generated.css':
     'Tailwind\'s preflight on its own, lifted out of the compiled sheet. A specimen and a playground '
     + 'need it for the same reason a package does: without the `font: inherit` it carries, a form '
     + 'control falls back to the browser\'s own size and every measurement around it moves.',
-  'frameworks/tailwind/Prelude.generated.css':
+  'frameworks/tailwind/consume/Prelude.generated.css':
     'the @property registrations, the layer order and the keyframes every component sheet '
     + 'depends on, which is why each one imports it rather than documenting it: without the '
     + 'registrations every border and the focus ring are invalid at computed-value time.',
@@ -104,14 +106,6 @@ export const UNTRACKED = {
     'the manifest with each class string replaced by the Arena class name that draws it, which '
     + 'is what a component composes at runtime now that nothing merges utilities.',
   'frameworks/react/components/**/*.classes.generated.ts': 'the same file, emitted into the layer that renders it.',
-  'frameworks/react/components/**/*.styles.generated.css': 'the same stylesheet, emitted into the layer that renders it, so a page links within its own layer.',
-  'frameworks/angular/components/**/*.styles.generated.css': 'the same stylesheet, emitted into the other layer.',
-  'frameworks/react/Components.generated.css': 'the barrel, emitted per layer for the same reason.',
-  'frameworks/angular/Components.generated.css': 'the same barrel, emitted into the other layer.',
-  'frameworks/react/Prelude.generated.css': 'the prelude, emitted per layer for the same reason.',
-  'frameworks/angular/Prelude.generated.css': 'the same prelude, emitted into the other layer.',
-  'frameworks/react/Preflight.generated.css': 'the preflight, emitted per layer for the same reason.',
-  'frameworks/angular/Preflight.generated.css': 'the same preflight, emitted into the other layer.',
   'frameworks/angular/components/**/*.classes.generated.ts': 'the same file, emitted into the other layer.',
   'frameworks/react/ArenaStyles.generated.ts':
     'the twenty-line factory that composes those names, emitted per layer so a component\'s '

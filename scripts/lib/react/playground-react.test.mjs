@@ -129,6 +129,9 @@ test('the page mounts into the root the entry looks for and declares no card', (
   assert.match(page, /Card\.demo\.entry\.generated\.js/);
   assert.doesNotMatch(page, /@dsCard/);
   assert.match(page, /importmap/);
+  assert.match(page, /frameworks\/tailwind\/consume\/Preflight\.generated\.css/);
+  assert.match(page, /consume\/components\/display\/card\/Card\.styles\.generated\.css/,
+    'a page links the compiled CSS from the one place it exists, and only for what it draws');
 });
 
 test('a slot with several nodes becomes a keyed array, never a fragment', () => {
