@@ -142,3 +142,31 @@ test('the bar and its destinations refuse a blank required name rather than draw
     cleanup();
   }
 });
+
+test('the bar adds the safe-area inset to its height rather than eating into it', () => {
+  const root = mount(
+    <BottomNav ariaLabel="Sections" active="home">
+      <BottomNavItem id="home" label="Home" icon="ph-bold ph-house" />
+    </BottomNav>,
+  );
+  const bar = root.querySelector('nav')!.getAttribute('class') ?? '';
+  assert.match(bar, /\bh-bar\b/);
+  assert.match(bar, /\bpb-\[var\(--pad-safe-bottom\)\]/);
+  assert.match(bar, /\bbox-content\b/,
+    'under border-box the device inset would come out of the row rather than below it, '
+    + 'so the bar would stand shorter on a phone than on a desktop');
+});
+
+test('the active column takes the accent from the variant, and its badge from the same recipe', () => {
+  const root = mount(
+    <BottomNav ariaLabel="Sections" active="inbox">
+      <BottomNavItem id="home" label="Home" icon="ph-bold ph-house" />
+      <BottomNavItem id="inbox" label="Inbox" icon="ph-bold ph-tray" badge={4} />
+    </BottomNav>,
+  );
+  const columns = [...root.querySelectorAll('nav > *')].map((c) => c.getAttribute('class') ?? '');
+  assert.equal(columns.filter((c) => /\btext-primary\b/.test(c)).length, 1,
+    'exactly the current column is accented');
+  assert.match(columns[0]!, /hover:text-base-content/, 'and every column lifts through a modifier');
+  assert.match(root.querySelector('nav')!.innerHTML, /\bbg-primary\b/, 'the badge is the accent chip');
+});

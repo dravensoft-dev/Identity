@@ -2,7 +2,8 @@ import React from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import { activeWeight, badgeCount } from '../NavRow.ts';
 import type { BottomNavInjected } from '../bottom-nav/BottomNavInject.tsx';
-import { columnStyle, GLYPH, LABEL, BADGE } from '../bottom-nav/BottomNavInject.tsx';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from '../bottom-nav/BottomNav.manifest.generated.ts';
 
 export interface BottomNavItemProps {
 
@@ -25,6 +26,8 @@ export interface BottomNavItemProps {
   disabled?: boolean;
 }
 
+const bottomNavStyles = tv(manifest);
+
 export function BottomNavItem({
   id, label, icon, badge, href, disabled = false,
   activeId, onActivate,
@@ -35,6 +38,7 @@ export function BottomNavItem({
   if (!icon) throw new Error('BottomNavItem: `icon` is required');
   const on = id === activeId;
   const tally = badgeCount(badge);
+  const styles = bottomNavStyles({ active: on });
 
   const shared = {
     'aria-current': on ? 'page' as const : undefined,
@@ -47,16 +51,16 @@ export function BottomNavItem({
       }
       if (onActivate) onActivate(id);
     },
-    style: columnStyle(on, disabled),
+    className: styles.item(),
   };
 
   const body = (
     <React.Fragment>
-      <span style={GLYPH}>
+      <span className={styles.glyph()}>
         <i className={on ? activeWeight(icon) : icon} aria-hidden="true" />
-        {tally !== null && <span style={BADGE}>{tally}</span>}
+        {tally !== null && <span className={styles.badge()}>{tally}</span>}
       </span>
-      <span style={LABEL}>{label}</span>
+      <span className={styles.label()}>{label}</span>
     </React.Fragment>
   );
 

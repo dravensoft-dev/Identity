@@ -1,5 +1,7 @@
 import React from 'react';
-import { injectInto, BAR } from './BottomNavInject.tsx';
+import { injectInto } from './BottomNavInject.tsx';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './BottomNav.manifest.generated.ts';
 
 export interface BottomNavProps {
 
@@ -16,11 +18,13 @@ export interface BottomNavProps {
   onNav?: (id: string) => void;
 }
 
+const bottomNavStyles = tv(manifest);
+
 export function BottomNav({ active, ariaLabel, children, onNav }: BottomNavProps) {
 
   if (!ariaLabel?.trim()) throw new Error('BottomNav: `ariaLabel` is required, and names which navigation this landmark is');
   return (
-    <nav aria-label={ariaLabel} style={BAR}>
+    <nav aria-label={ariaLabel} className={bottomNavStyles().root()}>
       {injectInto(children, { activeId: active, onActivate: onNav })}
     </nav>
   );

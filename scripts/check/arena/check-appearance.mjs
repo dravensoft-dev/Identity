@@ -20,8 +20,6 @@ export const PENDING = new Map([
 
 
 
-  ['BottomNav', 'group G: the family parent, whose bar its item must read as a column of'],
-  ['BottomNavItem', 'group G: reads BottomNav\'s manifest and does not yet render it'],
   ['SideNav', 'group G: the family parent, whose appearance sits in a shared inject helper'],
   ['SideNavItem', 'group G: reads SideNav\'s manifest through that helper'],
   ['SideNavSection', 'group G: reads SideNav\'s manifest through that helper'],
