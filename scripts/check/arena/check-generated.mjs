@@ -105,6 +105,7 @@ export const UNTRACKED = {
     'the twenty-line factory that composes those names, emitted per layer so a component\'s '
     + 'import never crosses a boundary. It replaces the two runtime dependencies outright.',
   'frameworks/angular/ArenaStyles.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/ArenaStyles.generated.js': 'the compiled sibling of that, which a demo page loads.',
 };
 
 function walk(dir, root) {

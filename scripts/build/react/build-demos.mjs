@@ -21,6 +21,7 @@ export const ROOT_MODULES = [
   'frameworks/react/Theme.ts',
   'frameworks/react/UseContainerWidth.ts', 'frameworks/react/UseDialogModal.ts',
   'frameworks/react/WarnOnce.ts', 'frameworks/react/Tv.generated.ts',
+  'frameworks/react/ArenaStyles.generated.ts',
 ];
 
 export const SOURCE_EXTENSIONS = ['.jsx', '.tsx'];
