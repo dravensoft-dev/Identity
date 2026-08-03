@@ -50,7 +50,7 @@ test('error takes the crimson state and names itself to the control, so the fail
   const html = renderToStaticMarkup(<Select label="Customer" error="Pick a customer" />);
   assert.match(html, /aria-invalid="true"/, 'an errored select did not announce itself as invalid');
   assert.match(html, /Pick a customer/);
-  assert.match(html, /var\(--error\)/, 'the error state did not reach the border');
+  assert.match(html, /\bborder-error\b/, 'the error state did not reach the border');
   const described = /aria-describedby="([^"]+)"/.exec(html);
   assert.ok(described, 'the message is drawn but nothing points at it, so a screen reader never reaches it');
   assert.ok(html.includes(`id="${described![1]}"`), 'aria-describedby names an id the render does not contain');
@@ -71,9 +71,10 @@ test('a hint alone is neutral, and is still named to the control', () => {
 });
 
 test('valid takes the green state, and error still beats it', () => {
-  assert.match(renderToStaticMarkup(<Select label="A" valid />), /var\(--success\)/);
-  assert.match(renderToStaticMarkup(<Select label="A" valid error="No" />), /var\(--error\)/,
+  assert.match(renderToStaticMarkup(<Select label="A" valid />), /\bborder-success\b/);
+  assert.match(renderToStaticMarkup(<Select label="A" valid error="No" />), /\bborder-error\b/,
     'valid won over error, so a field reports success while it is failing');
+  assert.doesNotMatch(renderToStaticMarkup(<Select label="A" valid error="No" />), /\bborder-success\b/);
 });
 
 test('placeholder is a disabled empty first option, so "nothing chosen" is not the first choice', () => {
@@ -86,6 +87,16 @@ test('placeholder is a disabled empty first option, so "nothing chosen" is not t
 
 test('icon is drawn hidden and pushes the text clear of it', () => {
   const html = renderToStaticMarkup(<Select label="A" icon="ph-bold ph-user" />);
-  assert.match(html, /class="ph-bold ph-user"/);
+  assert.match(html, /class="ph-bold ph-user [^"]*"/,
+    "the Phosphor class the consumer named leads, and the manifest's iconWrap slot places it");
   assert.match(html, /aria-hidden="true"/);
+});
+
+test('an icon shifts the field padding through a variant rather than a computed string', () => {
+  assert.doesNotMatch(renderToStaticMarkup(<Select label="A" options={[]} />), /\bpl-9\b/);
+  assert.match(renderToStaticMarkup(<Select label="A" options={[]} icon="ph-bold ph-globe" />), /\bpl-9\b/);
+});
+
+test('focus is a modifier the control answers, so nothing reports it to a state', () => {
+  assert.match(renderToStaticMarkup(<Select label="A" options={[]} />), /focus:border-secondary/);
 });
