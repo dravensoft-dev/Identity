@@ -1,17 +1,17 @@
 <!-- @dsCard group="Tailwind" viewport="820x440" name="ToastHost" subtitle="The four placements, live and pinned, rendered from ToastHost.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Components.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const hostManifest = await (await fetch('./ToastHost.manifest.json')).json();
 const toastManifest = await (await fetch('../toast/Toast.manifest.json')).json();
 
 function toast({ tone = 'neutral', title, message }) {
-  const c = classesFor(toastManifest, { tone });
+  const c = arenaClassesFor(toastManifest, { tone });
   return el('div', {
     class: c.root, role: tone === 'danger' ? 'alert' : 'status',
     'aria-live': tone === 'danger' ? 'assertive' : 'polite',
@@ -21,7 +21,7 @@ function toast({ tone = 'neutral', title, message }) {
 }
 
 function host(placement, notice) {
-  return el('div', { class: classesFor(hostManifest, { placement }).root }, toast(notice));
+  return el('div', { class: arenaClassesFor(hostManifest, { placement }).root }, toast(notice));
 }
 
 const corners = [

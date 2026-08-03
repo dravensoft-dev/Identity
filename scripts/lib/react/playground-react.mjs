@@ -214,8 +214,7 @@ export function reactPage(model, banner) {
   return playgroundPage({
     component: model.component,
     banner,
-    head: `<link rel="stylesheet" href="${UP}frameworks/tailwind/Utilities.generated.css">\n`
-      + `<link rel="stylesheet" href="${UP}frameworks/tailwind/Components.generated.css">\n`
+    head: `<link rel="stylesheet" href="${UP}frameworks/react/Components.generated.css">\n`
       + `<script type="importmap">\n${JSON.stringify(importmap, null, 2)}\n</script>\n`,
     mount: '<div id="root"></div>',
     script: `${model.component}.demo.entry.generated.js`,

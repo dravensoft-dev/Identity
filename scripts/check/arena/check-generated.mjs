@@ -92,6 +92,10 @@ export const UNTRACKED = {
     'the barrel of every component sheet, in one import, which is what a specimen page and a '
     + 'playground link and what the package ships as css/components.css. Importing it is the '
     + 'zero-friction path; importing one sheet is what makes an adopter pay for what they use.',
+  'frameworks/tailwind/Preflight.generated.css':
+    'Tailwind\'s preflight on its own, lifted out of the compiled sheet. A specimen and a playground '
+    + 'need it for the same reason a package does: without the `font: inherit` it carries, a form '
+    + 'control falls back to the browser\'s own size and every measurement around it moves.',
   'frameworks/tailwind/Prelude.generated.css':
     'the @property registrations, the layer order and the keyframes every component sheet '
     + 'depends on, which is why each one imports it rather than documenting it: without the '
@@ -100,6 +104,14 @@ export const UNTRACKED = {
     'the manifest with each class string replaced by the Arena class name that draws it, which '
     + 'is what a component composes at runtime now that nothing merges utilities.',
   'frameworks/react/components/**/*.classes.generated.ts': 'the same file, emitted into the layer that renders it.',
+  'frameworks/react/components/**/*.styles.generated.css': 'the same stylesheet, emitted into the layer that renders it, so a page links within its own layer.',
+  'frameworks/angular/components/**/*.styles.generated.css': 'the same stylesheet, emitted into the other layer.',
+  'frameworks/react/Components.generated.css': 'the barrel, emitted per layer for the same reason.',
+  'frameworks/angular/Components.generated.css': 'the same barrel, emitted into the other layer.',
+  'frameworks/react/Prelude.generated.css': 'the prelude, emitted per layer for the same reason.',
+  'frameworks/angular/Prelude.generated.css': 'the same prelude, emitted into the other layer.',
+  'frameworks/react/Preflight.generated.css': 'the preflight, emitted per layer for the same reason.',
+  'frameworks/angular/Preflight.generated.css': 'the same preflight, emitted into the other layer.',
   'frameworks/angular/components/**/*.classes.generated.ts': 'the same file, emitted into the other layer.',
   'frameworks/react/ArenaStyles.generated.ts':
     'the twenty-line factory that composes those names, emitted per layer so a component\'s '

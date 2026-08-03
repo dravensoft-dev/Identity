@@ -1,14 +1,14 @@
 <!-- @dsCard group="Tailwind" viewport="700x400" name="Menu" subtitle="Items, headers and dividers, rendered from Menu.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Components.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Menu.manifest.json')).json();
-const c = classesFor(manifest);
+const c = arenaClassesFor(manifest);
 
 const ITEMS = [
   { header: 'This deployment' },

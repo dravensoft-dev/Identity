@@ -27,3 +27,38 @@ export function classesFor(manifest, chosen = {}) {
 
   return out;
 }
+
+export function kebab(name) {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+export function namedManifest(manifest) {
+  const base = `arena-${kebab(manifest.component)}`;
+  const named = (map, name) => Object.fromEntries(
+    Object.keys(map ?? {}).filter((slot) => String(map[slot] ?? '').trim()).map((slot) => [slot, name(slot)]),
+  );
+  const out = {
+    component: manifest.component,
+    slots: Object.fromEntries(Object.keys(manifest.slots ?? {}).map((slot) => [slot, `${base}__${kebab(slot)}`])),
+  };
+  if (manifest.variants) {
+    out.variants = Object.fromEntries(Object.entries(manifest.variants).map(([group, values]) => [
+      group,
+      Object.fromEntries(Object.entries(values).map(([value, slots]) => [
+        value, named(slots, (slot) => `${base}__${kebab(slot)}--${kebab(group)}-${kebab(String(value))}`),
+      ])),
+    ]));
+  }
+  if (manifest.defaultVariants) out.defaultVariants = manifest.defaultVariants;
+  if (manifest.compoundVariants) {
+    out.compoundVariants = manifest.compoundVariants.map(({ class: applied, ...conditions }, index) => ({
+      ...conditions,
+      class: named(applied, (slot) => `${base}__${kebab(slot)}--cv${index + 1}`),
+    }));
+  }
+  return out;
+}
+
+export function arenaClassesFor(manifest, chosen = {}) {
+  return classesFor(namedManifest(manifest), chosen);
+}

@@ -1,11 +1,11 @@
 <!-- @dsCard group="Tailwind" viewport="760x649" name="ConfirmDialog" subtitle="The one filled danger surface, rendered from ConfirmDialog.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Components.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./ConfirmDialog.manifest.json')).json();
 
@@ -15,7 +15,7 @@ const manifest = await (await fetch('./ConfirmDialog.manifest.json')).json();
    scrim, the blur and the open variant this whole primitive host-binds are
    actually visible somewhere in the only visual artifact of this component. */
 function panel({ destructive, invalid, title, eyebrow, body, confirmLabel, requireText }) {
-  const c = classesFor(manifest, { destructive: String(destructive), invalid: String(invalid) });
+  const c = arenaClassesFor(manifest, { destructive: String(destructive), invalid: String(invalid) });
   const head = el('div', { class: c.head }, el('div', { class: c.eyebrow, text: eyebrow }), el('div', { class: c.title, text: title }));
   const content = el('div', { class: c.body }, body);
   if (requireText) {
@@ -30,7 +30,7 @@ function panel({ destructive, invalid, title, eyebrow, body, confirmLabel, requi
 }
 
 function overlay() {
-  const c = classesFor(manifest, { open: 'true' });
+  const c = arenaClassesFor(manifest, { open: 'true' });
   return el('div', { class: c.root },
     panel({ destructive: true, invalid: false, eyebrow: 'Irreversible', title: 'Delete project Ardennes?', body: 'Every deployment, log and artifact under this project is removed.', confirmLabel: 'Delete project', requireText: 'Ardennes' }));
 }

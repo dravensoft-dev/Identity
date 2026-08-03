@@ -1,17 +1,17 @@
 <!-- @dsCard group="Tailwind" viewport="700x320" name="Radio" subtitle="A group with hints, rendered from Radio.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Components.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Radio.manifest.json')).json();
-const base = classesFor(manifest);
+const base = arenaClassesFor(manifest);
 
 function radio({ label, hint, checked = false, disabled = false, name }) {
-  const c = classesFor(manifest, { checked: String(checked), disabled: String(disabled) });
+  const c = arenaClassesFor(manifest, { checked: String(checked), disabled: String(disabled) });
   const ring = el('span', { class: c.ring });
   if (checked) ring.append(el('span', { class: c.dot }));
   const text = el('span', { class: c.text }, el('span', { class: c.label, text: label }));

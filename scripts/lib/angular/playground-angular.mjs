@@ -287,8 +287,7 @@ export function angularPage(model, banner) {
   return playgroundPage({
     component: model.component,
     banner,
-    head: `<link rel="stylesheet" href="${UP}frameworks/tailwind/Utilities.generated.css">\n`
-      + `<link rel="stylesheet" href="${UP}frameworks/tailwind/Components.generated.css">\n`,
+    head: `<link rel="stylesheet" href="${UP}frameworks/angular/Components.generated.css">\n`,
     mount: '<demo-root></demo-root>',
     script: `../../../build/demo/js/${model.component}.demo.entry.generated.js`,
   });

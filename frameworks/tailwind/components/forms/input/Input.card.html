@@ -1,16 +1,16 @@
 <!-- @dsCard group="Tailwind" viewport="760x493" name="Input" subtitle="Label, states and affixes, rendered from Input.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../Components.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Input.manifest.json')).json();
 
 function input({ label, value, placeholder, hint, error, state = 'neutral', required, prefix, icon, disabled }) {
-  const c = classesFor(manifest, { state, disabled: String(Boolean(disabled)) });
+  const c = arenaClassesFor(manifest, { state, disabled: String(Boolean(disabled)) });
   const root = el('div', { class: c.root });
   root.style.width = '260px';
   const inputId = label ? 'tw-input-' + label.replace(/\s+/g, '-').toLowerCase() : undefined;

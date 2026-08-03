@@ -159,7 +159,8 @@ test('the page mounts demo-root, loads its bundle and declares no card', () => {
   assert.match(page, /<demo-root><\/demo-root>/);
   assert.match(page, /build\/demo\/js\/Card\.demo\.entry\.generated\.js/);
   assert.doesNotMatch(page, /@dsCard/);
-  assert.match(page, /Utilities\.generated\.css/);
+  assert.match(page, /frameworks\/angular\/Components\.generated\.css/,
+    'a page links the stylesheet emitted into its own layer, so it crosses no boundary');
 });
 
 test('a void element is self-closing, because this layer refuses an end tag on one', () => {

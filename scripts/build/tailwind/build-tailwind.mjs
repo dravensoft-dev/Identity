@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { basename, dirname, join } from 'node:path';
+import { basename, dirname, join, relative, sep } from 'node:path';
 import { compileLayer, compileEntry, layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 import {
   classesManifest, entryStylesheet, stripIndirection, stripProblems, themeMapFor,
@@ -8,6 +8,7 @@ import {
 import {
   componentSheet, matchingBrace, preludeSheet, splitUtilities,
 } from '../../lib/tailwind/component-sheets.mjs';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -40,6 +41,7 @@ export const CONSUMING_LAYERS = ['react'];
 export const CSS_CONSUMING_LAYERS = ['react', 'angular'];
 export const PRELUDE = 'frameworks/tailwind/Prelude.generated.css';
 export const BARREL = 'frameworks/tailwind/Components.generated.css';
+export const PREFLIGHT = 'frameworks/tailwind/Preflight.generated.css';
 
 export function keyframesIn(css) {
   const blocks = [];
@@ -91,7 +93,18 @@ export function buildComponentCss(opts = {}) {
   }
 
   const imports = sheets.sort().map((rel) => `@import './${rel.replace('frameworks/tailwind/', '')}';`);
-  out.set(join(root, BARREL), `${BANNER}@import './${basename(PRELUDE)}';\n${imports.join('\n')}\n`);
+  const barrel = `${BANNER}@import './${basename(PREFLIGHT)}';\n`
+    + `@import './${basename(PRELUDE)}';\n${imports.join('\n')}\n`;
+  out.set(join(root, BARREL), barrel);
+  out.set(join(root, PREFLIGHT), BANNER + splitCompiledSheet(readFileSync(generatedPath({ root }), 'utf8')).base);
+
+  for (const layer of CSS_CONSUMING_LAYERS) {
+    for (const [file, content] of [...out]) {
+      const mirrored = relative(root, file).split(sep).join('/').replace('frameworks/tailwind/', `frameworks/${layer}/`);
+      if (mirrored.includes('/components/') && !existsSync(dirname(join(root, mirrored)))) continue;
+      out.set(join(root, mirrored), content);
+    }
+  }
   return out;
 }
 
