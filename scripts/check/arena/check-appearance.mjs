@@ -19,7 +19,6 @@ export const PENDING = new Map([
 
 
 
-  ['Onboarding', 'group F: the same, with a measured coachmark position that stays'],
   ['ToastHost', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
 
   ['Tabs', 'group G: the family parent, whose manifest its tab must read'],
