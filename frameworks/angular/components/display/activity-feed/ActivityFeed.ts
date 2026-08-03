@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input }
 import type { ActivityItem } from '../../../Api.generated';
 import { focusableElements } from '../../../FocusTrap';
 import { activityFeedStyles } from './ActivityFeed.variants';
-import manifest from '../../../../tailwind/components/display/activity-feed/ActivityFeed.manifest.generated';
+import manifest from './ActivityFeed.classes.generated';
 
 const TONES = Object.keys(manifest.variants.tone);
 type Tone = NonNullable<ActivityItem['tone']>;

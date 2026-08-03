@@ -2,9 +2,8 @@
  * resolves. React 18 is CommonJS-only, so this bundles it to ESM, appending named exports Bun's
  * static detection misses and keeping `react` external so it stays a singleton: Bun sees only
  * the `exports.x = y` assignments at the CJS wrapper's top level, and React's sit inside an
- * IIFE, so the raw output is `export default` and nothing else. The recipe runtime ships ESM
- * already, so it carries no `real` and takes no patching; tailwind-merge stays external to the
- * variants bundle so one copy answers both specifiers. */
+ * IIFE, so the raw output is `export default` and nothing else. Nothing else needs vendoring:
+ * a component composes its own class names, so no recipe library reaches a demo page. */
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -29,8 +28,6 @@ export const ENTRIES = [
   { entry: 'react/index.js', specifier: 'react', out: 'React.generated.js', real: 'react', external: [] },
   { entry: 'react/jsx-runtime.js', specifier: 'react/jsx-runtime', out: 'ReactJsxRuntime.generated.js', real: 'react/jsx-runtime.js', external: ['react'] },
   { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.generated.js', real: 'react-dom/client.js', external: ['react'] },
-  { entry: 'tailwind-merge/dist/bundle-mjs.mjs', specifier: 'tailwind-merge', out: 'TailwindMerge.generated.js', external: [] },
-  { entry: 'tailwind-variants/dist/index.js', specifier: 'tailwind-variants', out: 'TailwindVariants.generated.js', external: ['tailwind-merge'] },
 ];
 
 function realExportNames(root, real) {

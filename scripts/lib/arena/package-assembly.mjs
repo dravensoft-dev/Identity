@@ -4,8 +4,10 @@
  * compiles anything; each layer's own builder does that with its own toolchain. */
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
-import { join, dirname, relative, sep } from 'node:path';
+import { join, dirname, relative, sep, basename } from 'node:path';
 import { repoRoot } from './repo-root.mjs';
+import { kebab } from './layers.mjs';
+import { manifestFiles } from '../tailwind/tailwind-compile.mjs';
 
 export const EXCLUDED_NAMES = new Set(['node_modules', 'dist', 'vendor', 'test', 'build']);
 
@@ -102,20 +104,36 @@ export const SHEET_BANNERS = {
     '   Arena needs it: a form control that inherits nothing falls back to 13.33px Arial, and a',
     '   <button> styled that way is 20% off in every measurement that matters.',
     '   If your project already runs Tailwind, its preflight does the same job and you may import',
-    "   './css/utilities.css' alone instead of './arena.css' to avoid a second copy. Doing that",
+    "   './css/components.css' alone instead of './arena.css' to avoid a second copy. Doing that",
     '   makes the order yours to get right: this half must come before Arena\'s components. */',
   ].join('\n'),
-  utilities: [
-    '/* Arena\'s theme and the utilities every component\'s class string resolves against.',
-    '   This half is never optional: without it a component renders unstyled, silently. */',
+  components: [
+    '/* Every component Arena draws, in one import.',
+    '   This is never optional: without it a component renders unstyled, silently.',
+    '   Import ./css/components/<name>.css instead to pay only for what you render; each of those',
+    '   imports ./css/prelude.css itself, so one alone is safe. */',
   ].join('\n'),
 };
 
-export function sheetHalves(css, split) {
-  const { base, utilities } = split(css);
+export function componentSheets(css, split, root = repoRoot) {
+  const { base } = split(css);
+  const dir = join(root, 'frameworks', 'tailwind');
+  const files = manifestFiles(join(dir, 'components'))
+    .map((file) => file.replace(/\.manifest\.json$/, '.styles.generated.css'));
+  if (files.length === 0) {
+    throw new Error('package-assembly: no component stylesheet was found, so the package would ship '
+      + 'a barrel that imports nothing and every component would render unstyled');
+  }
+  const named = files.map((file) => ({
+    to: join('css', 'components', `${kebab(basename(file).split('.')[0])}.css`),
+    content: readFileSync(file, 'utf8').replace(/@import '(?:\.\.\/)+Prelude\.generated\.css';/, "@import '../prelude.css';"),
+  }));
+  const barrel = named.map(({ to }) => `@import './${basename(to)}';`).join('\n');
   return [
     { to: join('css', 'base.css'), content: `${SHEET_BANNERS.base}\n${base}` },
-    { to: join('css', 'utilities.css'), content: `${SHEET_BANNERS.utilities}\n${utilities}` },
+    { to: join('css', 'prelude.css'), content: readFileSync(join(dir, 'Prelude.generated.css'), 'utf8') },
+    ...named,
+    { to: join('css', 'components.css'), content: `${SHEET_BANNERS.components}\n${barrel}\n` },
   ];
 }
 

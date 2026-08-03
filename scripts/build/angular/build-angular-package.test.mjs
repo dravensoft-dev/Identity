@@ -3,29 +3,13 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import {
-  repointTailwind, manifest, ngPackageConfig, libTsconfig, withAssets, ngPackagrBin,
+  manifest, ngPackageConfig, libTsconfig, withAssets, ngPackagrBin,
   NAME, RUNTIME_DEPENDENCIES, STAGING, LAYER,
 } from './build-angular-package.mjs';
 import { version } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const variants = "import manifest from '../../../../tailwind/components/display/tag/Tag.manifest.generated';";
-
-test('a Tailwind specifier is repointed to the depth the file now sits at', () => {
-  assert.equal(
-    repointTailwind(variants, 3),
-    "import manifest from '../../../tailwind/components/display/tag/Tag.manifest.generated';",
-  );
-});
-
-test('a file at the staged root reaches the sibling tree with no climb at all', () => {
-  assert.equal(repointTailwind("import { tv } from '../../../../tailwind/Tv';", 1), "import { tv } from '../tailwind/Tv';");
-});
-
-test('nothing else is rewritten, so an Angular import stays exactly as authored', () => {
-  const source = "import { Component } from '@angular/core';\nimport type { TagTone } from '../../../Api.generated';";
-  assert.equal(repointTailwind(source, 3), source);
-});
 
 test('ng-packagr is pointed at the entry file and told where the package lands', () => {
   const config = ngPackageConfig();
@@ -43,9 +27,11 @@ test('the schema is named at the depth the staging tree sits at, so an editor re
   assert.ok(existsSync(join(repoRoot, schema)), 'ng-packagr ships the schema it is validated against');
 });
 
-test('the three runtime dependencies are allowed by name, or ng-packagr refuses to write', () => {
+test('the one runtime dependency is allowed by name, or ng-packagr refuses to write', () => {
   assert.deepEqual(ngPackageConfig().allowedNonPeerDependencies, Object.keys(RUNTIME_DEPENDENCIES));
-  assert.deepEqual(Object.keys(RUNTIME_DEPENDENCIES).sort(), ['tailwind-merge', 'tailwind-variants', 'tslib']);
+  assert.deepEqual(Object.keys(RUNTIME_DEPENDENCIES).sort(), ['tslib'],
+    'a component composes its own class names, so the two recipe libraries that used to ship here '
+    + 'are gone; tslib is Angular\'s own helper import and is the only one left');
 });
 
 test('the library compiles in partial mode under strictTemplates', () => {
@@ -60,7 +46,7 @@ test('the manifest names the package and takes its version from plugin.json', ()
   assert.equal(m.version, version(repoRoot));
 });
 
-test('Angular, the CDK and Phosphor are peers; the recipe libraries are real dependencies', () => {
+test('Angular, the CDK and Phosphor are the peers; tslib is the only real dependency', () => {
   const m = manifest(repoRoot);
   assert.deepEqual(Object.keys(m.peerDependencies).sort(),
     ['@angular/cdk', '@angular/common', '@angular/core', '@angular/platform-browser', '@phosphor-icons/web']);

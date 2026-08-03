@@ -39,19 +39,9 @@ export const FORBIDDEN = {
   tailwind: ['react', 'angular'],
 };
 
-export const ALLOWED = new Map([
-  ['angular -> tailwind',
-   'An Angular primitive is styled by the shared Tailwind recipe: its <Component>.variants.ts '
-   + 'imports the generated <Component>.manifest.generated beside the manifest, through the '
-   + 'configured tv in frameworks/tailwind/Tv.ts. It is the one edge between two framework '
-   + 'layers, it is a build dependency rather than a prose one, and the manifest is data -- '
-   + 'slots, variants and class strings -- so nothing about Angular reaches back into Tailwind.'],
-]);
+export const ALLOWED = new Map([]);
 
-export const ALLOWED_SPECIFIERS = [
-  /^frameworks\/tailwind\/components\/[a-z-]+\/[a-z-]+\/[A-Za-z]+\.manifest\.generated$/,
-  /^frameworks\/tailwind\/Tv$/,
-];
+export const ALLOWED_SPECIFIERS = [];
 
 export const EXEMPT = new Map([]);
 

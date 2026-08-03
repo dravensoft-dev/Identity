@@ -31,17 +31,17 @@ test('the rule is the matrix: angular may name tailwind, and nothing else names 
   assert.deepEqual(Object.keys(LAYER_TOKENS).sort(), [...LAYERS].sort());
 });
 
-test('the one authorised edge is on the record with its reason', () => {
-  assert.deepEqual([...ALLOWED.keys()], ['angular -> tailwind']);
-  assert.match(ALLOWED.get('angular -> tailwind'), /manifest/);
+test('no edge between two framework layers is authorised at all', () => {
+  assert.deepEqual([...ALLOWED.keys()], [],
+    'a layer stands on contracts/ alone; the one edge that used to exist was Angular reaching for '
+    + 'a Tailwind manifest, and it went when a component started composing its own class names');
 });
 
-test('a manifest module and the shared tv are the only specifiers that pass', () => {
-  assert.ok(isAllowedSpecifier('frameworks/tailwind/components/display/tag/Tag.manifest.generated'));
-  assert.ok(isAllowedSpecifier('frameworks/tailwind/Tv'));
-  assert.equal(isAllowedSpecifier('frameworks/tailwind/Specimen.js'), false);
+test('no specifier into another layer passes, since none is allowed', () => {
+  assert.deepEqual(ALLOWED_SPECIFIERS, []);
+  assert.equal(isAllowedSpecifier('frameworks/tailwind/components/display/tag/Tag.manifest.generated'), false);
+  assert.equal(isAllowedSpecifier('frameworks/tailwind/Tv'), false);
   assert.equal(isAllowedSpecifier('frameworks/react/components/forms/button/Button.jsx'), false);
-  assert.equal(ALLOWED_SPECIFIERS.length, 2);
 });
 
 test('a citation of another layer is a hit, and a script name of any layer is not', () => {

@@ -60,14 +60,14 @@ test('the version is stamped from plugin.json rather than written here', () => {
   assert.equal(manifest(repoRoot).version, version(repoRoot));
 });
 
-test('react, react-dom and Phosphor are peers, and the recipe runtime is the dependency', () => {
+test('react, react-dom and Phosphor are the peers, and nothing at all is a dependency', () => {
   const m = manifest(repoRoot);
   assert.deepEqual(Object.keys(m.peerDependencies).sort(), ['@phosphor-icons/web', 'react', 'react-dom']);
   assert.equal(m.peerDependencies.react, '^18 || ^19',
     'the range is the two majors a real tarball install was rendered under; an open >=18 would promise React 20');
-  assert.deepEqual(Object.keys(m.dependencies).sort(), ['tailwind-merge', 'tailwind-variants'],
-    'a component resolves the shared manifest through tv at render time, so the runtime ships with it, '
-    + 'the same two the other package has always carried');
+  assert.equal(m.dependencies, undefined,
+    'a component composes its own class names, so no recipe library ships with it; the two that '
+    + 'used to were 15,834 bytes gzipped and are the reason the package is lighter than the CSS grew');
 });
 
 test('the stylesheet and the example config are reachable by subpath', () => {

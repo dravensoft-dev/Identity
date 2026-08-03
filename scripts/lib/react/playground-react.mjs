@@ -209,8 +209,6 @@ export function reactPage(model, banner) {
       react: `${UP}frameworks/react/vendor/React.generated.js`,
       'react/jsx-runtime': `${UP}frameworks/react/vendor/ReactJsxRuntime.generated.js`,
       'react-dom/client': `${UP}frameworks/react/vendor/ReactDomClient.generated.js`,
-      'tailwind-merge': `${UP}frameworks/react/vendor/TailwindMerge.generated.js`,
-      'tailwind-variants': `${UP}frameworks/react/vendor/TailwindVariants.generated.js`,
     },
   };
   return playgroundPage({
