@@ -1,0 +1,85 @@
+# scripts/build/
+
+**Build compiles an existing source into another form.** The input is already something a
+person wrote, a `.tsx`, a `.ts`, a Tailwind preset or a CommonJS package, and the output says
+the same thing in a form a browser or a test runner can load. Nothing here decides a value;
+that is [`../generate/`](../generate/AGENTS.md).
+
+Every output is named `<stem>.generated.<ext>`, so the name says a script writes it. Which of
+those are tracked and which are not is the separate question `.gitignore` answers, for one of
+two reasons: the git tag has to serve it to a browser directly, true of
+`contracts/design-generated/` and the `assets/fonts/` binaries; or a clone cannot reproduce
+it, true of `assets/fonts/Fonts.generated.json`, whose rebuild needs the network. Everything a
+script writes under `frameworks/` is ignored. `check:generated` holds both halves.
+
+## Compile Arena for the first time
+
+```bash
+bun install
+bun run build
+```
+
+That runs the steps below in order, the token layer first, because the Tailwind preset compiles
+against the token CSS. The chain is the one `package.json`'s `build` script declares, and
+reading it there is how the count is derived rather than remembered:
+
+```
+generate:tokens → generate:api → generate:playgrounds → generate:skills → build:react-barrel →
+build:tailwind → build:vendor → build:demos → build:angular-demo
+```
+
+**Until it has run once, part of the tree does not exist.** These are git-ignored, so a fresh
+clone has none of them:
+
+| missing until you build | what notices |
+| --- | --- |
+| `frameworks/react/Api.generated.ts` and `frameworks/angular/Api.generated.ts` | every component importing a contract type; `check:api` |
+| `frameworks/react/Tokens.generated.js` and `frameworks/angular/Tokens.generated.ts` | every component doing arithmetic on a token; `check:script-tokens` |
+| `frameworks/react/Index.generated.ts` | the layer's entry point, which the package build compiles; `check:react-barrel` |
+| `frameworks/react/vendor/*.generated.js` | every React demo page's importmap; `check:vendor` |
+| `frameworks/react/**/*.generated.js`, one per component and demo entry source | every React demo page; `check:demos` |
+| `frameworks/tailwind/components/**/*.manifest.generated.ts`, one per `<Name>.manifest.json` | every Angular `<Component>.variants.ts`; `check:tailwind-generated` |
+| `frameworks/tailwind/Breakpoints.generated.css` | `Theme.css` imports it, so `build:tailwind` fails outright without it; `check:tokens` |
+| `frameworks/tailwind/Utilities.generated.css` | the oracle `check:style-parity` measures against; never published |
+| `frameworks/tailwind/consume/`: one `<Component>.styles.generated.css` per manifest, plus `Prelude`, `Preflight` and the `Components` barrel | every specimen and playground, the Console, and both packages |
+| `frameworks/angular/build/demo/` | the Angular demo pages; `check:angular-demos` |
+| `frameworks/**/*.demo.generated.html` and its entry, one per component per layer | the demo pages themselves; `check:playgrounds`, and `check:angular-demos` for the Angular half |
+
+So on a clone with no build, `bun run demos` serves unstyled or blank pages, neither framework
+layer compiles, because a component's import of `Api.generated` or `Tokens.generated` resolves
+to nothing, and every gate in that table reports its subject missing. **That is the intended
+signal, not a failure**: the message each prints names the command to run. `bun run demos`
+builds first for exactly this reason.
+
+`bun run build` is idempotent: running it on a clean tree leaves `git status` empty. If it does
+not, a generator and a committed file disagree, which is what `check:tokens` and `check:fonts`
+exist to say out loud.
+
+`build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
+git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,
+always immediately before the suites that read it, because staleness there is prevented by
+ordering rather than by a gate.
+
+## The five domains
+
+A script's domain is decided by what it **touches**, never by what it is about.
+
+| domain | what a build there compiles |
+| --- | --- |
+| [`angular/`](./angular/AGENTS.md) | the AOT emits: demo bundles, the package and the test surface |
+| [`react/`](./react/AGENTS.md) | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
+| [`tailwind/`](./tailwind/AGENTS.md) | the utility layer and the manifest modules |
+| `core/` | empty; `.gitkeep` marks the combination as unoccupied |
+| `arena/` | empty; no build touches two layers at once |
+
+**Count them rather than reading a figure here.** The two empty domains are the claim, so an
+answer other than zero for either is a domain that gained an occupant without gaining a reason:
+
+```bash
+for d in angular arena core react tailwind; do
+  printf '%-9s %s\n' "$d" "$(find scripts/build/$d -name '*.mjs' ! -name '*.test.mjs' | wc -l)"
+done
+```
+
+`core` and `arena` exist even while empty so the grid stays legible rather than implied. See
+[`../AGENTS.md`](../AGENTS.md) for what each domain is allowed to read and write.

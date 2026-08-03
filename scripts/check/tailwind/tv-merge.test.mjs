@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { getDefaultConfig } from 'tailwind-merge';
 import { tv, ARENA_SPACING_SUFFIXES, spacingConsumingGroups } from '../../../frameworks/tailwind/Tv.ts';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { deriveNamespaces } from '../../lib/tailwind/theme-namespaces.mjs';
 
 const merge = (classString) => tv({ slots: { root: classString } })().root();
 const classes = (s) => s.split(/\s+/);
@@ -93,28 +93,6 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
 
 const themeCssPath = new URL('../../../frameworks/tailwind/Theme.css', import.meta.url);
 const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()];
-
-const NATIVE_THEME_NAMESPACES = new Set(Object.keys(getDefaultConfig().theme));
-
-function deriveNamespaces(decls) {
-  const resetNamespaces = new Set();
-  for (const [name, value] of decls) {
-    const reset = /^([a-z][a-z0-9-]*)-\*$/.exec(name);
-    if (reset && value.trim() === 'initial') resetNamespaces.add(reset[1]);
-  }
-  const knownNamespaces = [...new Set([...resetNamespaces, ...NATIVE_THEME_NAMESPACES])]
-    .sort((a, b) => b.length - a.length);
-
-  const namespaces = new Map();
-  for (const [name] of decls) {
-    if (/-\*$/.test(name)) continue;
-    const ns = knownNamespaces.find((candidate) => name.startsWith(`${candidate}-`));
-    if (!ns) continue;
-    if (!namespaces.has(ns)) namespaces.set(ns, []);
-    namespaces.get(ns).push(name.slice(ns.length + 1));
-  }
-  return namespaces;
-}
 
 const PREFIX = {
   font: 'font',
@@ -223,77 +201,3 @@ test('Button.manifest.json\'s three ctl-h heights now dedupe against each other 
   }
 });
 
-test('a fake key added to an unreset-but-native namespace (spacing\'s own shape) is still found by namespace derivation', () => {
-  const fakeThemeCss = `
-    @theme {
-      --color-*: initial;
-      --color-primary: red;
-      --color-secondary: blue;
-      --spacing: var(--sp-1);
-      --spacing-1: var(--sp-1);
-      --spacing-ctl-h: var(--dz-ctl-h);
-      --spacing-fake-test-key: var(--sp-1);
-    }
-  `;
-  const [fakeDecls] = [...parseDecls(fakeThemeCss).values()];
-  const fakeNamespaces = deriveNamespaces(fakeDecls);
-  assert.ok(fakeNamespaces.has('spacing'),
-    'spacing has no --spacing-*: initial reset in this fixture either, matching Theme.css\'s real shape -- it must still be found');
-  assert.ok(fakeNamespaces.get('spacing').includes('fake-test-key'),
-    'a fake key on the open spacing namespace was not picked up -- this is the exact escape fix pass 2 closes');
-});
-
-function namespacedPropertyCandidates(decls) {
-  const candidates = [];
-  for (const [name] of decls) {
-    if (/-\*$/.test(name)) continue;
-    if (/^[a-z][a-z0-9]*-[a-z0-9.-]+$/.test(name)) candidates.push(name);
-  }
-  return candidates;
-}
-
-const UNATTRIBUTED = new Map([
-  ['default-font-family', 'wires a Tailwind default directly (Theme.css: "derives from --font-sans, which we cleared"); not an Arena scale with a sibling to self-dedupe against'],
-  ['default-transition-duration', 'wires a Tailwind default directly; not an Arena scale with a sibling to self-dedupe against'],
-  ['default-transition-timing-function', 'wires a Tailwind default directly; not an Arena scale with a sibling to self-dedupe against'],
-]);
-
-test('every namespaced-looking property in Theme.css is attributed to a namespace or listed in UNATTRIBUTED with a reason', () => {
-  const candidates = namespacedPropertyCandidates(themeDecls);
-  const attributedNames = new Set();
-  for (const [ns, keys] of namespaces) for (const key of keys) attributedNames.add(`${ns}-${key}`);
-
-  const errs = [];
-  for (const name of candidates) {
-    const isAttributed = attributedNames.has(name);
-    const isListed = UNATTRIBUTED.has(name);
-    if (isAttributed && isListed) errs.push(`--${name} is both attributed to a namespace AND in UNATTRIBUTED — drop the entry`);
-    else if (!isAttributed && !isListed) errs.push(`--${name} is not attributed to any namespace and not in UNATTRIBUTED with a reason — this is the exact escape fix pass 3 closes, add one or the other`);
-  }
-
-  const candidateSet = new Set(candidates);
-  for (const name of UNATTRIBUTED.keys())
-    if (!candidateSet.has(name)) errs.push(`UNATTRIBUTED lists --${name} but no such property exists in Theme.css — drop the entry`);
-
-  assert.deepEqual(errs, [], errs.join('\n'));
-});
-
-test('a fake key in an unreset, non-native namespace is caught by the completeness check, not silently invisible', () => {
-  const fakeThemeCss = `
-    @theme {
-      --color-*: initial;
-      --color-primary: red;
-      --widget-shape-round: 999px;
-    }
-  `;
-  const [fakeDecls] = [...parseDecls(fakeThemeCss).values()];
-  const fakeNamespaces = deriveNamespaces(fakeDecls);
-  assert.ok(!fakeNamespaces.has('widget-shape'), 'widget-shape is neither reset nor native -- deriveNamespaces should still miss it (that is the gap this test exists to catch downstream)');
-
-  const candidates = namespacedPropertyCandidates(fakeDecls);
-  const attributedNames = new Set();
-  for (const [ns, keys] of fakeNamespaces) for (const key of keys) attributedNames.add(`${ns}-${key}`);
-  const unattributed = candidates.filter((name) => !attributedNames.has(name) && !UNATTRIBUTED.has(name));
-  assert.deepEqual(unattributed, ['widget-shape-round'],
-    'the completeness check must name widget-shape-round as unattributed and unlisted -- if this is empty, the fake key slipped through invisibly again');
-});

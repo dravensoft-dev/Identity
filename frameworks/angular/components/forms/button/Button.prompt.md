@@ -1,6 +1,5 @@
 Arena action button, one primary per view, and danger stays outline. Standalone, `OnPush`,
-signal I/O. Styling is the sibling `Button.variants.ts` recipe; the component carries no CSS
-classes of its own. The host stays bare and unstyled: the recipe lands on a real `<button>`
+signal I/O. The host stays bare and unstyled: Arena's own styling lands on a real `<button>`
 inside it, because the element carrying the behaviour contract must be the element the browser
 already knows how to focus, activate and disable.
 
@@ -13,6 +12,30 @@ already knows how to focus, activate and disable.
 <arena-button type="submit" form="project-form" full>Create project</arena-button>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Button.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | The button's label. Sits between the two icons when both are given. |
+| `variant` | enum | `ButtonVariant` | `"primary"` | Which action this is. Danger is outline, never filled. |
+| `size` | enum | `ControlSize` | `"md"` | Height, from the density tokens, so the button re-densifies inside .arena-compact. |
+| `icon` | primitive | `string` |  | Phosphor class name drawn before the label. Replaced by the spinner while loading. |
+| `iconRight` | primitive | `string` |  | Phosphor class name drawn after the label: a caret on a menu trigger, an arrow on a next action. |
+| `loading` | primitive | `boolean` | `false` | Replaces the leading icon with a spinner and blocks activation. The spin slows under reduced motion rather than stopping: a frozen spinner reads as a hung process. |
+| `full` | primitive | `boolean` | `false` | Stretches to the container's width. |
+| `disabled` | primitive | `boolean` | `false` | Blocks activation and dims the control. Implied by loading. |
+| `type` | enum | `ButtonType` | `"button"` | Native button behaviour. Defaults to 'button' so a button inside a form does not submit it by accident. |
+| `name` | primitive | `string` |  | Submitted with the form, when the button submits one. |
+| `value` | primitive | `string` |  | The value submitted under `name`. |
+| `autoFocus` | primitive | `boolean` | `false` | Focused on mount. |
+| `form` | primitive | `string` |  | The id of the form this button belongs to, when it is not a descendant of it. |
+| `tabStop` | primitive | `boolean` | `true` | Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus (a grid with a roving tab stop, a menu), where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. Table's actions column is where this one is needed: a Button inside a row of a grid. |
+| `click` | event |  |  | The button was activated, by pointer or by keyboard. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Use `variant="danger"` for a destructive action: transparent background, border and text in
   `--error`. That is the danger convention, and the only filled danger surface in Arena is
@@ -20,7 +43,7 @@ already knows how to focus, activate and disable.
 - `loading` implies `disabled`: it swaps the leading icon for a spinner and blocks activation,
   so there is no need to set both. The spin **slows** under `prefers-reduced-motion` rather
   than stopping, because a frozen spinner reads as a hung process; that answer comes from the
-  `arena-btn-spin` utility in the Tailwind layer, not from this component.
+  shared design layer, not from this component.
 - `icon` and `iconRight` are Phosphor class-name strings Arena draws, never slots. That is the
   single-icon convention, and it is why this component projects a label and nothing else.
 - Set `type` explicitly when the button sits in a form. It defaults to `button` on purpose: a
@@ -44,7 +67,7 @@ already knows how to focus, activate and disable.
   default action is untouched, only propagation is.
 
 **By hand, in real Chromium**: none of these is provable in happy-dom. Run `bun run demos` and
-open `/frameworks/angular/components/forms/button/Button.card.html`:
+open `/frameworks/angular/components/forms/button/Button.demo.generated.html`:
 - With `loading` set, the spinner turns; with `prefers-reduced-motion: reduce` forced in
   DevTools' Rendering pane, it keeps turning and only slows.
 - `active:scale-98` gives a real press response, and the focus ring is visible on keyboard

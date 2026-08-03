@@ -82,14 +82,14 @@ test('a tree that contributed no case is named, so a narrowed run cannot pass as
   const counted = tally(parseJunit(XML));
   const problems = coverageProblems(counted, [], EXPECTED_ROOTS);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/angular\/build\/test\/angular\//);
+  assert.match(problems[0], /frameworks\/angular\/build\/test\//);
 });
 
 test('a complete report raises nothing', () => {
   const counted = tally([
     { file: 'scripts/lib/arena/a.test.mjs', status: 'pass' },
     { file: 'frameworks/react/b.test.tsx', status: 'pass' },
-    { file: 'frameworks/angular/build/test/angular/c.test.js', status: 'pass' },
+    { file: 'frameworks/angular/build/test/c.test.js', status: 'pass' },
   ]);
   assert.deepEqual(coverageProblems(counted, ['arena', 'react', 'angular']), []);
 });

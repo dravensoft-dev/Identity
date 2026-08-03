@@ -1,7 +1,5 @@
 Arena data table for dense surfaces: headers in mono/uppercase, rows separated by a
-hairline. Standalone, `OnPush`, signal inputs. Styling is the sibling `Table.variants.ts`
-recipe, shared with `arena-table-row` and `arena-table-cell`; the component carries no CSS
-classes of its own.
+hairline. Standalone, `OnPush`, signal inputs.
 
 It is a **compound** primitive: `columns` says how each column is headed and set, and you
 write one `<arena-table-row>` per row with one `<arena-table-cell>` per cell inside it.
@@ -20,6 +18,25 @@ Cells are **positional**: the nth cell takes the nth column.
 </arena-table>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Table.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it; Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". |
+| `columns*` | array | `TableColumn[]` |  | The columns, in order. A column heads and sets its cells; it never says what goes in them. |
+| `content` | slot |  |  | The rows. One TableRow per row. Where a row sits, the columns its cells are set against and how the keyboard reaches them are Table's to decide and no row's to declare; how that reaches a row is each layer's own idiom. |
+| `empty` | slot |  |  | What shows when no row is written. In that state NO grid is drawn at all, header row included: a column head over a "no results" sentence describes a table that is not there, and a role="grid" holding neither a header nor a row is a degenerate render, the same judgement Tabs makes when it draws no panel for a tab that does not exist. Every layer falls back to the string 'No data.' when nothing is given, each in its own idiom for a default. Unlike Table.label this one IS derivable: 'No data.' states what happened rather than what the component is, which is the distinction that makes a fallback useful here and useless there. A consumer with a better sentence, what to do next or why the list is empty, projects it. |
+| `sort` | object | `TableSort` |  | Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target. |
+| `sortChange` | event | `TableSort` |  | A sortable header was activated, carrying the column and the direction it should become: the same column flips, a different one starts ascending. Table never reorders anything itself, so a consumer who ignores this event gets a caret that moves and rows that do not, which is why the member is controlled rather than a starting value. |
+| `page` | object | `TablePage` |  | Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`, which is what gives that required name its uniqueness on a page with two paged tables. Absent, no pager is drawn and the projected rows are the whole list. |
+| `pageChange` | event | `number` |  | A page was chosen, carrying the new 1-based page. It also fires with 1 when the current page has gone PAST THE END, which is the only reset Table performs; a filter that leaves the page in range is silent, so returning the reader to page one on a change of criterion stays the consumer's, beside the criterion they hold. |
+| `sortControl` | enum | `TableSortControl` | `"auto"` | How the sort affordance is reached in CARD MODE, where there is no header row to activate and a `sortable` column therefore has no control under it at all. 'auto' draws one compact select above the cards, listing every sortable column in each direction, which is the shape a phone has room for; 'none' leaves card mode unsorted by hand, for a table whose order is the document's rather than the reader's. Above --bp-md the header row is the control and this member draws nothing. The header row does NOT come back below the breakpoint, because card mode exists for the one reason a grid does not fit. It is a member rather than something a consumer draws for themselves because the state it edits, TableSort, is Arena's: left to each consumer, the label, the option order and the way a direction is worded are invented once per project over a model they did not define. |
+| `responsive` | primitive | `boolean` | `true` | Card mode below --bp-md. Set false only when the columns are meaningless apart. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - `label` is required and names the grid for a screen reader. Say what the rows *are*, as
   in "Recent deployments" or "Team members", and never "Table". Nothing can derive it, which is why
@@ -28,7 +45,7 @@ Cells are **positional**: the nth cell takes the nth column.
   satisfies it.
 - Put your own components in a cell: an `arena-badge` for a status, an `arena-button` for
   an action. That is what the compound shape is for; a column carries no render function.
-- Numeric data and codes in `mono` columns with `align: 'right'`.
+- Numeric data and codes in `mono` columns with `align: 'right'`. `mono` is the mono face and the gold ink together, and the ink is the half that does not travel: gold reads as an identifier, so a total in gold inside a card says the wrong thing. For a figure you draw outside a table, put `.arena-num` on it, which is the same face and the same digit alignment with no colour.
 - Mark the actions column `mobileLayout: 'block'`. Its buttons name themselves, and pairing
   them with an "ACTIONS" label reads as a mistake.
 - Don't set `responsive="false"` to "keep it looking like a table" on a phone. A table
@@ -56,7 +73,7 @@ columns, and the cursor is clamped against the row it is actually in.
 
 Card mode answers none of this: a card row here carries no role and no tab stop, so a row
 with `(click)` is pointer-only below `--bp-md`. That is not a choice: the shape cannot be
-derived from whether anything is listening (R6 in `contracts/api/README.md`), and making
+derived from whether anything is listening, and making
 every card row a button would put a dead tab stop on every row of every table that is not
 clickable. `TableRow.behaviour.json` states it. The bounded consequence: a consumer who
 binds `(click)` on a card row gets a row a keyboard user cannot reach below `--bp-md`.
@@ -72,13 +89,13 @@ once, into a box whose display and role change with the shape, and the wide box 
 non-element table costs is `colspan`, so the empty state is a block **beside** the grid box
 rather than a cell spanning it. That stopped being a visible cost when the empty state stopped
 drawing a grid at all: with no rows there is no header row and no `role="grid"`, only the
-block, which is what `Table.json` contracts for the state and `Table.cases.test.ts` asserts.
+block, which is what `contracts/api/components/Table.json` contracts for the state.
 The other cost stands: `display: table` on the host means the measured `contentRect` excludes the
 frame border, so the narrow threshold trips a couple of pixels earlier than the declared
 breakpoint.
 
 **By hand, in a real browser** (`bun run build:angular-demo && bun run demos`, then
-`frameworks/angular/components/display/table/Table.card.html`). Steps 1–5 were checked in real
+`frameworks/angular/components/display/table/Table.demo.generated.html`). Steps 1–5 were checked in real
 Chromium: one Tab in, the gold inset ring on the focused cell, the arrow walk,
 `Home`/`End` inside the row, `Enter` on a data row, one Tab out onto the actions button, and
 zero roles and zero tab stops in the squeezed card shape. Step 6 and every judgement about how
@@ -113,11 +130,51 @@ ascending. It costs **no tab stop**: the header row is already row 0 of the grid
 cursor, so Enter and Space act on the cell the reader is already on, and `aria-sort` says which
 column and which way.
 
+**Below `--bp-md` the header row is gone, so `sortControl` is the affordance.** With `sort`
+bound and at least one `sortable` column, card mode draws one compact select above the cards,
+listing every sortable column in each direction, and it reports through the same `sortChange`
+the header does. Set it to `none` for a table whose order is the document's rather than the
+reader's. The header row does **not** come back below the breakpoint: card mode exists for the
+one reason a grid does not fit.
+
+### `TableSort.column` is an index, and a column that moves takes the order with it
+
+The cells are already positional, so a key would be a second identity for a thing that has one,
+and that is the right trade. The price is that moving a column silently reorders the rows,
+because the index now names a different column. **Keep the sort field inside the column entry it
+belongs to and the two move together:**
+
+```ts
+const COLUMNS = [
+  { header: 'Customer', sortable: true, field: (s: Sale) => s.customer },
+  { header: 'Status' },
+  { header: 'Total', sortable: true, field: (s: Sale) => s.total },
+];
+```
+
+Arena cannot check that, but it does catch the loudest way to get it wrong: a `sort.column`
+aimed at a column that declares no `sortable` **warns once**, naming the column it landed on,
+instead of drawing no caret and saying nothing.
+
 `page` is `{ index, size, total }`. `total` is the count across every page and is required,
 because the rows you project are one page and nothing about the whole list can be read from
 them. Table draws its own `arena-pagination` below the grid and names it from `label`, which is
 what makes two paged tables on one dashboard tellable apart.
 
 The one thing Table emits on its own is `pageChange` with 1, when the total drops far enough
-that the current page is past the end. That is the reset otherwise written by hand beside every
-filter, and it is bounded: a filter that leaves the page valid is silent, so nothing loops.
+that the current page is **past the end**. It is bounded: a filter that leaves the page valid is
+silent, so nothing loops.
+
+**That is not the reset you write beside a filter, and expecting it to be is the mistake this
+paragraph exists to stop.** Filter ten pages down to five while the reader is on the third and
+the page is still in range, so Table says nothing and the reader is left on page three of
+results they never asked for. Table cannot tell that from removing one row from page three of
+ten, which must move nobody, because a count is all it has. **Whether a change of criterion
+returns the reader to page one is yours**, and it belongs beside the criterion:
+
+```ts
+setStatus(next: string): void {
+  this.status.set(next);
+  this.page.set(1);
+}
+```

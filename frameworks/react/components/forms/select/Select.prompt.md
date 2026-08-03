@@ -7,14 +7,35 @@ Styled native dropdown selector. `options` is an array of `{value, label}` objec
             {value:'qa',label:'QA'}]} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Select.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label` | primitive | `string` |  | Field label above the control. |
+| `placeholder` | primitive | `string` |  | An empty-valued first option, drawn before the choices and unselectable once a real one is made -- "Choose a customer". It is an option rather than an attribute because a native select has no placeholder, and it is what makes "nothing chosen yet" distinguishable from "the first choice". |
+| `options` | array | `SelectOption[]` | `[]` | The choices, drawn as native options. |
+| `value` | primitive | `string` |  | The selected option's value. |
+| `disabled` | primitive | `boolean` | `false` | Blocks the control and dims it. |
+| `required` | primitive | `boolean` | `false` | Must have a value for the form to submit. |
+| `hint` | primitive | `string` |  | A line of help under the field. |
+| `error` | primitive | `string` |  | Controlled error message. It is the whole validation surface here, unlike Input, which also takes a `validate` function: a native select offers a closed list, so there is no value to parse and nothing for a validator to reject that the options did not already prevent. |
+| `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
+| `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `onChange` | event | `string` |  | A different option was chosen; carries its value. |
+
+<!-- @api end -->
+
 `options` takes **only** `SelectOption` objects. The bare-string form
 (`options={['Production','Staging']}`) is gone: `(string | SelectOption)[]` is a union
-between two forms, which R5 forbids, and the object form carries strictly more,
+between two shapes, which a member never is, and the object form carries strictly more,
 a stable `value` with a translatable `label` cannot be said in the string form at all.
 Where value and label are the same, write it: `{value:'QA', label:'QA'}`.
 
 `onChange` carries the **chosen option's value as a string**, not the `ChangeEvent`, because a
-platform event type is an R4 violation inside a payload, so the event does not travel.
+platform's own event type never travels in a payload, so the event does not reach you.
 Read the value directly (`onChange={setEnv}`); there is no `e.target` and no
 `preventDefault()`.
 

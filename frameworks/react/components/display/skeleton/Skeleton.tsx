@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Skeleton.classes.generated.ts';
 
 import type { SkeletonVariant } from '../../../Api.generated';
 
@@ -20,40 +22,22 @@ export interface SkeletonProps {
 }
 
 
-let injected = false;
-function useShimmer() {
-  useEffect(() => {
-    if (injected || typeof document === 'undefined') return;
-    injected = true;
-    const s = document.createElement('style');
-    s.setAttribute('data-arena-skeleton', '');
-    s.textContent =
-      '@keyframes arena-shimmer{0%{background-position:-140% 0}100%{background-position:140% 0}}' +
-      '.arena-skeleton{background-image:linear-gradient(100deg,var(--panel) 30%,var(--color-base-300) 50%,var(--panel) 70%);' +
-      'background-size:220% 100%;animation:arena-shimmer var(--loop-shimmer) var(--ease-in-out) infinite}' +
-      '@media (prefers-reduced-motion:reduce){.arena-skeleton{animation:none;background:var(--panel)}}';
-    document.head.appendChild(s);
-  }, []);
-}
+const skeletonStyles = arenaStyles(manifest);
 
 export function Skeleton({ variant = 'block', width, height, lines = 3, radius }: SkeletonProps) {
-  useShimmer();
-  const base = { borderRadius: radius || 'var(--r-sm)' };
-  if (variant === 'circle') {
-    const d = height || width || 'var(--sp-10)';
-    return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ width: d, height: d, borderRadius: '50%' }} />;
+  const styles = skeletonStyles({ variant });
+  if (variant === 'text' && lines > 1) {
+    return (
+      <div role="status" aria-label="Loading" className={styles.stack()} style={{ width }}>
+        {Array.from({ length: lines }).map((_, i) => (
+          <div key={i} className={i === lines - 1 ? styles.lastLine() : styles.line()} />
+        ))}
+      </div>
+    );
   }
-  if (variant === 'text' || variant === 'line') {
-    if (variant === 'text' && lines > 1) {
-      return (
-        <div role="status" aria-label="Loading" style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 2.5)', width: width || '100%' }}>
-          {Array.from({ length: lines }).map((_, i) => (
-            <div key={i} className="arena-skeleton" style={{ height: 'calc(var(--sp-1) * 3)', borderRadius: 'var(--r-xs)', width: i === lines - 1 ? '62%' : '100%' }} />
-          ))}
-        </div>
-      );
-    }
-    return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ height: height || 'var(--sp-3)', width: width || '100%', borderRadius: 'var(--r-xs)' }} />;
-  }
-  return <div className="arena-skeleton" role="status" aria-label="Loading" style={{ width: width || '100%', height: height || 'var(--sp-24)', ...base }} />;
+  const box = variant === 'circle' ? (height || width) : undefined;
+  return (
+    <div className={styles.root()} role="status" aria-label="Loading"
+      style={{ width: box ?? width, height: box ?? height, borderRadius: radius }} />
+  );
 }

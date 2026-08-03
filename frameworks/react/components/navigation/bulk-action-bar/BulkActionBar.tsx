@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
+import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
 
-import type { BulkAction } from '../../../Api.generated';
+import type { BulkAction, BulkActionBarLayout } from '../../../Api.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './BulkActionBar.classes.generated.ts';
 
 export type { BulkAction };
 
@@ -18,7 +21,10 @@ export interface BulkActionBarProps {
   /** An action was activated, carrying which one. */
   onRun?: (action: BulkAction) => void;
 
-  /** Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear`, per R6. */
+  /** Whether the bar may stack. 'auto' measures its OWN container, not the viewport, and drops the count, the actions and Clear onto separate rows when one row does not fit; 'inline' keeps the single row at every width, for a bar in a place the consumer knows is wide. It is a member rather than something a consumer reaches in with CSS because the alternative is what happens without it: reordering the bar's own children by position, which puts focus order out of step with visual order and breaks the next time anything inside moves. Stacking here reorders nothing, so the tab order and the reading order stay the same order they are wide. */
+  layout?: BulkActionBarLayout;
+
+  /** Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear`, because Arena never derives what it draws from what a consumer listens for. */
   clearable?: boolean;
 
   /** The Clear control was activated. */
@@ -26,15 +32,19 @@ export interface BulkActionBarProps {
 }
 
 
-export function BulkActionBar({ count, noun = 'items', actions, onRun, onClear, clearable = true }: BulkActionBarProps) {
+const barStyles = arenaStyles(manifest);
+
+export function BulkActionBar({ count, noun = 'items', actions, layout = 'auto', onRun, onClear, clearable = true }: BulkActionBarProps) {
   if (count == null) throw new Error('BulkActionBar: `count` is required');
   if (actions == null) throw new Error('BulkActionBar: `actions` is required');
   if (!count) return null;
 
-  const barRef = useRef<HTMLDivElement | null>(null);
+  const [barRef, width] = useContainerWidth<HTMLDivElement>();
+  const narrow = layout === 'auto' && width !== null && width < readBreakpoint('sm');
   const [cursor, setCursor] = useState(0);
   const stops = clearable ? actions.length + 1 : actions.length;
   const at = Math.min(cursor, Math.max(stops - 1, 0));
+  const styles = barStyles({ narrow, open: true });
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -56,37 +66,26 @@ export function BulkActionBar({ count, noun = 'items', actions, onRun, onClear, 
   return (
     <div role="toolbar" aria-label="Actions on the selection"
       ref={barRef} onKeyDown={onKeyDown}
-      style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3.5)', minHeight: 'calc(var(--sp-1) * 13)', padding: '0 calc(var(--sp-1) * 3) 0 calc(var(--sp-1) * 4)',
-        background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)', borderRadius: 'var(--r-md)',
-        boxShadow: 'var(--shadow-2)' }}>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)', color: 'var(--bone)' }}>
-        <b style={{ color: 'var(--gold)' }}>{count}</b> {noun} selected
+      className={styles.root()}>
+      <span className={styles.count()}>
+        <b className={styles.number()}>{count}</b>{` ${noun} selected`}
       </span>
-      <span aria-hidden="true" style={{ width: 'var(--bw)', height: 'calc(var(--sp-1) * 5.5)', background: 'var(--color-base-300)' }} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', flex: 1, flexWrap: 'wrap' }}>
+      {!narrow && (
+        <span aria-hidden="true" className={styles.divider()} />
+      )}
+      <div className={styles.actions()}>
         {actions.map((a, i) => (
           <button key={i} onClick={() => onRun && onRun(a)}
             tabIndex={i === at ? 0 : -1} onFocus={() => setCursor(i)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 3)',
-              background: 'transparent',
-              border: 'var(--bw) solid ' + (a.destructive ? 'var(--danger)' : 'var(--color-base-300)'),
-              borderRadius: 'var(--r-sm)', cursor: 'pointer',
-              fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)',
-              color: a.destructive ? 'var(--danger)' : 'var(--bone-dim)',
-              transition: 'background var(--dur-fast) var(--ease-out)' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = a.destructive ? 'var(--danger-soft)' : 'var(--panel)';
-            }}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
-            {a.icon && <span style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }}><i className={a.icon} aria-hidden="true" /></span>}{a.label}
+            className={barStyles({ narrow, open: true, destructive: Boolean(a.destructive) }).action()}>
+            {a.icon && <span className={styles.actionIcon()}><i className={a.icon} aria-hidden="true" /></span>}{a.label}
           </button>
         ))}
       </div>
       {clearable && (
         <button onClick={() => onClear && onClear()} aria-label="Clear selection"
           tabIndex={actions.length === at ? 0 : -1} onFocus={() => setCursor(actions.length)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)',
-            fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase' }}>
+          className={styles.clear()}>
           Clear
         </button>
       )}

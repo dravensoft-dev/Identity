@@ -4,7 +4,10 @@
  * it. Five display primitives were missing for exactly that long, and the gap also hid a real
  * name collision between two `GridCursor` shapes. PRIVATE and ROOT_PRIVATE are the record of
  * what a barrel deliberately does NOT export, and both carry the bidirectional staleness rule:
- * a named module that has since become exported fails here. */
+ * a named module that has since become exported fails here. A demo entry is out of scope on the
+ * same footing as a suite: it is a page's own bootstrap, it is generated, and it ships nowhere.
+ * A `.classes.generated.ts` does ship, but a `.variants.ts` imports it, so the barrel already
+ * typechecks it, and exporting it would read as a promise that a class name is API. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,6 +35,10 @@ const ROOT_PRIVATE = new Map([
    + 'exported because a consumer needs those types to type their own data; nobody types data '
    + 'with `calendarHourH`. Exporting it would also publish the one thing the token layer warns '
    + 'about -- a value bound at import time, which cannot re-theme and cannot re-densify.'],
+  ['ArenaStyles.generated.ts',
+   'the factory that composes a component\'s own class names, emitted per layer so nothing '
+   + 'imports across one. It replaced the two runtime dependencies, and a consumer has no more '
+   + 'reason to call it than they had to call `tv`: they render a component, not a recipe.'],
 ]);
 
 const EXPORT = /from '\.\/([A-Za-z0-9.-]+)'/g;
@@ -48,7 +55,9 @@ function ownModulesOf(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
     .map((entry) => entry.name)
-    .filter((name) => name !== 'index.ts' && !name.includes('.test.') && !name.endsWith('.card.entry.ts'))
+    .filter((name) => name !== 'index.ts' && !name.includes('.test.')
+      && !name.endsWith('.card.entry.ts') && !name.endsWith('.demo.entry.generated.ts')
+      && !name.endsWith('.classes.generated.ts'))
     .sort();
 }
 

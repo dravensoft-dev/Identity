@@ -9,10 +9,17 @@ import { ConfirmDialog } from './ConfirmDialog.tsx';
 
 test('destructive paints the filled danger surface, and nothing else does', () => {
   const html = renderToStaticMarkup(<ConfirmDialog open destructive title="Delete" onConfirm={() => {}} />);
-  assert.match(html, /var\(--danger-fill\)/, 'the filled danger surface does not render');
-  assert.match(html, /var\(--color-error-content\)/, 'the filled surface carries no readable ink');
+  assert.match(html, /\barena-confirm-dialog__confirm--destructive-true\b/, 'the filled danger surface does not render');
+  assert.match(html, /\barena-confirm-dialog__confirm--destructive-true\b/, 'the filled surface carries no readable ink');
 
   const plain = renderToStaticMarkup(<ConfirmDialog open title="Save" onConfirm={() => {}} />);
-  assert.doesNotMatch(plain, /var\(--danger-fill\)/, 'an ordinary confirm must not be filled with danger');
-  assert.match(plain, /var\(--crimson\)/, 'the ordinary confirm lost its primary surface');
+  assert.doesNotMatch(plain, /\barena-confirm-dialog__confirm--destructive-true\b/, 'an ordinary confirm must not be filled with danger');
+  assert.match(plain, /\barena-confirm-dialog__confirm--destructive-false\b/, 'the ordinary confirm lost its primary surface');
+});
+
+test('the footer wraps, the way Dialog, PageHead and ChartCard all do', () => {
+  const html = renderToStaticMarkup(<ConfirmDialog open title="Delete" onConfirm={() => {}} />);
+  assert.match(html, /\barena-confirm-dialog__foot\b/,
+    'the system has one action row, and a confirmation that overflows at 390px is the worst '
+    + 'place for it, since the reader is being asked to decide');
 });

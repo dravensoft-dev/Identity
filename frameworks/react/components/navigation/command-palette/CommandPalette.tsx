@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import { trapTabKey } from '../../../UseDialogModal.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './CommandPalette.classes.generated.ts';
 
 import type { Command } from '../../../Api.generated';
 
@@ -16,15 +19,24 @@ export interface CommandPaletteProps {
   /** The search field's placeholder. */
   placeholder?: string;
 
+  /** How many matches the list shows at most. Absent, all of them. The ceiling applies AFTER the query has run over every command, which is what makes it different from the caller trimming `commands` before passing them: a trimmed list cannot match what was cut, and a capped one can, so the first rows are still the best the whole set has. It is the palette's rather than the domain's, because how many rows help before the list stops being an accelerator is a property of this control; a caller who caps their own collection has guessed at it once, for one collection, with no query in hand. It is not ranking: the order stays the order the caller passed, ungrouped first and then each group as it first appears. */
+  maxResults?: number;
+
   /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   onClose?: () => void;
 
-  /** A command was activated, carrying which one. Emitted after close. */
+  /** A command was activated, carrying which one. Emitted after close. For a command with `route` it fires for a primary click with no modifier and for Enter, both of which cancel the row's anchor first, so the two activations do the same thing and a host that routes here never navigates twice; a modified or middle click on such a row is the browser's, fires nothing and does not close the palette. */
   onRun?: (command: Command) => void;
 }
 
 
+const paletteStyles = arenaStyles(manifest);
+
 let nextId = 0;
+
+export function capCommands(commands: readonly Command[], max: number | undefined): readonly Command[] {
+  return max === undefined || max < 0 ? commands : commands.slice(0, max);
+}
 
 export function orderCommands(commands: readonly Command[]): Command[] {
   const names: string[] = [];
@@ -53,7 +65,7 @@ export function commandGroups(ordered: readonly Command[]): CommandGroup[] {
   return groups;
 }
 
-export function CommandPalette({ open, commands, placeholder = 'Search for an action or project…', onClose, onRun }: CommandPaletteProps) {
+export function CommandPalette({ open, commands, placeholder = 'Search for an action or project…', maxResults, onClose, onRun }: CommandPaletteProps) {
   if (open == null) throw new Error('CommandPalette: `open` is required');
   if (commands == null) throw new Error('CommandPalette: `commands` is required');
   const [q, setQ] = useState('');
@@ -64,9 +76,10 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   if (uid.current === null) uid.current = `arena-command-palette-${nextId++}`;
   const listboxId = `${uid.current}-listbox`;
   const optionId = (index: number) => `${uid.current}-option-${index}`;
-  const filtered = orderCommands(
+  const filtered = orderCommands(capCommands(
     commands.filter((c) => (c.label + ' ' + (c.hint || '')).toLowerCase().includes(q.toLowerCase())),
-  );
+    maxResults,
+  ));
   const groups = commandGroups(filtered);
   useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => inputRef.current && inputRef.current.focus(), 0); } }, [open]);
   useEffect(() => { setI(0); }, [q]);
@@ -81,50 +94,51 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Tab' && panelRef.current) trapTabKey(panelRef.current, e, document.activeElement);
   };
+  const styles = paletteStyles({ open: true });
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-palette)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      paddingTop: '12vh', background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
+    <div onClick={onClose} className={styles.root()}>
       <div ref={panelRef} onKeyDown={onPanelKeyDown}
         onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Command palette"
-        style={{ width: 'calc(var(--sp-1) * 140)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)', borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
-          <i className="ph-bold ph-magnifying-glass" aria-hidden="true" style={{ color: 'var(--mute)', fontSize: 'var(--icon-lg)' }} />
+        className={styles.panel()}>
+        <div className={styles.search()}>
+          <i className={`ph-bold ph-magnifying-glass ${styles.searchIcon()}`} aria-hidden="true" />
           <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={placeholder}
             role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="true"
             aria-controls={listboxId} aria-label={placeholder || 'Search commands'}
             aria-activedescendant={i >= 0 && i < filtered.length ? optionId(i) : undefined}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: 'calc(var(--sp-1) * 0.5) calc(var(--sp-1) * 1.5)' }}>ESC</span>
+            className={styles.input()} />
+          <span className={styles.esc()}>ESC</span>
         </div>
-        <div id={listboxId} role="listbox" aria-label="Commands"
-          style={{ maxHeight: 'calc(var(--sp-1) * 80)', overflow: 'auto', padding: 'calc(var(--sp-1) * 1.5)' }}>
-          {filtered.length === 0 && <div style={{ padding: 'calc(var(--sp-1) * 4.5) calc(var(--sp-1) * 3)', fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', color: 'var(--mute)' }}>No results for "{q}".</div>}
+        <div id={listboxId} role="listbox" aria-label="Commands" className={styles.list()}>
+          {filtered.length === 0 && <div className={styles.empty()}>No results for "{q}".</div>}
           {groups.map((group) => (
-            <div key={group.name ?? ''} style={{ display: 'flex', flexDirection: 'column' }}
+            <div key={group.name ?? ''} className={styles.group()}
               role={group.name ? 'group' : undefined} aria-label={group.name ?? undefined}>
               {group.name && (
-                <span aria-hidden="true" style={{
-                  padding: 'calc(var(--sp-1) * 3) calc(var(--sp-1) * 3) calc(var(--sp-1) * 1.5)',
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', fontWeight: 'var(--fw-bold)',
-                  letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)',
-                }}>{group.name}</span>
+                <span aria-hidden="true" className={styles.groupLabel()}>{group.name}</span>
               )}
               {group.rows.map(({ command: c, index: idx }) => {
+                const on = idx === i;
                 const rowProps = {
                   id: optionId(idx),
                   role: 'option' as const,
-                  'aria-selected': idx === i,
+                  'aria-selected': on,
                   tabIndex: -1,
                   onMouseEnter: () => setI(idx),
-                  onClick: () => run(c),
-                  style: { display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 3)', width: '100%', textAlign: 'left' as const, padding: 'calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 3)', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer', textDecoration: 'none',
-                    background: idx === i ? 'var(--crimson-soft)' : 'transparent', color: idx === i ? 'var(--crimson)' : 'var(--bone-dim)' },
+                  onClick: (e: React.MouseEvent) => {
+                    if (c.route !== undefined) {
+                      if (!isPrimaryActivation(e)) return;
+                      e.preventDefault();
+                    }
+                    run(c);
+                  },
+                  className: `${styles.row()} ${on ? styles.rowActive() : styles.rowDefault()}`,
                 };
                 const body = (
                   <>
-                    {c.icon && <span style={{ fontSize: 'var(--icon-lg)', display: 'inline-flex' }}><i className={c.icon} aria-hidden="true" /></span>}
-                    <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', fontWeight: idx === i ? 'var(--fw-semibold)' : 'var(--fw-medium)' }}>{c.label}</span>
-                    {c.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{c.shortcut}</span>}
+                    {c.icon && <span className={styles.rowIcon()}><i className={c.icon} aria-hidden="true" /></span>}
+                    <span className={`${styles.rowLabel()} ${on ? styles.rowLabelActive() : styles.rowLabelDefault()}`}>{c.label}</span>
+                    {c.shortcut && <span className={styles.shortcut()}>{c.shortcut}</span>}
                   </>
                 );
                 return c.route

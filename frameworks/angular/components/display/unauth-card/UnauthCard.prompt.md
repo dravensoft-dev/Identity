@@ -1,10 +1,9 @@
 Arena's signed-out panel. A frame: the lock-up, an eyebrow, a title, whatever the screen
 is actually for, and a footer. It knows nothing about credentials, so one component
-serves sign-in, "check your inbox", "this link expired" and two-factor entry. Styling is
-the sibling `UnauthCard.variants.ts` recipe.
+serves sign-in, "check your inbox", "this link expired" and two-factor entry.
 
 ```html
-<div class="flex min-h-screen items-center justify-center p-gutter">
+<div style="display:flex;min-height:100vh;align-items:center;justify-content:center">
   <arena-unauth-card eyebrow="Delivery Console" title="Sign in">
     <arena-app-logo brand name="Draven" dim="soft" size="md">
       <img src="/assets/your-mark.svg" alt="" />
@@ -20,8 +19,22 @@ the sibling `UnauthCard.variants.ts` recipe.
 </div>
 ```
 
-Import `ArenaBrand` and `ArenaFooter` from `frameworks/angular/ProjectionMarkers`
-(or the layer barrel) alongside `UnauthCard` in the host component's `imports`,
+<!-- @api GENERATED from contracts/api/components/UnauthCard.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `brand` | slot |  |  | The brand lock-up above the panel's content. An AppLogo, in practice. |
+| `eyebrow` | primitive | `string` |  | Mono crimson microlabel: the product, not the task. |
+| `title` | primitive | `string` |  | The task. "Welcome back", "Check your inbox". |
+| `content` | slot |  |  | The fields, composed from Input and Button. |
+| `footer` | slot |  |  | Centred muted line below the content: a recovery link, a legal note. |
+
+<!-- @api end -->
+
+Import `ArenaBrand` and `ArenaFooter` from `@dravensoft/arena-angular` alongside
+`UnauthCard` in the host component's `imports`,
 `brand` and `footer` are directives, not plain attributes, because they are how the panel
 detects that something was actually projected into each slot. Both wrappers carry their
 own margin, so a card that omits one ships no dead space for it.

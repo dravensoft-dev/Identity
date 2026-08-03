@@ -1,0 +1,56 @@
+{
+  "component": "Tabs",
+  "seed": {
+    "value": "overview"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "Tab",
+        "members": {
+          "value": "overview",
+          "label": "Overview"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build 4821 has been live in every region for two hours."
+            }
+          ]
+        }
+      },
+      {
+        "component": "Tab",
+        "members": {
+          "value": "logs",
+          "label": "Logs"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "No entries in this window."
+            }
+          ]
+        }
+      },
+      {
+        "component": "Tab",
+        "members": {
+          "value": "settings",
+          "label": "Settings"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Auto-promotion is off for this service."
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "bind": {
+    "change": "value"
+  },
+  "note": "With no children it draws an empty tablist and no panel, which beats a panel pointing at a tab that is not there."
+}

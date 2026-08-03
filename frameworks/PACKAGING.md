@@ -10,7 +10,7 @@ and this document is that one: **two npm packages a project installs with `bun a
 | package | assembled into | from |
 | --- | --- | --- |
 | `@dravensoft/arena-react` | `frameworks/react/dist/` | `frameworks/react/` |
-| `@dravensoft/arena-angular` | `frameworks/angular/dist/` | `frameworks/angular/` plus the slice of `frameworks/tailwind/` its recipes read |
+| `@dravensoft/arena-angular` | `frameworks/angular/dist/` | `frameworks/angular/` |
 
 ```bash
 bun run build               # the generated sources build:packages reads
@@ -42,7 +42,7 @@ So the packages ship everything that is invariant, and the consumer declares the
 
 A command in each package, `arena-theme`, turns that JSON into the missing stylesheet. Its
 source is `scripts/generate/core/arena-theme/`, described in
-[`scripts/generate/core/README.md`](../scripts/generate/core/README.md),
+[`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md),
 copied whole into `dist/bin/`.
 
 **Import order is what makes it work.** The consumer's generated file comes last, and its
@@ -52,6 +52,90 @@ equal specificity, so source order decides and the consumer's values win.
 **Phosphor is never bundled.** Arena's single-icon convention is a class name a component
 renders, so the icons are a peer dependency in both packages. Bundling them would ship a
 font the consumer may already have and cannot swap.
+
+## One coupling, and it is part of the contract
+
+**A package's iconography is Phosphor.** It is not an implementation detail a future version
+quietly swaps, and it is worth saying plainly, because an adopter budgets for a dependency they
+were told about and resents one they find.
+
+- **Phosphor** travels as a **peer dependency** of both packages. Every `icon` member is a
+  class name the consumer supplies and a component renders, so the font has to be installed
+  and the names have to be Phosphor's. `check:icons` holds the names Arena itself writes.
+
+**Tailwind is no longer one.** It is how Arena's CSS is *authored*, and it stops there: a
+manifest's class string is compiled through `@apply`, stripped of every Tailwind theme
+indirection, and emitted as plain declarations under Arena's own class names. Nothing a package
+ships names a Tailwind utility, and neither package declares a runtime dependency of any kind
+except `tslib`, which is Angular's own helper import. A project that runs its own Tailwind can
+declare whatever `--spacing` it likes and nothing of Arena's moves.
+
+**That indirection is the reason the strip exists rather than an optimisation.** `@apply` emits
+`gap: calc(var(--spacing, var(--sp-1)) * 1.5)`, not the Arena token: the adopter's own
+`--spacing` on an unlayered `:root` wins, the fallback is never reached, and every component
+rescales with nothing in the DOM to point at. Compiling to CSS without stripping would move the
+collision from class names to custom properties rather than remove it.
+
+**What ships is a tree, and an adopter picks their depth.** `css/prelude.css` carries the layer
+order, the `@property` registrations and the keyframes; `css/base.css` is Tailwind's preflight
+and nothing of Arena's; `css/components/<name>.css` is one component, and each imports the
+prelude itself, so importing one alone is safe; `css/components.css` is all of them.
+`arena.css` imports the token chain and then all of that, which is the zero-friction path.
+
+**The prelude is not optional and its absence is silent.** Without the `@property --tw-*`
+registrations, `border-style: var(--tw-border-style)` is invalid at computed-value time and
+every border disappears, and the `box-shadow` chain takes the focus ring with it. That is why a
+component sheet imports the prelude rather than documenting the dependency. The preflight is
+the same shape one level up: it is where the `font: inherit` a form control needs lives, so a
+package that shipped the components and not the preflight renders every control at the
+browser's own size and reports nothing.
+
+**A project that already runs Tailwind ships an equivalent preflight**, so it may import
+`css/components.css` alone instead of `arena.css` and avoid a second copy of every rule in it.
+Doing that makes the order yours to get right: the preflight must come before Arena's
+components.
+
+## The class name is not the API, and that is a versioning statement
+
+Every component renders `arena-<manifest>__<slot>` class names, so they are in the DOM and a
+consumer's own rule reaches them by specificity. That is not a hole to be closed. It is what
+rendering classes means, and the alternative, an inline style object that beats every author
+rule short of `!important`, was worse in every way that matters. What has to be written down
+is the promise, because the observable thing and the promised thing are not the same thing.
+
+**A name that reads like an API is not one.** `arena-badge__root--tone-error` looks like a BEM
+surface somebody meant you to target, and it is not: it is the compiler's output, and it is
+named for a human reading a devtools pane rather than for a consumer writing a selector.
+
+**No contract names a class.** `contracts/api/components/<Name>.json` states members, and
+`check:api` reads the implementations for those members and cannot see a class at all. Nothing
+in the tree ties a slot's name, its class list, or the order those classes appear in to
+anything an adopter can rely on.
+
+So the policy is the short one: **a manifest may rename a slot, split it, merge it, re-order
+its classes or change which utility draws a value, in any release, and none of that is a
+breaking change** even though a class name in the DOM moves with it. It is an implementation
+moving. A consumer who wrote a rule against `.arena-badge__root--tone-error` on Arena's own
+element gets no deprecation and no warning, because there was never anything to deprecate.
+
+What IS the API is the list every gate already holds: the members in `contracts/api/`, the
+symbols each package exports, the files under `css/`, and the shape of `arena.config.json`.
+Re-skinning goes through the last of those, which is what it is for; content a consumer draws
+themselves is theirs, and their rules on their own elements are theirs too.
+
+**This is where the statement lives rather than only in each `PACKAGE.md`**, because the two
+say different things to different readers. A package's README tells an adopter what they may
+lean on. This tells us what we are free to change, and it is the reason a manifest edit ships
+in a patch. It is also the reason prefixing Arena's utilities, if that is ever worth doing,
+would be an implementation change and not a break: without this paragraph it would be a break
+nobody announced.
+
+**The Tailwind layer is still not a third package.** It is where a component's appearance is
+authored, and it is compiled away before anything ships: no consumer of either package imports
+it, or can name it. `check:layer-independence` declares `ALLOWED` and `EXEMPT` empty, and the
+one authorised edge lives in `ALLOWED_SPECIFIERS`: a page **linking** the compiled CSS under
+`frameworks/tailwind/consume/`, which is generated, identical whoever renders it, and read by
+nobody as a source.
 
 ## Assembly, not restructuring
 
@@ -76,22 +160,22 @@ fails the build rather than the consumer's editor. The entry point is
 directories, and it goes through that same compile, so the package exports
 `Index.generated.js` beside the declaration `tsc` emits for it.
 
-**Angular** goes through `ng-packagr` into Angular Package Format. That needs a staging tree,
-and the reason is worth stating because it is not obvious: ng-packagr infers `rootDir` from
-the entry file's directory and refuses any source outside it, while every `.variants.ts`
-imports a Tailwind manifest four directories up. So the layer is staged at
-`frameworks/angular/build/package/` with that slice of `frameworks/tailwind/` beside it, and each
-specifier is repointed to the depth it now sits at.
+**Angular** goes through `ng-packagr` into Angular Package Format. That needs a staging tree at
+`frameworks/angular/build/package/`, and the reason is narrower than it used to be: ng-packagr
+wants its own `ng-package.json`, `tsconfig.lib.json` and `package.json` at the root it compiles
+from, and writing those into the tracked layer would leave build files beside the source.
 
-**The Tailwind layer is not a third package.** It is data travelling one way into Angular,
-which is the single edge `check:layer-independence` declares `ALLOWED`, and no consumer of
-the Angular package ever names it. The compiled `Utilities.generated.css` ships too, so a
-consumer needs no Tailwind at all; the `@theme` preset ships beside it for one who already
-runs Tailwind v4 and would rather compile.
+**It stages nothing of another layer**, and that is the property to check rather than assume,
+because it was not always true: a `.variants.ts` used to import a Tailwind manifest four
+directories up, which ng-packagr refuses, since it infers `rootDir` from the entry file's
+directory. A component composes its own class names now, from a table emitted beside it, so
+nothing reaches out and the staging tree is a compiler's requirement rather than the shape of a
+coupling. `build-angular-package.mjs` fails on a staging run that copies zero files, so a layer
+that moved is loud rather than silently empty.
 
 ### What never ships
 
-Tests in any extension, demo pages, `.card.html` specimens, `.card.entry` scripts, behaviour
+Tests in any extension, demo pages, `.card.html` specimens, `.demo.` playgrounds, behaviour
 bindings, component prompts, the vendored React bundles, the test harnesses, the tsconfigs,
 and the font binaries. `EXCLUDED_NAMES` and `EXCLUDED_PATTERNS` are the record, and the
 suite beside them asserts both by name.
@@ -120,6 +204,9 @@ suite against a fixture holding exactly the file that would otherwise fail:
 `.claude-plugin/plugin.json` is the authority, as it already is for the plugin, the
 marketplace, the README's artifact list and the tag. `baseManifest()` stamps it into both packages,
 so no manifest is ever hand-versioned and the two cannot drift apart.
+
+What makes a number a major is the API, and a class name is not part of it: see "The class
+name is not the API" above before treating a manifest edit as a break.
 
 ## What `check:packages` holds
 
@@ -164,7 +251,7 @@ anything in `scripts/ci/arena/package-inputs.mjs` has changed since the tag of t
 that is. So a release touching only React publishes only React, and the Angular package
 keeps its number rather than shipping an identical tree under a new one. That is why the two
 packages can sit at different versions, and both `PACKAGE.md` files point a reader at
-[`../.github/workflows/README.md`](../.github/workflows/README.md) for the explanation.
+[`../.github/workflows/AGENTS.md`](../.github/workflows/AGENTS.md) for the explanation.
 
 Three things about the publish itself, each of which has a way of going wrong:
 

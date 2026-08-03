@@ -1,12 +1,13 @@
 <!-- @dsCard group="Tailwind" viewport="760x549" name="Onboarding" subtitle="Coachmark and progress, rendered from Onboarding.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/feedback/onboarding/Onboarding.styles.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 <style>.static-panel{position:static!important}</style>
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Onboarding.manifest.json')).json();
 
@@ -17,7 +18,7 @@ const manifest = await (await fetch('./Onboarding.manifest.json')).json();
    visual artifact of this component -- the same reason ConfirmDialog.card.html's own
    third section exists. */
 function coachmark({ eyebrow, title, body, index, total }) {
-  const c = classesFor(manifest, { placement: 'floating' });
+  const c = arenaClassesFor(manifest, { placement: 'floating' });
   const dots = el('div', { class: c.dots });
   for (let i = 0; i < total; i++) dots.append(el('span', { class: `${c.dot} ${i === index ? c.dotOn : c.dotOff}` }));
   const foot = el('div', { class: c.foot }, dots);
@@ -32,7 +33,7 @@ function coachmark({ eyebrow, title, body, index, total }) {
 }
 
 function overlay() {
-  const c = classesFor(manifest, { open: 'true', placement: 'floating' });
+  const c = arenaClassesFor(manifest, { open: 'true', placement: 'floating' });
   const dots = el('div', { class: c.dots });
   for (let i = 0; i < 3; i++) dots.append(el('span', { class: `${c.dot} ${i === 0 ? c.dotOn : c.dotOff}` }));
   const foot = el('div', { class: c.foot }, dots,

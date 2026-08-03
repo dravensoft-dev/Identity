@@ -7,7 +7,10 @@
     "outDir": "./dist",
     "rootDir": "."
   },
-  "include": ["./**/*.ts", "./**/*.tsx"],
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx"
+  ],
   "exclude": [
     "./dist",
     "./vendor",
@@ -16,6 +19,8 @@
     "./ui-kits",
     "./**/*.test.ts",
     "./**/*.test.tsx",
-    "./**/*.card.entry.tsx"
+    "./playground",
+    "./**/*.card.entry.tsx",
+    "./**/*.demo.entry.generated.tsx"
   ]
 }

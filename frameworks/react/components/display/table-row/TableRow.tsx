@@ -1,13 +1,16 @@
 import React from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../table/Table.classes.generated.ts';
 import type { TableColumn } from '../../../Api.generated';
 import type { TableCellInjected } from '../table-cell/TableCell.tsx';
+
+const rowStyles = arenaStyles(manifest);
 
 export interface TableRowInjected {
   rowIndex: number;
   columns: TableColumn[];
   layout: 'table' | 'card';
   cursorCol: number | null;
-  gridFocused: boolean;
   onCellFocus: (row: number, col: number) => void;
 }
 
@@ -16,7 +19,7 @@ export interface TableRowProps {
   /** The row's cells. One TableCell per cell; a row may carry fewer or more than there are columns, and the grid's cursor is clamped against what is really there. */
   children?: React.ReactNode;
 
-  /** Whether the row can be activated. A boolean rather than "is `click` bound?", per R6: an outbound member's subscriber list is private in at least one platform and a consumer's binding leaves nothing in the DOM to detect, so deriving the interactive shape from it is a divergence waiting to happen, and it was one. Below --bp-md the row is a card, and an interactive card is a role="button" tab stop with an Enter/Space handler; a non-interactive one is inert, because a dead tab stop on every row of every table is worse than the gap it would close. */
+  /** Whether the row can be activated. A boolean rather than "is `click` bound?": Arena never derives what it draws from what a consumer listens for, because an outbound member's subscriber list is private in at least one platform and a consumer's binding leaves nothing in the DOM to detect, so deriving the interactive shape from it is a divergence waiting to happen, and it was one. Below --bp-md the row is a card, and an interactive card is a role="button" tab stop with an Enter/Space handler; a non-interactive one is inert, because a dead tab stop on every row of every table is worse than the gap it would close. */
   interactive?: boolean;
 
   /** Whether the row is drawn but cannot be activated: a record the consumer's rules lock. It reflects through `aria-disabled` rather than the native attribute, and the card shape stays a role="button" in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. With no `click` there is nothing to disable and the row is inert already. */
@@ -29,7 +32,7 @@ export interface TableRowProps {
 
 export function TableRow({
   children, onClick, interactive = false, disabled = false,
-  rowIndex = 0, columns = [], layout = 'table', cursorCol = null, gridFocused = false, onCellFocus,
+  rowIndex = 0, columns = [], layout = 'table', cursorCol = null, onCellFocus,
 }: TableRowProps & Partial<TableRowInjected>) {
 
   const cells = React.Children.toArray(children).map((child, ci) => (
@@ -39,7 +42,6 @@ export function TableRow({
         layout,
 
         tabIndex: layout === 'card' ? undefined : (ci === cursorCol ? 0 : -1),
-        focused: layout !== 'card' && ci === cursorCol && gridFocused,
         onCellFocus: layout === 'card' || !onCellFocus ? undefined : () => onCellFocus(rowIndex, ci),
       })
       : child
@@ -59,24 +61,23 @@ export function TableRow({
           e.preventDefault();
           activate();
         } : undefined}
-        style={{ background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-          borderRadius: 'var(--r-lg)', padding: 'var(--dz-row-px)',
-          display: 'flex', flexDirection: 'column', gap: 'var(--dz-stack)',
-          cursor }}>
+        className={rowStyles({ narrow: true }).card()}>
         {cells}
       </div>
     );
   }
 
+  const base = rowStyles({ narrow: false });
+  const rowClass = [
+    rowIndex <= 1 ? `${base.row()} ${base.rowFirst()}` : base.row(),
+    activate ? base.rowInteractive() : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <tr role="row" onClick={activate}
       aria-disabled={onClick && disabled ? 'true' : undefined}
 
-      style={{ borderTop: rowIndex <= 1 ? 'none' : 'var(--bw) solid var(--color-base-300)',
-        cursor,
-        transition: 'background var(--dur-fast) var(--ease-out)' }}
-      onMouseEnter={activate ? (e) => (e.currentTarget.style.background = 'var(--color-base-300)') : undefined}
-      onMouseLeave={activate ? (e) => (e.currentTarget.style.background = 'transparent') : undefined}>
+      className={rowClass}>
       {cells}
     </tr>
   );

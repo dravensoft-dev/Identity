@@ -28,6 +28,7 @@
    scripts/check/tailwind/check-tailwind-coverage.mjs asserts no token is missing from it. */
 @import 'tailwindcss';
 @import './Animations.css';
+@import './Numerals.css';
 @import './Breakpoints.generated.css';
 
 @theme {
@@ -182,6 +183,7 @@
 
   --spacing-gutter: var(--gutter);
   --spacing-sidebar: var(--layout-sidebar);
+  --spacing-bar: var(--layout-bar);
 
   /* layout width. Named `page`, not `max`: a --container-max key collides
      with Tailwind's built-in static max-w-max and shadows it. */
@@ -243,6 +245,7 @@
      rather than guessing at a magic number. */
   --z-index-*: initial;
   --z-index-nav: var(--z-nav);
+  --z-index-sheet: var(--z-sheet);
   --z-index-dropdown: var(--z-dropdown);
   --z-index-tooltip: var(--z-tooltip);
   --z-index-modal: var(--z-modal);

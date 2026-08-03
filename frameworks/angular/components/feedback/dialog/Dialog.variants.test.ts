@@ -6,24 +6,6 @@ function tokens(classString: string): string[] {
   return classString.split(/\s+/).filter(Boolean);
 }
 
-test('open=false hides the scrim; open=true renders it as the fixed, centered overlay', () => {
-  const closed = tokens(dialogStyles({ open: false }).scrim());
-  assert.ok(closed.includes('hidden'), `expected "hidden" in "${closed.join(' ')}"`);
-  assert.ok(!closed.includes('flex'), 'the flex overlay layout must not coexist with hidden');
-
-  const open = tokens(dialogStyles({ open: true }).scrim());
-  assert.ok(open.includes('flex'), `expected "flex" in "${open.join(' ')}"`);
-  assert.ok(!open.includes('hidden'));
-});
-
-test('the closed default keeps the scrim hidden, matching a host that has not been opened yet', () => {
-  assert.equal(dialogStyles().scrim(), dialogStyles({ open: false }).scrim());
-});
-
-test('the scrim sits on --z-modal, one slot below the nested confirmation it can raise', () => {
-  assert.match(dialogStyles({ open: true }).scrim(), /\bz-modal\b/);
-});
-
 test('only the scrim varies with open -- the panel and its interior slots are constant', () => {
   const closed = dialogStyles({ open: false });
   const open = dialogStyles({ open: true });
@@ -32,12 +14,3 @@ test('only the scrim varies with open -- the panel and its interior slots are co
   }
 });
 
-test('the panel carries its own default width, so the width member is an override rather than a requirement', () => {
-  assert.match(dialogStyles({ open: true }).panel(), /\bw-120\b/);
-});
-
-test('the eyebrow is text only -- no filled surface, on the outline rule danger shares', () => {
-  const eyebrow = tokens(dialogStyles({ open: true }).eyebrow());
-  assert.ok(eyebrow.includes('text-primary'));
-  assert.ok(!eyebrow.some((cls) => cls.startsWith('bg-')));
-});

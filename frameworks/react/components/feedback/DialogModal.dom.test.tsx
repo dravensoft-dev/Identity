@@ -137,19 +137,15 @@ test('the require-text input substitutes a focus ring for the outline it removes
   );
   const input = container.querySelector<HTMLInputElement>('input');
   assert.ok(input, 'the requireText branch must render its input');
-  assert.match(input.style.outline, /none/,
+  const drawn = input.className;
+  assert.ok(drawn.includes('arena-confirm-dialog__input'),
     'the outline is still removed -- what changed is that something takes its place');
-  assert.ok(input.className.includes('arena-confirm-input'),
-    'the input must carry the hook the injected rule selects, or the ring reaches nothing');
+  assert.ok(drawn.includes('arena-confirm-dialog__input--invalid-false'),
+    'the input draws the valid branch, and the ring it substitutes for the outline comes with it; '
+    + 'for a TEXT input :focus-visible also matches a mouse click, so this is not about hiding a ring');
 
-  const tags = [...document.head.querySelectorAll<HTMLElement>('style[data-arena-confirm-dialog]')];
-  assert.equal(tags.length, 1, 'the rule is injected ONCE per process, not once per instance');
-  assert.match(tags[0]!.textContent, /\.arena-confirm-input:focus-visible/,
-    'the ring is keyed to :focus-visible on the hook class; for a TEXT input :focus-visible also '
-    + 'matches a mouse click, so this is not about hiding a ring');
-  assert.match(tags[0]!.textContent, /var\(--focus-width\)/, 'the ring width must be the token');
-  assert.match(tags[0]!.textContent, /var\(--danger\)/, 'and its colour the danger token');
-
+  assert.equal(document.head.querySelectorAll('style[data-arena-confirm-dialog]').length, 0,
+    'the rule lives in the manifest now, so nothing injects a stylesheet for it');
   assert.equal(container.querySelectorAll<HTMLElement>('style').length, 0,
-    'the tag belongs in <head>: rendered inline it ships one per instance and leaks into textContent');
+    'and nothing renders one inline either, which would ship one tag per instance');
 });

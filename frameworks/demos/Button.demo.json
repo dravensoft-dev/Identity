@@ -1,0 +1,14 @@
+{
+  "component": "Button",
+  "seed": {
+    "icon": "ph-bold ph-rocket-launch"
+  },
+  "slots": {
+    "content": [
+      {
+        "text": "Promote build"
+      }
+    ]
+  },
+  "note": "An icon is a Phosphor class name Arena draws, never a slot."
+}

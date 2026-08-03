@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/charts/chart-card/ChartCard.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './ChartCard.classes.generated';
 
-export const chartCardStyles = tv(manifest);
+export const chartCardStyles = arenaStyles(manifest);

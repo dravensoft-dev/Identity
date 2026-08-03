@@ -1,0 +1,13 @@
+{
+  "component": "Textarea",
+  "seed": {
+    "label": "Release notes",
+    "value": "Rolls the checkout timeout back to 30s.",
+    "counter": true,
+    "maxLength": 280
+  },
+  "bind": {
+    "change": "value"
+  },
+  "note": "With counter on, maxLength is what the count counts against."
+}

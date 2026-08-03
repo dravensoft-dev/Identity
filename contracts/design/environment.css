@@ -1,0 +1,12 @@
+/* The device's own geometry, composed with Arena's. DTCG models a dimension as a value and a
+   unit, and env() is neither: it is resolved by the browser, per device, at paint. So it is a
+   composition-layer derivation, the third one, beside colors.css's color-mix() and the
+   generated @font-face bundling. Nothing here defines a value; each is max() of a token and a
+   number only the device knows, so on a device with no inset the token is what applies. */
+
+:root {
+  --pad-safe-bottom: max(var(--sp-3), env(safe-area-inset-bottom));
+  --pad-safe-top: max(var(--sp-0), env(safe-area-inset-top));
+  --pad-safe-left: max(var(--sp-0), env(safe-area-inset-left));
+  --pad-safe-right: max(var(--sp-0), env(safe-area-inset-right));
+}

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Menu.classes.generated.ts';
 
 import type { MenuItem, MenuAlign } from '../../../Api.generated';
 
@@ -20,19 +22,7 @@ export interface MenuProps {
 }
 
 
-let injected = false;
-function useMenuKeyframes() {
-  useEffect(() => {
-    if (injected || typeof document === 'undefined') return;
-    injected = true;
-    const s = document.createElement('style');
-    s.setAttribute('data-arena-menu', '');
-    s.textContent =
-      '@keyframes arena-menu{from{opacity:0;transform:translateY(calc(var(--sp-1) * -1))}to{opacity:1;transform:none}}' +
-      '@media (prefers-reduced-motion:reduce){@keyframes arena-menu{from{opacity:0}to{opacity:1}}}';
-    document.head.appendChild(s);
-  }, []);
-}
+const menuStyles = arenaStyles(manifest);
 
 export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
 
@@ -43,7 +33,6 @@ export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
       + 'A fragment or a bare string takes aria-haspopup and aria-expanded nowhere.',
     );
   }
-  useMenuKeyframes();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -93,16 +82,17 @@ export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
     },
   });
 
+  const styles = menuStyles();
+
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-flex' }}>
+    <div ref={ref} className={styles.root()}>
       {decoratedTrigger}
       {open && (
-        <div role="menu" ref={panelRef} style={{ position: 'absolute', top: 'calc(100% + calc(var(--sp-1) * 1.5))', [align === 'end' ? 'right' : 'left']: 0, zIndex: 'var(--z-dropdown)',
-          minWidth: 'calc(var(--sp-1) * 50)', padding: 'calc(var(--sp-1) * 1.5)', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
-          borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)', animation: 'arena-menu var(--dur-fast) var(--ease-out)' }}>
+        <div role="menu" ref={panelRef}
+          className={align === 'end' ? `${styles.panel()} ${styles.panelEnd()}` : styles.panel()}>
           {items.map((it, i) => {
-            if (it.divider) return <div key={i} style={{ height: 'var(--bw)', background: 'var(--color-base-300)', margin: 'calc(var(--sp-1) * 1) 0' }} />;
-            if (it.header) return <div key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)', padding: 'calc(var(--sp-1) * 2) calc(var(--sp-1) * 2.5) calc(var(--sp-1) * 1)' }}>{it.header}</div>;
+            if (it.divider) return <div key={i} className={styles.divider()} />;
+            if (it.header) return <div key={i} className={styles.header()}>{it.header}</div>;
             return (
               <MenuRow key={i} item={it} onRun={() => run(it)} />
             );
@@ -114,19 +104,16 @@ export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
 }
 
 function MenuRow({ item, onRun }: { item: MenuItem; onRun: () => void }) {
-  const [hover, setHover] = useState(false);
-  const color = item.destructive ? 'var(--danger)' : 'var(--bone-dim)';
-  const bg = hover && !item.disabled ? (item.destructive ? 'var(--danger-soft)' : 'var(--crimson-soft)') : 'transparent';
+  const styles = menuStyles();
+  const state = item.disabled
+    ? styles.itemDisabled()
+    : item.destructive ? styles.itemDestructive() : styles.itemDefault();
   return (
     <button role="menuitem" onClick={onRun} disabled={item.disabled}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-      style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2.5)', width: '100%', textAlign: 'left', padding: 'calc(var(--sp-1) * 2) calc(var(--sp-1) * 2.5)',
-        border: 'none', borderRadius: 'var(--r-sm)', cursor: item.disabled ? 'not-allowed' : 'pointer',
-        background: bg, color: item.disabled ? 'var(--mute)' : (hover && !item.destructive ? 'var(--crimson)' : color),
-        opacity: item.disabled ? 0.6 : 1, fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)' }}>
-      {item.icon && <i className={item.icon} aria-hidden="true" style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }} />}
-      <span style={{ flex: 1 }}>{item.label}</span>
-      {item.shortcut && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{item.shortcut}</span>}
+      className={`${styles.item()} ${state}`}>
+      {item.icon && <i className={`${item.icon} ${styles.icon()}`} aria-hidden="true" />}
+      <span className={styles.label()}>{item.label}</span>
+      {item.shortcut && <span className={styles.shortcut()}>{item.shortcut}</span>}
     </button>
   );
 }

@@ -1,16 +1,17 @@
 <!-- @dsCard group="Tailwind" viewport="760x615" name="Textarea" subtitle="States and the counter, rendered from Textarea.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/forms/textarea/Textarea.styles.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Textarea.manifest.json')).json();
 
 function textarea({ label, value = '', hint, error, state = 'neutral', maxLength, required }) {
-  const c = classesFor(manifest, { state });
+  const c = arenaClassesFor(manifest, { state });
   const root = el('div', { class: c.root });
   root.style.width = '300px';
   const taId = label ? 'tw-ta-' + label.replace(/\s+/g, '-').toLowerCase() : undefined;

@@ -1,23 +1,24 @@
 <!-- @dsCard group="Tailwind" viewport="700x263" name="Skeleton" subtitle="Loading placeholders, rendered from Skeleton.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/display/skeleton/Skeleton.styles.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./Skeleton.manifest.json')).json();
 
 function single(variant) {
-  const c = classesFor(manifest, { variant });
+  const c = arenaClassesFor(manifest, { variant });
   const box = el('div', { class: c.root });
   box.style.width = variant === 'circle' ? '' : '160px';
   return box;
 }
 
 function stacked(lines) {
-  const c = classesFor(manifest, { variant: 'text' });
+  const c = arenaClassesFor(manifest, { variant: 'text' });
   const stack = el('div', { class: c.stack });
   stack.style.width = '220px';
   for (let i = 1; i <= lines; i++) stack.append(el('div', { class: i === lines ? c.lastLine : c.line }));

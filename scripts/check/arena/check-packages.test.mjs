@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   PACKAGES, GENERATED_PALETTE, distDir, stripAtStatements,
-  paletteEquivalenceProblems, manifestProblems, exportProblems, collect,
+  paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect,
 } from './check-packages.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -121,10 +121,24 @@ test('every exports target must have been emitted', () => {
   rmSync(dir, { recursive: true });
 });
 
-test('a wildcard target is not resolved, because it names a family rather than a file', () => {
+test('a wildcard target names a family, so what is checked is that the family is not empty', () => {
   const dir = assembled({ 'README.md': '#', 'Index.d.ts': '', 'css/a.css': '' });
   const m = manifest({ exports: { './css/*': './css/*' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir), []);
+
+  const empty = manifest({ exports: { './css/*': './css/*', './gone/*': './gone/*' } });
+  assert.deepEqual(exportProblems(PACKAGES[0], empty, dir),
+    ['@dravensoft/arena-react: exports ./gone/*, which matches nothing that was emitted, so the '
+      + 'subpath resolves to a module error for every consumer who imports it']);
+  rmSync(dir, { recursive: true });
+});
+
+test('a wildcard matches one path segment, the way Node resolves an exports pattern', () => {
+  const dir = assembled({ 'README.md': '#', 'Index.d.ts': '', 'css/components/badge.css': '' });
+  assert.deepEqual(globMatches('./css/components/*', dir), ['css/components/badge.css']);
+  assert.deepEqual(globMatches('./css/*', dir), [],
+    'a single star does not reach through a directory, so a family emitted one level deeper is '
+    + 'reported as empty rather than silently counted');
   rmSync(dir, { recursive: true });
 });
 

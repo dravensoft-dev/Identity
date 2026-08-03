@@ -14,6 +14,21 @@ A named group inside a `SideNav` that shows and hides its own contents -- a real
 </SideNav>
 ```
 
+<!-- @api GENERATED from contracts/api/components/SideNavCollapsible.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `id*` | primitive | `string` |  | Identifies the group. The disclosure pattern needs two DOM ids that resolve -- the trigger's aria-controls must name the region, and the region's aria-labelledby must name the trigger -- and Arena derives both from this member, as `${id}-trigger` and `${id}-region`. Neither wiring is conditional: every collapsible has a trigger and a region, so there is no shape in which the id goes unused, and that is why it is required rather than optional. A group is a thing a consumer names anyway. Falsy-guarded as well as required: a blank id yields the pair `-trigger`/`-region`, which every other blank-id collapsible on the page would share, and duplicate ids make aria-controls resolve to the wrong element rather than to none. A consumer can address either element from outside as a consequence -- an aria-describedby, a deep link, a test hook -- but that is a benefit of the derivation, not the reason for it. |
+| `label*` | primitive | `string` |  | What the trigger reads, and the accessible name of both the trigger and the region it controls. Required and falsy-guarded. |
+| `icon` | primitive | `string` |  | A Phosphor class name drawn before the label. The caret that reports expanded-ness is Arena's own and is not this member. |
+| `defaultExpanded` | primitive | `boolean` | `false` | Whether the group starts open. It is a seed, not a control: after the first render the state is the component's, and the group also opens itself when it comes to hold the active destination. |
+| `children` | slot |  |  | What the group holds -- items, sections, further collapsibles. Each sits one nesting level deeper. |
+| `onToggle` | event | `boolean` |  | The trigger was pressed, carrying the state it moved to. It fires on a press ONLY: the automatic expansion that follows the active destination is Arena's decision rather than the user's, and reporting it here would be a lie a consumer persists. |
+
+<!-- @api end -->
+
 The trigger carries `aria-expanded` and an `aria-controls` naming the region it toggles.
 The region is **always rendered** and hidden while collapsed, so `aria-controls` never
 points at nothing; both `hidden` and the inline `display` are driven by the same state,
@@ -90,16 +105,16 @@ Two consequences worth holding on to:
 **Two halves of this component are not machine-checkable, and neither is unverified
 because it is unimportant.** happy-dom does not synthesise a click from a keydown on a
 native button, so no suite can prove Enter and Space actually toggle the region -- what
-`SideNav.disclosure.dom.test.` proves instead is that the trigger is a native
-`<button type="button">`, that no handler of ours cancels either key, and that a click
-toggles, which together make the platform's activation the only remaining link. And
+is proved instead is that the trigger is a native `<button type="button">`, that no handler
+of ours cancels either key, and that a click toggles, which together make the platform's
+activation the only remaining link. And
 happy-dom has no sequential focus navigation at all, so a Tab keypress plus
 `document.activeElement` would pass identically against a correct implementation and
 against none; that suite asserts the structural half instead (the links sit inside
 `[hidden]` while collapsed, and nothing adds a `tabindex`).
 
 Serve the tree with `bun run demos`, open
-`frameworks/react/components/navigation/Navigation.card.html`, and check all of:
+`frameworks/react/components/navigation/side-nav-collapsible/SideNavCollapsible.demo.generated.html`, and check all of:
 
 1. The `Deployments` group is **already open** on first paint. `active="prod"` names an
    item inside it, so this is the auto-expand, not a `defaultExpanded`. A probe testing

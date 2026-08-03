@@ -44,7 +44,13 @@
     "pageChange": {
       "form": "event",
       "payload": "number",
-      "description": "A page was chosen, carrying the new 1-based page. It also fires with 1 when the total row count drops far enough that the current page is past the end, which is the reset a consumer otherwise writes by hand beside every filter; it fires only when the page has actually gone out of range, so a filter that leaves it valid is silent."
+      "description": "A page was chosen, carrying the new 1-based page. It also fires with 1 when the current page has gone PAST THE END, which is the only reset Table performs; a filter that leaves the page in range is silent, so returning the reader to page one on a change of criterion stays the consumer's, beside the criterion they hold."
+    },
+    "sortControl": {
+      "form": "enum",
+      "type": "TableSortControl",
+      "default": "auto",
+      "description": "How the sort affordance is reached in CARD MODE, where there is no header row to activate and a `sortable` column therefore has no control under it at all. 'auto' draws one compact select above the cards, listing every sortable column in each direction, which is the shape a phone has room for; 'none' leaves card mode unsorted by hand, for a table whose order is the document's rather than the reader's. Above --bp-md the header row is the control and this member draws nothing. The header row does NOT come back below the breakpoint, because card mode exists for the one reason a grid does not fit. It is a member rather than something a consumer draws for themselves because the state it edits, TableSort, is Arena's: left to each consumer, the label, the option order and the way a direction is worded are invented once per project over a model they did not define."
     },
     "responsive": {
       "form": "primitive",

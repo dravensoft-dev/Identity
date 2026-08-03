@@ -18,7 +18,11 @@
     "open": {
       "true": {},
       "false": { "root": "hidden" }
+    },
+    "narrow": {
+      "true": { "root": "flex-col items-stretch gap-2 py-2.5 pl-3", "divider": "hidden", "clear": "text-left" },
+      "false": {}
     }
   },
-  "defaultVariants": { "destructive": false, "open": false }
+  "defaultVariants": { "destructive": false, "open": false, "narrow": false }
 }

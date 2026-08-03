@@ -1,0 +1,12 @@
+{
+  "component": "Tag",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "text": "europe-west"
+      }
+    ]
+  },
+  "note": "A tag labels a thing; removable turns it into something the consumer can drop."
+}

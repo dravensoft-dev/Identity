@@ -21,10 +21,13 @@ test('the CLI each package ships as its bin is covered', () => {
     'copyCli reads this directory, and the guard names it by that path');
 });
 
-test('each package names its own layer, and Angular names the Tailwind slice staged beside it', () => {
+test('each package names its own layer, and both name the Tailwind layer they draw from', () => {
   assert.ok(pathspecs('react').includes('frameworks/react/'));
   assert.ok(pathspecs('angular').includes('frameworks/angular/'));
   assert.ok(pathspecs('angular').includes('frameworks/tailwind/'));
+  assert.ok(pathspecs('react').includes('frameworks/tailwind/'),
+    'the modules React compiles are emitted there and are gitignored, so a manifest edit moves '
+    + 'what the package ships while nothing tracked under frameworks/react/ moves');
   assert.ok(!pathspecs('react').includes('frameworks/angular/'), 'React carries nothing of the Angular layer');
 });
 

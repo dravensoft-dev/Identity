@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { angularEmitRoot } from '../../lib/angular/emit-root.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.mjs';
 
@@ -14,11 +15,27 @@ const CI_JOBS = {
 };
 
 test('GATES lists every check gate', () => {
-  assert.equal(GATES.length, 35);
+  assert.equal(GATES.length, 44);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:catalog', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:dimensions', 'check:states', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:skills', 'check:prompts', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:component-css', 'check:style-parity', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:citations', 'check:agents', 'check:icons', 'check:fonts', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:cards', 'check:focus-trap', 'check:shared-arithmetic', 'check:packages', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
+});
+
+test('the domain table in scripts/check/AGENTS.md counts what GATES holds, or it goes quietly stale', () => {
+  const readme = readFileSync(join(repoRoot, 'scripts', 'check', 'AGENTS.md'), 'utf8');
+  const counted = {};
+  for (const { file } of GATES) {
+    const domain = file.split('/')[0];
+    counted[domain] = (counted[domain] ?? 0) + 1;
+  }
+  for (const [domain, n] of Object.entries(counted)) {
+    const row = new RegExp(`\\[\`${domain}/\`\\]\\([^)]*\\) \\| (\\d+) \\|`);
+    const found = row.exec(readme);
+    assert.ok(found, `the domain table names no ${domain}/ row`);
+    assert.equal(Number(found[1]), n,
+      `the table says ${domain}/ holds ${found[1]} gate(s) and GATES holds ${n}`);
+  }
 });
 
 test('every gate in the array is also an npm script -- a gate a reader cannot invoke by name is the shape check:text-contrast shipped in', () => {
@@ -60,7 +77,8 @@ test('a domain that does not exist is refused rather than answered with an empty
 test('the arena domain is where the cross-layer gates are, which is why the core job carries it', () => {
   const arena = gatesFor(['arena']).map((g) => g.name);
   for (const name of ['check:api', 'check:behaviour', 'check:compliance', 'check:structure',
-    'check:dimensions', 'check:layer-independence', 'check:cards', 'check:focus-trap', 'check:packages']) {
+    'check:dimensions', 'check:layer-independence', 'check:cards', 'check:focus-trap', 'check:shared-arithmetic', 'check:packages',
+    'check:playgrounds']) {
     assert.ok(arena.includes(name), `${name} is not in the arena domain`);
   }
 });
@@ -103,10 +121,16 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
   const steps = testStep({ isBun: true, testFiles: ['a.test.mjs', 'b.test.mjs'] });
   assert.deepEqual(steps.map((s) => s.args), [
     ['run', 'build:angular-tests'],
-    ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test/angular',
+    ['test', 'scripts', 'frameworks/react', 'frameworks/angular/build/test',
      '--path-ignore-patterns=**/*.dom.test.*'],
     ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.'],
   ]);
+});
+
+test('bun is pointed at the tree ngc actually emits, so a rootDir edit cannot run zero Angular suites', () => {
+  const emitted = relative(repoRoot, angularEmitRoot(join(repoRoot, 'frameworks', 'angular', 'tsconfig.test.json')));
+  const suites = testStep({ isBun: true, testFiles: [] }).find((s) => s.args[0] === 'test').args;
+  assert.ok(suites.includes(emitted.split(sep).join('/')), `testStep runs ${suites}, but ngc emits into ${emitted}`);
 });
 
 test('testStep runs `node --test` over the discovered files under node', () => {

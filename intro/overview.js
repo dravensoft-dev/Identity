@@ -319,16 +319,11 @@ async function main() {
   paint();
 
   document.querySelector('.themebtn').addEventListener('click', paint);
-  /* Mirrors what theme.js does for .themebtn: flip the scope class, move the
-   * attribute the shared toggle.css reads, and relabel. The label is set on the
-   * .tlabel span rather than the button, which would take the knob with it. */
-  const density = document.getElementById('density');
-  density.addEventListener('click', () => {
-    const compact = root.classList.toggle('arena-compact');
-    density.setAttribute('data-compact', compact ? '1' : '0');
-    density.querySelector('.tlabel').textContent = compact ? 'Compact' : 'Comfortable';
-    paint();
-  });
+  /* density.js owns the control; this page only has to re-read the values it
+   * moved. Listening to its event rather than to the button is what keeps the
+   * repaint after the flip: a module registers before that classic script does,
+   * so a click listener here would read the state it is about to be told about. */
+  document.addEventListener('arena:density', paint);
 }
 
 main().catch((err) => {

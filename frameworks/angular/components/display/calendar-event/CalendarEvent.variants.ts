@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/calendar/Calendar.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from '../calendar/Calendar.classes.generated';
 
-export const calendarEventStyles = tv(manifest);
+export const calendarEventStyles = arenaStyles(manifest);

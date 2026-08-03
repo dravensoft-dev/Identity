@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/empty-state/EmptyState.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './EmptyState.classes.generated';
 
-export const emptyStateStyles = tv(manifest);
+export const emptyStateStyles = arenaStyles(manifest);

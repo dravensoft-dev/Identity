@@ -8,6 +8,25 @@ Protects irreversible actions (H3, H5). Does not close on click-outside. For the
 </ConfirmDialog>
 ```
 
+<!-- @api GENERATED from contracts/api/components/ConfirmDialog.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `open*` | primitive | `boolean` |  | Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let a ConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog. |
+| `title*` | primitive | `string` |  | The dialog heading, and the name the panel's aria-labelledby points at. Required: nothing can derive a name for a confirmation, because its subject is editorial, and a modal announcing only its role is worse than none at all. |
+| `eyebrow` | primitive | `string` | `"Confirm"` | Small uppercase label above the title. |
+| `children` | slot |  |  | The dialog body: the question and any detail. |
+| `confirmLabel` | primitive | `string` | `"Confirm"` | The confirm button's label. |
+| `cancelLabel` | primitive | `string` | `"Cancel"` | The cancel button's label. |
+| `destructive` | primitive | `boolean` | `false` | Gives the confirm button Arena's only filled danger surface. |
+| `requireText` | primitive | `string` |  | Locks the confirm button until this exact word is typed. |
+| `onCancel` | event |  |  | The dialog was dismissed -- by the Cancel action or by the Escape key, in both layers. A scrim click is deliberately NOT one of them: this component never closes on click-outside. No payload. |
+| `onConfirm` | event |  |  | The action was confirmed. |
+
+<!-- @api end -->
+
 `destructive` fills the confirm button with `--danger-fill`, and this is the only place in Arena where danger is filled. Everywhere else danger is an outline; see the danger convention in the README.
 
 `title` is **required** and throws when missing. It is what names the dialog for
@@ -38,7 +57,7 @@ the next one, because that is the browser's native sequential focus navigation. 
 browser-driven gate stays refused, so the interior is a person's job.
 
 Serve the tree with `bun run demos` and open
-`frameworks/react/components/feedback/confirm-dialog/ConfirmDialog.card.html`.
+`frameworks/react/components/feedback/confirm-dialog/ConfirmDialog.demo.generated.html`.
 
 **Start by pressing Escape.** That card renders with `open` already `true`, because a
 specimen has to show something. Pressing the trigger while the dialog is already open

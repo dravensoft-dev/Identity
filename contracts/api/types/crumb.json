@@ -6,6 +6,6 @@
     "label": { "form": "primitive", "type": "string", "required": true,
                "description": "What the crumb reads." },
     "href": { "form": "primitive", "type": "string",
-              "description": "Where it goes. Absent on the last entry, the current location." }
+              "description": "Where it goes. Absent on the last entry, the current location. A primary click with no modifier is cancelled and reported through `navigate`, so a router owns it; a modified or middle click is the browser's and reports nothing." }
   }
 }

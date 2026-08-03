@@ -40,17 +40,8 @@ export function entryStylesheet(preset, components, extra) {
     + (extra ? `@source '${extra}';\n` : '');
 }
 
-export function compileLayer(opts = {}) {
-  const root = opts.root ?? repoRoot;
-  const preset = join(root, 'frameworks/tailwind/Theme.css');
-  const components = join(root, 'frameworks/tailwind/components');
+export function compileEntry(entry, root = repoRoot) {
   const bin = join(root, 'node_modules/.bin/tailwindcss');
-
-  const manifests = new Map();
-  for (const p of manifestFiles(components))
-    manifests.set(relative(root, p), JSON.parse(readFileSync(p, 'utf8')));
-
-  const entry = entryStylesheet(preset, components, opts.extraSource);
   const dir = mkdtempSync(join(tmpdir(), 'arena-tw-'));
   const out = join(dir, 'out.css');
   try {
@@ -59,8 +50,26 @@ export function compileLayer(opts = {}) {
       if (r.error) throw new Error(`tailwindcss failed to spawn: ${r.error.message || r.error}`);
       throw new Error(`tailwindcss exited ${r.status}\n${r.stderr || r.stdout}`);
     }
-    return { css: readFileSync(out, 'utf8'), manifests };
+    return readFileSync(out, 'utf8');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+export function layerManifests(root = repoRoot) {
+  const components = join(root, 'frameworks/tailwind/components');
+  const manifests = new Map();
+  for (const p of manifestFiles(components))
+    manifests.set(relative(root, p), JSON.parse(readFileSync(p, 'utf8')));
+  return manifests;
+}
+
+export function compileLayer(opts = {}) {
+  const root = opts.root ?? repoRoot;
+  const preset = join(root, 'frameworks/tailwind/Theme.css');
+  const components = join(root, 'frameworks/tailwind/components');
+
+  const manifests = layerManifests(root);
+  const entry = entryStylesheet(preset, components, opts.extraSource);
+  return { css: compileEntry(entry, root), manifests };
 }

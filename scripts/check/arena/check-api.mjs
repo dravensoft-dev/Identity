@@ -1,7 +1,7 @@
 /* Asserts each API contract against every layer implementing it. There is no
  * exception map, and that is deliberate: a contract forbids divergence, so it has
  * nowhere for a second opinion to live. R2 and R3 are authoring rules no gate
- * asserts, and neither is a fact about source text -- contracts/api/README.md states why. */
+ * asserts, and neither is a fact about source text -- contracts/api/AGENTS.md states why. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
 import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
+  bindingName,
 } from '../../lib/arena/api-surface.mjs';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -25,12 +26,7 @@ export function zeroContractProblems({ contracts, types }) {
   return problems;
 }
 
-export function bindingName(name, form, layer) {
-  if (layer !== 'react') return name;
-  if (form === 'slot') return name === 'content' ? 'children' : name;
-  if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
-  return name;
-}
+export { bindingName };
 
 export function docProblems(contract, docs, layer) {
   const problems = [];
@@ -126,7 +122,7 @@ export function validateContract(contract, typeNames) {
   const routes = [];
   for (const [member, spec] of Object.entries(contract.api ?? {})) {
     if (!FORMS.has(spec.form)) {
-      problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see contracts/api/README.md`);
+      problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see contracts/api/AGENTS.md`);
       continue;
     }
     if (spec.form === 'primitive' && !PRIMITIVE_TYPES.has(spec.type)) {
@@ -155,7 +151,7 @@ export function validateContract(contract, typeNames) {
       if (contract.kind !== 'input') {
         problems.push(
           `${where}.${member}: a functionInput is legal only in a contract with "kind": "input" — `
-          + `the ninth form is for data-entry controls (contracts/api/README.md)`,
+          + `the ninth form is for data-entry controls (contracts/api/AGENTS.md)`,
         );
       }
       if (spec.returns === undefined) {

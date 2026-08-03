@@ -33,6 +33,7 @@ test('dismissible gates the close button; absent (even with onClose) renders no 
 
 test('icon overrides the tone default glyph', () => {
   const html = renderToStaticMarkup(<Alert tone="success" icon="ph-fill ph-rocket">Shipped</Alert>);
-  assert.match(html, /class="ph-fill ph-rocket"/);
+  assert.match(html, /class="ph-fill ph-rocket [^"]*"/,
+    "the icon the consumer named leads, and the manifest's icon slot tones it");
   assert.doesNotMatch(html, /ph-check-circle/);
 });

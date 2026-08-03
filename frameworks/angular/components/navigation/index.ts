@@ -1,3 +1,5 @@
+export * from './bottom-nav';
+export * from './bottom-nav-item';
 export * from './breadcrumbs';
 export * from './bulk-action-bar';
 export * from './command-palette';

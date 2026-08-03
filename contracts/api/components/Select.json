@@ -18,6 +18,7 @@
     "options": {
       "form": "array",
       "of": "SelectOption",
+      "default": [],
       "description": "The choices, drawn as native options."
     },
     "value": {

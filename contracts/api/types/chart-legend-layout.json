@@ -1,0 +1,6 @@
+{
+  "name": "ChartLegendLayout",
+  "kind": "enum",
+  "description": "How a legend row arranges its label and its figure when the row is narrow.",
+  "values": ["auto", "inline", "stacked"]
+}

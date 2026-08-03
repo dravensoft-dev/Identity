@@ -1,8 +1,7 @@
 Arena in-page message. Unlike a snackbar it is persistent: it belongs where the
 condition it reports lives, and it stays until that condition is resolved. `tone`
 carries the severity and picks the Phosphor Fill icon; `actionLabel` adds one
-uppercase mono action; `dismissible` adds the single `ph-x` close control. Styling is
-the sibling `Alert.variants.ts` recipe.
+uppercase mono action; `dismissible` adds the single `ph-x` close control.
 
 ```html
 <arena-alert tone="warning" title="Deploy window closes in 20 minutes">
@@ -14,6 +13,23 @@ the sibling `Alert.variants.ts` recipe.
   Three records could not be written.
 </arena-alert>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Alert.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `tone` | enum | `AlertTone` | `"info"` | The severity: colour, default icon, and (for danger) the alert role. |
+| `title` | primitive | `string` |  | An optional bold lead line above the message. |
+| `content` | slot |  |  | The message body. |
+| `icon` | primitive | `string` |  | A Phosphor class name overriding the tone's default glyph. Arena draws it. |
+| `actionLabel` | primitive | `string` |  | The label of a single inline action button. Absent renders no action. |
+| `action` | event |  |  | The inline action button was activated. |
+| `dismissible` | primitive | `boolean` | `false` | Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, because Arena never derives what it draws from what a consumer listens for. |
+| `close` | event |  |  | The × was activated. |
+
+<!-- @api end -->
 
 **Do / Don't**
 - Use `tone="danger"` only for a condition the user must act on. It renders

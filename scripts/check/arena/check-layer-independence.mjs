@@ -1,10 +1,13 @@
 /* Every framework layer stands on contracts/ alone. A file under frameworks/<A> may not
- * name layer B nor any of B's source files, and the one edge that survives is angular
- * consuming tailwind's manifests -- ALLOWED carries it. Detection is textual as well as by
- * import, because the coupling this gate exists to kill was almost entirely prose: an import
- * graph was already clean while 88 sentences made one layer normative for another. A token
- * is matched case-sensitively so a gate or script name (check:angular, test:react,
- * build:tailwind) is not mistaken for a citation of the layer itself. */
+ * name layer B nor any of B's source files, and the one edge that survives is a page linking
+ * the compiled CSS under frameworks/tailwind/consume/ -- ALLOWED_SPECIFIERS carries it, and a
+ * pattern matching nothing is stale, so it fails the day the link goes. A reference is judged
+ * by where it LANDS rather than by the string, because `../../../tailwind/` names the layer as
+ * surely as `frameworks/tailwind/` and no token would see it. Detection is textual as well,
+ * because the coupling this gate exists to kill was almost entirely prose: an import graph was
+ * already clean while 88 sentences made one layer normative for another. A token is matched
+ * case-sensitively so a gate or script name (check:angular, test:react, build:tailwind) is
+ * not mistaken for a citation of the layer itself. */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -39,24 +42,21 @@ export const FORBIDDEN = {
   tailwind: ['react', 'angular'],
 };
 
-export const ALLOWED = new Map([
-  ['angular -> tailwind',
-   'An Angular primitive is styled by the shared Tailwind recipe: its <Component>.variants.ts '
-   + 'imports the generated <Component>.manifest.generated beside the manifest, through the '
-   + 'configured tv in frameworks/tailwind/Tv.ts. It is the one edge between two framework '
-   + 'layers, it is a build dependency rather than a prose one, and the manifest is data -- '
-   + 'slots, variants and class strings -- so nothing about Angular reaches back into Tailwind.'],
-]);
+export const ALLOWED = new Map([]);
 
-export const ALLOWED_SPECIFIERS = [
-  /^frameworks\/tailwind\/components\/[a-z-]+\/[a-z-]+\/[A-Za-z]+\.manifest\.generated$/,
-  /^frameworks\/tailwind\/Tv$/,
-];
+export const ALLOWED_SPECIFIERS = new Map([
+  [/^frameworks\/tailwind\/consume\//,
+    'the compiled CSS every layer renders, which exists once rather than as a byte-identical '
+    + 'copy per layer. A page LINKS it and nothing else: no source of another layer is read, no '
+    + 'behaviour is derived, and the whole directory is generated, so there is nothing there to '
+    + 'make one layer normative for another.'],
+]);
 
 export const EXEMPT = new Map([]);
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.json', '.css', '.html', '.md']);
 export const MODULE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs']);
+export const REFERENCE_EXT = new Set([...MODULE_EXT, '.html']);
 const SKIP_DIRS = new Set(['node_modules', 'vendor', 'build', 'dist']);
 
 export function* layerFiles(layerDir) {
@@ -84,12 +84,16 @@ export function textualHits(text, tokens) {
 }
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
+const HTML_REFERENCE = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
+
+export function referencesIn(text, ext) {
+  return [...text.matchAll(MODULE_EXT.has(ext) ? SPECIFIER : HTML_REFERENCE)].map((m) => m[1]);
+}
 
 export function escapingSpecifiers(text, filePath, layer) {
   const foreign = FORBIDDEN[layer].concat(layer === 'angular' ? ['tailwind'] : []);
   const found = [];
-  for (const m of text.matchAll(SPECIFIER)) {
-    const spec = m[1];
+  for (const spec of referencesIn(text, extname(filePath))) {
     if (!spec.startsWith('.')) continue;
     const target = relative(root, resolve(dirname(filePath), spec)).replace(/\\/g, '/');
     if (!foreign.some((other) => target.startsWith(`frameworks/${other}/`))) continue;
@@ -99,12 +103,13 @@ export function escapingSpecifiers(text, filePath, layer) {
 }
 
 export function isAllowedSpecifier(specifier) {
-  return ALLOWED_SPECIFIERS.some((re) => re.test(specifier));
+  return [...ALLOWED_SPECIFIERS.keys()].some((re) => re.test(specifier));
 }
 
 export function collect() {
   const findings = [];
   const matchedKeys = [];
+  const allowedHits = [];
   let scanned = 0;
 
   for (const layer of LAYERS) {
@@ -115,9 +120,9 @@ export function collect() {
       const text = readFileSync(path, 'utf8');
       scanned += 1;
 
-      if (MODULE_EXT.has(extname(path))) {
+      if (REFERENCE_EXT.has(extname(path))) {
         for (const spec of escapingSpecifiers(text, path, layer)) {
-          if (isAllowedSpecifier(spec)) continue;
+          if (isAllowedSpecifier(spec)) { allowedHits.push(spec); continue; }
           findings.push({ kind: 'import', layer, file: rel, detail: spec });
         }
       }
@@ -130,12 +135,18 @@ export function collect() {
       }
     }
   }
-  return { findings, matchedKeys, scanned };
+  return { findings, matchedKeys, allowedHits, scanned };
 }
 
 export function staleExemptions(matchedKeys) {
   const matched = new Set(matchedKeys);
   return [...EXEMPT.keys()].filter((k) => !matched.has(k));
+}
+
+export function staleSpecifierAllowances(allowedHits) {
+  return [...ALLOWED_SPECIFIERS.keys()]
+    .filter((re) => !allowedHits.some((spec) => re.test(spec)))
+    .map((re) => `${re} matches nothing any layer references, so it authorises an edge nobody takes`);
 }
 
 export function staleLayerTokens(base = root) {
@@ -155,8 +166,9 @@ export function staleLayerTokens(base = root) {
 }
 
 function main() {
-  const { findings, matchedKeys, scanned } = collect();
+  const { findings, matchedKeys, allowedHits, scanned } = collect();
   const stale = staleExemptions(matchedKeys);
+  const staleAllowances = staleSpecifierAllowances(allowedHits);
   const staleTokens = staleLayerTokens();
   let failed = false;
 
@@ -184,8 +196,17 @@ function main() {
       }
     }
     console.error('\nA layer stands on contracts/ alone. State the fact neutrally in the contract both');
-    console.error('layers already obey, and cite that instead. The one authorised edge is on the record:');
+    console.error('layers already obey, and cite that instead. Every authorised edge is on the record:');
     for (const [edge, reason] of ALLOWED) console.error(`  ${edge} -- ${reason}`);
+    for (const [pattern, reason] of ALLOWED_SPECIFIERS) console.error(`  ${pattern} -- ${reason}`);
+  }
+
+  if (staleAllowances.length) {
+    if (failed) console.error('');
+    failed = true;
+    console.error(`check-layer-independence: ${staleAllowances.length} stale ALLOWED_SPECIFIERS `
+      + `entr${staleAllowances.length === 1 ? 'y' : 'ies'}\n`);
+    for (const entry of staleAllowances) console.error(`  ${entry}`);
   }
 
   if (stale.length) {
@@ -196,7 +217,8 @@ function main() {
   }
 
   if (failed) process.exit(1);
-  console.log(`check-layer-independence: clean -- ${scanned} file(s) scanned, ${EXEMPT.size} exempted on the record`);
+  console.log(`check-layer-independence: clean -- ${scanned} file(s) scanned, ${EXEMPT.size} exempted `
+    + `and ${ALLOWED_SPECIFIERS.size} reference pattern(s) authorised on the record`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

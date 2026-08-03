@@ -1,6 +1,5 @@
 Arena brand lock-up. Project the mark into the `mark` slot and pass the product name; one
-`size` picks both the mark's box and the wordmark, from the `--logo-*` scale. Styling is
-the sibling `AppLogo.variants.ts` recipe; the component carries no CSS classes of its own.
+`size` picks both the mark's box and the wordmark, from the `--logo-*` scale.
 
 ```html
 <arena-app-logo name="Draven" dim="soft" size="md">
@@ -11,6 +10,20 @@ the sibling `AppLogo.variants.ts` recipe; the component carries no CSS classes o
   <img mark src="/assets/your-client-mark.svg" alt="" />
 </arena-app-logo>
 ```
+
+<!-- @api GENERATED from contracts/api/components/AppLogo.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `mark*` | slot |  |  | The mark, as an asset the consumer supplies. Required: Arena ships MIT and a default would ship Dravensoft's trademark to whoever never read the API. The slot sizes the mark; a mark that brings its own dimensions fights the lock-up. |
+| `name*` | primitive | `string` |  | The product name, or its first half when `dim` carries the second. |
+| `dim` | primitive | `string` |  | The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome, which is why there is no `variant` member: the mark's ink and this are the same two decisions. |
+| `size` | enum | `LogoSize` | `"md"` | Both halves at once: the mark's slot and the wordmark. |
+| `orientation` | enum | `Orientation` | `"horizontal"` | Mark beside the name, or above it. |
+
+<!-- @api end -->
 
 **Do / Don't**
 - Give the projected mark no width or height of its own. The slot sizes it; a mark that

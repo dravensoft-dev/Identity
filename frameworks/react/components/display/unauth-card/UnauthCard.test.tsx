@@ -25,12 +25,9 @@ test('every slot is optional — a bare panel of children still renders', () => 
 test('it constrains its own width and does not centre itself', () => {
   const html = renderToStaticMarkup(<UnauthCard><span>x</span></UnauthCard>);
 
-  assert.match(
-    html,
-    /max-width:calc\(var\(--sp-1\) \* 95 \+ var\(--sp-1\) \* 18 \+ var\(--bw\) \* 2\)/
-  );
-  assert.doesNotMatch(html, /justify-content/);
-  assert.doesNotMatch(html, /min-height/);
+  assert.match(html, /arena-unauth-card__root/);
+  assert.doesNotMatch(html, /\bjustify-/, 'the card centres nothing; the page it sits on decides that');
+  assert.doesNotMatch(html, /\bmin-h-/);
 });
 
 test('eyebrow and title render as plain text', () => {
@@ -66,6 +63,7 @@ test('it renders Card rather than a second panel definition', () => {
 
   assert.match(
     html,
-    /overflow:hidden"><div style="padding:calc\(var\(--sp-1\) \* 5\)"><div style="padding:calc\(var\(--sp-1\) \* 4\)"/
+    /class="[^"]*\barena-card__root\b[^"]*"><div class="arena-card__body">/,
+    'the panel inside is Card\'s own root and body, drawn from Card\'s manifest rather than typed out here',
   );
 });

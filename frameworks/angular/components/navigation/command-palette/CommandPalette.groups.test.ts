@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { Command } from '../../../Api.generated';
-import { CommandPalette, orderCommands, commandGroups } from './CommandPalette';
+import { CommandPalette, capCommands, orderCommands, commandGroups } from './CommandPalette';
 
 const COMMANDS: Command[] = [
   { id: 'sale', label: 'New sale', group: 'Actions' },
@@ -83,4 +83,34 @@ test('a command with no route is still a button, so nothing navigates by acciden
     assert.equal(host.querySelectorAll('button[role="option"]').length, 4);
     assert.equal(host.querySelectorAll('a[role="option"]').length, 1);
   } finally { destroy(); }
+});
+
+test('maxResults caps the matches, and the cap runs after the search rather than before it', () => {
+  const capped = capCommands(COMMANDS, 2);
+  assert.deepEqual([...capped].map((c) => c.id), ['sale', 'help'],
+    'the cap takes the first N of what the query matched, in the order the caller passed');
+
+  assert.equal(capCommands(COMMANDS, undefined).length, COMMANDS.length, 'absent means no ceiling');
+  assert.equal(capCommands(COMMANDS, 0).length, 0, 'zero is a ceiling of zero, not an absent one');
+});
+
+@Component({
+  standalone: true,
+  imports: [CommandPalette],
+  template: '<arena-command-palette open [commands]="commands" [maxResults]="2" />',
+})
+class CappedHost { commands = COMMANDS; }
+
+test('a capped palette renders the cap, and still groups what is left', () => {
+  const fixture = TestBed.createComponent(CappedHost);
+  try {
+    fixture.detectChanges();
+    const host = fixture.nativeElement as Element;
+    assert.equal(host.querySelectorAll('[role="option"]').length, 2);
+    assert.deepEqual(
+      [...host.querySelectorAll('[role="option"]')].map((row) => row.textContent?.trim()),
+      ['Help', 'New sale'],
+      'ungrouped first, then each group as it first appears: the cap does not reorder anything',
+    );
+  } finally { fixture.destroy(); }
 });

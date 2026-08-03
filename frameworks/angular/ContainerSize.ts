@@ -1,18 +1,26 @@
 import { afterNextRender, DestroyRef, DOCUMENT, ElementRef, inject, signal, Signal } from '@angular/core';
 
+export type BreakpointName = 'sm' | 'md' | 'lg';
+
 const breakpoints = new Map<string, number>();
 
-export function containerWidth(target?: ElementRef<HTMLElement>): Signal<number | null> {
-  const host = target ?? inject<ElementRef<HTMLElement>>(ElementRef);
+export type WidthTarget = ElementRef<HTMLElement> | (() => HTMLElement | null | undefined);
+
+export function containerWidth(target?: WidthTarget): Signal<number | null> {
+  const fallback = target === undefined ? inject<ElementRef<HTMLElement>>(ElementRef) : null;
   const destroyRef = inject(DestroyRef);
   const width = signal<number | null>(null);
 
   afterNextRender(() => {
     if (typeof ResizeObserver === 'undefined') return;
+    const element = typeof target === 'function'
+      ? target()
+      : (target ?? fallback)?.nativeElement;
+    if (!element) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) width.set(entry.contentRect.width);
     });
-    observer.observe(host.nativeElement);
+    observer.observe(element);
     destroyRef.onDestroy(() => observer.disconnect());
   });
 
@@ -29,7 +37,31 @@ function warnUnresolved(name: string): void {
     + " Arena's stylesheet is missing, or it loads after this ran.");
 }
 
-export function readBreakpoint(name: 'sm' | 'md' | 'lg'): number {
+export function forgetBreakpoints(): void {
+  breakpoints.clear();
+  warned.clear();
+}
+
+export function viewportBelow(name: BreakpointName): Signal<boolean> {
+  const doc = inject(DOCUMENT);
+  const destroyRef = inject(DestroyRef);
+  const width = readBreakpoint(name);
+  const below = signal(false);
+
+  afterNextRender(() => {
+    const view = doc.defaultView;
+    if (!view?.matchMedia || !Number.isFinite(width)) return;
+    const query = view.matchMedia(`not all and (min-width: ${width}px)`);
+    below.set(query.matches);
+    const onChange = (event: MediaQueryListEvent) => below.set(event.matches);
+    query.addEventListener('change', onChange);
+    destroyRef.onDestroy(() => query.removeEventListener('change', onChange));
+  });
+
+  return below.asReadonly();
+}
+
+export function readBreakpoint(name: BreakpointName): number {
   const doc = inject(DOCUMENT);
   const cached = breakpoints.get(name);
   if (cached !== undefined) return cached;

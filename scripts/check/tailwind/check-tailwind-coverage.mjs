@@ -6,6 +6,10 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],
+  ['lh-root', 'the floor every element inherits, set once on html in contracts/design/reset.css and '
+    + 'never picked per element. A leading-root utility would invite a component to restate the '
+    + 'inherited value, which is the one thing that makes a floor stop being one; the three roles '
+    + 'beside it, tight, snug and body, are what a component reaches for on purpose'],
   ['bp-sm', 'reaches the utility surface as --breakpoint-sm, a literal Breakpoints.generated.css emits from this token, because a media query condition holds no var()'],
   ['bp-md', 'the same, as --breakpoint-md'],
   ['bp-lg', 'the same, as --breakpoint-lg'],

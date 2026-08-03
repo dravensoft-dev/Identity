@@ -10,6 +10,22 @@ exposed as a mono chip.
   secondaryAction={<Button variant="secondary">View logs</Button>} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/ErrorState.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `icon` | primitive | `string` |  | A Phosphor class name for the danger glyph Arena draws. |
+| `title` | primitive | `string` | `"Something went wrong"` | The headline: what failed. |
+| `message` | primitive | `string` |  | A sentence of detail under the title. |
+| `code` | primitive | `string` |  | A diagnostic/support code, shown monospaced. |
+| `retryLabel` | primitive | `string` |  | The label of the retry button Arena draws. Absent renders no retry. |
+| `onRetry` | event |  |  | The retry button was activated. |
+| `secondaryAction` | slot |  |  | An extra control beside the retry (e.g. a link to logs). |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Always pass `retryLabel` when a retry could work. An error state with no retry is a
   dead end the user has to navigate out of.

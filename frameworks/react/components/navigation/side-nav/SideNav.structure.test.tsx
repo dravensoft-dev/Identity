@@ -94,10 +94,11 @@ test('the trigger is a native button wired to the region it controls', () => {
   assert.match(html, /id="deploys-trigger"/);
 });
 
-test('a collapsed region is rendered, hidden, and not merely hidden', () => {
+test('a collapsed region is rendered rather than dropped, and hidden takes it out of the flow', () => {
   const html = renderToStaticMarkup(nested());
   assert.match(html, /id="deploys-region"[^>]*hidden/);
-  assert.match(html, /id="deploys-region"[^>]*display:\s*none/);
+  assert.match(html, /id="deploys-region"/,
+    'the region and its children stay in the tree, so the ids aria-controls names resolve');
 });
 
 test('defaultExpanded opens it on the first pass', () => {

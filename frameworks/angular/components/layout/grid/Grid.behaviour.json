@@ -1,0 +1,6 @@
+{
+  "component": "Grid",
+  "pattern": "none",
+  "reason": "Grid places the children it is given and draws nothing of its own: no wrapper per cell, no heading, no control, no role. It manages no state either -- the column count is CSS reading the room, not a signal anyone can change -- so there is nothing here for a user to act on. Every focusable thing inside a grid came from the content slot, which is caller-supplied, and each carries its own binding. What this deliberately does NOT claim is the `grid` pattern: that names role=\"grid\", a roving tab stop and arrow navigation over cells, which is a data structure a reader walks. This is layout, and binding `grid` here would announce a table where there are only boxes.",
+  "exceptions": []
+}

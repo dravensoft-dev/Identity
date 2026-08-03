@@ -1,4 +1,6 @@
-import React, { useId, useState } from 'react';
+import React, { useId } from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Select.classes.generated.ts';
 
 import type { SelectOption } from '../../../Api.generated';
 
@@ -43,46 +45,39 @@ export interface SelectProps {
   onChange?: (value: string) => void;
 }
 
+const selectStyles = arenaStyles(manifest);
+
 export function Select({
   label, placeholder, options = [], value, onChange, disabled = false, required = false,
   hint, error, valid = false, icon, name,
 }: SelectProps) {
-  const [focus, setFocus] = useState(false);
   const selectId = `select-${useId().replace(/:/g, '')}`;
   const noteId = `${selectId}-note`;
 
   const hasError = Boolean(error);
-  const border = hasError ? 'var(--error)' : valid ? 'var(--success)' : focus ? 'var(--gold)' : 'var(--color-base-300)';
-  const ring = hasError
-    ? '0 0 0 var(--focus-width) var(--danger-soft)'
-    : valid
-      ? '0 0 0 var(--focus-width) var(--success-soft)'
-      : focus ? '0 0 0 var(--focus-width) var(--gold-soft)' : 'none';
+  const styles = selectStyles({
+    state: hasError ? 'error' : valid ? 'valid' : 'neutral',
+    disabled,
+    hasIcon: Boolean(icon),
+  });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1.5)' }}>
-      {label && <label htmlFor={selectId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>{label}</label>}
-      <div style={{ position: 'relative' }}>
-        {icon && <i className={icon} aria-hidden="true" style={{ position: 'absolute', left: 'calc(var(--sp-1) * 3)', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'inline-flex', color: 'var(--mute)', fontSize: 'var(--icon-md)' }} />}
+    <div className={styles.root()}>
+      {label && <label htmlFor={selectId} className={styles.label()}>{label}</label>}
+      <div className={styles.wrap()}>
+        {icon && <i className={`${icon} ${styles.iconWrap()}`} aria-hidden="true" />}
         <select id={selectId} value={value} onChange={(e) => onChange && onChange(e.target.value)} disabled={disabled}
           required={required} name={name}
           aria-invalid={hasError || undefined} aria-describedby={error || hint ? noteId : undefined}
-          onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
-          style={{ appearance: 'none', width: '100%', height: 'var(--dz-ctl-h)',
-            padding: '0 calc(var(--sp-1) * 9) 0 ' + (icon ? 'calc(var(--sp-1) * 9)' : 'calc(var(--sp-1) * 3)'),
-            background: 'var(--surface-input)', color: 'var(--bone)',
-            border: 'var(--bw) solid ' + border, borderRadius: 'var(--r-sm)',
-            fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)', cursor: 'pointer',
-            boxShadow: ring, opacity: disabled ? 0.5 : 1,
-            transition: 'border-color var(--dur-fast) var(--ease-out)' }}>
+          className={styles.field()}>
           {placeholder && <option value="" disabled>{placeholder}</option>}
           {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <span style={{ position: 'absolute', right: 'calc(var(--sp-1) * 3)', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--mute)', fontSize: 'var(--icon-sm)' }} aria-hidden="true">▾</span>
+        <span className={styles.caret()} aria-hidden="true">▾</span>
       </div>
       {error
-        ? <span id={noteId} style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--error)' }}>{error}</span>
-        : hint && <span id={noteId} style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{hint}</span>}
+        ? <span id={noteId} className={styles.error()}>{error}</span>
+        : hint && <span id={noteId} className={styles.hint()}>{hint}</span>}
     </div>
   );
 }

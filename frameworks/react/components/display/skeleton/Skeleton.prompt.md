@@ -13,6 +13,20 @@ Loading placeholder for asynchronous data (H1). Use it in tables and dashboards 
 </div>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Skeleton.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `variant` | enum | `SkeletonVariant` | `"block"` | The shape the placeholder reserves. |
+| `width` | primitive | `string` |  | CSS width, e.g. "100%" or "12rem". Defaults to full width. |
+| `height` | primitive | `string` |  | CSS height. Defaults per variant. For the `circle` variant a single diameter is what is wanted, so `height` wins over `width` when both are set. |
+| `lines` | primitive | `number` | `3` | Number of rows when variant="text". The last runs short. |
+| `radius` | primitive | `string` |  | CSS border radius. Defaults to a small token radius. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - Reproduce the shape of the real content (same approximate height/width) to avoid layout shift on load.
 - `width`/`height`/`radius` are CSS strings, not numbers; write `width="40px"`, not `width={40}`.

@@ -26,14 +26,31 @@
    guarantee rested on a vendor default rather than on anything
    Arena controls. It rests here now.
 
-   This file sets box-sizing and NOTHING else. Tailwind's preflight
-   also zeroes margin, padding and border; copying that would
-   restyle every page in intro/ and every React demo, which is a
-   different change with different evidence behind it.
+   The ROOT LINE HEIGHT is the same defect one property over, found
+   the same way. Preflight sets `line-height: 1.5` on html, so every
+   Angular primitive inherited it and React inherited the browser's
+   `normal`, about 1.2. Measured in Chromium on the same component:
+   an Angular toast stood 72.5px and a React one 65px, from nothing
+   but the title's and the message's inherited line box. It reaches
+   94 slots across 32 components -- every slot that names a font
+   size and no leading, which is most of them, because a component
+   that declares nothing is meant to inherit the system's value and
+   there was no system value to inherit. --lh-root is 1.5, which is
+   what was already shipping, so the Angular layer does not move and
+   React comes to meet it.
+
+   This file sets those two things and NOTHING else. Tailwind's
+   preflight also zeroes margin, padding and border; copying that
+   would restyle every page in intro/ and every React demo, which is
+   a different change with different evidence behind it.
    ============================================================ */
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  line-height: var(--lh-root);
 }

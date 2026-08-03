@@ -1,6 +1,8 @@
 import type { CalendarEventProps, CalendarEventInjected } from '../calendar-event/CalendarEvent.tsx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Calendar.classes.generated.ts';
 import { catColor } from '../../../DataVisuals.ts';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 
@@ -34,7 +36,7 @@ export interface CalendarProps {
   /** Drop Sunday from the week unless an event falls on it. */
   hideEmptyWeekend?: boolean;
 
-  /** Whether a day can be activated. A boolean rather than "is `dateClick` bound?", per R6, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> (the keyboard's route to the date, and the one element that already names it), and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. */
+  /** Whether a day can be activated. A boolean rather than "is `dateClick` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> (the keyboard's route to the date, and the one element that already names it), and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. */
   dayInteractive?: boolean;
 
   /** A day header or column background was activated; carries the ISO date. Never emitted unless `dayInteractive`. */
@@ -52,7 +54,9 @@ import {
   placeEvents, rangeTitle, showsTime, stacksActions, startOfWeek, todayIso, weekdayOf, formatDate,
 } from './CalendarInternals.ts';
 
-const GUTTER = 'var(--calendar-gutter-w)';
+const TRACKS = (n: number) => `repeat(${n}, minmax(0, 1fr))`;
+
+const calendarStyles = arenaStyles(manifest);
 
 export function Calendar({
   children, timeZone, anchorDate, view,
@@ -128,10 +132,16 @@ export function Calendar({
   const activateDay = (iso: string) =>
     (dayInteractive ? () => { onDateClick && onDateClick(iso); } : undefined);
 
+  const idBase = React.useId().replace(/:/g, '');
+  const chips = useMemo(
+    () => byDay.flatMap((day, di) => day.map((p, i) => ({ p, di, domId: `${idBase}-chip-${di}-${i}` }))),
+    [byDay, idBase],
+  );
+  const ownedIds = (di: number) => chips.filter((c) => c.di === di).map((c) => c.domId).join(' ');
+
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   const eventRefs = useRef(new Map<string, HTMLElement>());
-  const [gridFocused, setGridFocused] = useState(false);
   const [cursor, setCursor] = useState({ day: 0, hour: 0 });
 
   const curDay = Math.min(Math.max(cursor.day, 0), Math.max(days.length - 1, 0));
@@ -187,35 +197,31 @@ export function Calendar({
     }
   };
 
-  const label: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 'var(--fw-bold)' };
+  const styles = calendarStyles({ dayInteractive });
   const navBtn = (dir: number) => (
     <button type="button" aria-label={dir < 0 ? 'Previous' : 'Next'}
       onClick={() => goto(addDays(anchor, dir * step))}
-      style={{ height: 'calc(var(--sp-1) * 8.5)', minWidth: 'calc(var(--sp-1) * 8.5)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        background: 'transparent', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-sm)',
-        color: 'var(--bone-dim)', cursor: 'pointer', fontSize: 'var(--icon-md)' }}>
-      <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} />
+      className={styles.nav()}>
+      <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} aria-hidden="true" />
     </button>
   );
 
   return (
     <section ref={ref} aria-label={`Schedule, ${rangeTitle(days)}`}
-      style={{ display: 'flex', flexDirection: 'column', width: '100%', fontFamily: 'var(--font-body)' }}>
+      className={styles.root()}>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', marginBottom: 'calc(var(--sp-1) * 3)', flexWrap: 'wrap' }}>
+      <div className={styles.toolbar()}>
         {navBtn(-1)}
         <button type="button" onClick={() => goto(today)}
-          style={{ height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 3)', background: 'transparent', border: 'var(--bw) solid var(--color-base-300)',
-            borderRadius: 'var(--r-sm)', color: 'var(--bone-dim)', cursor: 'pointer',
-            fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', fontWeight: 'var(--fw-semibold)' }}>Today</button>
+          className={styles.today()}>Today</button>
         {navBtn(1)}
-        <h2 style={{ margin: '0 0 0 calc(var(--sp-1) * 1)', fontSize: 'var(--fs-md)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)' }}>
+        <h2 className={styles.heading()}>
           {rangeTitle(days)}
         </h2>
-        {actions && <div style={{ marginLeft: 'auto', display: 'flex', gap: 'calc(var(--sp-1) * 2)', flexWrap: 'wrap' }}>{actions}</div>}
+        {actions && <div className={styles.actions()}>{actions}</div>}
       </div>
 
-      <div style={{ display: 'flex', paddingLeft: GUTTER, borderBottom: 'var(--bw) solid var(--color-base-300)' }}>
+      <div className={styles.headStrip()} style={{ gridTemplateColumns: TRACKS(days.length) }}>
         {days.map((d) => {
           const isToday = d === today;
           const DayHead = dayInteractive ? 'button' : 'div';
@@ -223,12 +229,9 @@ export function Calendar({
             <DayHead key={d} onClick={activateDay(d)}
               type={dayInteractive ? 'button' : undefined}
               aria-label={dayInteractive ? formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }) : undefined}
-              style={{ flex: 1, minWidth: 0, padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2) 0', textAlign: 'center',
-                background: 'transparent', border: 'none', font: 'inherit',
-                cursor: dayInteractive ? 'pointer' : 'default' }}>
-              <div style={label}>{formatDate(d, { weekday: 'short' })}</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text)', fontWeight: 'var(--fw-bold)', marginTop: 'calc(var(--sp-1) * 0.5)',
-                color: isToday ? 'var(--crimson)' : 'var(--bone-dim)' }}>
+              className={styles.dayHead()}>
+              <div className={styles.weekday()}>{formatDate(d, { weekday: 'short' })}</div>
+              <div className={calendarStyles({ today: isToday }).dayNumber()}>
                 {formatDate(d, { day: 'numeric' })}
               </div>
             </DayHead>
@@ -239,12 +242,12 @@ export function Calendar({
       {
 
 }
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 'calc(var(--sp-1) * 2)', paddingBottom: 'calc(var(--sp-1) * 2)' }}>
-        <div style={{ display: 'flex', position: 'relative', height: y(endMin) }}>
+      <div className={styles.scroll()}>
+        <div className={styles.body()} style={{ height: y(endMin) }}>
 
-          <div style={{ width: GUTTER, flexShrink: 0, position: 'relative' }}>
+          <div className={styles.gutter()}>
             {hours.map((m) => (
-              <div key={m} style={{ ...label, position: 'absolute', top: `calc(${y(m)}px - var(--sp-1))`, right: 'calc(var(--sp-1) * 2)', letterSpacing: 'var(--ls-uppercase-status)' }}>
+              <div key={m} className={styles.hourLabel()} style={{ top: y(m) }}>
                 {formatHM(m)}
               </div>
             ))}
@@ -255,25 +258,17 @@ export function Calendar({
 }
           <div ref={gridRef} role="grid" aria-label={`Schedule grid, ${rangeTitle(days)}`}
             onKeyDown={onGridKeyDown}
-            onFocus={() => setGridFocused(true)}
-            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setGridFocused(false); }}
-            style={{ flex: 1, minWidth: 0, display: 'flex', position: 'relative' }}>
+            className={styles.grid()} style={{ gridTemplateColumns: TRACKS(days.length) }}>
             {hours.map((m) => (
-              <div key={m} aria-hidden="true" style={{ position: 'absolute', top: y(m), left: 0, right: 0,
-                borderTop: 'var(--bw) solid var(--color-base-300)', pointerEvents: 'none' }} />
+              <div key={m} aria-hidden="true" className={styles.rule()} style={{ top: y(m) }} />
             ))}
 
             {days.map((d, di) => (
               <div key={d} role="row"
                 aria-label={formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
+                aria-owns={ownedIds(di) || undefined}
                 onClick={activateDay(d)}
-                style={{ flex: 1, minWidth: 0, position: 'relative',
-                  borderLeft: di === 0 ? 'none' : 'var(--bw) solid var(--color-base-300)',
-                  cursor: dayInteractive ? 'pointer' : 'default' }}>
-
-                {
-
-}
+                className={calendarStyles({ firstColumn: di === 0, dayInteractive }).column()}>
                 {slots.map((s, si) => {
                   const isCursor = di === curDay && si === curHour;
                   return (
@@ -281,51 +276,44 @@ export function Calendar({
                       tabIndex={isCursor ? 0 : -1}
 
                       onFocus={() => { if (di !== curDay || si !== curHour) setCursor({ day: di, hour: si }); }}
-                      style={{ position: 'absolute', top: y(s.start), left: 0, right: 0,
-                        height: y(s.end) - y(s.start), outline: 'none',
-                        boxShadow: isCursor && gridFocused
-                          ? 'inset 0 0 0 var(--focus-width) var(--focus-ring)' : undefined }} />
+                      className={styles.cell()}
+                      style={{ top: y(s.start), height: y(s.end) - y(s.start) }} />
                   );
-                })}
-
-                {
-
-}
-                {(byDay[di] ?? []).map((p) => {
-                  const color = catColor(p.ev.colorId ?? 1);
-                  const top = y(p.startMin);
-                  const rawH = y(p.endMin) - top;
-
-                  const h = `max(calc(var(--sp-1) * 6.5), ${rawH}px)`;
-                  const element = elementOf.get(p.ev);
-                  if (!element) return null;
-                  return React.cloneElement(element, {
-                    ref: (node: HTMLElement | null) => {
-                      const id = p.ev.id;
-                      if (id === undefined) return;
-                      if (node) eventRefs.current.set(id, node);
-                      else eventRefs.current.delete(id);
-                    },
-
-                    tabIndex: -1,
-                    box: { top, height: h,
-                      left: `calc(${(p.col / p.cols) * 100}% + calc(var(--sp-1) * 0.5))`,
-                      width: `calc(${(1 / p.cols) * 100}% - var(--sp-1))` },
-                    color,
-                    timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
-                    dateLabel: formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }),
-                    showTime: showsTime(rawH, slotFor(p.cols)),
-                    actionsBelow: stacksActions(rawH, slotFor(p.cols)),
-                  });
                 })}
               </div>
             ))}
 
+            {chips.map(({ p, di, domId }) => {
+              const top = y(p.startMin);
+              const rawH = y(p.endMin) - top;
+              const element = elementOf.get(p.ev);
+              if (!element) return null;
+              const leftShare = ((di + p.col / p.cols) / days.length) * 100;
+              const widthShare = (1 / (p.cols * days.length)) * 100;
+              return React.cloneElement(element, {
+                ref: (node: HTMLElement | null) => {
+                  const id = p.ev.id;
+                  if (id === undefined) return;
+                  if (node) eventRefs.current.set(id, node);
+                  else eventRefs.current.delete(id);
+                },
+
+                domId,
+                tabIndex: -1,
+                box: { top, height: `max(calc(var(--sp-1) * 6.5), ${rawH}px)`,
+                  left: `${leftShare}%`,
+                  right: `${100 - leftShare - widthShare}%` },
+                color: catColor(p.ev.colorId ?? 1),
+                timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
+                dateLabel: formatDate(days[di] ?? '', { weekday: 'long', day: 'numeric', month: 'long' }),
+                showTime: showsTime(rawH, slotFor(p.cols)),
+                actionsBelow: stacksActions(rawH, slotFor(p.cols)),
+              });
+            })}
+
             {showNow && (
-              <div aria-hidden="true" style={{ position: 'absolute', top: y(nowMin), left: 0, right: 0,
-                borderTop: 'var(--bw-strong) solid var(--crimson)', pointerEvents: 'none', zIndex: 1 }}>
-                <span style={{ position: 'absolute', top: 'calc(var(--sp-1) * -1)', left: 'calc(var(--sp-1) * -1)', width: 'calc(var(--sp-1) * 1.5)', height: 'calc(var(--sp-1) * 1.5)',
-                  borderRadius: '50%', background: 'var(--crimson)' }} />
+              <div aria-hidden="true" className={styles.now()} style={{ top: y(nowMin) }}>
+                <span className={styles.nowDot()} />
               </div>
             )}
           </div>

@@ -22,6 +22,9 @@ export const PACKAGE_INPUTS = {
   react: {
     ...SHARED_INPUTS,
     'frameworks/react/': 'the layer itself',
+    'frameworks/tailwind/': 'the manifest modules and the recipe runtime emitted into the layer, '
+      + 'which are gitignored, so a manifest edit moves what the package ships and no tracked '
+      + 'file under frameworks/react/ moves with it',
     'scripts/build/react/build-react-package.mjs': 'the assembler',
     'scripts/build/react/build-react-barrel.mjs': 'the entry point it compiles',
   },

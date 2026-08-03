@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Input.classes.generated.ts';
 
 import type { InputType, ValidateOn } from '../../../Api.generated';
 
@@ -78,30 +80,25 @@ export interface InputProps {
 }
 
 
-let injected = false;
-function usePickerIndicator() {
-  useEffect(() => {
-    if (injected || typeof document === 'undefined') return;
-    injected = true;
-    const s = document.createElement('style');
-    s.setAttribute('data-arena-input', '');
-    s.textContent =
-      '.arena-input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.6;' +
-      'filter:invert(var(--picker-invert,1));transition:opacity var(--dur-fast) var(--ease-out)}' +
-      '.arena-input::-webkit-calendar-picker-indicator:hover{opacity:1}';
-    document.head.appendChild(s);
-  }, []);
+const inputStyles = arenaStyles(manifest);
+
+export interface InputHandle {
+  focus(options?: FocusOptions): void;
+  select(): void;
 }
 
-export function Input({
+export const Input = forwardRef<InputHandle, InputProps>(function Input({
   label, id, hint, error, valid = false, required = false,
   validate, validateOn = 'blur', type = 'text',
   icon, prefix, value, disabled = false, readOnly = false,
   placeholder, name, autoComplete, min, max, step, maxLength, pattern,
   onChange, onBlur,
-}: InputProps) {
-  usePickerIndicator();
-  const [focus, setFocus] = useState(false);
+}: InputProps, handle) {
+  const control = useRef<HTMLInputElement>(null);
+  useImperativeHandle(handle, () => ({
+    focus: (options?: FocusOptions) => control.current?.focus(options),
+    select: () => control.current?.select(),
+  }), []);
   const [localErr, setLocalErr] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const inputId = id || (label ? 'in-' + label.replace(/\s+/g, '-').toLowerCase() : undefined);
@@ -111,37 +108,34 @@ export function Input({
 
   const runValidate = (v: string) => { if (validate) setLocalErr(validate(v) || null); };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { onChange && onChange(e.target.value); if (validateOn === 'change') { setTouched(true); runValidate(e.target.value); } };
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => { setFocus(false); setTouched(true); runValidate(e.target.value); onBlur && onBlur(e.target.value); };
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => { setTouched(true); runValidate(e.target.value); onBlur && onBlur(e.target.value); };
 
-  const borderColor = shownError ? 'var(--danger)' : focus ? 'var(--gold)' : isValid ? 'var(--success)' : 'var(--color-base-300)';
-  const ring = shownError ? '0 0 0 var(--focus-width) var(--danger-soft)' : focus ? '0 0 0 var(--focus-width) var(--gold-soft)' : isValid ? '0 0 0 var(--focus-width) var(--success-soft)' : 'none';
+  const styles = inputStyles({
+    state: shownError ? 'error' : isValid ? 'valid' : 'neutral',
+    disabled,
+    readonly: readOnly,
+  });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'calc(var(--sp-1) * 1.5)' }}>
+    <div className={styles.root()}>
       {label && (
-        <label htmlFor={inputId} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-field-label)', textTransform: 'uppercase', color: 'var(--mute)' }}>
-          {label}{required && <span style={{ color: 'var(--crimson)', marginLeft: 'calc(var(--sp-1) * 1)' }}>*</span>}
+        <label htmlFor={inputId} className={styles.label()}>
+          {label}{required && <span className={styles.required()}>*</span>}
         </label>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', height: 'var(--dz-ctl-h)', padding: '0 calc(var(--sp-1) * 3)',
-        background: readOnly ? 'var(--panel)' : 'var(--surface-input)', border: 'var(--bw) solid ' + borderColor,
-        borderRadius: 'var(--r-sm)', boxShadow: ring, opacity: disabled ? 0.5 : 1,
-        transition: 'border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)' }}>
-        {icon && <i className={icon} aria-hidden="true" style={{ color: 'var(--mute)' }} />}
-        {prefix && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{prefix}</span>}
-        <input id={inputId} type={type} value={value} disabled={disabled} readOnly={readOnly}
-          required={required} aria-invalid={!!shownError} className="arena-input"
+      <div className={styles.field()}>
+        {icon && <i className={`${icon} ${styles.icon()}`} aria-hidden="true" />}
+        {prefix && <span className={styles.prefix()}>{prefix}</span>}
+        <input ref={control} id={inputId} type={type} value={value} disabled={disabled} readOnly={readOnly}
+          required={required} aria-invalid={!!shownError} className={styles.input()}
           placeholder={placeholder} name={name} autoComplete={autoComplete}
           min={min} max={max} step={step} maxLength={maxLength} pattern={pattern}
-          onFocus={() => setFocus(true)} onBlur={handleBlur} onChange={handleChange}
-          style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
-            cursor: readOnly ? 'default' : 'text',
-            color: 'var(--bone)', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text)' }} />
-        {shownError && <i className="ph-fill ph-warning-circle" aria-hidden="true" style={{ color: 'var(--danger)', fontSize: 'var(--icon-md)' }} />}
-        {isValid && <i className="ph-fill ph-check-circle" aria-hidden="true" style={{ color: 'var(--success)', fontSize: 'var(--icon-md)' }} />}
+          onBlur={handleBlur} onChange={handleChange} />
+        {shownError && <i className={`ph-fill ph-warning-circle ${styles.statusIcon()}`} aria-hidden="true" />}
+        {isValid && <i className={`ph-fill ph-check-circle ${styles.statusIcon()}`} aria-hidden="true" />}
       </div>
-      {shownError ? <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--danger)', fontFamily: 'var(--font-body)' }}>{shownError}</span>
-        : hint && <span style={{ fontSize: 'var(--dz-text-sm)', color: 'var(--mute)', fontFamily: 'var(--font-body)' }}>{hint}</span>}
+      {shownError ? <span className={styles.error()}>{shownError}</span>
+        : hint && <span className={styles.hint()}>{hint}</span>}
     </div>
   );
-}
+});

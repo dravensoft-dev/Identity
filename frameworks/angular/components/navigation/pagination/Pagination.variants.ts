@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/pagination/Pagination.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Pagination.classes.generated';
 
-export const paginationStyles = tv(manifest);
+export const paginationStyles = arenaStyles(manifest);

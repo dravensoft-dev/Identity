@@ -15,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { commandPaletteStyles } from './CommandPalette.variants';
+import { isPrimaryActivation } from '../../../AnchorActivation';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
 import type { Command } from '../../../Api.generated';
 
@@ -23,6 +24,10 @@ let nextId = 0;
 export function filterCommands(commands: readonly Command[], query: string): Command[] {
   const needle = query.toLowerCase();
   return commands.filter((command) => `${command.label} ${command.hint ?? ''}`.toLowerCase().includes(needle));
+}
+
+export function capCommands(commands: readonly Command[], max: number | undefined): readonly Command[] {
+  return max === undefined || max < 0 ? commands : commands.slice(0, max);
 }
 
 export function orderCommands(commands: readonly Command[]): Command[] {
@@ -111,7 +116,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
               <a [id]="optionId(i)" role="option" [attr.aria-selected]="i === active()" tabindex="-1"
                  [href]="target"
                  [class]="styles().row() + ' ' + (i === active() ? styles().rowActive() : styles().rowDefault())"
-                 (mouseenter)="onHover(i)" (click)="onRun(command)">
+                 (mouseenter)="onHover(i)" (click)="onRouteClick(command, $event)">
                 @if (command.icon; as glyph) {
                   <span [class]="styles().rowIcon()"><i [class]="glyph" aria-hidden="true"></i></span>
                 }
@@ -151,15 +156,19 @@ export class CommandPalette {
   readonly commands = input.required<Command[]>();
   /** The search field's placeholder. */
   readonly placeholder = input('Search for an action or project…');
+  /** How many matches the list shows at most. Absent, all of them. The ceiling applies AFTER the query has run over every command, which is what makes it different from the caller trimming `commands` before passing them: a trimmed list cannot match what was cut, and a capped one can, so the first rows are still the best the whole set has. It is the palette's rather than the domain's, because how many rows help before the list stops being an accelerator is a property of this control; a caller who caps their own collection has guessed at it once, for one collection, with no query in hand. It is not ranking: the order stays the order the caller passed, ungrouped first and then each group as it first appears. */
+  readonly maxResults = input<number>();
   /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   readonly close = output<void>();
-  /** A command was activated, carrying which one. Emitted after close. */
+  /** A command was activated, carrying which one. Emitted after close. For a command with `route` it fires for a primary click with no modifier and for Enter, both of which cancel the row's anchor first, so the two activations do the same thing and a host that routes here never navigates twice; a modified or middle click on such a row is the browser's, fires nothing and does not close the palette. */
   readonly run = output<Command>();
 
   protected readonly query = signal('');
   protected readonly active = signal(0);
   protected readonly styles = computed(() => commandPaletteStyles({ open: this.open() }));
-  protected readonly filtered = computed(() => orderCommands(filterCommands(this.commands(), this.query())));
+  protected readonly filtered = computed(() => orderCommands(
+    capCommands(filterCommands(this.commands(), this.query()), this.maxResults()),
+  ));
 
   protected readonly groups = computed(() => commandGroups(this.filtered()));
 
@@ -224,6 +233,12 @@ export class CommandPalette {
       const panel = this.panel()?.nativeElement;
       if (panel) trapTabKey(panel, event, this.doc.activeElement);
     }
+  }
+
+  protected onRouteClick(command: Command, event: MouseEvent): void {
+    if (!isPrimaryActivation(event)) return;
+    event.preventDefault();
+    this.onRun(command);
   }
 
   protected onRun(command: Command): void {

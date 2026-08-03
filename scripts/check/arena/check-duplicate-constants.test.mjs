@@ -48,3 +48,20 @@ test('a dist tree is assembled output, so its copy of a constant is never a dupl
   assert.deepEqual([...sourceFiles(root)], [join(root, 'react', 'Widget.jsx')]);
   rmSync(root, { recursive: true });
 });
+
+test('generated output is out of scope, because a file emitted into every layer is one declaration', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'arena-dupe-generated-'));
+  try {
+    mkdirSync(join(dir, 'react'), { recursive: true });
+    mkdirSync(join(dir, 'angular'), { recursive: true });
+    writeFileSync(join(dir, 'react', 'Codec.generated.ts'), 'export const LOG_LIMIT = 40;\n');
+    writeFileSync(join(dir, 'angular', 'Codec.generated.ts'), 'export const LOG_LIMIT = 40;\n');
+    assert.deepEqual([...sourceFiles(dir)], [],
+      'one source emitted twice cannot drift, and the gate holding it to that source would say so if it did');
+
+    writeFileSync(join(dir, 'react', 'Hand.ts'), 'export const LOG_LIMIT = 40;\n');
+    assert.equal([...sourceFiles(dir)].length, 1, 'a hand-written file beside it is still in scope');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

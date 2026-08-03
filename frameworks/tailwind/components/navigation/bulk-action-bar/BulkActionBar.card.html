@@ -1,19 +1,20 @@
 <!-- @dsCard group="Tailwind" viewport="760x215" name="BulkActionBar" subtitle="Selection actions, rendered from BulkActionBar.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/navigation/bulk-action-bar/BulkActionBar.styles.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./BulkActionBar.manifest.json')).json();
-const base = classesFor(manifest, { open: true });
+const base = arenaClassesFor(manifest, { open: true });
 
 function bar(count, noun, actions) {
   const list = el('div', { class: base.actions });
   for (const action of actions) {
-    const c = classesFor(manifest, { destructive: !!action.destructive });
+    const c = arenaClassesFor(manifest, { destructive: !!action.destructive });
     const button = el('button', { class: c.action, type: 'button' });
     if (action.icon) button.append(el('span', { class: base.actionIcon }, el('i', { class: action.icon, 'aria-hidden': 'true' })));
     button.append(action.label);

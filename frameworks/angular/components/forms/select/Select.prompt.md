@@ -1,5 +1,4 @@
-Arena select, a styled **native** `<select>`. Standalone, `OnPush`, signal I/O. Styling is the
-sibling `Select.variants.ts` recipe; the component carries no CSS classes of its own. The host is
+Arena select, a styled **native** `<select>`. Standalone, `OnPush`, signal I/O. The host is
 the field's column, label above, control below, so put `<arena-select>` straight into a form
 row.
 
@@ -17,6 +16,27 @@ popup this component does not own.
               placeholder="Choose a customer" icon="ph-bold ph-user"
               [error]="customerError()" (change)="customer.set($event)" />
 ```
+
+<!-- @api GENERATED from contracts/api/components/Select.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label` | primitive | `string` |  | Field label above the control. |
+| `placeholder` | primitive | `string` |  | An empty-valued first option, drawn before the choices and unselectable once a real one is made -- "Choose a customer". It is an option rather than an attribute because a native select has no placeholder, and it is what makes "nothing chosen yet" distinguishable from "the first choice". |
+| `options` | array | `SelectOption[]` | `[]` | The choices, drawn as native options. |
+| `value` | primitive | `string` |  | The selected option's value. |
+| `disabled` | primitive | `boolean` | `false` | Blocks the control and dims it. |
+| `required` | primitive | `boolean` | `false` | Must have a value for the form to submit. |
+| `hint` | primitive | `string` |  | A line of help under the field. |
+| `error` | primitive | `string` |  | Controlled error message. It is the whole validation surface here, unlike Input, which also takes a `validate` function: a native select offers a closed list, so there is no value to parse and nothing for a validator to reject that the options did not already prevent. |
+| `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
+| `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `change` | event | `string` |  | A different option was chosen; carries its value. |
+
+<!-- @api end -->
 
 **Validation is the same vocabulary `Input` carries, deliberately.** A form that mixes the two is
 a form whose fields must report a failure the same way, or it gets validated by hand or not at
@@ -51,8 +71,8 @@ outside.
 
 `change` carries the chosen **value**, not the event. The native `change` a `<select>` fires
 shares that name, so Arena stops it inside the host: a consumer listening on an ancestor is told
-once, by the output, and never by the raw DOM event. `Select.compliance.test.ts` measures that
-rather than asserting it in prose.
+once, by the output, and never by the raw DOM event. That is measured rather than asserted in
+prose.
 
 **Do / Don't**
 - **Do** give every option a `value` distinct from its `label`. `value` is what submits and what
@@ -69,7 +89,7 @@ rather than asserting it in prose.
 
 **By hand, in real Chromium**: the popup is the browser's and happy-dom has none, so nothing
 below is provable by a suite. Run `bun run demos` and open
-`/frameworks/angular/components/forms/select/Select.card.html`:
+`/frameworks/angular/components/forms/select/Select.demo.generated.html`:
 - The popup opens on click and on Space, walks with the arrow keys and type-ahead, and commits on
   Enter, all of it the platform's, none of it Arena's.
 - The caret sits inside the field's right padding and swallows no click: pressing it opens the

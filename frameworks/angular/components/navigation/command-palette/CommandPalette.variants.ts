@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/command-palette/CommandPalette.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './CommandPalette.classes.generated';
 
-export const commandPaletteStyles = tv(manifest);
+export const commandPaletteStyles = arenaStyles(manifest);

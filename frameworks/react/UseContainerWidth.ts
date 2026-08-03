@@ -20,6 +20,8 @@ export function useContainerWidth<T extends Element = HTMLDivElement>(target?: R
   return [ref, width];
 }
 
+export type BreakpointName = 'sm' | 'md' | 'lg';
+
 const cache = new Map<string, number>();
 
 const warned = new Set<string>();
@@ -32,7 +34,28 @@ function warnUnresolved(name: string): void {
     + " Arena's stylesheet is missing, or it loads after this ran.");
 }
 
-export function readBreakpoint(name: 'sm' | 'md' | 'lg'): number {
+export function forgetBreakpoints(): void {
+  cache.clear();
+  warned.clear();
+}
+
+export function useViewportBelow(name: BreakpointName): boolean {
+  const [below, setBelow] = useState(false);
+  const width = readBreakpoint(name);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia || !Number.isFinite(width)) return;
+    const query = window.matchMedia(`not all and (min-width: ${width}px)`);
+    setBelow(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setBelow(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, [width]);
+
+  return below;
+}
+
+export function readBreakpoint(name: BreakpointName): number {
   if (typeof document === 'undefined') return NaN;
   const hit = cache.get(name);
   if (hit !== undefined) return hit;

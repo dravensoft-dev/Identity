@@ -1,12 +1,32 @@
 # @dravensoft/arena-react
 
-Arena is Dravensoft's design system. This package is its React layer: 50 components styled
-entirely by design tokens, with no CSS classes, no stylesheet to override and no theme
-provider to wrap your tree in.
+Arena is Dravensoft's design system. This package is its React layer: 55 components whose every
+value traces to a design token, with one stylesheet to import and no theme provider to wrap
+your tree in.
 
 **The package carries the language. It does not carry a skin.** Your palettes and your fonts
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
+
+**No CSS toolchain, no runtime dependency, and Phosphor is required.** Every component's CSS
+ships compiled inside `arena.css`, so one import is the whole of it and you compile nothing.
+The rules are written against Arena's own class names and read Arena's own tokens, and against
+nothing else: no utility class and no custom property from any other framework appears in this
+package, so a project running its own utility framework cannot collide with it in either
+direction. It brings a browser base with it too:
+a form control that inherits nothing falls back to the browser's own 13.33px Arial, and a
+`<button>` styled that way is 20% off in every measurement that matters. Arena's other layer
+reads the same rules, so the two render one component one way.
+
+**You can pay for only what you render.** `css/components/<name>.css` is one component and
+imports the prelude it needs itself, so importing one alone is safe.
+
+Because the components render classes, a rule of yours can reach them by specificity. Nothing
+stops you, and nothing supports you either: a class is not part of the API, no contract names
+one, and a manifest may rename a slot in any release. Re-skin through `arena.config.json`,
+which is what it is for. What is not optional is the icon font: every `icon` member is a
+Phosphor class name a component renders, never an SVG it bundles, so `@phosphor-icons/web` is
+a peer dependency.
 
 ## It works with the repository, and that is the point
 
@@ -150,6 +170,38 @@ import '@dravensoft/arena-react/arena.css';
 import './arena.generated.css';
 ```
 
+### If your project already ships a browser reset of its own
+
+`arena.css` carries two halves of the compiled sheet, and they are separate files so you can
+take one without the other. `css/base.css` is the stock browser reset and nothing of Arena's:
+`box-sizing`, the margin and padding zeroing, `font: inherit` on form controls.
+`css/components.css` is every component Arena draws, and `css/components/<name>.css` is one
+of them.
+
+If your own build already emits that reset, importing `arena.css` gives you a second copy of
+every rule in it, with the same selectors and possibly different values, and the cascade order
+decides which wins. Import the halves instead and skip the one you already have:
+
+```js
+import '@dravensoft/arena-react/css/components.css';
+import './arena.generated.css';
+```
+
+Two things become yours when you do that. **Order**, because nothing composes it for you:
+Arena's components have to come before your own rules if you want yours to win. And **the
+preflight itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
+a control falls back to the browser's 13.33px Arial and every control in the library is 20%
+off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
+
+## One stylesheet gives you a treatment, not a component
+
+`css/numerals.css` holds `.arena-num`: the mono face and `tabular-nums`, and no colour. Put it
+on a figure you draw yourself, in a definition list, a KPI or a cart line, and a column of them
+aligns by digit the way a table's does.
+
+`arena.css` already imports it, so the separate file is only for an app importing the halves
+by hand.
+
 ## Use it
 
 ```tsx
@@ -217,14 +269,57 @@ To avoid a flash on first paint, apply the class before your stylesheet loads:
 </script>
 ```
 
+## What the package exports besides components
+
+Four small surfaces reach the package root beside the components, each answering a question a
+consumer cannot answer from outside. Everything here imports from `@dravensoft/arena-react`.
+
+**The theme surface**, above: `initArenaTheme`, `useArenaTheme`, `getArenaTheme`,
+`setArenaTheme`, `toggleArenaTheme`, `arenaPalettes` and the `ArenaPalette` /
+`ArenaThemeConfig` types.
+
+**Two measurements, and they answer different questions.**
+
+| | returns | reach for it |
+| --- | --- | --- |
+| `useContainerWidth(ref?)` | `[ref, width]`: attach the ref to the box, read the width a `ResizeObserver` reports | a component or a panel that has to fit the room it was given |
+| `useViewportBelow(name)` | a boolean over `not all and (min-width: N)` | a page's own layout |
+
+**`width` is `null` until the first measurement**, so render the wide branch while it is, rather
+than the narrow one: a panel that flashes into its phone shape on every mount is worse than one
+that settles into it.
+
+`name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components
+branch on, which is the point: a media query condition holds no `var()`, so a threshold cannot
+be named from a stylesheet at all. `useViewportBelow` is the exact complement of "at least this
+wide" rather than a `max-width` an epsilon short of it. **Never branch a component on
+the viewport**: it is wrong the first time somebody puts it in a narrow column. If your app
+swaps its stylesheet at runtime, call `forgetBreakpoints()` afterwards to drop the cached
+thresholds.
+
+**The chart ramp, for a legend or a chip you draw yourself.** `catColor(slot)` returns the
+custom property for a slot, `catSurface(slot)` the fill and border pair for a chip carrying that
+identity, `catSlotFor(key)` assigns a stable slot from a string, and `CAT_SLOTS` is how many
+there are. The ramp's order is its identity, so a slot means the same thing in every chart on
+the screen.
+
+**`isPrimaryActivation(event)`**, the predicate behind the anchor rule: true for a primary
+click with no modifier, false for every modified click, middle click and context menu. Use it if
+you draw an anchor of your own beside Arena's and want the same split.
+
+Every other symbol reaching the root is an internal of this layer, exported because the barrel
+is generated wholesale rather than curated, and **carries no compatibility promise**. Nothing
+lists that set for you, and the rule is the safe one to follow instead: what this page names is
+what you may lean on, and a symbol you found by autocomplete is not.
+
 ## What is in the package
 
-Every component, its types, the four layer helpers, the invariant stylesheets, and the
+Every component, its types, the layer helpers above, the invariant stylesheets, and the
 `arena-theme` command. No tests, no demo pages, no font binaries, and no icons.
 
 ## Why might this package's latest version not match Arena's latest version?
 
-[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/README.md#why-are-the-published-package-versions-not-identical)
+[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/AGENTS.md#why-are-the-published-package-versions-not-identical)
 
 ## License
 

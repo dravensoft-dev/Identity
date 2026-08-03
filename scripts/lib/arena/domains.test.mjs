@@ -36,9 +36,9 @@ test('a framework suite is classified by its layer, DOM split and category depth
 });
 
 test("the Angular suites run from the emit, and the emit is still the Angular layer's", () => {
-  assert.equal(domainOfTestPath('frameworks/angular/build/test/angular/test/Harness.test.js'), 'angular');
+  assert.equal(domainOfTestPath('frameworks/angular/build/test/test/Harness.test.js'), 'angular');
   assert.equal(
-    domainOfTestPath('frameworks/angular/build/test/angular/components/forms/button/Button.a11y.test.js'),
+    domainOfTestPath('frameworks/angular/build/test/components/forms/button/Button.a11y.test.js'),
     'angular',
   );
 });

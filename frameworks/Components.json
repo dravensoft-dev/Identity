@@ -24,8 +24,10 @@
     "ErrorState",
     "Onboarding",
     "ProgressBar",
+    "Sheet",
     "Spinner",
     "Toast",
+    "ToastHost",
     "Tooltip"
   ],
   "forms": [
@@ -39,7 +41,10 @@
     "Switch",
     "Textarea"
   ],
+  "layout": ["Grid"],
   "navigation": [
+    "BottomNav",
+    "BottomNavItem",
     "Breadcrumbs",
     "BulkActionBar",
     "CommandPalette",

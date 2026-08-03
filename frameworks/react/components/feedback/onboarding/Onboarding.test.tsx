@@ -25,10 +25,13 @@ test('an anchor switches the coachmark from the bottom-right corner to top/left 
     <Onboarding open steps={[{ title: 'One' }]} anchor={{ left: sp4, bottom: sp3 }} />,
   );
 
-  assert.ok(anchored.includes(';top:'), 'the anchored branch pins a computed top');
-  assert.ok(anchored.includes(';left:'), 'the anchored branch pins a computed left');
-  assert.ok(!floating.includes(';top:'), 'the default branch pins no top');
-  assert.ok(floating.includes(';right:'), 'the default branch floats off the right edge instead');
+  assert.match(anchored, /style="top:\d/, 'the anchored branch pins a computed top');
+  assert.match(anchored, /left:\d/, 'the anchored branch pins a computed left');
+  assert.doesNotMatch(anchored, /\barena-onboarding__panel--placement-floating\b/, 'and stops floating off the corner');
+
+  assert.doesNotMatch(floating, /style="top:/, 'the default branch pins nothing computed');
+  assert.match(floating, /\barena-onboarding__panel--placement-floating\b/, 'the default branch floats off the corner through the recipe');
+  assert.match(floating, /\barena-onboarding__panel--placement-floating\b/);
 });
 
 test('an absent required member throws rather than rendering', () => {

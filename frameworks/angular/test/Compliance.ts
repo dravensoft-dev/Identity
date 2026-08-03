@@ -19,7 +19,7 @@ function findRepoRoot(from: string): string {
   return dir;
 }
 
-const REPO = findRepoRoot(here);
+export const REPO = findRepoRoot(here);
 
 
 export const SCRIPTS = join(REPO, 'scripts');

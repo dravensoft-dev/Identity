@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/error-state/ErrorState.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './ErrorState.classes.generated';
 
-export const errorStateStyles = tv(manifest);
+export const errorStateStyles = arenaStyles(manifest);

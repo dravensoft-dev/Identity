@@ -1,0 +1,42 @@
+{
+  "component": "ChartCard",
+  "seed": {
+    "title": "Deployments this week"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "BarChart",
+        "members": {
+          "labels": [
+            "Mon",
+            "Tue",
+            "Wed"
+          ],
+          "values": [
+            42,
+            51,
+            38
+          ],
+          "seriesLabel": "Deployments"
+        }
+      }
+    ],
+    "actions": [
+      {
+        "component": "Badge",
+        "members": {
+          "tone": "success"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Live"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "note": "A frame around a chart: the title and the actions row are the whole API."
+}

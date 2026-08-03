@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/forms/radio/Radio.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from '../radio/Radio.classes.generated';
 
-export const radioGroupStyles = tv(manifest);
+export const radioGroupStyles = arenaStyles(manifest);

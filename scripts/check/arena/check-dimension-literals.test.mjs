@@ -292,12 +292,13 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
   assert.deepEqual(scanText('const s = { width: Math.max(8, Math.min(d, 40)) };'), []);
 });
 
-test('EXEMPT records the four data-to-pixel projections this task newly exempts, by name', () => {
+test('EXEMPT records the data-to-pixel projections, by name', () => {
   assert.ok(EXEMPT.has('frameworks/react/components/charts/bar-chart/BarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
   assert.ok(EXEMPT.has('frameworks/react/components/charts/line-chart/LineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`'));
   assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`'));
   assert.ok(!EXEMPT.has('frameworks/react/components/display/avatar/Avatar.tsx:fontSize:d * 0.4'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/calendar/Calendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`'),
+    'the hour label offset is the manifest\'s -mt-1 now, so the projection it exempted is gone');
 });
 
 test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () => {
@@ -309,17 +310,11 @@ test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () =>
   assert.ok(!EXEMPT.has("frameworks/angular/DataVisuals.ts:border:'0'"));
 });
 
-test('EXEMPT records the two demo-entry height literals that are not on the 4px spacing scale, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:11px'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:90px'));
-
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:160px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:120px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:72px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:48px'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:40px'));
-
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:width:45%'));
+test('no exemption names a demo entry, since a hand-written one no longer exists to carry a literal', () => {
+  for (const key of EXEMPT.keys()) {
+    assert.doesNotMatch(key, /\.card\.entry\.tsx:/,
+      `${key} names a page entry this layer stopped hand-writing; a generated one binds every value through a knob`);
+  }
 });
 
 test('the SR_ONLY object shape produces exactly the raws those keys are cut from', () => {
@@ -332,12 +327,11 @@ test('the SR_ONLY object shape produces exactly the raws those keys are cut from
   assert.deepEqual(hits.map((h) => `${h.prop}:${h.raw}`), ["width:'1px'", "height:'1px'", "margin:'-1px'"]);
 });
 
-test('EXEMPT records both local-stacking zIndex literals, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.tsx:zIndex:1'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar-event/CalendarEvent.tsx:zIndex:1'));
-
-  assert.equal(EXEMPT.get('frameworks/react/components/display/calendar-event/CalendarEvent.tsx:zIndex:1'),
-    EXEMPT.get('frameworks/react/components/display/calendar/Calendar.tsx:zIndex:1'));
+test('no local-stacking zIndex literal is exempt any more, because none is written', () => {
+  for (const key of EXEMPT.keys()) {
+    assert.doesNotMatch(key, /zIndex/,
+      'a zIndex literal is exempt again; the calendar pair took theirs from the manifest instead');
+  }
 });
 
 test('every current EXEMPT key is matched by this run -- none are stale', () => {

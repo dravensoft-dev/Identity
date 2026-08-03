@@ -1,9 +1,8 @@
-/* Assembles @dravensoft/arena-angular into frameworks/angular/dist/. ng-packagr infers
- * rootDir from the entry file's directory and refuses a source outside it, and the layer's
- * .variants.ts files import a Tailwind manifest four directories up. So the layer is staged
- * AT the staging root, with that slice of frameworks/tailwind/ beside it and each specifier
- * repointed to the depth it now sits at. The staging tree is the whole reason this build is
- * not two lines; nothing else here transforms anything. */
+/* Assembles @dravensoft/arena-angular into frameworks/angular/dist/. The layer is staged
+ * rather than built in place because ng-packagr needs its own `ng-package.json`,
+ * `tsconfig.lib.json` and `package.json` at the root it compiles from, and writing those into
+ * the tracked layer would leave build files beside the source. It no longer stages anything of
+ * another layer: a component composes its own class names, so nothing reaches out. */
 
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -12,18 +11,13 @@ import { join, relative, sep, posix } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
-  collectFiles, reset, write, copy, writeCssChain, copyCli, baseManifest, report,
+  collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,
 } from '../../lib/arena/package-assembly.mjs';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 
 export const NAME = '@dravensoft/arena-angular';
 export const LAYER = 'frameworks/angular';
 export const STAGING = 'frameworks/angular/build/package';
-
-export const TAILWIND_SPECIFIER = /(from\s*['"])\.\.\/\.\.\/\.\.\/\.\.\/tailwind\//g;
-
-export function repointTailwind(code, depth) {
-  return code.replace(TAILWIND_SPECIFIER, `$1${'../'.repeat(depth)}tailwind/`);
-}
 
 export function manifest(root = repoRoot) {
   return {
@@ -44,8 +38,6 @@ export function manifest(root = repoRoot) {
 }
 
 export const RUNTIME_DEPENDENCIES = {
-  'tailwind-variants': '^3.2.2',
-  'tailwind-merge': '^3.6.0',
   tslib: '^2.8.1',
 };
 
@@ -88,17 +80,11 @@ function stage(root) {
 
   const layer = join(root, LAYER);
   const staged = [];
-  for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html'))) {
+  for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html') && !p.includes('/playground/'))) {
     const rel = relative(layer, file).split(sep).join('/');
-    const depth = rel.split('/').length - 1;
-    const text = readFileSync(file, 'utf8');
-    staged.push(write(dir, rel, file.endsWith('.ts') ? repointTailwind(text, depth) : text));
+    staged.push(write(dir, rel, readFileSync(file, 'utf8')));
   }
 
-  const tailwind = join(root, 'frameworks', 'tailwind');
-  for (const file of collectFiles(tailwind, (p) => p.endsWith('.ts'))) {
-    staged.push(write(dir, join('tailwind', relative(tailwind, file)).split(sep).join('/'), readFileSync(file, 'utf8')));
-  }
 
   write(dir, 'ng-package.json', `${JSON.stringify(ngPackageConfig(), null, 2)}\n`);
   write(dir, 'tsconfig.lib.json', `${JSON.stringify(libTsconfig(), null, 2)}\n`);
@@ -129,13 +115,12 @@ export function buildAngularPackage(root = repoRoot) {
   }
 
   const written = [];
+  const sheet = readFileSync(join(root, 'frameworks/tailwind/Utilities.generated.css'), 'utf8');
   for (const to of writeCssChain(dist, NAME, [
-    { from: 'frameworks/tailwind/Utilities.generated.css', to: 'css/utilities.css' },
+    ...componentSheets(sheet, splitCompiledSheet),
     { from: 'frameworks/angular/theme/arena-cdk.css', to: 'css/arena-cdk.css' },
   ], root)) written.push(join(dist, to));
   written.push(join(dist, 'arena.css'));
-  written.push(copy(join(root, 'frameworks/tailwind/Theme.css'), dist, 'css/theme-preset.css'));
-  written.push(copy(join(root, 'frameworks/tailwind/Animations.css'), dist, 'css/animations.css'));
 
   for (const rel of copyCli(dist, root)) written.push(join(dist, rel));
 
@@ -156,6 +141,7 @@ export function withAssets(emitted) {
       ...emitted.exports,
       './arena.css': { default: './arena.css' },
       './css/*': { default: './css/*' },
+      './css/components/*': { default: './css/components/*' },
       './arena.config.example.json': { default: './arena.config.example.json' },
     },
     bin: { 'arena-theme': './bin/arena-theme.mjs' },

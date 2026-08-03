@@ -1,13 +1,24 @@
 Arena status label, mono, uppercase, short. Standalone, `OnPush`, signal input.
-Styling is the sibling `Badge.variants.ts` recipe, read from `Badge.manifest.json`
-in the shared Tailwind layer; the component carries no CSS classes of its own and
-host-binds its root slot.
+The host **is** the chip: it binds the root slot, so an attribute you write on
+`<arena-badge>` lands on the chip itself.
 
 ```html
 <arena-badge tone="success" dot>Deployed</arena-badge>
 <arena-badge tone="warning">In review</arena-badge>
 <arena-badge>Draft</arena-badge>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Badge.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | The label text. Short: a badge is a chip, not a sentence. |
+| `tone` | enum | `Tone` | `"neutral"` | System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight. |
+| `dot` | primitive | `boolean` | `false` | Draws a filled dot in the tone colour before the label. |
+
+<!-- @api end -->
 
 **Tone taxonomy.** Two families, and they are not mixed:
 - **Status**: `success` `warning` `danger` `info`: the actual state of the system
@@ -27,11 +38,11 @@ host-binds its root slot.
   interactive affordance at all, and its behaviour binding says so.
 - Don't write a `class` or an ARIA attribute on `<arena-badge>` expecting it to
   reach the chip: the root slot is host-bound, so the host **is** the chip and a
-  static `class` on it is overwritten by the recipe. Wrap it in your own element
+  static `class` on it is overwritten by Arena's own styling. Wrap it in your own element
   when you need to position it.
 
-**By hand, in a real browser** (`bun run demos`, on any page composing it,
-`arena-badge` has no demo page of its own because nothing about it needs one):
+**By hand, in a real browser** (`bun run demos`, then this component's own
+playground or any page composing it):
 - Each of the seven tones reads as its own colour against `--surface-card`, and
   the mono uppercase treatment survives at the smallest text size.
 - With `dot`, the dot takes the tone's own ink (`bg-current`) rather than a

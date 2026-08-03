@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors, valueWriter } from '../../../DataVisuals';
-import type { NumberFormat } from '../../../Api.generated';
+import type { ChartLegendLayout, NumberFormat } from '../../../Api.generated';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
@@ -13,6 +13,8 @@ const LEGEND_MAX = chartLegendMax;
 const LEGEND_SHARE = 0.34;
 
 const LEGEND_GAP = chartLegendGap;
+
+const LEGEND_STACK_BELOW = chartLegendMax;
 
 
 const INNER_RATIO = 0.62;
@@ -33,7 +35,16 @@ const LEGEND_STYLE = {
 } as const satisfies Readonly<Record<string, string>>;
 
 const LEGEND_ROW_STYLE = {
-  display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)',
+  display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', cursor: 'pointer',
+} as const satisfies Readonly<Record<string, string>>;
+
+const LEGEND_TEXT_INLINE_STYLE = {
+  display: 'flex', flex: '1', minWidth: '0', alignItems: 'baseline',
+  gap: 'calc(var(--sp-1) * 2)', justifyContent: 'space-between',
+} as const satisfies Readonly<Record<string, string>>;
+
+const LEGEND_TEXT_STACKED_STYLE = {
+  display: 'flex', flex: '1', minWidth: '0', flexDirection: 'column', alignItems: 'stretch',
 } as const satisfies Readonly<Record<string, string>>;
 
 const SWATCH_STYLE = {
@@ -103,7 +114,8 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
         @if (segment.path) {
           <path [attr.d]="segment.path" [attr.fill]="segment.color" stroke="var(--surface-card)"
                 [attr.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
-                (mouseenter)="hover.set(segment.index)" [style]="segmentStyle" />
+                (mouseenter)="hover.set(segment.index)" (click)="sliceActivate.emit(segment.index)"
+                [style]="segmentStyle" />
         }
       }
       @if (active(); as segment) {
@@ -117,10 +129,13 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
       @for (segment of segments(); track segment.index) {
         <div [style]="legendRowStyle"
              [style.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
-             (mouseenter)="hover.set(segment.index)" (mouseleave)="hover.set(null)">
+             (mouseenter)="hover.set(segment.index)" (mouseleave)="hover.set(null)"
+             (click)="sliceActivate.emit(segment.index)">
           <span aria-hidden="true" [style]="swatchStyle" [style.background]="segment.color"></span>
-          <span [style]="legendLabelStyle">{{ segment.label }}</span>
-          <span [style]="legendValueStyle">{{ segment.formatted }}</span>
+          <span [style]="legendTextStyle()">
+            <span [style]="legendLabelStyle">{{ segment.label }}</span>
+            <span [style]="legendValueStyle">{{ segment.formatted }}</span>
+          </span>
         </div>
       }
     </div>
@@ -151,6 +166,10 @@ export class DoughnutChart {
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
   readonly valueFormat = input<NumberFormat>();
+  /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
+  readonly legendLayout = input<ChartLegendLayout>('auto');
+  /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
+  readonly sliceActivate = output<number>();
 
   protected readonly height = CHART_HEIGHT;
   protected readonly srOnly = SR_ONLY;
@@ -172,6 +191,16 @@ export class DoughnutChart {
   private readonly measured = containerWidth();
 
   private readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
+
+  protected readonly stacked = computed(() => {
+    const choice = this.legendLayout();
+    if (choice !== 'auto') return choice === 'stacked';
+    return doughnutLegendWidth(this.width()) < LEGEND_STACK_BELOW;
+  });
+
+  protected readonly legendTextStyle = computed(
+    () => (this.stacked() ? LEGEND_TEXT_STACKED_STYLE : LEGEND_TEXT_INLINE_STYLE),
+  );
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();

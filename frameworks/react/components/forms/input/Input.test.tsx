@@ -18,7 +18,8 @@ test('type reaches the native control as its type attribute', () => {
 
 test('the icon class is drawn on an <i> and hidden from assistive tech', () => {
   const html = renderToStaticMarkup(<Input label="Search" icon="ph-bold ph-magnifying-glass" />);
-  assert.match(html, /<i[^>]*class="ph-bold ph-magnifying-glass"/);
+  assert.match(html, /<i[^>]*class="ph-bold ph-magnifying-glass [^"]*"/,
+    "the Phosphor class the consumer named leads, and the manifest's icon slot follows it");
   assert.match(html, /<i[^>]*aria-hidden="true"/);
 });
 
@@ -72,11 +73,32 @@ test('error renders below the field and marks the control invalid', () => {
   assert.doesNotMatch(html, /Ignored/);
 });
 
-test('a consumer className does not reach the input -- its class is exactly arena-input', () => {
+test('a consumer className does not reach the input -- its class is the manifest\'s and nothing else', () => {
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
   const html = renderToStaticMarkup(<Input label="A" className="mine" />);
-  assert.match(html, /class="arena-input"/);
+  assert.match(html, /<input[^>]*class="[^"]*\barena-input__input\b[^"]*"/);
   assert.doesNotMatch(html, /mine/, 'a consumer className was merged into the input class');
+});
+
+test('the picker indicator is styled by the manifest, so nothing injects a stylesheet for it', () => {
+  const html = renderToStaticMarkup(<Input label="When" type="date" />);
+  assert.match(html, /arena-input__input/,
+    'the vendor pseudo-element is an arbitrary variant of the manifest now');
+  assert.doesNotMatch(html, /\barena-input\b/, 'the hook class the injected sheet needed is gone with it');
+});
+
+test('the three field states are three branches of one recipe', () => {
+  const neutral = renderToStaticMarkup(<Input label="A" />);
+  assert.match(neutral, /(?:arena-input__field--state-neutral|arena-input__field--state-valid)/, 'focus is a modifier, not a reported state');
+  assert.match(neutral, /\barena-input__field--state-neutral\b/);
+
+  const bad = renderToStaticMarkup(<Input label="A" error="Nope" />);
+  assert.match(bad, /\barena-input__field--state-error\b/);
+  assert.match(bad, /\b(?:arena-input__error|arena-input__status-icon--state-error)\b/);
+
+  const good = renderToStaticMarkup(<Input label="A" valid />);
+  assert.match(good, /\barena-input__field--state-valid\b/);
+  assert.match(good, /\barena-input__status-icon--state-valid\b/);
 });
 
 test('Input drops a consumer style object -- the ...style escape is gone', () => {

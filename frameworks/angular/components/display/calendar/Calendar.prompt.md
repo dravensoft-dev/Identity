@@ -12,6 +12,27 @@ Week or day schedule on a time grid: a toolbar, one column per day, events posit
 </arena-calendar>
 ```
 
+<!-- @api GENERATED from contracts/api/components/Calendar.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | One CalendarEvent per event. Calendar reads each one's start, end and colorId and settles where the chip goes, what colour it takes and how the keyboard reaches it; the chip itself is CalendarEvent's. |
+| `timeZone` | primitive | `string` |  | IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs (a Madrid timetable read from Tokyo), and when server-rendering, where the reader's zone is not knowable. |
+| `anchorDate` | primitive | `string` |  | ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. |
+| `view` | enum | `CalendarView` |  | Omit to derive from the CONTAINER width: day below --bp-md, else week. |
+| `dayStart` | primitive | `string` |  | HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. |
+| `dayEnd` | primitive | `string` | `"23:00"` | HH:MM the grid ends at. |
+| `weekStartsOn` | primitive | `number` | `1` | 0 = Sunday … 6 = Saturday. |
+| `hideEmptyWeekend` | primitive | `boolean` | `true` | Drop Sunday from the week unless an event falls on it. |
+| `dayInteractive` | primitive | `boolean` | `false` | Whether a day can be activated. A boolean rather than "is `dateClick` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> (the keyboard's route to the date, and the one element that already names it), and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. |
+| `dateClick` | event | `string` |  | A day header or column background was activated; carries the ISO date. Never emitted unless `dayInteractive`. |
+| `rangeChange` | event | `string` |  | The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta. |
+| `actions` | slot |  |  | Right-aligned in the toolbar, beside the range title. |
+
+<!-- @api end -->
+
 `timeZone` is optional and defaults to the reader's own resolved zone, which is right whenever the schedule belongs to whoever is looking at it. **Pass it when the calendar has a zone of its own**: a class at 09:00 in Madrid must stay at 09:00 for a student loading the page from Lima, and only an explicit `timeZone="Europe/Madrid"` says so. It is also **not safe under server rendering**: on a server it resolves to the *server's* zone and then to the client's on hydration.
 
 The anchor is internal, so prev/Today/next work with nothing wired. `rangeChange` reports the new anchor date; take it as the cue to refetch. Bind `anchorDate` only when you want to drive the date yourself: it is a `linkedSignal` source, so it wins whenever it changes and resets any navigation the reader had done.
@@ -28,7 +49,7 @@ The boolean is not ceremony. What a component draws may never be derived from wh
 
 **Keyboard.** The grid is one tab stop, not one per event (`dayInteractive` adds the header strip's, above it). Tab lands on a single hour cell; **a row is a day**, so Left/Right move a day and Up/Down move an hour, Home/End jump to the first/last hour of the focused day, and focus clamps at every edge. Enter steps into the first event overlapping the focused hour, Escape steps back out to the cell.
 
-**A chip is not a DOM child of its day column here, and `aria-owns` is why that does not matter.** Angular cannot project one set of children into several positions, so every chip is a child of the grid and each day column claims its own through `aria-owns`, which is what the `grid` pattern actually asks for, since it constrains the accessibility tree and not the DOM. Two consequences are real: the day columns are CSS grid **tracks** rather than flex items, because a chip's horizontal placement is a percentage of the whole grid and unequal columns would slide the last day's chips off; and anything projected that is not an `arena-calendar-event` becomes a **grid item** and adds a column, so project nothing else.
+**A chip is not a DOM child of its day column, and `aria-owns` is why that does not matter.** This layer cannot project one set of children into several positions, so every chip is a child of the grid and each day column claims its own through `aria-owns`, which is what the `grid` pattern actually asks for, since it constrains the accessibility tree and not the DOM. It is the shape Arena renders everywhere, so a chip sits in the same place in every layer. Two consequences are real: the day columns are CSS grid **tracks** rather than flex items, because a chip's horizontal placement is a percentage of the whole grid and unequal columns would slide the last day's chips off; and anything projected that is not an `arena-calendar-event` becomes a **grid item** and adds a column, so project nothing else.
 
 **The chip body is Arena's, and there is nothing you can put inside it.** An `arena-calendar-event` carries `id`, `title`, `start`, `end` and `colorId`, and Arena draws all of it. There is no per-event template, because a structural directive returning markup is not a member of any Arena contract.
 
@@ -51,7 +72,7 @@ The boolean is not ceremony. What a component draws may never be derived from wh
 
 happy-dom does no layout, so the geometry below is checked in a real browser and
 nowhere else. `bun run build:angular-demo && bun run demos`, then open
-`frameworks/angular/components/display/calendar/Calendar.card.html`:
+`frameworks/angular/components/display/calendar/Calendar.demo.generated.html`:
 
 1. Tab reaches the schedule ONCE, and one more Tab leaves it. No chip and no
    kebab is a stop of its own. An OPEN panel is the exception and is meant to be.

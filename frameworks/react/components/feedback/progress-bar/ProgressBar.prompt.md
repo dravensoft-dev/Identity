@@ -6,6 +6,21 @@ Progress bar (H1). Gives visible status to measurable processes outside the spla
 <ProgressBar indeterminate tone="accent" label="Connecting…" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/ProgressBar.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `progressPercentage` | primitive | `number` | `0` | How far along, 0-100. Clamped and rounded. Ignored when `indeterminate`. |
+| `indeterminate` | primitive | `boolean` | `false` | A wait with no percentage; the bar sweeps instead of filling. |
+| `tone` | enum | `ProgressTone` | `"accent"` | The bar's colour. |
+| `label*` | primitive | `string` |  | Names what is progressing. Drawn above the bar, and it is the bar's accessible name. Required and guarded rather than defaulted: nothing can derive what is progressing, and a fallback of "Progress" satisfies roles.label mechanically while telling a screen-reader user only what the component is -- two of them on one page announce identically. |
+| `showPercentage` | primitive | `boolean` | `true` | Shows the percentage beside the label. Determinate only. |
+| `size` | enum | `ControlSize` | `"md"` | The bar's thickness. |
+
+<!-- @api end -->
+
 `progressPercentage` is 0–100, clamped and rounded; it is not a form control's `value`,
 which is what that name means everywhere else in this library. `showPercentage` (default
 `true`) shows the number beside the label; it is drawn in determinate mode only.

@@ -6,6 +6,7 @@ import { LoginScreen } from './LoginScreen.tsx';
 import { DashboardScreen } from './DashboardScreen.tsx';
 import { ProjectScreen } from './ProjectScreen.tsx';
 import { Toast, TOAST_DISMISS } from '../../components/feedback/toast/Toast.tsx';
+import { ToastHost } from '../../components/feedback/toast-host/ToastHost.tsx';
 
 interface ConsoleToast {
   tone: ToastTone;
@@ -53,13 +54,13 @@ function App(){
   return (
     <React.Fragment>
       {view}
-      <div className="toast-wrap">
+      <ToastHost>
         {toasts.map((t) => (
           <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist}
             actionLabel={t.actionLabel} onAction={t.onAction} dismissible
             onClose={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} />
         ))}
-      </div>
+      </ToastHost>
     </React.Fragment>
   );
 }

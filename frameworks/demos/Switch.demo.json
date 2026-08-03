@@ -1,0 +1,16 @@
+{
+  "component": "Switch",
+  "seed": {
+    "label": "Auto-promote to staging",
+    "state": true
+  },
+  "bind": {
+    "funcOn": {
+      "state": true
+    },
+    "funcOff": {
+      "state": false
+    }
+  },
+  "note": "Two events rather than one payload, so a confirm flow can refuse the change."
+}

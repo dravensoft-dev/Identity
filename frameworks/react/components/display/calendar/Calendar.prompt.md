@@ -6,7 +6,7 @@ Week or day schedule on a time grid: a toolbar, one column per day, events posit
 
 Two things this default is not. It is not a `'UTC'` fallback, which would be arbitrary, wrong for almost every reader, and would produce silently the very defect the member exists to prevent. And it is **not safe under server rendering**: on a server it resolves to the *server's* zone and then to the client's on hydration, so a server-rendered calendar must pass `timeZone` explicitly. Same shape as `useContainerWidth` reporting `null` before it has measured.
 
-Copy `frameworks/react/DataVisuals.js` and `frameworks/react/UseContainerWidth.js` alongside it: `Calendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view.
+`Calendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view, so both travel with it: importing from `@dravensoft/arena-react` brings them, and both are exported for a legend or a responsive panel of your own.
 
 ```tsx
 <Calendar
@@ -20,6 +20,27 @@ Copy `frameworks/react/DataVisuals.js` and `frameworks/react/UseContainerWidth.j
   ))}
 </Calendar>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Calendar.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `children` | slot |  |  | One CalendarEvent per event. Calendar reads each one's start, end and colorId and settles where the chip goes, what colour it takes and how the keyboard reaches it; the chip itself is CalendarEvent's. |
+| `timeZone` | primitive | `string` |  | IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs (a Madrid timetable read from Tokyo), and when server-rendering, where the reader's zone is not knowable. |
+| `anchorDate` | primitive | `string` |  | ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. |
+| `view` | enum | `CalendarView` |  | Omit to derive from the CONTAINER width: day below --bp-md, else week. |
+| `dayStart` | primitive | `string` |  | HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. |
+| `dayEnd` | primitive | `string` | `"23:00"` | HH:MM the grid ends at. |
+| `weekStartsOn` | primitive | `number` | `1` | 0 = Sunday … 6 = Saturday. |
+| `hideEmptyWeekend` | primitive | `boolean` | `true` | Drop Sunday from the week unless an event falls on it. |
+| `dayInteractive` | primitive | `boolean` | `false` | Whether a day can be activated. A boolean rather than "is `dateClick` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` and `CalendarEvent.interactive` are for the same reason; here the derived render was the day's own cursor, and the layers diverged on screen because of it. With it on, the day header is a <button> (the keyboard's route to the date, and the one element that already names it), and the column background takes a pointer cursor; with it off both are inert and the cursor says so. The default is false because a schedule someone only reads is the ordinary calendar, and a pointer cursor over days that answer nothing is the defect this member exists to end. |
+| `onDateClick` | event | `string` |  | A day header or column background was activated; carries the ISO date. Never emitted unless `dayInteractive`. |
+| `onRangeChange` | event | `string` |  | The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta. |
+| `actions` | slot |  |  | Right-aligned in the toolbar, beside the range title. |
+
+<!-- @api end -->
 
 The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChange` reports the new anchor date; take it as the cue to refetch. Pass `anchorDate` only when you want to drive the date yourself; it wins whenever it changes.
 
@@ -60,7 +81,7 @@ chip has a kebab. A chip without actions has a content box of its share less 18p
 has its share less 46px, because the kebab's 34px reserve comes out too. So the kebab-safe
 threshold is 124.02px where the plain one is 96.02px, and `--calendar-time-min-w` is set at the
 plain one. **In a band of roughly a 768px to an 800px container, in week view, a chip that has
-actions can still wrap its time label onto two lines**, measured on `Calendar.card.html` by
+actions can still wrap its time label onto two lines**, measured on `Calendar.demo.generated.html` by
 driving the viewport and reading the container beneath it, which is the viewport less the card's
 24px body padding a side, and `--bp-md` is compared against the *container*. At an 812px container
 the label fits on one line. Both alternatives are worse: the kebab-safe threshold suppresses the
@@ -68,12 +89,12 @@ label on every ordinary chip through that band and well past it, and a kebab-awa
 `CalendarEvent`'s 34px reserve back inside `Calendar`, laundered through a second token but still
 a number that silently goes wrong if the reserve changes.
 
-**A chip is a DOM child of its day's `role="row"` here**, distributed with `cloneElement`, so
-its `left`/`width` are percentages of its own column. The `grid` pattern constrains the
-accessibility tree and not the DOM, so a layer that cannot distribute children may put every chip
-in the grid and have each column claim its own through `aria-owns` and meet the same pattern,
-which is worth knowing before assuming this component's DOM shape is the contracted one. Two
-things follow from the shape here: `flex: 1` columns may differ by one border width without
-consequence, because a chip's percentages are of its own column; and anything projected that is
-not a chip is silently skipped by the placement lookup. **No gate sees either**: `check:dimensions` is blind to `[style.x]` and
-the grid suite asserts the keyboard rather than the geometry.
+**A chip is NOT a DOM child of its day's `role="row"`**: every chip is a child of the grid, and
+each day claims its own through `aria-owns`. The `grid` pattern constrains the accessibility tree
+and not the DOM, which is what makes that legitimate, and it is the only shape available to a
+layer that cannot distribute projected children into a per-day loop, so both layers use it and a
+difference between them stops being a difference in the DOM. Two things follow. A chip's
+`left`/`right` are percentages of **every** day track rather than of one, so the day tracks must
+be equal for a chip to land on its own day. And a click on a chip does not reach its day, so it
+reports no date: activate the day from its header or its background. Anything projected that is
+not a chip is still silently skipped by the placement lookup.

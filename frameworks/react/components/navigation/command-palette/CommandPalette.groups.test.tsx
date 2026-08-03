@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CommandPalette, orderCommands, commandGroups } from './CommandPalette.tsx';
+import { CommandPalette, capCommands, orderCommands, commandGroups } from './CommandPalette.tsx';
 import type { Command } from '../../../Api.generated';
 
 const COMMANDS: Command[] = [
@@ -58,4 +58,20 @@ test('a command with a route renders an anchor and keeps role=option', () => {
 test('a command with no route is still a button, so nothing navigates by accident', () => {
   const html = renderToStaticMarkup(<CommandPalette open commands={COMMANDS} />);
   assert.match(html, /<button type="button"[^>]*role="option"/);
+});
+
+test('maxResults caps the matches, and the cap runs after the search rather than before it', () => {
+  assert.deepEqual([...capCommands(COMMANDS, 2)].map((c) => c.id), ['sale', 'help'],
+    'the cap takes the first N of what the query matched, in the order the caller passed');
+  assert.equal(capCommands(COMMANDS, undefined).length, COMMANDS.length, 'absent means no ceiling');
+  assert.equal(capCommands(COMMANDS, 0).length, 0, 'zero is a ceiling of zero, not an absent one');
+});
+
+test('a capped palette renders the cap, and still groups what is left', () => {
+  const html = renderToStaticMarkup(
+    <CommandPalette open commands={COMMANDS} maxResults={2} onClose={() => {}} />,
+  );
+  assert.equal(html.match(/role="option"/g)?.length, 2);
+  assert.ok(html.indexOf('Help') < html.indexOf('New sale'),
+    'ungrouped first, then each group as it first appears: the cap does not reorder anything');
 });

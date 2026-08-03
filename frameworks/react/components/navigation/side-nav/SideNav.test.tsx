@@ -29,9 +29,11 @@ test('the nav is labelled', () => {
 
 test('active and inactive items differ in weight and colour', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary" active="dashboard">{TREE}</SideNav>);
-  assert.match(html, /var\(--crimson-soft\)/);
-  assert.match(html, /var\(--fw-semibold\)/);
-  assert.match(html, /var\(--fw-medium\)/);
+  assert.match(html, /\barena-side-nav__item--active-true\b/);
+  assert.match(html, /\barena-side-nav__item--active-true\b/);
+  assert.match(html, /\barena-side-nav__item--active-true\b/);
+  assert.match(html, /\b(?:arena-side-nav__trigger|arena-side-nav__item--active-false)\b/);
+  assert.match(html, /\b(?:arena-side-nav__trigger|arena-side-nav__item--active-false)\b/);
 });
 
 test('onNav carries the activated id alone, and no DOM event reaches the handler', () => {
@@ -39,7 +41,10 @@ test('onNav carries the activated id alone, and no DOM event reaches the handler
   const tree = SideNav({ children: TREE, ariaLabel: 'Primary', onNav: (...args) => seen.push(args) });
 
   const [anchor, button] = tree.props.children.map((el: React.ReactElement) => SideNavItem(el.props));
-  const event = { preventDefault() { this.defaultPrevented = true; }, defaultPrevented: false };
+  const event = {
+    button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false,
+    preventDefault() { this.defaultPrevented = true; }, defaultPrevented: false,
+  };
 
   anchor.props.onClick(event);
   assert.equal((seen[0] as unknown[]).length, 1, 'a second argument reached the handler -- the DOM event is back');
@@ -71,7 +76,8 @@ test('the anchor keeps its native navigation: nothing in the click path suppress
 
 test('an icon is a class name Arena draws, never markup the caller passes', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary">{TREE}</SideNav>);
-  assert.match(html, /<i class="ph-bold ph-squares-four"[^>]*aria-hidden="true"/);
+  assert.match(html, /<i class="ph-bold ph-squares-four [^"]*"[^>]*aria-hidden="true"/,
+    "the Phosphor class the consumer named leads, and the manifest's icon slot sizes it");
   assert.doesNotMatch(html, />ph-bold ph-squares-four</, 'the class name was drawn as text');
 });
 
@@ -113,7 +119,8 @@ test('a SideNav with no children renders an empty landmark rather than throwing'
 
 test('the item text re-densifies with the control scale', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary">{TREE}</SideNav>);
-  assert.match(html, /var\(--dz-text\)/);
+  assert.match(html, /\b(?:arena-side-nav__item|arena-side-nav__trigger)\b/,
+    'the control text step is what .arena-compact re-densifies, and the row reads it as a utility');
 });
 
 test('indentFor returns token arithmetic at every depth, never a bare length', () => {

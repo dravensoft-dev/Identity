@@ -14,12 +14,25 @@ the same shape as `Table`/`TableRow` and `RadioGroup`/`Radio`, one size down.
 </SideNav>
 ```
 
+<!-- @api GENERATED from contracts/api/components/SideNav.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `active` | primitive | `string` |  | The id of the current destination. The SideNavItem whose id matches is marked aria-current="page", and no item is marked when it names none of them. |
+| `ariaLabel*` | primitive | `string` |  | Names this navigation landmark. Required, and guarded at runtime: the guard trims before it decides, so a blank name is refused as well as an absent one, because ariaLabel="" renders a landmark with no accessible name, which is the defect arriving through a value that is present. Guarded rather than defaulted: the navigation pattern asks each landmark on a page for a UNIQUE name, and a constant default satisfies the existence half while two sidebars on one page stay indistinguishable. Nothing can derive it either; what a nav is FOR is editorial. Say what it navigates -- "Primary", "Project settings" -- the Table.label and SegmentedControl.ariaLabel shape. |
+| `children` | slot |  |  | The navigation tree. One SideNavItem per destination, optionally grouped by SideNavSection and SideNavCollapsible; where each child sits, which id is active and how it reports `nav` are the parent's to settle, and none of it is a member here. |
+| `indentStep` | primitive | `number` | `3` | How far each nesting level indents, as a MULTIPLIER of --sp-1 rather than a length: the row at depth N is padded calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N). A CSS string was rejected -- a caller-supplied "1.5rem" is neither a token nor a derivation of one, so it would stop re-densifying inside .arena-compact, and no gate would catch it because the gate that forbids a bare length scans source and not the values a caller passes in. |
+| `onNav` | event | `string` |  | An item was activated, carrying its id. It carries the id alone, on the Breadcrumbs precedent that the platform event leaves the payload and the item travels by itself, and under the compound shape there is no item datum left to carry either, because the consumer wrote the element and already holds everything on it. Where the item has an href, Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working column of real links. |
+
+<!-- @api end -->
+
 An item's click reports `onNav(id)` -- the activated item's `id`, with no DOM event.
 There is no item datum to carry: you wrote the element, so you already hold
-everything on it. The anchor still navigates natively, so ctrl-click, middle-click
-and open-in-new-tab keep working for a consumer who wires nothing, but intercepting
-a plain click to substitute SPA routing is not possible from `onNav`; do that at the
-router (`Link`) instead.
+everything on it. An item with `href` splits its activations: the plain one is reported
+through `onNav`, so routing from there does not race the browser, and the rest keep working
+for a consumer who wires no handler.
 
 An item with `href` renders an `<a>`; without one it renders a `<button>`. The active
 item takes `--crimson-soft` behind `--crimson` text at `--fw-semibold`; the rest are
@@ -77,7 +90,9 @@ it, because the automatic expansion is Arena's decision rather than the user's. 
   siblings, or in an array. A wrapper component of your own has the same effect, and
   it is the same limit `Table` and `RadioGroup` already carry.
 - **Don't** reach for `onNav` to call `preventDefault()` -- it never receives the click
-  event, so it cannot stop the anchor's own navigation. Intercept at the router instead.
+  event, and it does not need to: Arena has already cancelled the anchor by the time it fires.
+- **Don't** wrap an item in your router's `Link`. The anchor is Arena's and is already
+  inside the item; navigate in `onNav`.
 - **Don't** use it for tabs. `SideNav` navigates between destinations; `Tabs` changes
   the view within one, and `SegmentedControl` filters within that.
 - **Don't** wrap it in your own `<nav>`. It renders one.
@@ -104,3 +119,15 @@ yours in either design; what is left is one comparison:
 ```tsx
 const active = DESTINATIONS.find((d) => pathname.startsWith(d.href))?.id;
 ```
+
+### The active row is filled, and you pass one string
+
+The item whose `id` matches `active` draws its glyph in `ph-fill`, whatever weight the string
+carries. Pass `icon="ph-bold ph-house"` once per destination; do not concatenate a weight
+yourself against a condition, which is Arena's own convention reimplemented in every project
+that adopts it. The swap is idempotent, so passing `ph-fill` yourself changes nothing.
+
+**A misspelled `ph-` name renders an empty box, silently**, because an icon is a class name
+and a class that matches no glyph is not an error. Nothing on your side catches that for you,
+so check a name against the `@phosphor-icons/web` you installed if a wrong one would be
+expensive.

@@ -8,7 +8,7 @@ import {
   zeroContractLevelProblems,
 } from './check-contracts.mjs';
 
-const ROOT_OK = ['README.md', 'api', 'behaviour', 'design', 'design-generated'];
+const ROOT_OK = ['AGENTS.md', 'api', 'behaviour', 'design', 'design-generated'];
 
 test('the declared shape is three levels and one generated sibling, and nothing else', () => {
   assert.deepEqual(LEVELS, ['api', 'behaviour', 'design']);
@@ -31,52 +31,52 @@ test('a stray file at the roof is the same problem, because a level is not the o
 });
 
 test('a missing level is reported, not silently skipped', () => {
-  assert.match(rootProblems(['README.md', 'api', 'design', 'design-generated'])[0], /contracts\/behaviour is missing/);
+  assert.match(rootProblems(['AGENTS.md', 'api', 'design', 'design-generated'])[0], /contracts\/behaviour is missing/);
 });
 
 test('api keeps two vocabulary directories and behaviour keeps none', () => {
   const isDir = (n) => !n.includes('.');
-  assert.deepEqual(levelProblems('api', ['README.md', 'components', 'types'], isDir), []);
-  assert.deepEqual(levelProblems('behaviour', ['README.md', 'button.json', 'none.json'], isDir), []);
+  assert.deepEqual(levelProblems('api', ['AGENTS.md', 'MemberForms.md', 'components', 'types'], isDir), []);
+  assert.deepEqual(levelProblems('behaviour', ['AGENTS.md', 'button.json', 'none.json'], isDir), []);
 });
 
 test('an unearned inner directory is a problem, and the message says why', () => {
   const isDir = (n) => n === 'patterns';
-  const problems = levelProblems('behaviour', ['README.md', 'patterns'], isDir);
+  const problems = levelProblems('behaviour', ['AGENTS.md', 'patterns'], isDir);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /is an inner directory contracts\/README\.md does not declare/);
+  assert.match(problems[0], /is an inner directory contracts\/AGENTS\.md does not declare/);
   assert.match(problems[0], /earned, never assumed/);
 });
 
 test('a level missing its normative document is a problem', () => {
   const problems = levelProblems('behaviour', ['button.json'], () => false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /contracts\/behaviour\/README\.md is missing/);
+  assert.match(problems[0], /contracts\/behaviour\/AGENTS\.md is missing/);
 });
 
 test('a stray file inside a level is caught by extension, which is how every reader of that level finds its work', () => {
-  const problems = levelProblems('behaviour', ['README.md', 'button.json', 'scratch.txt'], () => false);
+  const problems = levelProblems('behaviour', ['AGENTS.md', 'button.json', 'scratch.txt'], () => false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /contracts\/behaviour\/scratch\.txt is neither README\.md nor a \.json source/);
+  assert.match(problems[0], /contracts\/behaviour\/scratch\.txt is neither AGENTS\.md nor a \.json source/);
 });
 
-test('design keeps its two hand-authored stylesheets by name, because neither is a token source', () => {
+test('design keeps its three hand-authored stylesheets by name, because none is a token source', () => {
   assert.deepEqual(
-    levelProblems('design', ['README.md', 'TokenTypes.md', 'colors.css', 'reset.css', 'palette.dark.json'], () => false),
+    levelProblems('design', ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css', 'palette.dark.json'], () => false),
     [],
   );
 });
 
-test('design is the one level whose normative statement is two documents, split by audience', () => {
-  const problems = levelProblems('design', ['TokenTypes.md', 'colors.css', 'reset.css'], () => false);
+test("a level's statement may be several documents, and every one of them is named or it is a stray", () => {
+  const problems = levelProblems('design', ['Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], () => false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /contracts\/design\/README\.md is missing/);
+  assert.match(problems[0], /contracts\/design\/AGENTS\.md is missing/);
 });
 
-test('a third stylesheet is a problem until contracts/README.md names it, which is the point of listing them', () => {
-  const problems = levelProblems('design', ['README.md', 'TokenTypes.md', 'colors.css', 'reset.css', 'motion.css'], () => false);
+test('a fourth stylesheet is a problem until contracts/AGENTS.md names it, which is the point of listing them', () => {
+  const problems = levelProblems('design', ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css', 'motion.css'], () => false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /contracts\/design\/motion\.css is neither README\.md nor TokenTypes\.md nor colors\.css nor reset\.css/);
+  assert.match(problems[0], /contracts\/design\/motion\.css is neither AGENTS\.md nor Scales\.md nor TokenTypes\.md/);
 });
 
 test('a generated stylesheet without the infix is a problem', () => {

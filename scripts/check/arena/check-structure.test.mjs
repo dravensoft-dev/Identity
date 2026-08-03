@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateStructure, zeroLayerProblems } from './check-structure.mjs';
-import { kebab, pascal, LAYERS } from '../../lib/arena/layers.mjs';
+import { kebab, pascal, LAYERS, NON_LAYERS } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const categories = { display: ['Badge', 'Tag'], forms: ['Button'] };
@@ -67,13 +67,21 @@ test('LAYERS names every framework layer, all of them migrated', () => {
   assert.deepEqual([...LAYERS].sort(), ['angular', 'react', 'tailwind']);
 });
 
-test('LAYERS is exhaustive against frameworks/ as it stands on disk', () => {
+test('every directory under frameworks/ is a declared layer or a declared non-layer', () => {
   const onDisk = readdirSync(join(repoRoot, 'frameworks'), { withFileTypes: true })
     .filter((e) => e.isDirectory())
     .map((e) => e.name)
     .sort();
-  assert.deepEqual([...LAYERS].sort(), onDisk,
-    'a layer directory exists that LAYERS does not name -- check:structure would skip it entirely');
+  assert.deepEqual([...LAYERS, ...NON_LAYERS.keys()].sort(), onDisk,
+    'a directory under frameworks/ is neither a layer LAYERS names nor a non-layer NON_LAYERS explains -- '
+    + 'check:structure would skip it entirely, and nothing would say so');
+});
+
+test('every non-layer carries a reason, so the escape hatch cannot be used silently', () => {
+  for (const [name, reason] of NON_LAYERS) {
+    assert.ok(reason.length > 20, `${name} is declared a non-layer with no reason worth reading`);
+    assert.ok(!LAYERS.includes(name), `${name} is declared both a layer and a non-layer`);
+  }
 });
 
 test('kebab turns a component name into the Angular directory name', () => {

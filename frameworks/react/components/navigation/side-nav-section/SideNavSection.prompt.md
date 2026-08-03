@@ -11,6 +11,17 @@ A named group of items inside a `SideNav` -- a subheading plus the items under i
 </SideNav>
 ```
 
+<!-- @api GENERATED from contracts/api/components/SideNavSection.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | Names the group, both on screen and to assistive technology. Required, and guarded at runtime: a blank label leaves the group with no accessible name, which is the defect the guard exists to prevent arriving through a value that is present, so the guard trims before it decides. |
+| `children*` | slot |  |  | The items in the group -- SideNavItems, further SideNavSections, SideNavCollapsibles. Each sits one nesting level deeper than the section itself. Required, and guarded at runtime: a section with no children is not a legal shape, and the guard counts the way the render path counts, so a child that is a false conditional counts as absent rather than as one. The AppLogo.mark shape -- a slot that is both declared required and enforced -- and not the Tooltip.content one, which is declared required and deliberately left unguarded. |
+
+<!-- @api end -->
+
 The heading reads `label`, in the mono uppercase micro-label treatment, and is the group's
 accessible name -- an `aria-labelledby` on the `role="group"` wrapper points at that same
 heading element, so the grouping a sighted user sees is the grouping a screen reader

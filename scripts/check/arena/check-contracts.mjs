@@ -1,8 +1,10 @@
-/* contracts/README.md states a shape -- three levels, one normative document each, one
+/* contracts/AGENTS.md states a shape -- three levels, a normative statement each, one
  * generated sibling, and an inner directory only where it separates two vocabularies a gate
- * reads as two sets. Nothing checked any of it: a stray file, a level missing its README, or
- * a fourth directory beside the three passed every gate. check:structure is the analogue for
- * frameworks/ and had no counterpart here. */
+ * reads as two sets. Nothing checked any of it: a stray file, a level missing its document, or
+ * a fourth directory beside the three passed every gate. A level's statement is one file or
+ * several, split by AUDIENCE rather than by topic, and each is named in SHAPE so an unnamed
+ * one fails rather than sitting invisible to every gate that reads the level by extension.
+ * check:structure is the analogue for frameworks/ and had no counterpart here. */
 
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -13,24 +15,24 @@ export const LEVELS = ['api', 'behaviour', 'design'];
 export const GENERATED = 'design-generated';
 
 export const SHAPE = new Map([
-  ['api', { dirs: ['components', 'types'], files: ['README.md'], ext: null }],
-  ['behaviour', { dirs: [], files: ['README.md'], ext: '.json' }],
-  ['design', { dirs: [], files: ['README.md', 'TokenTypes.md', 'colors.css', 'reset.css'], ext: '.json' }],
+  ['api', { dirs: ['components', 'types'], files: ['AGENTS.md', 'MemberForms.md'], ext: null }],
+  ['behaviour', { dirs: [], files: ['AGENTS.md'], ext: '.json' }],
+  ['design', { dirs: [], files: ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], ext: '.json' }],
 ]);
 
 export function rootProblems(entries) {
   const problems = [];
-  const expected = new Set([...LEVELS, GENERATED, 'README.md']);
+  const expected = new Set([...LEVELS, GENERATED, 'AGENTS.md']);
   for (const name of entries) {
     if (!expected.has(name)) {
       problems.push(
-        `contracts/${name} is not one of the three levels, their generated sibling, or the roof README. `
-        + `contracts/README.md names exactly ${[...expected].sort().join(', ')} -- add it there with its reason, or move it.`,
+        `contracts/${name} is not one of the three levels, their generated sibling, or the roof document. `
+        + `contracts/AGENTS.md names exactly ${[...expected].sort().join(', ')} -- add it there with its reason, or move it.`,
       );
     }
   }
   for (const name of expected) {
-    if (!entries.includes(name)) problems.push(`contracts/${name} is missing, and contracts/README.md says it is there.`);
+    if (!entries.includes(name)) problems.push(`contracts/${name} is missing, and contracts/AGENTS.md says it is there.`);
   }
   return problems;
 }
@@ -43,7 +45,7 @@ export function levelProblems(level, entries, isDir) {
     if (isDir(name)) {
       if (!shape.dirs.includes(name)) {
         problems.push(
-          `contracts/${level}/${name}/ is an inner directory contracts/README.md does not declare. `
+          `contracts/${level}/${name}/ is an inner directory contracts/AGENTS.md does not declare. `
           + `An inner directory is earned, never assumed: add one only when it separates two vocabularies a gate reads as two sets.`,
         );
       }
@@ -58,7 +60,7 @@ export function levelProblems(level, entries, isDir) {
   }
   for (const name of [...shape.files, ...shape.dirs]) {
     if (!entries.includes(name)) {
-      problems.push(`contracts/${level}/${name} is missing. contracts/README.md names it as this level's ${shape.dirs.includes(name) ? 'vocabulary directory' : 'normative document'}.`);
+      problems.push(`contracts/${level}/${name} is missing. contracts/AGENTS.md names it as this level's ${shape.dirs.includes(name) ? 'vocabulary directory' : 'normative document'}.`);
     }
   }
   return problems;
@@ -114,7 +116,7 @@ function main() {
     for (const p of problems) console.error(`  ${p}`);
     process.exit(1);
   }
-  console.log(`check-contracts: ${LEVELS.length} level(s) plus ${GENERATED}/ hold the shape contracts/README.md describes, across ${counted} entries`);
+  console.log(`check-contracts: ${LEVELS.length} level(s) plus ${GENERATED}/ hold the shape contracts/AGENTS.md describes, across ${counted} entries`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

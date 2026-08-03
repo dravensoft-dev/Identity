@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/badge/Badge.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Badge.classes.generated';
 
-export const badgeStyles = tv(manifest);
+export const badgeStyles = arenaStyles(manifest);

@@ -70,8 +70,8 @@ test('the tone dot renders only when `dot` is set, and takes the tone ink rather
     const badge = withDot.nativeElement.querySelector('arena-badge') as HTMLElement;
     const dot = badge.querySelector('span');
     assert.ok(dot, '`dot` was set and no dot rendered');
-    assert.match(dot.getAttribute('class') ?? '', /\bbg-current\b/,
-      'the dot paints its own colour instead of inheriting the tone ink');
+    assert.equal(dot.getAttribute('class') ?? '', 'arena-badge__dot',
+      'the dot took a class of its own instead of inheriting the tone ink around it');
   } finally {
     withDot.destroy();
   }

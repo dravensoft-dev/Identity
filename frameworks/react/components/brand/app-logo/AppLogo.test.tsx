@@ -23,49 +23,50 @@ test('throws when given neither', () => {
 
 test('a size picks both halves of the lock-up from the logo scale', () => {
   const html = renderToStaticMarkup(<AppLogo size="sm" mark={MARK} name="Draven" />);
-  assert.match(html, /var\(--logo-mark-sm\)/);
-  assert.match(html, /var\(--logo-text-sm\)/);
+  assert.match(html, /\barena-app-logo__mark--size-sm\b/);
+  assert.match(html, /\barena-app-logo__name--size-sm\b/);
 });
 
 test('every step in the repertoire resolves, and none writes a number', () => {
   for (const size of ['sm', 'md', 'lg', 'xl']) {
     // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
     const html = renderToStaticMarkup(<AppLogo size={size} mark={MARK} name="Draven" />);
-    assert.match(html, new RegExp(`var\\(--logo-mark-${size}\\)`));
-    assert.match(html, new RegExp(`var\\(--logo-text-${size}\\)`));
+    assert.match(html, new RegExp(`\\barena-app-logo__mark--size-${size}\\b`));
+    assert.match(html, new RegExp(`\\barena-app-logo__name--size-${size}\\b`));
 
-    assert.doesNotMatch(html, /width:\s*\d+(?:\.\d+)?(?!\d*%)/);
+    assert.doesNotMatch(html, /style="/, 'the lock-up writes no inline style at all');
   }
 });
 
 test('dim renders the second half of the wordmark in --mute', () => {
   const html = renderToStaticMarkup(<AppLogo mark={MARK} name="Draven" dim="soft" />);
   assert.match(html, /soft/);
-  assert.match(html, /var\(--mute\)/);
+  assert.match(html, /\barena-app-logo__dim\b/);
 });
 
 test('without dim the wordmark is one ink', () => {
   const html = renderToStaticMarkup(<AppLogo mark={MARK} name="Dravensoft" />);
-  assert.doesNotMatch(html, /var\(--mute\)/);
+  assert.doesNotMatch(html, /\barena-app-logo__dim\b/);
 });
 
 test('vertical orientation stacks the mark above the name and widens the gap', () => {
   const vertical = renderToStaticMarkup(<AppLogo orientation="vertical" mark={MARK} name="Draven" />);
-  assert.match(vertical, /flex-direction:column/);
-  assert.match(vertical, /gap:calc\(var\(--sp-1\) \* 3\)/);
+  assert.match(vertical, /\barena-app-logo__root--orientation-vertical\b/);
+  assert.match(vertical, /\barena-app-logo__root--orientation-vertical\b/);
 
   const horizontal = renderToStaticMarkup(<AppLogo mark={MARK} name="Draven" />);
-  assert.match(horizontal, /flex-direction:row/);
-  assert.match(horizontal, /gap:calc\(var\(--sp-1\) \* 2\.5\)/);
+  assert.match(horizontal, /\barena-app-logo__root--orientation-horizontal\b/);
+  assert.match(horizontal, /\barena-app-logo__root--orientation-horizontal\b/);
 });
 
-test('an element mark is cloned to fill the sized slot', () => {
+test('the mark fills its sized slot through the slot, so nothing is cloned to make it', () => {
   const html = renderToStaticMarkup(<AppLogo mark={MARK} name="Draven" />);
-  assert.match(html, /<img src="[^"]*" alt="" style="display:block;width:100%;height:100%"\/>/);
+  assert.match(html, /arena-app-logo__mark/, 'the slot sizes whatever child it is given');
+  assert.match(html, /<img src="[^"]*" alt=""\/>/,
+    'and the element the consumer passed reaches the page untouched');
 });
 
-test('a non-element mark passes through untouched, with no fill style', () => {
+test('a non-element mark passes through untouched too', () => {
   const html = renderToStaticMarkup(<AppLogo mark="M" name="Draven" />);
-  assert.doesNotMatch(html, /display:block;width:100%;height:100%/);
   assert.match(html, />M</);
 });

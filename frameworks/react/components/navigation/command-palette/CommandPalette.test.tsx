@@ -24,3 +24,13 @@ test('an absent required member throws rather than rendering', () => {
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
   assert.throws(() => renderToStaticMarkup(<CommandPalette open commands={undefined} />), /`commands` is required/);
 });
+
+test('the active row is the one the arrow keys point at, and it takes the accent branch of the recipe', () => {
+  const html = renderToStaticMarkup(
+    <CommandPalette open commands={[{ id: 'a', label: 'Deploy' }, { id: 'b', label: 'Roll back' }]} />,
+  );
+  assert.match(html, /class="[^"]*\barena-command-palette__row-active\b[^"]*"[^>]*aria-selected="true"|aria-selected="true"[^>]*class="[^"]*\barena-command-palette__row-active\b/,
+    'the first row is active on open and wears the accent tint');
+  assert.equal((html.match(/\barena-command-palette__row-active\b/g) || []).length, 1, 'more than one row was drawn as active');
+  assert.match(html, /\b(?:arena-command-palette__input|arena-command-palette__row-default)\b/, 'and the other row takes the quiet branch');
+});

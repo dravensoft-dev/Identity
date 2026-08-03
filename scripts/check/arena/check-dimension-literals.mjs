@@ -34,16 +34,10 @@ const PROPS = new Set([
 ]);
 
 export const EXEMPT = new Map([
-  ['frameworks/react/components/display/calendar/Calendar.tsx:zIndex:1',
-   'local stacking inside a positioned container; does not join the global z order'],
-  ['frameworks/react/components/display/calendar-event/CalendarEvent.tsx:zIndex:1',
-   'local stacking inside a positioned container; does not join the global z order'],
   ['frameworks/react/components/charts/bar-chart/BarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
    'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
   ['frameworks/react/components/charts/line-chart/LineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
    'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
-  ['frameworks/react/components/display/calendar/Calendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`',
-   'y(m) projects a clock minute onto the visible hour range, itself driven by the dayStart/dayEnd props — a time-to-pixel projection, not a design dimension; there is no token for an arbitrary minute of the day'],
   ['frameworks/react/components/display/calendar/Calendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 6.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/react/DataVisuals.ts:width:1',
@@ -58,11 +52,6 @@ export const EXEMPT = new Map([
    'the other axis of the same 1px visually-hidden box as the width entry above'],
   ['frameworks/angular/DataVisuals.ts:margin:\'-1px\'',
    'the same idiom\'s negative pull, which must cancel exactly the 1px box above so the hidden table shifts no sibling — it is bound to that literal, not to Arena\'s spacing scale, and a token here would break the cancellation'],
-
-  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:11px',
-   'Skeleton.card.entry.tsx\'s `variant="line"` example paired with `width="45%"` — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
-  ['frameworks/react/components/display/skeleton/Skeleton.card.entry.tsx:height:90px',
-   'Skeleton.card.entry.tsx\'s closing `variant="block"` example — an arbitrary demo placeholder height, not on Arena\'s 4px spacing scale'],
 ]);
 
 export const UNMODELLED_UNITS = ['%', 'ch', 'fr', 'vh', 'vw', 'vmin', 'vmax', 'deg'];
@@ -113,7 +102,7 @@ export function scanValue(prop, rawValue) {
   return null;
 }
 
-function skipString(text, i, quote) {
+export function skipString(text, i, quote) {
   for (let j = i + 1; j < text.length; j++) {
     if (text[j] === '\\') { j++; continue; }
     if (text[j] === quote) return j;
@@ -121,7 +110,7 @@ function skipString(text, i, quote) {
   return text.length - 1;
 }
 
-function blankComments(text) {
+export function blankComments(text) {
   let out = '';
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
@@ -150,7 +139,7 @@ function blankComments(text) {
   return out;
 }
 
-function readValue(text, start, stopChars) {
+export function readValue(text, start, stopChars) {
   let i = start, depth = 0;
   for (; i < text.length; i++) {
     const c = text[i];

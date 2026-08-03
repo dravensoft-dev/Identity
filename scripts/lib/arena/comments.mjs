@@ -1,6 +1,9 @@
-/* Finds comments in JS/TS source by lexing, so a `//` inside a string, a template
- * literal or a regex is never mistaken for one. Used by check-docs.mjs; kept
- * DOM-free and dependency-free so it runs under plain node. */
+/* Lexes JS/TS source so a `//` inside a string, a template literal or a regex is never
+ * mistaken for a comment, and so an import statement written into a generator's OUTPUT is
+ * never mistaken for one the generator performs. literalRanges reports where the literals
+ * are rather than erasing them, because a specifier is itself a string: erasing strings
+ * would erase the very thing a resolver reads. Kept DOM-free and dependency-free so it
+ * runs under plain node. */
 
 const KEYWORDS_BEFORE_REGEX = new Set([
   'return', 'typeof', 'case', 'in', 'of', 'new', 'delete', 'void', 'instanceof',
@@ -51,6 +54,92 @@ function skipRegex(source, at) {
   }
   while (i < source.length && /[a-z]/.test(source[i])) i += 1;
   return i;
+}
+
+export function insideLiteral(ranges, index) {
+  return ranges.some(([from, to]) => index >= from && index < to);
+}
+
+export function literalRanges(source) {
+  const out = [];
+  const range = (from, to) => { if (to > from) out.push([from, to]); };
+  let i = 0;
+
+  while (i < source.length) {
+    const ch = source[i];
+    const next = source[i + 1];
+
+    if (ch === '/' && next === '/') {
+      let end = source.indexOf('\n', i);
+      if (end === -1) end = source.length;
+      range(i, end);
+      i = end;
+      continue;
+    }
+
+    if (ch === '/' && next === '*') {
+      const close = source.indexOf('*/', i + 2);
+      const end = close === -1 ? source.length : close + 2;
+      range(i, end);
+      i = end;
+      continue;
+    }
+
+    if (ch === '"' || ch === "'") {
+      const end = skipQuoted(source, i, ch);
+      range(i + 1, end - 1);
+      i = end;
+      continue;
+    }
+
+    if (ch === '`') {
+      let j = i + 1;
+      let literalFrom = j;
+      while (j < source.length) {
+        if (source[j] === '\\') { j += 2; continue; }
+        if (source[j] === '`') { range(literalFrom, j); j += 1; break; }
+        if (source[j] === '$' && source[j + 1] === '{') {
+          range(literalFrom, j);
+          let depth = 1;
+          let k = j + 2;
+          while (k < source.length && depth > 0) {
+            const c = source[k];
+            if (c === '{') depth += 1;
+            else if (c === '}') depth -= 1;
+            else if (c === '"' || c === "'") { k = skipQuoted(source, k, c) - 1; }
+            else if (c === '`') {
+              let inner = k + 1;
+              while (inner < source.length) {
+                if (source[inner] === '\\') { inner += 2; continue; }
+                if (source[inner] === '`') break;
+                inner += 1;
+              }
+              for (const [from, to] of literalRanges(source.slice(k, inner + 1))) out.push([k + from, k + to]);
+              k = inner;
+            }
+            k += 1;
+          }
+          j = k;
+          literalFrom = j;
+          continue;
+        }
+        j += 1;
+      }
+      i = j;
+      continue;
+    }
+
+    if (ch === '/' && slashOpensRegex(source, i)) {
+      const end = skipRegex(source, i);
+      range(i, end);
+      i = end;
+      continue;
+    }
+
+    i += 1;
+  }
+
+  return out;
 }
 
 export function findComments(source) {

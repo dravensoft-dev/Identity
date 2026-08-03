@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/forms/checkbox/Checkbox.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Checkbox.classes.generated';
 
-export const checkboxStyles = tv(manifest);
+export const checkboxStyles = arenaStyles(manifest);

@@ -1,0 +1,11 @@
+{
+  "component": "Toast",
+  "seed": {
+    "tone": "success",
+    "title": "Snapshot taken",
+    "message": "Restore points are kept for 30 days.",
+    "actionLabel": "View",
+    "dismissible": true
+  },
+  "note": "A transient notice. A danger toast never auto-dismisses."
+}

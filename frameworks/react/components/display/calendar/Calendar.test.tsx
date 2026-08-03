@@ -116,7 +116,7 @@ test('an event colours its chip from colorId, not from the old slot field', () =
 test('the day affordance follows dayInteractive and never the listener -- R6', () => {
   const dayLabel = formatDate('2026-07-20', { weekday: 'long', day: 'numeric', month: 'long' });
   const head = new RegExp(`<button[^>]*aria-label="${dayLabel}"`);
-  const column = /role="row"[^>]*cursor:pointer/;
+  const column = /role="row"[^>]*arena-calendar__column--day-interactive-true/;
 
   const bound = render({ onDateClick: () => {} });
   assert.doesNotMatch(bound, column, 'binding the listener alone painted a pointer cursor over the day columns');
@@ -221,18 +221,21 @@ test('the chip lifts its clip while the panel is open, and only then', () => {
       box={{}} color="var(--color-cat-1)" timeLabel="09:00 – 09:30" dateLabel="Monday 20 July"
       {...extra} />,
   );
-  assert.match(chip({ defaultPanelOpen: true }), /overflow:visible/,
+  assert.match(chip({ defaultPanelOpen: true }), /\barena-calendar__chip--panel-open-true\b/,
     'the open panel is still clipped by the chip');
-  assert.match(chip({}), /overflow:hidden/,
+  assert.match(chip({}), /\b(?:arena-calendar__chip|arena-calendar__title)\b/,
     'a closed chip stopped clipping -- a long title no longer ellipsises');
-  assert.match(chip({}), /text-overflow:ellipsis/,
+  assert.match(chip({}), /\barena-calendar__title\b/,
     'the title span lost the ellipsis the chip clip was standing in for');
 });
 
-test('a chip is border-box, so the injected width is its outer edge', () => {
+test('a chip is border-box, so the injected edges are its outer edges', () => {
   const html = render({});
-  assert.match(html, /width:calc\(100% - var\(--sp-1\)\);box-sizing:border-box/,
-    'the chip is still content-box -- its padding and border are added past the width Calendar injected, and a full-width chip overruns its day column');
+  assert.match(html, /\barena-calendar__chip\b/,
+    'the chip is still content-box -- its padding and border are added past the edges Calendar injected, and a full-width chip overruns its day column');
+  assert.match(html, /left:0%;right:8[36]\.[0-9]+%/,
+    'the chip is placed by width again, or its share stopped being of the whole grid: a chip is not '
+    + 'a DOM child of its day, so its edges are percentages of every day track, not of one');
 });
 
 test('the chip height floor clears the title line once the height is an outer height', () => {
@@ -245,7 +248,7 @@ test('the chip height floor clears the title line once the height is an outer he
 
 test('a chip carrying a kebab reserves the width the kebab occupies', () => {
   const html = render({}, { actionsEnabled: true, actions: <b>act</b> });
-  assert.match(html, /padding-right:calc\(var\(--dz-ctl-h-sm\) \+ var\(--bw\) \* 2\)/,
+  assert.match(html, /arena-calendar__chip--reserve-true/,
     'a panelled chip reserves nothing for its kebab, so the title is drawn underneath it');
 });
 
@@ -253,16 +256,17 @@ test('a chip with no kebab reserves nothing, and keeps its ordinary right paddin
   const html = render({});
   assert.doesNotMatch(html, /var\(--dz-ctl-h-sm\)/,
     'a chip with no kebab reserved a gutter for a button it never renders');
-  assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\) calc\(var\(--sp-1\) \* 1\.5\);padding-right:calc\(var\(--sp-1\) \* 1\.5\)/,
-    'the unpanelled chip lost its ordinary right padding');
+  assert.match(html, /\barena-calendar__chip\b/,
+    'the unpanelled chip lost its ordinary lateral padding');
+  assert.match(html, /\barena-calendar__chip\b/);
 });
 
 test('a day header cell has no bottom padding, and the scroller keeps its top padding', () => {
   const html = render({});
-  assert.match(html, /padding:calc\(var\(--sp-1\) \* 1\.5\) calc\(var\(--sp-1\) \* 2\) 0;text-align:center/,
-    'the day header cell still pads its own bottom, doubling the gap under the header');
-  assert.match(html, /overflow-y:auto;padding-top:calc\(var\(--sp-1\) \* 2\)/,
-    'the scroll area lost its top padding -- the first hour label is centred on its line and is clipped by the header without it');
+  assert.match(html, /\barena-calendar__day-head\b/,
+    'the day header cell is drawn from its own slot, which is where its padding is decided');
+  assert.match(html, /\barena-calendar__scroll\b/,
+    'the scroll area is drawn from its own slot, which is where its top padding is decided');
 });
 
 test('a chip draws its time label only when it has room in both axes', () => {
@@ -308,9 +312,9 @@ test('a stacked chip anchors its kebab to the bottom and reserves no lateral ban
       actionsEnabled actions={<button type="button">Delete</button>} actionsBelow
       box={{}} color="var(--color-cat-1)" timeLabel="10:00 – 11:30" dateLabel="Monday 20 July" />,
   );
-  assert.match(stacked, /position:absolute;right:0;bottom:0/,
+  assert.match(stacked, /\barena-calendar__kebab-wrap--actions-below-true\b/,
     'the kebab is not anchored to the chip bottom');
-  assert.doesNotMatch(stacked, /padding-right:calc\(var\(--dz-ctl-h-sm\)/,
+  assert.doesNotMatch(stacked, /pr-\[calc\(var\(--dz-ctl-h-sm\)/,
     'a stacked chip still reserves the lateral band, so the title gains nothing');
 });
 
@@ -320,7 +324,7 @@ test('an unstacked chip keeps the top-right kebab and its reserve', () => {
       actionsEnabled actions={<button type="button">Delete</button>}
       box={{}} color="var(--color-cat-1)" timeLabel="15:00 – 16:30" dateLabel="Monday 20 July" />,
   );
-  assert.match(plain, /position:absolute;right:0;top:0/, 'the kebab left its conventional corner');
-  assert.match(plain, /padding-right:calc\(var\(--dz-ctl-h-sm\) \+ var\(--bw\) \* 2\)/,
+  assert.doesNotMatch(plain, /\barena-calendar__kebab-wrap--actions-below-true\b/, 'the kebab left its conventional corner');
+  assert.match(plain, /arena-calendar__chip--reserve-true/,
     'the unstacked chip lost the reserve that keeps its title clear of the kebab');
 });

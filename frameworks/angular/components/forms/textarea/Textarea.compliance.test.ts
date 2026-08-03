@@ -150,7 +150,7 @@ test('the counter changes slot past nine tenths of the cap rather than changing 
   try {
     const el = Array.from(calm.host.querySelectorAll('span')).find((s) => s.textContent === '90/100');
     assert.ok(el, 'the counter did not render at 90/100');
-    assert.doesNotMatch(el.getAttribute('class') ?? '', /text-warning/);
+    assert.doesNotMatch(el.getAttribute('class') ?? '', /arena-textarea__counter-near/);
   } finally {
     calm.fixture.destroy();
   }
@@ -159,7 +159,7 @@ test('the counter changes slot past nine tenths of the cap rather than changing 
   try {
     const el = Array.from(near.host.querySelectorAll('span')).find((s) => s.textContent === '95/100');
     assert.ok(el);
-    assert.match(el.getAttribute('class') ?? '', /text-warning/);
+    assert.match(el.getAttribute('class') ?? '', /arena-textarea__counter-near/);
   } finally {
     near.fixture.destroy();
   }
@@ -169,7 +169,7 @@ test('the foot keeps a placeholder when there is no message, so the counter stay
   const { fixture, host } = render({ value: 'abc', maxLength: 10, counter: true });
   try {
     const foot = Array.from(host.querySelectorAll('div'))
-      .find((d) => (d.getAttribute('class') ?? '').includes('justify-between')) as HTMLElement;
+      .find((d) => (d.getAttribute('class') ?? '').includes('arena-textarea__foot')) as HTMLElement;
     assert.ok(foot, 'no foot row rendered');
     assert.equal(foot.children.length, 2,
       'with no error and no hint the first child must still exist, or justify-between has nothing to push against');
@@ -181,7 +181,7 @@ test('the foot keeps a placeholder when there is no message, so the counter stay
 test('the host is the field group itself -- the root recipe lands on it, not on a wrapper inside', () => {
   const { fixture, host } = render();
   try {
-    assert.match((host.querySelector('arena-textarea') as HTMLElement).getAttribute('class') ?? '', /flex-col/);
+    assert.match((host.querySelector('arena-textarea') as HTMLElement).getAttribute('class') ?? '', /arena-textarea__root/);
   } finally {
     fixture.destroy();
   }

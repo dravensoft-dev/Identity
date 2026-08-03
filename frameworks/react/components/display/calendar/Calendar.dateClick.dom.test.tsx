@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from '../../../test/Harness.tsx';
 import { Calendar } from './Calendar.tsx';
+import { CalendarEvent } from '../calendar-event/CalendarEvent.tsx';
 import { formatDate } from './CalendarInternals.ts';
 
 after(cleanup);
@@ -85,4 +86,27 @@ test('dayInteractive with no listener draws the affordance and activates without
   const root = mount(cal({ dayInteractive: true }));
   click(dayHeads(root)[0]!);
   click(columns(root)[0]!);
+});
+
+test('a chip is not inside its day, so activating one reports no date', () => {
+  const seen: unknown[] = [];
+  const root = mount(
+    <Calendar timeZone="UTC" anchorDate="2026-07-20" view="week" dayStart="09:00" dayEnd="11:00"
+      dayInteractive onDateClick={(iso: string) => seen.push(iso)}>
+      <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z" />
+    </Calendar>,
+  );
+
+  const grid = root.querySelector('[role="grid"]')!;
+  const owned = (columns(root)[0]!.getAttribute('aria-owns') ?? '').split(/\s+/).filter(Boolean);
+  assert.equal(owned.length, 1, 'the first day owns no chip, so nothing re-attached it to its row');
+  const chip = grid.ownerDocument.getElementById(owned[0]!);
+  assert.ok(chip, 'the day names an id that resolves to nothing -- a dangling reference');
+  assert.ok(!columns(root)[0]!.contains(chip),
+    'sanity: the chip IS a DOM child of its row again, which is the shape the other layer cannot have');
+
+  click(chip as HTMLElement);
+  assert.deepEqual(seen, [],
+    'the chip reported its day: it is outside the row now, so a click on it must not activate the date, '
+    + 'which is what the other layer has always done');
 });

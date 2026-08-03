@@ -17,8 +17,21 @@ Arena draws itself, not projected content.
 </arena-empty-state>
 ```
 
-Import `ArenaAction` from `frameworks/angular/ProjectionMarkers` (or the
-layer barrel) alongside `EmptyState` in the host component's `imports`,
+<!-- @api GENERATED from contracts/api/components/EmptyState.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `icon` | primitive | `string` |  | A Phosphor class name for the glyph Arena draws, muted. |
+| `title*` | primitive | `string` |  | The headline: what is empty. |
+| `message` | primitive | `string` |  | A sentence of guidance under the title. |
+| `action` | slot |  |  | A single call-to-action control, centred under the message. |
+
+<!-- @api end -->
+
+Import `ArenaAction` from `@dravensoft/arena-angular` alongside `EmptyState` in the
+host component's `imports`,
 `action` is a directive, not a plain attribute, because it is how the empty
 state detects that an action was projected at all. `ArenaAction` is shared: every
 primitive that projects a single action through `[action]` (`EmptyState`,

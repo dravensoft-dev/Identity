@@ -46,7 +46,7 @@ export class Alert {
   readonly icon = input<string>();
   /** The label of a single inline action button. Absent renders no action. */
   readonly actionLabel = input<string>();
-  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. */
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, because Arena never derives what it draws from what a consumer listens for. */
   readonly dismissible = input(false, { transform: booleanAttribute });
   /** The inline action button was activated. */
   readonly action = output<void>();

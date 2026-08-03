@@ -1,4 +1,6 @@
 import React from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Toast.classes.generated.ts';
 
 import type { ToastTone } from '../../../Api.generated';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js';
@@ -23,7 +25,7 @@ export interface ToastProps {
   /** Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. */
   persist?: boolean;
 
-  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. */
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, because Arena never derives what it draws from what a consumer listens for. */
   dismissible?: boolean;
 
   /** The × was activated. */
@@ -32,28 +34,35 @@ export interface ToastProps {
 
 export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
 
-const TOAST_TONES = { neutral: 'var(--line-strong)', success: 'var(--success)', danger: 'var(--danger)', gold: 'var(--gold)' };
+const toastStyles = arenaStyles(manifest);
+const TONES = Object.keys(manifest.variants.tone);
+type Tone = keyof typeof manifest.variants.tone;
+const toneOf = (tone: string | undefined): Tone =>
+  (tone && TONES.includes(tone) ? tone as Tone : 'neutral');
 
 export function Toast({ title, message, tone = 'neutral', actionLabel, onAction, dismissible = false, onClose, persist = false }: ToastProps) {
   const pinned = persist || tone === 'danger';
+  const styles = toastStyles({ tone: toneOf(tone) });
   return (
-    <div role={tone === 'danger' ? 'alert' : 'status'} aria-live={tone === 'danger' ? 'assertive' : 'polite'} data-persist={pinned ? '' : undefined}
-      style={{ display: 'flex', gap: 'calc(var(--sp-1) * 3)', alignItems: 'flex-start', width: 'calc(var(--sp-1) * 85)', padding: 'calc(var(--sp-1) * 3.5) calc(var(--sp-1) * 4)', zIndex: 'var(--z-toast)',
-      background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-      borderLeft: 'var(--bw-strong) solid ' + (TOAST_TONES[tone] || TOAST_TONES.neutral), borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-2)' }}>
-      <div style={{ flex: 1 }}>
-        {title && <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text)', color: 'var(--bone)' }}>{title}{pinned && <span title="Does not auto-dismiss" style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', letterSpacing: 'var(--ls-column-header)', color: 'var(--mute)', border: 'var(--bw) solid var(--color-base-300)', borderRadius: 'var(--r-xs)', padding: '0 calc(var(--sp-1) * 1)', textTransform: 'uppercase' }}>Pinned</span>}</div>}
-        {message && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-sm)', color: 'var(--mute)', marginTop: 'calc(var(--sp-1) * 0.5)' }}>{message}</div>}
+    <div role={tone === 'danger' ? 'alert' : 'status'} aria-live={tone === 'danger' ? 'assertive' : 'polite'}
+      data-persist={pinned ? '' : undefined} className={styles.root()}>
+      <div className={styles.body()}>
+        {title && (
+          <div className={styles.title()}>
+            {title}
+            {pinned && <span title="Does not auto-dismiss" className={styles.pinned()}>Pinned</span>}
+          </div>
+        )}
+        {message && <div className={styles.message()}>{message}</div>}
         {actionLabel && (
-          <button onClick={onAction}
-            style={{ marginTop: 'calc(var(--sp-1) * 2.5)', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-bold)', letterSpacing: 'var(--ls-uppercase-status)', textTransform: 'uppercase',
-              color: tone === 'danger' ? 'var(--gold)' : 'var(--crimson)' }}>
-            {actionLabel}
-          </button>
+          <button onClick={onAction} className={styles.action()}>{actionLabel}</button>
         )}
       </div>
-      {dismissible && <button onClick={onClose} aria-label="Close" style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', color: 'var(--mute)', cursor: 'pointer', fontSize: 'var(--icon-md)', lineHeight: 'var(--dz-lh)' }}><i className="ph-bold ph-x" /></button>}
+      {dismissible && (
+        <button onClick={onClose} aria-label="Close" className={styles.close()}>
+          <i className="ph-bold ph-x" />
+        </button>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 Arena side-nav section, a labelled group of destinations inside an `arena-side-nav`. Standalone,
-`OnPush`, signal I/O. Styling is the family's shared `SideNav.variants.ts` recipe. The host **is**
+`OnPush`, signal I/O. The host **is**
 the group: `role="group"` and the `aria-labelledby` that names it sit on it, with the heading
 rendered inside.
 
@@ -9,6 +9,17 @@ rendered inside.
   <arena-side-nav-item id="billing" label="Billing" href="/billing" />
 </arena-side-nav-section>
 ```
+
+<!-- @api GENERATED from contracts/api/components/SideNavSection.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | Names the group, both on screen and to assistive technology. Required, and guarded at runtime: a blank label leaves the group with no accessible name, which is the defect the guard exists to prevent arriving through a value that is present, so the guard trims before it decides. |
+| `content*` | slot |  |  | The items in the group -- SideNavItems, further SideNavSections, SideNavCollapsibles. Each sits one nesting level deeper than the section itself. Required, and guarded at runtime: a section with no children is not a legal shape, and the guard counts the way the render path counts, so a child that is a false conditional counts as absent rather than as one. The AppLogo.mark shape -- a slot that is both declared required and enforced -- and not the Tooltip.content one, which is declared required and deliberately left unguarded. |
+
+<!-- @api end -->
 
 **Its content is required, and it is the only slot in the repository that is.** A section renders a
 heading naming the group, so a childless one labels nothing, it **throws** at content-init rather

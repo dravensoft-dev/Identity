@@ -1,21 +1,22 @@
 <!-- @dsCard group="Tailwind" viewport="420x715" name="SideNav" subtitle="The sidebar's navigation list, rendered from SideNav.manifest.json" -->
 <!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="../../../../../intro/styles.css">
-<link rel="stylesheet" href="../../../Utilities.generated.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/navigation/side-nav/SideNav.styles.generated.css">
 <link rel="stylesheet" href="../../../Specimen.css">
 </head><body><div id="root"></div>
 <script type="module">
-import { mountSpecimen, section, el, classesFor } from '../../../Specimen.js';
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
 
 const manifest = await (await fetch('./SideNav.manifest.json')).json();
-const c = classesFor(manifest);
+const c = arenaClassesFor(manifest);
 
 /* One destination. `href` decides the element, as SideNavItem.json contracts,
    and the glyph carries the manifest's `icon` slot alongside the Phosphor class
    name the consumer supplies -- the single-icon convention: Arena styles the
    element, the consumer names it. */
 function item({ label, href, icon, current }) {
-  const active = classesFor(manifest, { active: String(Boolean(current)) });
+  const active = arenaClassesFor(manifest, { active: String(Boolean(current)) });
   const kids = [];
   if (icon) kids.push(el('i', { class: `${c.icon} ${icon}`, 'aria-hidden': 'true' }));
   kids.push(label);

@@ -14,14 +14,28 @@ questions about the same number, and neither implies the other:
 truthy; a `delta` carrying a `tone`/`direction` but an empty `value` renders no pill at all.
 
 A tile can legitimately show `tone="danger"` with `delta.tone="positive"` in the
-same breath, a bad state that is improving is still a bad state. Styling is the
-sibling `StatCard.variants.ts` recipe.
+same breath, a bad state that is improving is still a bad state.
 
 ```html
 <arena-stat-card label="Revenue" value="$48.2k" [delta]="{ value: '12%', direction: 'up', tone: 'positive' }" />
 <arena-stat-card label="p95 latency" value="184ms" [delta]="{ value: '9%', direction: 'down', tone: 'positive' }" />
 <arena-stat-card label="Open incidents" value="3" tone="danger" [delta]="{ value: '2', direction: 'up', tone: 'positive' }" sub="2 acknowledged" />
 ```
+
+<!-- @api GENERATED from contracts/api/components/StatCard.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label*` | primitive | `string` |  | Short uppercase microlabel, two words at most. |
+| `value*` | primitive | `string` |  | Preformatted, e.g. "1,284" or "99.9%". StatCard never formats. |
+| `tone` | enum | `Tone` | `"neutral"` | What state the number IS in right now, as against how it moved. Badge's vocabulary. |
+| `delta` | object | `StatDelta` |  | How the number moved. Absent renders no pill. |
+| `sub` | primitive | `string` |  | Small muted line under the value: context, e.g. "vs last week". |
+| `icon` | primitive | `string` |  | A Phosphor class name for a small glyph beside the label, drawn muted. Arena renders the aria-hidden wrapper and the `<i>`. |
+
+<!-- @api end -->
 
 `icon` is a Phosphor class name, not a slot, Arena draws the `<i>` and its
 aria-hidden wrapper, and an unfilled `icon` renders no wrapper at all:

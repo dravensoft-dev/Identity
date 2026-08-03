@@ -19,6 +19,20 @@ supply. `brand`, `footer` and the children default slot stay nodes.
 </UnauthCard>
 ```
 
+<!-- @api GENERATED from contracts/api/components/UnauthCard.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `brand` | slot |  |  | The brand lock-up above the panel's content. An AppLogo, in practice. |
+| `eyebrow` | primitive | `string` |  | Mono crimson microlabel: the product, not the task. |
+| `title` | primitive | `string` |  | The task. "Welcome back", "Check your inbox". |
+| `children` | slot |  |  | The fields, composed from Input and Button. |
+| `footer` | slot |  |  | Centred muted line below the content: a recovery link, a legal note. |
+
+<!-- @api end -->
+
 **It does not centre itself**: the product owns the page. The wrapper is three lines,
 and writing them is what keeps a split layout beside an illustration possible:
 

@@ -1,7 +1,7 @@
 import { createTV } from 'tailwind-variants';
 import { getDefaultConfig } from 'tailwind-merge';
 
-export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter', 'sidebar'];
+export const ARENA_SPACING_SUFFIXES = ['ctl-h', 'ctl-h-sm', 'ctl-h-lg', 'row-py', 'row-px', 'stack', 'gutter', 'sidebar', 'bar'];
 
 type ThemeGetterLike = ((theme: Record<string, unknown>) => unknown) & { isThemeGetter?: boolean };
 
@@ -43,7 +43,7 @@ const handWritten: Record<string, ClassGroupEntries[]> = {
   shadow: [{ shadow: ['1', '2', '3'] }],
   'font-size': [{ text: ['mega', 'hero', 'display', 'h1', 'h2', 'h3', 'h4', 'ctl-lg', 'ctl', 'ctl-md', 'ctl-sm', 'ctl-xs', 'ctl-2xs', 'logo-sm', 'logo-md', 'logo-lg', 'logo-xl'] }],
   rounded: [{ rounded: ['pill'] }],
-  z: [{ z: ['nav', 'dropdown', 'tooltip', 'modal', 'modal-nested', 'palette', 'onboarding', 'toast'] }],
+  z: [{ z: ['nav', 'sheet', 'dropdown', 'tooltip', 'modal', 'modal-nested', 'palette', 'onboarding', 'toast'] }],
   tracking: [{ tracking: ['label', 'field-label', 'column-header', 'badge', 'uppercase-status', 'mono-nav'] }],
   leading: [{ leading: ['body', 'ctl'] }],
   blur: [{ blur: ['scrim'] }],

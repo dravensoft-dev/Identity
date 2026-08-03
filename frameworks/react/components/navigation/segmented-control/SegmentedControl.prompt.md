@@ -6,6 +6,22 @@ A compact inline filter over mutually exclusive options: a scope, a range, a den
   value={range} onChange={setRange} />
 ```
 
+<!-- @api GENERATED from contracts/api/components/SegmentedControl.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `options*` | array | `SegmentOption[]` |  | The options, in order. Two to four with one-word labels. |
+| `value` | primitive | `string` |  | The selected option's value. Omit and pass `defaultValue` to let it govern itself. |
+| `defaultValue` | primitive | `string` |  | The initially selected value when uncontrolled. Defaults to the first option. |
+| `size` | enum | `SegmentedControlSize` | `"md"` | Compact or default. |
+| `ariaLabel*` | primitive | `string` |  | Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. |
+| `name` | primitive | `string` |  | Shared name for the underlying radios; generated when omitted. |
+| `onChange` | event | `string` |  | A different option was chosen; carries its value. |
+
+<!-- @api end -->
+
 ```tsx
 <SegmentedControl ariaLabel="Deployment status" size="sm"
   options={[{ value: 'all', label: 'All' }, { value: 'live', label: 'Live' }, { value: 'failed', label: 'Failed' }]}

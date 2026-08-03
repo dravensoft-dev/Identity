@@ -73,3 +73,19 @@ test('without a consumer id the label-derived one is still generated', () => {
   assert.match(html, /<textarea id="ta-email"/);
   assert.match(html, /for="ta-email"/);
 });
+
+test('the counter warns near the cap through its own slot, not a recomputed colour', () => {
+  const calm = renderToStaticMarkup(<Textarea label="A" counter maxLength={100} value={'x'.repeat(50)} />);
+  assert.match(calm, /50\/100/);
+  assert.doesNotMatch(calm, /\barena-textarea__counter-near\b/);
+
+  const near = renderToStaticMarkup(<Textarea label="A" counter maxLength={100} value={'x'.repeat(95)} />);
+  assert.match(near, /\barena-textarea__counter-near\b/);
+});
+
+test('autoResize picks the resize branch of the recipe, and error picks the state branch', () => {
+  assert.match(renderToStaticMarkup(<Textarea label="A" />), /\barena-textarea__field--resize-vertical\b/);
+  assert.match(renderToStaticMarkup(<Textarea label="A" autoResize />), /\barena-textarea__field--resize-none\b/);
+  assert.match(renderToStaticMarkup(<Textarea label="A" />), /arena-textarea__field/);
+  assert.match(renderToStaticMarkup(<Textarea label="A" error="Nope" />), /\barena-textarea__field--state-error\b/);
+});

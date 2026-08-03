@@ -1,0 +1,40 @@
+{
+  "component": "BottomNav",
+  "seed": {
+    "ariaLabel": "Sections",
+    "active": "home"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "BottomNavItem",
+        "members": {
+          "id": "home",
+          "label": "Home",
+          "icon": "ph-bold ph-house"
+        }
+      },
+      {
+        "component": "BottomNavItem",
+        "members": {
+          "id": "services",
+          "label": "Services",
+          "icon": "ph-bold ph-stack",
+          "badge": 3
+        }
+      },
+      {
+        "component": "BottomNavItem",
+        "members": {
+          "id": "settings",
+          "label": "Settings",
+          "icon": "ph-bold ph-gear-six"
+        }
+      }
+    ]
+  },
+  "bind": {
+    "nav": "active"
+  },
+  "note": "Equal columns at a phone width, on --layout-bar and --z-nav."
+}

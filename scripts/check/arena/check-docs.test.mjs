@@ -8,8 +8,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
+  SIZE_ALLOWANCE, limitFor, staleAllowanceProblems,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
+  consumerBranchProblems, CONSUMER_LAST_STOP, CONSUMER_INDEX, CONTRIBUTOR_PATHS,
+  isConsumerDocument, BRANCH_SWITCH, branchSwitchProblems,
+  RULE_OWNERS, CONTRIBUTOR_BRANCH, ruleOwnerProblems, statesRule, CONSUMER_OWN_OUTPUT,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -22,9 +26,11 @@ function tree(files) {
   return root;
 }
 
+const NO_ALLOWANCE = new Map();
+
 test('a document over the limit is reported with its size', () => {
   const root = tree({ 'README.md': 'x'.repeat(MAX_DOCUMENT_CHARS + 1) });
-  const { problems } = documentSizeProblems(root);
+  const { problems } = documentSizeProblems(root, NO_ALLOWANCE);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /README\.md: 60001 characters/);
   rmSync(root, { recursive: true });
@@ -32,7 +38,7 @@ test('a document over the limit is reported with its size', () => {
 
 test('a document exactly at the limit passes', () => {
   const root = tree({ 'README.md': 'x'.repeat(MAX_DOCUMENT_CHARS) });
-  assert.deepEqual(documentSizeProblems(root).problems, []);
+  assert.deepEqual(documentSizeProblems(root, NO_ALLOWANCE).problems, []);
   rmSync(root, { recursive: true });
 });
 
@@ -44,15 +50,48 @@ test('a dist tree is assembled output and is read by nothing', () => {
   });
   assert.deepEqual(punctuationProblems(root).problems, []);
   assert.deepEqual(commentRuleProblems(root).problems, []);
-  assert.equal(documentSizeProblems(root).scanned, 1);
+  assert.equal(documentSizeProblems(root, NO_ALLOWANCE).scanned, 1);
   rmSync(root, { recursive: true });
 });
 
 test('both document rules report how many documents they actually read', () => {
   const root = tree({ 'README.md': 'a', 'docs/a.md': 'b', 'x/y/Z.md': 'c', 'notes.txt': 'd' });
-  assert.equal(documentSizeProblems(root).scanned, 3);
+  assert.equal(documentSizeProblems(root, NO_ALLOWANCE).scanned, 3);
   assert.equal(punctuationProblems(root).scanned, 3);
   rmSync(root, { recursive: true });
+});
+
+test('SIZE_ALLOWANCE is empty, and that emptiness is the claim', () => {
+  assert.deepEqual([...SIZE_ALLOWANCE.keys()], []);
+  assert.equal(limitFor('AGENTS.md'), MAX_DOCUMENT_CHARS);
+  assert.equal(limitFor('scripts/AGENTS.md'), MAX_DOCUMENT_CHARS);
+});
+
+test('an allowance raises the limit rather than removing it, so the document is still measured', () => {
+  const allowance = new Map([['AGENTS.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const inside = tree({ 'AGENTS.md': 'x'.repeat(64_000) });
+  assert.deepEqual(documentSizeProblems(inside, allowance).problems, []);
+  rmSync(inside, { recursive: true });
+
+  const over = tree({ 'AGENTS.md': 'x'.repeat(65_001) });
+  const problems = documentSizeProblems(over, allowance).problems;
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /AGENTS\.md: 65001 characters, over the 65000 limit/);
+  rmSync(over, { recursive: true });
+});
+
+test('a document that falls back inside the shared limit fails as a stale allowance', () => {
+  const allowance = new Map([['AGENTS.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const root = tree({ 'AGENTS.md': 'x'.repeat(MAX_DOCUMENT_CHARS) });
+  const problems = documentSizeProblems(root, allowance).problems;
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /has outlived what it was written for, so delete it/);
+  rmSync(root, { recursive: true });
+});
+
+test('an allowance for a document that has moved or gone fails too', () => {
+  const allowance = new Map([['AGENTS.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  assert.match(staleAllowanceProblems(new Map(), allowance)[0], /and no document is there/);
 });
 
 test('DOUBTS.md and docs/ are exempt from the size limit, and nothing else is', () => {
@@ -62,7 +101,7 @@ test('DOUBTS.md and docs/ are exempt from the size limit, and nothing else is', 
     'docs/superpowers/specs/a.md': over,
     'README.md': over,
   });
-  assert.deepEqual(documentSizeProblems(root).problems.map((p) => p.split(':')[0]), ['README.md']);
+  assert.deepEqual(documentSizeProblems(root, NO_ALLOWANCE).problems.map((p) => p.split(':')[0]), ['README.md']);
   assert.deepEqual(SIZE_EXEMPT, ['DOUBTS.md', join('docs', '')]);
   rmSync(root, { recursive: true });
 });
@@ -194,7 +233,7 @@ test('a hand-written file is read however loudly its header claims otherwise', (
 test('the Angular emit is skipped by its anchored path, so the scripts phase directory of the same name is still read', () => {
   const overLong = `/* ${'x\n * '.repeat(HEADER_MAX_LINES + 2)} */\nconst a = 1;\n`;
   const root = tree({
-    'frameworks/angular/build/test/angular/Emitted.js': overLong,
+    'frameworks/angular/build/test/Emitted.js': overLong,
     'scripts/build/react/build-demos.mjs': overLong,
   });
   const { problems } = commentRuleProblems(root);
@@ -221,7 +260,7 @@ test('a document under .github is governed, and one under any other dotted direc
 
 test('a document under .github is held to the size limit too', () => {
   const root = tree({ '.github/workflows/README.md': 'x'.repeat(MAX_DOCUMENT_CHARS + 1) });
-  const { problems } = documentSizeProblems(root);
+  const { problems } = documentSizeProblems(root, NO_ALLOWANCE);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /\.github\/workflows\/README\.md: 60001 characters/);
   rmSync(root, { recursive: true });
@@ -250,10 +289,122 @@ test('allowsHeader covers scripts, a .test. infix and a test/ directory', () => 
 });
 
 test('a walk that reaches nothing is a failure, not a vacuous pass', () => {
-  assert.deepEqual(zeroScanProblems({ documents: 1, sources: 1 }), []);
-  assert.match(zeroScanProblems({ documents: 0, sources: 1 })[0], /no \.md files at all/);
-  assert.match(zeroScanProblems({ documents: 1, sources: 0 })[0], /no source files at all/);
-  assert.equal(zeroScanProblems({ documents: 0, sources: 0 }).length, 2);
+  assert.deepEqual(zeroScanProblems({ documents: 1, sources: 1, prompts: 1 }), []);
+  assert.match(zeroScanProblems({ documents: 0, sources: 1, prompts: 1 })[0], /no \.md files at all/);
+  assert.match(zeroScanProblems({ documents: 1, sources: 0, prompts: 1 })[0], /no source files at all/);
+  assert.match(zeroScanProblems({ documents: 1, sources: 1, prompts: 0 })[0], /no \.prompt\.md files at all/);
+  assert.equal(zeroScanProblems({ documents: 0, sources: 0, prompts: 0 }).length, 3);
+});
+
+test('a prompt citing a contributor path is a problem, and each hit is named', () => {
+  const root = tree({
+    'frameworks/react/components/a/A.prompt.md':
+      'It is a member because R6 in `contracts/api/AGENTS.md` forbids it, and\n'
+      + '`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` allows the two.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 2);
+  assert.ok(problems.some((p) => p.includes('contracts/api/AGENTS.md')));
+  assert.ok(problems.some((p) => p.includes('scripts/lib/arena/api-surface.mjs')));
+  for (const problem of problems) assert.match(problem, /leave the reason on the contributor branch/);
+  rmSync(root, { recursive: true });
+});
+
+test('a layer README, the packaging document and a layer-root source are contributor paths too', () => {
+  const root = tree({
+    'frameworks/angular/components/a/A.prompt.md':
+      'See `frameworks/angular/AGENTS.md`, `frameworks/PACKAGING.md` and `frameworks/angular/FocusTrap.ts`.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 3);
+  assert.ok(problems.some((p) => p.includes('FocusTrap.ts')),
+    'a layer-root source is reached by importing the package, so naming its path sends a consumer nowhere');
+  rmSync(root, { recursive: true });
+});
+
+test('a repository artefact is a contributor path too, wherever in the tree it sits', () => {
+  const root = tree({
+    'frameworks/angular/components/a/A.prompt.md':
+      'Styling is `A.variants.ts`, compiled from `A.manifest.json`; `A.compliance.test.ts` pins it,\n'
+      + 'and the type comes from `Api.generated.ts`.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 4);
+  for (const cited of ['A.variants.ts', 'A.manifest.json', 'A.compliance.test.', 'Api.generated']) {
+    assert.ok(problems.some((p) => p.includes(cited)), `nothing caught ${cited}`);
+  }
+  rmSync(root, { recursive: true });
+});
+
+test('a generated demo page is the one build product a prompt may name, being what a by-hand check opens', () => {
+  const root = tree({
+    'frameworks/react/components/a/A.prompt.md': 'Open `A.demo.generated.html` and check the focus ring.\n',
+  });
+  assert.deepEqual(consumerBranchProblems(root).problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('the rule reaches prompts alone, and a sibling of the component is not a contributor path', () => {
+  const root = tree({
+    'frameworks/react/AGENTS.md': 'Read `scripts/build/react/build-demos.mjs` for the emit.\n',
+    'frameworks/react/components/a/A.prompt.md':
+      'Open `frameworks/react/components/a/A.card.html`, and import from `@dravensoft/arena-react`.\n',
+  });
+  const { problems, scanned } = consumerBranchProblems(root);
+  assert.deepEqual(problems, []);
+  assert.equal(scanned, 1, 'only the prompt is read, so a contributor document may cite what it likes');
+  rmSync(root, { recursive: true });
+});
+
+test('an index under frameworks/ is a consumer document, and the root router is the one that is not', () => {
+  assert.equal(isConsumerDocument(join('frameworks', 'SKILL.md')), true);
+  assert.equal(isConsumerDocument(join('frameworks', 'react', 'SKILL.md')), true);
+  assert.equal(isConsumerDocument(join('frameworks', 'react', 'components', 'a', 'A.prompt.md')), true);
+  assert.equal(isConsumerDocument('SKILL.md'), false,
+    'the root router names the contributor branch to send a contributor away');
+  assert.equal(isConsumerDocument(join('frameworks', 'react', 'README.md')), false);
+  assert.equal(isConsumerDocument(join('docs', 'SKILL.md')), false, 'the tree decides, not the name alone');
+});
+
+test('an index citing a contributor path fails the same way a prompt does', () => {
+  const root = tree({
+    'frameworks/react/SKILL.md': 'Emitted by `scripts/generate/arena/generate-skills.mjs`.\n',
+    'frameworks/react/components/a/A.prompt.md': 'Import from `@dravensoft/arena-react`.\n',
+  });
+  const { problems, scanned } = consumerBranchProblems(root);
+  assert.equal(scanned, 2, 'the index and the prompt are both consumer documents');
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /frameworks[\\/]react[\\/]SKILL\.md/);
+  rmSync(root, { recursive: true });
+});
+
+test('the root router may name the contributor branch, because naming it is how it redirects', () => {
+  const root = tree({
+    'SKILL.md': 'Do not read `frameworks/PACKAGING.md` to build something.\n',
+    'frameworks/react/components/a/A.prompt.md': 'Import from `@dravensoft/arena-react`.\n',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.deepEqual(problems, []);
+  rmSync(root, { recursive: true });
+});
+
+test('an exemption naming a file that is not there is stale, and says so', () => {
+  const root = tree({ 'frameworks/react/components/a/A.prompt.md': 'x\n' });
+  assert.equal(branchSwitchProblems(root).length, Object.keys(BRANCH_SWITCH).length);
+  assert.match(branchSwitchProblems(root)[0], /stale exemption/);
+  rmSync(root, { recursive: true });
+});
+
+test('the boundary reads two file names and a reason-carrying list, all by name', () => {
+  assert.equal(CONSUMER_LAST_STOP, '.prompt.md');
+  assert.equal(CONSUMER_INDEX, 'SKILL.md');
+  assert.deepEqual(Object.keys(BRANCH_SWITCH), ['SKILL.md']);
+  for (const reason of Object.values(BRANCH_SWITCH)) assert.match(reason, /\w/);
+  assert.equal(CONTRIBUTOR_PATHS.length, 9);
+  for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
+    assert.ok(pattern.global, 'a non-global pattern reports only the first hit on a page');
+    assert.match(reason, /\w/);
+  }
 });
 
 test('a shebang may precede the header, because a bin entry point is run by the shell', () => {
@@ -303,4 +454,48 @@ test('the carve-out is the /** shape only, and only under a component directory'
 
   assert.match('frameworks/angular/components/display/card/Card.ts', MEMBER_DOC_TREE);
   assert.doesNotMatch('frameworks/react/Theme.ts', MEMBER_DOC_TREE);
+});
+
+test('a rule may be registered as a family, not only as one phrase', () => {
+  assert.equal(statesRule('none of the nine forms is imperative', 'the nine forms'), true);
+  assert.equal(statesRule('an R6 violation', /\bR[1-6]\b/), true);
+  assert.equal(statesRule('a Radio inside a RadioGroup', /\bR[1-6]\b/), false);
+  assert.equal(statesRule('run `check:dimensions` after', /\bcheck:[a-z-]+/), true);
+});
+
+test('RULE_OWNERS names each rule, its branch and why, and every entry is contributor-owned today', () => {
+  assert.deepEqual(RULE_OWNERS.map((r) => String(r.phrase)),
+    ['the nine forms', 'binding table', '/\\bR[1-6]\\b/', '/\\bcheck:[a-z-]+/']);
+  for (const { owner, reason } of RULE_OWNERS) {
+    assert.equal(owner, CONTRIBUTOR_BRANCH);
+    assert.ok(reason.length > 60, 'an entry states its reason');
+  }
+});
+
+test('a contributor rule stated in a prompt is a problem, which is the leak that reached a .d.ts', () => {
+  const root = tree({
+    'contracts/api/AGENTS.md': 'A member is one of the nine forms.',
+    'frameworks/react/components/a/A.prompt.md': 'A per-item render function is not one of the nine forms.',
+  });
+  const owners = [{ phrase: 'the nine forms', owner: CONTRIBUTOR_BRANCH, reason: 'the API contract vocabulary, which a consumer never needs' }];
+  const problems = ruleOwnerProblems(root, owners);
+  assert.equal(problems.length, 1, 'the owning document keeps the entry live, so only the leak is reported');
+  assert.match(problems[0], /states "the nine forms", a contributor rule, on the consumer branch/);
+  rmSync(root, { recursive: true });
+});
+
+test('the same rule on its own branch passes, so the register is about the branch and not the phrase', () => {
+  const root = tree({ 'contracts/api/AGENTS.md': 'A member is one of the nine forms.' });
+  const owners = [{ phrase: 'the nine forms', owner: CONTRIBUTOR_BRANCH, reason: 'the API contract vocabulary, which a consumer never needs' }];
+  assert.deepEqual(ruleOwnerProblems(root, owners), []);
+  rmSync(root, { recursive: true });
+});
+
+test('an entry no document on its own branch states fails as a stale registration', () => {
+  const root = tree({ 'AGENTS.md': 'nothing relevant here' });
+  const owners = [{ phrase: 'check:retired', owner: CONTRIBUTOR_BRANCH, reason: 'a gate nobody consuming a package can run, so no prompt should cite it' }];
+  const problems = ruleOwnerProblems(root, owners);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /outlived the rule it was written for/);
+  rmSync(root, { recursive: true });
 });

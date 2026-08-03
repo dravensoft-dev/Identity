@@ -217,9 +217,9 @@ test('accent and floating reach the styled root, and the host itself stays out o
     const plainClass = rootOf(plain).getAttribute('class') ?? '';
     const markedClass = rootOf(marked).getAttribute('class') ?? '';
     assert.notEqual(plainClass, markedClass, 'accent and floating changed nothing on the root');
-    assert.match(markedClass, /\bborder-primary\b/, 'accent did not draw the border in the accent colour');
-    assert.match(markedClass, /\bshadow-2\b/, 'floating did not cast the warm shadow');
-    assert.doesNotMatch(plainClass, /\bshadow-2\b/);
+    assert.match(markedClass, /arena-card__root--accent-true/, 'accent did not reach the styled root');
+    assert.match(markedClass, /arena-card__root--floating-true/, 'floating did not reach the styled root');
+    assert.doesNotMatch(plainClass, /arena-card__root--floating-true/);
   } finally {
     plain.destroy();
     marked.destroy();

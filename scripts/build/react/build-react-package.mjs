@@ -16,14 +16,15 @@ import { tscBin } from '../../check/react/check-react-types.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
-  collectFiles, reset, write, copy, writeCssChain, copyCli, baseManifest, report,
+  collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,
 } from '../../lib/arena/package-assembly.mjs';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
 
 export const ROOT_JS = ['Tokens.generated.js'];
-export const ROOT_TS = ['DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'Api.generated.ts', 'Index.generated.ts'];
+export const ROOT_TS = ['AnchorActivation.ts', 'DataVisuals.ts', 'UseContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'WarnOnce.ts', 'Api.generated.ts', 'ArenaStyles.generated.ts', 'Index.generated.ts'];
 export const DIST_PROJECT = 'frameworks/react/tsconfig.dist.json';
 
 export function isSource(path) {
@@ -134,6 +135,7 @@ export function manifest(root = repoRoot) {
       '.': { types: './Index.generated.d.ts', import: './Index.generated.js' },
       './arena.css': './arena.css',
       './css/*': './css/*',
+      './css/components/*': './css/components/*',
       './arena.config.example.json': './arena.config.example.json',
       './package.json': './package.json',
     },
@@ -157,7 +159,9 @@ export async function buildReactPackage(root = repoRoot) {
   const sources = { length: compiled.length };
   const carried = declarations;
 
-  for (const to of writeCssChain(dir, NAME, [], root)) written.push(join(dir, to));
+  const sheet = readFileSync(join(root, 'frameworks/tailwind/Utilities.generated.css'), 'utf8');
+  for (const to of writeCssChain(dir, NAME, componentSheets(sheet, splitCompiledSheet), root))
+    written.push(join(dir, to));
   written.push(join(dir, 'arena.css'));
 
   for (const rel of copyCli(dir, root)) written.push(join(dir, rel));

@@ -10,6 +10,19 @@ that is a DI error rather than a silently inert row.
 </arena-table-row>
 ```
 
+<!-- @api GENERATED from contracts/api/components/TableRow.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | The row's cells. One TableCell per cell; a row may carry fewer or more than there are columns, and the grid's cursor is clamped against what is really there. |
+| `interactive` | primitive | `boolean` | `false` | Whether the row can be activated. A boolean rather than "is `click` bound?": Arena never derives what it draws from what a consumer listens for, because an outbound member's subscriber list is private in at least one platform and a consumer's binding leaves nothing in the DOM to detect, so deriving the interactive shape from it is a divergence waiting to happen, and it was one. Below --bp-md the row is a card, and an interactive card is a role="button" tab stop with an Enter/Space handler; a non-interactive one is inert, because a dead tab stop on every row of every table is worse than the gap it would close. |
+| `disabled` | primitive | `boolean` | `false` | Whether the row is drawn but cannot be activated: a record the consumer's rules lock. It reflects through `aria-disabled` rather than the native attribute, and the card shape stays a role="button" in the tab order rather than leaving it, because a disabled control nobody can reach is a control nobody knows exists. With no `click` there is nothing to disable and the row is inert already. |
+| `click` | event |  |  | The row was activated, by pointer or by Enter on one of its cells. No payload, because the consumer wrote this element and already holds the row this is about. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - `(click)` takes no payload. You wrote this element inside your own `@for`, so you already
   hold the row it is about; a payload would hand you back what you just had.
@@ -42,13 +55,13 @@ bubbled DOM event Angular also listens for. Measured on this component rather th
 with the inner element's `stopPropagation()` removed, one pointer click reaches the consumer
 **2** times, and a `disabled` row activates, because the native path never passes the guard.
 The inner element is where that event is stopped, which is what makes both routes single and
-both refusable, and `Table.cases.test.ts` asserts the count so it cannot drift back.
+both refusable, and the count is asserted so it cannot drift back.
 
 ### Card mode is pointer-only here, and that is a divergence
 
 Below `--bp-md` the row renders as a card with **no role and no tab stop**, so a row carrying
 `(click)` is reachable by pointer and not by keyboard. The row cannot decide the shape from
-whether anything is listening, R6 in `contracts/api/README.md` forbids exactly that, and
+whether anything is listening, which no render may follow from, and
 `OutputEmitterRef.listeners` is private here anyway. Making every card row a button instead would
 put a dead tab stop on every row of every table that is not clickable. The binding declares
 `divergesFrom: "button"`, and the bounded consequence is that a card row with `(click)` bound

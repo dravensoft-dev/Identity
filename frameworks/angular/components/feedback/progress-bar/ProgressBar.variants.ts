@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/progress-bar/ProgressBar.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './ProgressBar.classes.generated';
 
-export const progressBarStyles = tv(manifest);
+export const progressBarStyles = arenaStyles(manifest);

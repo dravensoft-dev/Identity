@@ -5,10 +5,16 @@ import { serialize } from './serialize-token.mjs';
 const px = (value) => ({ value, unit: 'px' });
 const em = { $extensions: { 'com.dravensoft.arena': { cssUnit: 'em' } } };
 
-test('dimension renders value+unit, and bare 0 at zero', () => {
+test('dimension renders value+unit, and a zero KEEPS its unit', () => {
   assert.equal(serialize({ $type: 'dimension', $value: px(64) }), '64px');
   assert.equal(serialize({ $type: 'dimension', $value: px(999) }), '999px');
-  assert.equal(serialize({ $type: 'dimension', $value: px(0) }), '0');
+  assert.equal(serialize({ $type: 'dimension', $value: px(0) }), '0px',
+    'A bare 0 is a <number> inside min(), max(), clamp() and calc(), never a <length>, so mixing '
+    + 'it with one makes the whole function invalid at computed-value time and the declaration is '
+    + 'dropped in silence. --pad-safe-top composed max(var(--sp-0), env(safe-area-inset-top)) and '
+    + 'resolved to nothing for exactly this reason, which left a fixed box with top:auto sitting at '
+    + 'its static position. Outside a math function 0 and 0px are the same value, so keeping the '
+    + 'unit costs nothing and is the only spelling that is right in both places.');
 });
 
 test('duration keeps its unit even though it is a time', () => {
@@ -20,7 +26,8 @@ test('number renders bare, or with the cssUnit hint when present', () => {
   assert.equal(serialize({ $type: 'number', $value: 1.6 }), '1.6');
   assert.equal(serialize({ $type: 'number', $value: -0.02, ...em }), '-0.02em');
   assert.equal(serialize({ $type: 'number', $value: 0.22, ...em }), '0.22em');
-  assert.equal(serialize({ $type: 'number', $value: 0, ...em }), '0');
+  assert.equal(serialize({ $type: 'number', $value: 0, ...em }), '0em',
+    'the same reason a zero dimension keeps px: a unit-hinted zero is a length wherever it lands');
 });
 
 test('fontWeight renders the bare number', () => {
@@ -60,7 +67,9 @@ test('shadow renders the four dimensions then the color', () => {
     offsetX: px(0), offsetY: px(12), blur: px(28), spread: px(-12),
     color: { colorSpace: 'srgb', components: [0, 0, 0], alpha: 0.6 },
   } };
-  assert.equal(serialize(t), '0 12px 28px -12px rgba(0,0,0,.6)');
+  assert.equal(serialize(t), '0px 12px 28px -12px rgba(0,0,0,.6)',
+    'a zero offset keeps px here too: one spelling for a zero length, so nothing has to know '
+    + 'whether the value it is composing came from a shadow component or from a standalone token');
 });
 
 test('an unknown type is a hard error, never a silent passthrough', () => {

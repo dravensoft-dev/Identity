@@ -1,0 +1,118 @@
+{
+  "component": "Table",
+  "seed": {
+    "label": "Recent deployments",
+    "columns": [
+      {
+        "header": "Service",
+        "sortable": true
+      },
+      {
+        "header": "Commit",
+        "mono": true
+      },
+      {
+        "header": "Status",
+        "align": "right",
+        "sortable": true
+      }
+    ],
+    "sort": {
+      "column": 0,
+      "direction": "asc"
+    },
+    "page": {
+      "index": 1,
+      "size": 3,
+      "total": 12
+    }
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "TableRow",
+        "slots": {
+          "content": [
+            {
+              "component": "TableCell",
+              "slots": {
+                "content": [
+                  {
+                    "text": "checkout-api"
+                  }
+                ]
+              }
+            },
+            {
+              "component": "TableCell",
+              "slots": {
+                "content": [
+                  {
+                    "text": "4f2a1c9"
+                  }
+                ]
+              }
+            },
+            {
+              "component": "TableCell",
+              "slots": {
+                "content": [
+                  {
+                    "text": "Live"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "component": "TableRow",
+        "slots": {
+          "content": [
+            {
+              "component": "TableCell",
+              "slots": {
+                "content": [
+                  {
+                    "text": "billing-worker"
+                  }
+                ]
+              }
+            },
+            {
+              "component": "TableCell",
+              "slots": {
+                "content": [
+                  {
+                    "text": "9b31de4"
+                  }
+                ]
+              }
+            },
+            {
+              "component": "TableCell",
+              "slots": {
+                "content": [
+                  {
+                    "text": "Rolled back"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "empty": [
+      {
+        "text": "No deployments in this range."
+      }
+    ]
+  },
+  "bind": {
+    "sortChange": "sort",
+    "pageChange": "page.index"
+  },
+  "note": "The label names the grid for a screen reader, and nothing can derive it."
+}

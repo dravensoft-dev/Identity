@@ -1,4 +1,4 @@
-import { classesFor } from './ManifestClasses.js';
+import { classesFor, arenaClassesFor } from './ManifestClasses.js';
 
 for (const style of ['bold', 'fill']) {
   const link = document.createElement('link');
@@ -47,4 +47,4 @@ export function mountSpecimen({ sections, mount = document.getElementById('root'
   }
 }
 
-export { classesFor };
+export { classesFor, arenaClassesFor };

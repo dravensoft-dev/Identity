@@ -34,11 +34,18 @@ export function unpackMembers(source) {
   }).join('\n');
 }
 
+export const REACT_PROPS_OPEN = /^export interface \w+Props\b[^{]*\{/;
+
 export function applyDocs(source, docs, layer) {
   const lines = (layer === 'react' ? unpackMembers(source) : source).split('\n');
   const out = [];
+  let reachable = layer !== 'react';
   for (let i = 0; i < lines.length; i += 1) {
-    const match = MEMBER_START[layer].exec(lines[i]);
+    if (layer === 'react') {
+      if (REACT_PROPS_OPEN.test(lines[i])) reachable = true;
+      else if (reachable && /^\}/.test(lines[i])) reachable = false;
+    }
+    const match = reachable ? MEMBER_START[layer].exec(lines[i]) : null;
     const wanted = match ? docs.get(match[2]) : undefined;
     if (!match || wanted === undefined) { out.push(lines[i]); continue; }
 

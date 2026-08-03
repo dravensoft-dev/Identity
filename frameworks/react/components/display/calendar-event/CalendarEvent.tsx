@@ -1,3 +1,5 @@
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../calendar/Calendar.classes.generated.ts';
 import React from 'react';
 import { IconButton } from '../../forms/icon-button/IconButton.tsx';
 
@@ -20,13 +22,13 @@ export interface CalendarEventProps {
   /** Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. */
   colorId?: CatSlot;
 
-  /** Whether the chip can be activated. A boolean rather than "is `click` bound?", per R6, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. */
+  /** Whether the chip can be activated. A boolean rather than "is `click` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. */
   interactive?: boolean;
 
   /** Whether the chip is drawn but cannot be activated: an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. */
   disabled?: boolean;
 
-  /** Whether the chip shows its action button. A boolean rather than "is the actions slot filled?", per R6: projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. */
+  /** Whether the chip shows its action button. A boolean rather than "is the actions slot filled?": Arena never derives what it draws from what a consumer listens for, because projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. */
   actionsEnabled?: boolean;
 
   /** The action panel's content, revealed by the chip's action button. Rendered only while the panel is open, so a consumer's own controls never sit permanently in the grid's Tab sequence. */
@@ -39,6 +41,7 @@ export interface CalendarEventProps {
 
 export interface CalendarEventInjected {
   box: React.CSSProperties;
+  domId: string;
   color: string;
   timeLabel: string;
   dateLabel: string;
@@ -48,14 +51,14 @@ export interface CalendarEventInjected {
   defaultPanelOpen: boolean;
 }
 
-const KEBAB_RESERVE = 'calc(var(--dz-ctl-h-sm) + var(--bw) * 2)';
+const chipStyles = arenaStyles(manifest);
 
 export const CalendarEvent = React.forwardRef<
 HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
 >(function CalendarEvent({
   id, title, start, end, colorId, onClick, interactive = false, disabled = false,
   actionsEnabled = false, actions,
-  box, color, timeLabel, dateLabel, showTime, actionsBelow, tabIndex, defaultPanelOpen,
+  box, domId, color, timeLabel, dateLabel, showTime, actionsBelow, tabIndex, defaultPanelOpen,
 }, ref) {
 
   if (!id) throw new Error('CalendarEvent: `id` is required');
@@ -67,6 +70,14 @@ HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
   const Tag = interactive && !hasPanel ? 'button' : 'div';
 
   const [panelOpen, setPanelOpen] = React.useState(Boolean(defaultPanelOpen));
+  const styles = chipStyles({
+    reserve: hasPanel && !actionsBelow,
+    panelOpen,
+    clickable: interactive,
+    disabled: interactive && disabled,
+    actionsBelow,
+  });
+
 
   const bodyIsButton = interactive && hasPanel;
 
@@ -100,10 +111,9 @@ HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
 
   const body = (
     <>
-      <span style={{ fontSize: 'var(--dz-text-sm)', fontWeight: 'var(--fw-semibold)', color: 'var(--text-strong)',
-        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
+      <span className={styles.title()}>{title}</span>
       {showTime && (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-2xs)', color: 'var(--mute)' }}>{timeLabel}</span>
+        <span className={styles.time()}>{timeLabel}</span>
       )}
     </>
   );
@@ -133,17 +143,11 @@ HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
           e.preventDefault(); e.stopPropagation(); focusableRef.current.focus();
         }
       } : undefined}
-      style={{ position: 'absolute', ...box, boxSizing: 'border-box',
-        display: 'flex', flexDirection: 'column', gap: 0,
-
-        overflow: panelOpen ? 'visible' : 'hidden',
-        textAlign: 'left', padding: 'calc(var(--sp-1) * 1) calc(var(--sp-1) * 1.5)',
-        paddingRight: hasPanel && !actionsBelow ? KEBAB_RESERVE : 'calc(var(--sp-1) * 1.5)',
+      id={domId}
+      className={styles.chip()}
+      style={{ ...box,
         background: `color-mix(in oklab, ${color} 16%, var(--surface-card))`,
-        borderLeft: `var(--bw-strong) solid ${color}`, borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-        borderRadius: 'var(--r-sm)', cursor: interactive ? (disabled ? 'not-allowed' : 'pointer') : 'default',
-        opacity: interactive && disabled ? 0.5 : 1,
-        font: 'inherit' }}>
+        borderLeftColor: color }}>
       {hasPanel ? (
         <>
           {interactive ? (
@@ -152,27 +156,21 @@ HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>
               aria-label={`${title}, ${dateLabel}, ${timeLabel}`}
               aria-disabled={disabled ? 'true' : undefined}
 
-              style={{ display: 'flex', flexDirection: 'column', gap: 0,
-                background: 'none', border: 'none', padding: 0, margin: 0,
-                font: 'inherit', color: 'inherit', textAlign: 'left',
-                cursor: disabled ? 'not-allowed' : 'pointer' }}>
+              className={styles.chipBody()}>
               {body}
             </button>
           ) : (
             <span ref={setFocusable} tabIndex={tabIndex} onClick={activate}
-              style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              className={styles.chipBody()}>
               {body}
             </span>
           )}
-          <span ref={kebabWrapRef} style={{ position: 'absolute', right: 0, ...(actionsBelow ? { bottom: 0 } : { top: 0 }) }}>
+          <span ref={kebabWrapRef} className={styles.kebabWrap()}>
             <IconButton icon="ph-bold ph-dots-three-vertical" label="Actions" size="sm"
               tabStop={false}
               onClick={() => { openedByUser.current = !panelOpen; setPanelOpen((o) => !o); }} />
             {panelOpen && (
-              <span ref={panelRef} style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1,
-                display: 'flex', gap: 'var(--sp-2)', padding: 'var(--sp-2)',
-                background: 'var(--surface-card)', border: 'var(--bw) solid var(--color-base-300)',
-                borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)' }}>
+              <span ref={panelRef} className={styles.panel()}>
                 {actions}
               </span>
             )}

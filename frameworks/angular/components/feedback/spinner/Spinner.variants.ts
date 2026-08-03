@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/spinner/Spinner.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Spinner.classes.generated';
 
-export const spinnerStyles = tv(manifest);
+export const spinnerStyles = arenaStyles(manifest);

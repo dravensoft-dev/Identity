@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/forms/select/Select.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Select.classes.generated';
 
-export const selectStyles = tv(manifest);
+export const selectStyles = arenaStyles(manifest);

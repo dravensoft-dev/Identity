@@ -2,6 +2,12 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input }
 import type { ActivityItem } from '../../../Api.generated';
 import { focusableElements } from '../../../FocusTrap';
 import { activityFeedStyles } from './ActivityFeed.variants';
+import manifest from './ActivityFeed.classes.generated';
+
+const TONES = Object.keys(manifest.variants.tone);
+type Tone = NonNullable<ActivityItem['tone']>;
+const toneOf = (tone: string | undefined): Tone | undefined =>
+  (tone && TONES.includes(tone) ? tone as Tone : undefined);
 
 export interface ActivityFeedRow {
   item: ActivityItem;
@@ -11,7 +17,7 @@ export interface ActivityFeedRow {
 
 export function resolveActivityFeedRows(items: readonly ActivityItem[]): ActivityFeedRow[] {
   return items.map((item, index) => {
-    const resolved = activityFeedStyles({ tone: item.tone ?? 'accent', divided: index > 0 });
+    const resolved = activityFeedStyles({ tone: toneOf(item.tone), divided: index > 0 });
     return { item, itemClass: resolved.item(), dotClass: resolved.dot() };
   });
 }

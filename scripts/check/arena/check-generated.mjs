@@ -31,12 +31,37 @@ export const UNTRACKED = {
     'the compiled sibling of a component source, read only by a demo page.',
   'frameworks/react/ui-kits/**/*.generated.js':
     'the same, for the Delivery Console example app.',
+  'frameworks/react/components/**/*.demo.entry.generated.tsx':
+    'a demo entry, emitted from the component\'s API contract and its frameworks/demos/ fixture. '
+    + 'The page beside it loads the compiled sibling; check:playgrounds holds both to a fresh run '
+    + 'and holds the two layers to one model.',
+  'frameworks/angular/components/**/*.demo.entry.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/playground/PlaygroundCodec.generated.ts':
+    'the URL codec, emitted into every layer from frameworks/demos/PlaygroundCodec.ts so the same '
+    + 'link cannot resolve to two different views. check:playgrounds holds each copy to the source.',
+  'frameworks/angular/playground/PlaygroundCodec.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/playground/*.generated.js':
+    'the same, for the harness every generated demo page mounts. It is not part of the package: '
+    + 'tsconfig.dist.json excludes the directory and no barrel exports it.',
   'frameworks/react/DataVisuals.generated.js':
     'a compiled layer-root helper a demo page loads. A browser cannot execute TypeScript, so a '
     + 'page importing one needs it compiled.',
+  'frameworks/react/AnchorActivation.generated.js':
+    'the same, for the predicate that decides which activation of an anchor is the router\'s.',
   'frameworks/react/Theme.generated.js': 'the same, for the theme helper.',
+  'frameworks/react/WarnOnce.generated.js': 'the same, for the once-per-message console warning '
+    + 'the charts and Table share.',
   'frameworks/react/UseContainerWidth.generated.js': 'the same, for the container-width hook.',
   'frameworks/react/UseDialogModal.generated.js': 'the same, for the modal focus helper.',
+  'frameworks/react/components/**/*.manifest.generated.ts':
+    'the shared recipe for one component, emitted into the layer that renders it. The manifest is '
+    + 'authored once as JSON under frameworks/tailwind/ and emitted per layer for the reason the '
+    + 'script tokens are: a component\'s import then never crosses a layer boundary. '
+    + 'check:tailwind-generated holds every copy to a fresh compile of the one source.',
+  'frameworks/react/Tv.generated.ts':
+    'the configured tailwind-variants instance both layers resolve a manifest through, emitted '
+    + 'beside the manifests for the same reason and held to its source by the same gate.',
+  'frameworks/react/Tv.generated.js': 'the compiled sibling of that, which a demo page loads.',
   'frameworks/react/Index.generated.ts':
     'the layer entry point, derived from the component directories. The package build compiles '
     + 'it and emits its declaration, so the only reader outside this repository is a tarball.',
@@ -58,6 +83,35 @@ export const UNTRACKED = {
   'frameworks/tailwind/Utilities.generated.css':
     'the compiled utility layer, read only by the specimen pages. An adopter imports '
     + 'frameworks/angular/theme/arena-tailwind.css and compiles their own.',
+  'frameworks/tailwind/consume/components/**/*.styles.generated.css':
+    'the CSS one component renders, compiled from its manifest through @apply and stripped of '
+    + 'every Tailwind theme indirection, so no adopter property can reach in. It sits under '
+    + 'consume/ rather than beside its manifest because every layer links THIS file: the whole '
+    + 'directory is the one consumption surface, so no copy of it can disagree with another. '
+    + 'The package build collects these into css/components/; check:component-css holds each to '
+    + 'the manifest it came from and check:style-parity holds it to what the recipe paints.',
+  'frameworks/tailwind/consume/Components.generated.css':
+    'the barrel of every component sheet, in one import, which is what a page drawing most of '
+    + 'the library links and what the package ships as css/components.css. A page that draws a '
+    + 'handful links those sheets instead, which is what makes it pay for what it renders.',
+  'frameworks/tailwind/consume/Preflight.generated.css':
+    'Tailwind\'s preflight on its own, lifted out of the compiled sheet. A specimen and a playground '
+    + 'need it for the same reason a package does: without the `font: inherit` it carries, a form '
+    + 'control falls back to the browser\'s own size and every measurement around it moves.',
+  'frameworks/tailwind/consume/Prelude.generated.css':
+    'the @property registrations, the layer order and the keyframes every component sheet '
+    + 'depends on, which is why each one imports it rather than documenting it: without the '
+    + 'registrations every border and the focus ring are invalid at computed-value time.',
+  'frameworks/tailwind/components/**/*.classes.generated.ts':
+    'the manifest with each class string replaced by the Arena class name that draws it, which '
+    + 'is what a component composes at runtime now that nothing merges utilities.',
+  'frameworks/react/components/**/*.classes.generated.ts': 'the same file, emitted into the layer that renders it.',
+  'frameworks/angular/components/**/*.classes.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/ArenaStyles.generated.ts':
+    'the twenty-line factory that composes those names, emitted per layer so a component\'s '
+    + 'import never crosses a boundary. It replaces the two runtime dependencies outright.',
+  'frameworks/angular/ArenaStyles.generated.ts': 'the same file, emitted into the other layer.',
+  'frameworks/react/ArenaStyles.generated.js': 'the compiled sibling of that, which a demo page loads.',
 };
 
 function walk(dir, root) {

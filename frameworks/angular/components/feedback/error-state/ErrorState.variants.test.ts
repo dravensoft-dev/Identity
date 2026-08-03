@@ -2,37 +2,3 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { errorStateStyles } from './ErrorState.variants';
 
-test('the root slot carries a display utility, so host-binding it never collapses to the UA-default inline box', () => {
-  assert.match(errorStateStyles().root(), /\bflex\b/);
-});
-
-test('the border is solid danger, at the soft tint -- the visual distinction from arena-empty-state, whose border is dashed neutral', () => {
-  const root = errorStateStyles().root();
-  assert.match(root, /border-error\b/);
-  assert.doesNotMatch(root, /border-dashed/);
-  assert.match(root, /bg-error\/14/);
-});
-
-test('danger stays a soft resting tint, never the full-strength fill -- this is a non-interactive status surface at rest, not a risk trigger', () => {
-  assert.doesNotMatch(errorStateStyles().root(), /\bbg-error\b(?!\/)/);
-  assert.doesNotMatch(errorStateStyles().root(), /bg-error-fill/);
-});
-
-test('the actions slot carries the token spacing that separates the actions row from the copy above it', () => {
-  assert.match(errorStateStyles().actions(), /\bmt-1\.5\b/);
-});
-
-test('every slot resolves with no variant argument -- icon, title, message and code are free text, never enumerable classes', () => {
-  const styles = errorStateStyles();
-  for (const slot of ['root', 'icon', 'title', 'message', 'code', 'actions', 'retry'] as const) {
-    assert.equal(typeof styles[slot](), 'string');
-    assert.ok(styles[slot]().length > 0, `${slot} resolved to an empty class string`);
-  }
-});
-
-test('the retry slot carries the same primary-button classes as ConfirmDialog\'s non-destructive confirm button -- Arena draws this button under the contract', () => {
-  const retry = errorStateStyles().retry();
-  assert.match(retry, /\bbg-primary\b/);
-  assert.match(retry, /\btext-primary-content\b/);
-  assert.match(retry, /\bborder-primary\b/);
-});

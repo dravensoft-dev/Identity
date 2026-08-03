@@ -58,7 +58,10 @@ test('icon is a class name Arena draws, and never reaches the page as text', () 
   const panel = open(root);
   const glyph = panel.querySelector('i');
   assert.notEqual(glyph, null, 'no <i> was drawn for the entry icon');
-  assert.equal(glyph!.getAttribute('class'), 'ph-bold ph-scroll');
+  const drawn = glyph!.getAttribute('class')!.split(/\s+/);
+  assert.ok(drawn.includes('ph-bold') && drawn.includes('ph-scroll'),
+    'the Phosphor class the consumer named is drawn verbatim rather than re-derived');
+  assert.ok(drawn.includes('arena-menu__icon'), 'and the manifest\'s icon slot sizes it');
   assert.equal(glyph!.getAttribute('aria-hidden'), 'true');
   assert.equal(panel.textContent, 'View logs', 'the icon class name was drawn as text');
 });
@@ -163,4 +166,20 @@ test('the popup state reaches a trigger that drops every prop it is handed', () 
   assert.equal(trigger!.getAttribute('aria-expanded'), 'true', 'the open state did not follow');
   press(root!.querySelector<HTMLElement>('[role="menuitem"]')!, 'Escape');
   assert.equal(trigger!.getAttribute('aria-expanded'), 'false', 'the closed state did not follow');
+});
+
+test('a row takes one of three branches of the item recipe, and hover is a modifier on two of them', () => {
+  const root = mount(
+    <Menu trigger={<button type="button">Open</button>}
+      items={[{ label: 'Rename' }, { label: 'Delete', destructive: true }, { label: 'Archive', disabled: true }]} />,
+  );
+  const rows = [...open(root).querySelectorAll('[role="menuitem"]')];
+  assert.equal(rows.length, 3);
+  const [ordinary, destructive, inert] = rows.map((r) => r.getAttribute('class') ?? '') as [string, string, string];
+
+  assert.match(ordinary, /arena-menu__item-default/, 'an ordinary row lifts to the accent tint');
+  assert.match(destructive, /\barena-menu__item-destructive\b/);
+  assert.match(destructive, /arena-menu__item-destructive/, 'a destructive row lifts to its own tint, never the accent');
+  assert.match(inert, /\barena-menu__item-disabled\b/);
+  assert.doesNotMatch(inert, /hover:/, 'a disabled row lifts to nothing at all');
 });

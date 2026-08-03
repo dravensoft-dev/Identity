@@ -1,4 +1,6 @@
 import React from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './UnauthCard.classes.generated.ts';
 import { Card } from '../card/Card.tsx';
 
 export interface UnauthCardProps {
@@ -20,20 +22,19 @@ export interface UnauthCardProps {
 }
 
 
+const unauthStyles = arenaStyles(manifest);
+
 export function UnauthCard({ brand, eyebrow, title, footer, children }: UnauthCardProps) {
+  const styles = unauthStyles();
   return (
-
-    <div style={{ width: '100%', maxWidth: 'calc(var(--sp-1) * 95 + var(--sp-1) * 18 + var(--bw) * 2)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)' }}>
+    <div className={styles.root()}>
       <Card>
-        <div style={{ padding: 'calc(var(--sp-1) * 4)' }}>
-          {
-
-}
-          {brand && <div style={{ display: 'flex', marginBottom: 'calc(var(--sp-1) * 7)' }}>{brand}</div>}
-          {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 1.5)' }}>{eyebrow}</div>}
-          {title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h3)', color: 'var(--bone)', marginBottom: 'calc(var(--sp-1) * 6)' }}>{title}</div>}
+        <div className={styles.body()}>
+          {brand && <div className={styles.brand()}>{brand}</div>}
+          {eyebrow && <div className={styles.eyebrow()}>{eyebrow}</div>}
+          {title && <div className={styles.title()}>{title}</div>}
           {children}
-          {footer && <div style={{ marginTop: 'calc(var(--sp-1) * 5)', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-md)', color: 'var(--mute)' }}>{footer}</div>}
+          {footer && <div className={styles.footer()}>{footer}</div>}
         </div>
       </Card>
     </div>

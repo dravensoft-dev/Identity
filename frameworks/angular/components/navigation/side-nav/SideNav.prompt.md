@@ -1,6 +1,5 @@
 Arena side nav, the primary navigation landmark, and the root of a compound family that nests to
-any depth. Standalone, `OnPush`, signal I/O. Styling is the sibling `SideNav.variants.ts` recipe;
-the component carries no CSS classes of its own. The host **is** the landmark: `role="navigation"`,
+any depth. Standalone, `OnPush`, signal I/O. The host **is** the landmark: `role="navigation"`,
 the accessible name and the column layout all sit on it.
 
 ```html
@@ -15,6 +14,20 @@ the accessible name and the column layout all sit on it.
 </arena-side-nav>
 ```
 
+<!-- @api GENERATED from contracts/api/components/SideNav.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `active` | primitive | `string` |  | The id of the current destination. The SideNavItem whose id matches is marked aria-current="page", and no item is marked when it names none of them. |
+| `ariaLabel*` | primitive | `string` |  | Names this navigation landmark. Required, and guarded at runtime: the guard trims before it decides, so a blank name is refused as well as an absent one, because ariaLabel="" renders a landmark with no accessible name, which is the defect arriving through a value that is present. Guarded rather than defaulted: the navigation pattern asks each landmark on a page for a UNIQUE name, and a constant default satisfies the existence half while two sidebars on one page stay indistinguishable. Nothing can derive it either; what a nav is FOR is editorial. Say what it navigates -- "Primary", "Project settings" -- the Table.label and SegmentedControl.ariaLabel shape. |
+| `content` | slot |  |  | The navigation tree. One SideNavItem per destination, optionally grouped by SideNavSection and SideNavCollapsible; where each child sits, which id is active and how it reports `nav` are the parent's to settle, and none of it is a member here. |
+| `indentStep` | primitive | `number` | `3` | How far each nesting level indents, as a MULTIPLIER of --sp-1 rather than a length: the row at depth N is padded calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N). A CSS string was rejected -- a caller-supplied "1.5rem" is neither a token nor a derivation of one, so it would stop re-densifying inside .arena-compact, and no gate would catch it because the gate that forbids a bare length scans source and not the values a caller passes in. |
+| `nav` | event | `string` |  | An item was activated, carrying its id. It carries the id alone, on the Breadcrumbs precedent that the platform event leaves the payload and the item travels by itself, and under the compound shape there is no item datum left to carry either, because the consumer wrote the element and already holds everything on it. Where the item has an href, Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working column of real links. |
+
+<!-- @api end -->
+
 `ariaLabel` is **required and guarded at runtime**, because `input.required` is a compile-time
 claim and a blank string satisfies it. Two navigation landmarks on one page must not share a name.
 
@@ -27,13 +40,17 @@ broken by what sits between them.
 
 `indentStep` is a **number**, never a CSS string, a multiplier on `--sp-1`, not a length. A row at
 depth N is padded `calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N)`, so the indent
-re-densifies and re-themes with the token. `check:dimensions` cannot see this: it is a
-`[style.paddingInlineStart]` binding, which is the gate's declared blind spot, and
-`indentFor` is unit-tested at every depth instead.
+re-densifies and re-themes with the token. Pass a step, never a length: a CSS string here
+would survive the type and then stop tracking the density and the theme.
 
 `active` is the id of the current destination and `nav` reports the id of the row pressed. An item
-with `href` keeps its **native navigation**: ctrl-click and open-in-new-tab still work, and
-reports through `nav` as well; a router-driven app usually wants one or the other, not both.
+with `href` splits its activations: the plain one is reported through `nav`, so
+`router.navigateByUrl` in that handler is the whole bridge and nothing navigates twice, and the
+rest keep working for a consumer who wires no handler.
+
+**Do not put `routerLink` on `arena-side-nav-item`.** `RouterLink` decides whether it is on an
+anchor from the host's `tagName`, and the anchor here is inside the component, so it would ignore
+every modifier key and add a second tab stop over the row's own link. Navigate in `(nav)` instead.
 
 **Do / Don't**
 - **Do** give each row a stable `id`. `active`, `nav` and the collapsible's own auto-expansion are
@@ -68,8 +85,20 @@ readonly active = computed(() => DESTINATIONS.find((d) => this.url().startsWith(
 ```
 
 **By hand, in real Chromium**: run `bun run demos` and open
-`/frameworks/angular/components/navigation/side-nav/SideNav.card.html`:
+`/frameworks/angular/components/navigation/side-nav/SideNav.demo.generated.html`:
 - Each level steps in by exactly one `--sp-1 * indentStep`, and a row's icon stays aligned with its
   siblings' rather than with its parent's.
 - Switching the active destination moves the ink and the weight, and opens the group holding it.
 - The rail still reads at `.arena-compact`, where every indent shrinks with the token.
+
+### The active row is filled, and you pass one string
+
+The item whose `id` matches `active` draws its glyph in `ph-fill`, whatever weight the string
+carries. Pass `icon="ph-bold ph-house"` once per destination; do not concatenate a weight
+yourself against a condition, which is Arena's own convention reimplemented in every project
+that adopts it. The swap is idempotent, so passing `ph-fill` yourself changes nothing.
+
+**A misspelled `ph-` name renders an empty box, silently**, because an icon is a class name
+and a class that matches no glyph is not an error. Nothing on your side catches that for you,
+so check a name against the `@phosphor-icons/web` you installed if a wrong one would be
+expensive.

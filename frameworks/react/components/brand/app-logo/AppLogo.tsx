@@ -1,4 +1,6 @@
 import React from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './AppLogo.classes.generated.ts';
 
 import type { LogoSize, Orientation } from '../../../Api.generated';
 
@@ -20,24 +22,16 @@ export interface AppLogoProps {
 }
 
 
-const MARK = { sm: 'var(--logo-mark-sm)', md: 'var(--logo-mark-md)', lg: 'var(--logo-mark-lg)', xl: 'var(--logo-mark-xl)' };
-const TEXT = { sm: 'var(--logo-text-sm)', md: 'var(--logo-text-md)', lg: 'var(--logo-text-lg)', xl: 'var(--logo-text-xl)' };
+const logoStyles = arenaStyles(manifest);
 
 export function AppLogo({ size = 'md', orientation = 'horizontal', mark, name, dim }: AppLogoProps) {
   if (!mark || !name) throw new Error('AppLogo: `mark` and `name` are required');
-  const vertical = orientation === 'vertical';
-  const markSize = MARK[size] || MARK.md;
-  const textSize = TEXT[size] || TEXT.md;
-  const fill = React.isValidElement(mark)
-    ? React.cloneElement(mark, { style: { display: 'block', width: '100%', height: '100%', ...mark.props.style } })
-    : mark;
+  const styles = logoStyles({ size, orientation });
   return (
-    <span style={{ display: 'inline-flex', flexDirection: vertical ? 'column' : 'row', alignItems: 'center',
-      gap: vertical ? 'calc(var(--sp-1) * 3)' : 'calc(var(--sp-1) * 2.5)' }}>
-      <span style={{ display: 'inline-flex', flex: 'none', width: markSize, height: markSize }}>{fill}</span>
-      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-black)', fontSize: textSize,
-        letterSpacing: 'var(--ls-tight)', textTransform: 'uppercase', color: 'var(--bone)' }}>
-        {name}{dim && <span style={{ color: 'var(--mute)' }}>{dim}</span>}
+    <span className={styles.root()}>
+      <span className={styles.mark()}>{mark}</span>
+      <span className={styles.name()}>
+        {name}{dim && <span className={styles.dim()}>{dim}</span>}
       </span>
     </span>
   );

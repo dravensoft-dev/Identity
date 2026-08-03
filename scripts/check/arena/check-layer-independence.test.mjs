@@ -17,9 +17,11 @@ import {
   foreignTokens,
   isAllowedSpecifier,
   staleExemptions,
+  staleSpecifierAllowances,
   textualHits,
 } from './check-layer-independence.mjs';
 import { LAYERS } from '../../lib/arena/layers.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('the rule is the matrix: angular may name tailwind, and nothing else names anything', () => {
   assert.deepEqual(FORBIDDEN, {
@@ -31,17 +33,41 @@ test('the rule is the matrix: angular may name tailwind, and nothing else names 
   assert.deepEqual(Object.keys(LAYER_TOKENS).sort(), [...LAYERS].sort());
 });
 
-test('the one authorised edge is on the record with its reason', () => {
-  assert.deepEqual([...ALLOWED.keys()], ['angular -> tailwind']);
-  assert.match(ALLOWED.get('angular -> tailwind'), /manifest/);
+test('no layer reads another layer\'s SOURCE; the one authorised edge is a link, not a read', () => {
+  assert.deepEqual([...ALLOWED.keys()], [],
+    'a layer stands on contracts/ alone; the one edge that used to exist was Angular reaching for '
+    + 'a Tailwind manifest, and it went when a component started composing its own class names');
 });
 
-test('a manifest module and the shared tv are the only specifiers that pass', () => {
-  assert.ok(isAllowedSpecifier('frameworks/tailwind/components/display/tag/Tag.manifest.generated'));
-  assert.ok(isAllowedSpecifier('frameworks/tailwind/Tv'));
-  assert.equal(isAllowedSpecifier('frameworks/tailwind/Specimen.js'), false);
+test('the compiled CSS is the one reference authorised, and the layer around it is not', () => {
+  assert.equal(ALLOWED_SPECIFIERS.size, 1);
+  for (const reason of ALLOWED_SPECIFIERS.values()) assert.ok(reason.trim().length > 0, 'a reason is the whole entry');
+  assert.equal(isAllowedSpecifier('frameworks/tailwind/consume/Components.generated.css'), true);
+  assert.equal(isAllowedSpecifier('frameworks/tailwind/components/display/tag/Tag.manifest.generated'), false);
+  assert.equal(isAllowedSpecifier('frameworks/tailwind/Tv'), false);
   assert.equal(isAllowedSpecifier('frameworks/react/components/forms/button/Button.jsx'), false);
-  assert.equal(ALLOWED_SPECIFIERS.length, 2);
+});
+
+test('a stylesheet link is judged by where it lands, so a relative path cannot slip past the tokens', () => {
+  const file = `${repoRoot}/frameworks/react/ui-kits/console/index.html`;
+  const link = (href) => `<link rel="stylesheet" href="${href}">`;
+  assert.deepEqual(
+    escapingSpecifiers(link('../../../tailwind/consume/Components.generated.css'), file, 'react'),
+    ['frameworks/tailwind/consume/Components.generated.css'],
+    'the string names no layer, and the resolved path names tailwind, which is the only question worth asking',
+  );
+  assert.deepEqual(escapingSpecifiers(link('../../../../intro/styles.css'), file, 'react'), []);
+  assert.deepEqual(
+    escapingSpecifiers(link('../../../angular/theme/arena-cdk.css'), file, 'react').map(isAllowedSpecifier),
+    [false],
+  );
+});
+
+test('ALLOWED_SPECIFIERS is answerable to the real tree: a pattern nothing references is stale', () => {
+  const { allowedHits } = collect();
+  assert.deepEqual(staleSpecifierAllowances(allowedHits), [],
+    'a pattern authorising an edge nobody takes is a stale allowance');
+  assert.equal(staleSpecifierAllowances([]).length, ALLOWED_SPECIFIERS.size);
 });
 
 test('a citation of another layer is a hit, and a script name of any layer is not', () => {

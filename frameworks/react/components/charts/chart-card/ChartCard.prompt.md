@@ -10,6 +10,18 @@ The card a chart sits on: an uppercase muted microlabel, optional actions on the
 </ChartCard>
 ```
 
+<!-- @api GENERATED from contracts/api/components/ChartCard.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title` | primitive | `string` |  | The card heading. Absent renders no head unless `actions` is present. |
+| `actions` | slot |  |  | Controls in the head row, right-aligned beside the title. |
+| `children` | slot |  |  | The chart (or any body) the card frames. |
+
+<!-- @api end -->
+
 **Do**
 - Let `title` name the series when there is only one; that is why a single-series chart draws no legend box.
 - Keep `title` to a short uppercase microlabel, like every other label in Arena (H2/H6/H8).

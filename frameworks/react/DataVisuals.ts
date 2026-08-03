@@ -1,5 +1,6 @@
 import type * as React from 'react';
 import type { NumberFormat, SeriesTone, Tone } from './Api.generated';
+import { warnOnce } from './WarnOnce.ts';
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
   tintArea, tintSoft, tintEdge,
@@ -50,13 +51,6 @@ const TONE_VARS: Record<Tone, string> = {
 
 export function toneColor(tone: Tone): string {
   return TONE_VARS[tone];
-}
-
-const warned = new Set();
-function warnOnce(message: string): void {
-  if (warned.has(message) || typeof console === 'undefined') return;
-  warned.add(message);
-  console.warn('[arena] ' + message);
 }
 
 export interface ResolveColorsOptions {

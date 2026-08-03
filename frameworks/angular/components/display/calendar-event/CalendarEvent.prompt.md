@@ -9,11 +9,30 @@ One event on an `arena-calendar`'s schedule. It is content of a calendar and not
 </arena-calendar>
 ```
 
+<!-- @api GENERATED from contracts/api/components/CalendarEvent.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `id*` | primitive | `string` |  | Stable identity, so a host can switch on it rather than on the title. |
+| `title*` | primitive | `string` |  | What the chip reads. |
+| `start*` | primitive | `string` |  | ISO datetime the event begins. |
+| `end*` | primitive | `string` |  | ISO datetime the event ends. |
+| `colorId` | enum | `CatSlot` |  | Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. |
+| `interactive` | primitive | `boolean` | `false` | Whether the chip can be activated. A boolean rather than "is `click` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. |
+| `actionsEnabled` | primitive | `boolean` | `false` | Whether the chip shows its action button. A boolean rather than "is the actions slot filled?": Arena never derives what it draws from what a consumer listens for, because projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. |
+| `actions` | slot |  |  | The action panel's content, revealed by the chip's action button. Rendered only while the panel is open, so a consumer's own controls never sit permanently in the grid's Tab sequence. |
+| `disabled` | primitive | `boolean` | `false` | Whether the chip is drawn but cannot be activated: an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. |
+| `click` | event |  |  | The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about. Never emitted while `disabled`. |
+
+<!-- @api end -->
+
 `id`, `title`, `start` and `end` are all required and **throw** when blank, `input.required` proves only that something was bound. `start` and `end` are ISO datetimes, read in the calendar's `timeZone` and never the reader's.
 
 **`click` carries no payload, deliberately.** You wrote this element, so your handler already closes over the record it came from.
 
-**`interactive` is what makes the chip a button, not `(click)`.** The shape cannot be derived from whether anything is subscribed, R6 in `contracts/api/README.md`, so activation is a member you declare, the same one `arena-table-row` carries. **Bind `interactive` alongside `(click)`, or the chip is inert**: a `<div>` with no role, nothing to activate and nothing to disable, which is what a read-only schedule wants.
+**`interactive` is what makes the chip a button, not `(click)`.** The shape cannot be derived from whether anything is subscribed, so activation is a member you declare, the same one `arena-table-row` carries. **Bind `interactive` alongside `(click)`, or the chip is inert**: a `<div>` with no role, nothing to activate and nothing to disable, which is what a read-only schedule wants.
 
 **A `(click)` binding on `<arena-calendar-event>` is the DOM event, not the output.** Angular binds a native event name to the DOM even when the component declares an output of that name, so a click that bubbles out of an inert chip still reaches your handler. An interactive chip stops propagation before it can; an inert one does not, because it claims nothing and the click belongs to the day underneath it. Listen for activation on a chip you have declared `interactive`.
 

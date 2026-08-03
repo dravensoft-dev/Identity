@@ -1,0 +1,35 @@
+{
+  "component": "CommandPalette",
+  "seed": {
+    "open": true,
+    "commands": [
+      {
+        "id": "promote",
+        "label": "Promote a build",
+        "hint": "Move a build forward one environment",
+        "icon": "ph-bold ph-rocket-launch",
+        "group": "Delivery",
+        "shortcut": "P"
+      },
+      {
+        "id": "rollback",
+        "label": "Roll back",
+        "hint": "Return to the previous build",
+        "icon": "ph-bold ph-arrow-clockwise",
+        "group": "Delivery"
+      },
+      {
+        "id": "settings",
+        "label": "Open settings",
+        "icon": "ph-bold ph-gear-six",
+        "group": "Workspace"
+      }
+    ]
+  },
+  "bind": {
+    "close": {
+      "open": false
+    }
+  },
+  "note": "Cmd/Ctrl+K: search and run without a mouse."
+}

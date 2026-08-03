@@ -1,6 +1,5 @@
 Arena menu, a dropdown of actions hanging off a trigger the consumer draws. Standalone,
-`OnPush`, signal I/O. Styling is the sibling `Menu.variants.ts` recipe; the component carries no
-CSS classes of its own. The host wraps the trigger and nothing else; the panel lives in a
+`OnPush`, signal I/O. The host wraps the trigger and nothing else; the panel lives in a
 `@angular/cdk/overlay` pane on `document.body`.
 
 That is the whole reason for the overlay: a menu's canonical home is an overflow row in a table
@@ -14,6 +13,19 @@ unpositioned.
   <arena-icon-button trigger icon="ph-bold ph-dots-three-vertical" label="More actions" />
 </arena-menu>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Menu.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `trigger*` | slot |  |  | The element that opens the menu. The consumer draws it -- an IconButton with ph-dots-three-vertical, a secondary Button -- so it is a slot, and it carries its own accessible name. |
+| `items*` | array | `MenuItem[]` |  | The entries, in order: activatable rows, dividers and group headers. |
+| `align` | enum | `MenuAlign` | `"start"` | Which edge of the trigger the panel lines up with. |
+| `select` | event | `MenuItem` |  | An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. |
+
+<!-- @api end -->
 
 ```ts
 protected readonly rowActions: MenuItem[] = [
@@ -62,7 +74,7 @@ nothing.
 
 **By hand, in real Chromium**: none of this is provable in happy-dom, which has no layout and no
 platform activation. Run `bun run demos` and open
-`/frameworks/angular/components/navigation/menu/Menu.card.html`:
+`/frameworks/angular/components/navigation/menu/Menu.demo.generated.html`:
 - The panel escapes an `overflow: hidden` ancestor and a scroll container, and repositions while
   that container scrolls.
 - Near the bottom of the viewport it flips above its trigger; `align="end"` hangs it from the

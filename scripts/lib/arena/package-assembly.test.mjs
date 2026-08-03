@@ -27,6 +27,7 @@ test('a test never ships, whichever extension it takes', () => {
 
 test('a demo, a specimen, a binding and a prompt never ship either', () => {
   for (const name of ['Tag.card.html', 'Tag.card.entry.ts', 'Button.card.entry.jsx',
+    'Tag.demo.generated.html', 'Tag.demo.entry.generated.tsx', 'Tag.demo.entry.generated.ts',
     'Tag.behaviour.json', 'Tag.prompt.md', 'Button.generated.js', 'BehaviourDelegated.json',
     'tsconfig.test.json', 'tsconfig.check.json']) {
     assert.equal(excluded(name), true, name);
@@ -87,7 +88,9 @@ test('copyTree carries a nested tree and drops what is excluded', () => {
 
 test('the CSS chain leads with the reset and ends with the derivations', () => {
   assert.equal(CSS_CHAIN[0].to, 'css/reset.css');
-  assert.equal(CSS_CHAIN.at(-1).to, 'css/colors.css');
+  assert.deepEqual(CSS_CHAIN.slice(-2).map((c) => c.to), ['css/colors.css', 'css/environment.css'],
+    'both hand-authored derivation sheets read tokens the generated ones declare, so both come '
+    + 'after them: colors.css derives from --color-base-content and environment.css from --sp-*');
   for (const { from } of CSS_CHAIN) {
     assert.equal(existsSync(join(repoRoot, from)), true, `${from} is in the chain and not in the tree`);
   }

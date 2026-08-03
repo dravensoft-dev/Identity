@@ -3,7 +3,9 @@
  * there passes identically against a perfect trap and against none, which is why the record said
  * a person had to check it. check:cards already drives real Chromium over CDP, and the same
  * connection presses a real Tab. TRAPS names a page per layer that binds dialog-modal, because
- * the contract is the authority and each layer answers it separately. FOCUSABLE repeats :not([tabindex="-1"]) on every clause because a selector list
+ * the contract is the authority and each layer answers it separately. Each page opens its panel
+ * from its own fixture, so no button has to be found by its text: a demo page whose copy moved
+ * used to walk a page with nothing open and report a trap that holds. FOCUSABLE repeats :not([tabindex="-1"]) on every clause because a selector list
  * is OR'd -- writing it loose once made this gate call a correct combobox a broken trap, which
  * is the same hazard the trap's own selector carries a note about. */
 
@@ -31,10 +33,12 @@ export const FOCUSABLE = [
 export const PANEL = '[role="dialog"], [role="alertdialog"]';
 
 export const TRAPS = [
-  { name: 'ConfirmDialog:react', page: 'frameworks/react/components/feedback/confirm-dialog/ConfirmDialog.card.html' },
-  { name: 'Onboarding:react', page: 'frameworks/react/components/feedback/onboarding/Onboarding.card.html' },
-  { name: 'CommandPalette:react', page: 'frameworks/react/components/navigation/command-palette/CommandPalette.card.html' },
-  { name: 'Dialog:angular', page: 'frameworks/angular/components/feedback/dialog/Dialog.card.html', open: 'Promote build' },
+  { name: 'ConfirmDialog:react', page: 'frameworks/react/components/feedback/confirm-dialog/ConfirmDialog.demo.generated.html' },
+  { name: 'Onboarding:react', page: 'frameworks/react/components/feedback/onboarding/Onboarding.demo.generated.html' },
+  { name: 'CommandPalette:react', page: 'frameworks/react/components/navigation/command-palette/CommandPalette.demo.generated.html' },
+  { name: 'ConfirmDialog:angular', page: 'frameworks/angular/components/feedback/confirm-dialog/ConfirmDialog.demo.generated.html' },
+  { name: 'Dialog:angular', page: 'frameworks/angular/components/feedback/dialog/Dialog.demo.generated.html' },
+  { name: 'CommandPalette:angular', page: 'frameworks/angular/components/navigation/command-palette/CommandPalette.demo.generated.html' },
 ];
 
 export function walkProblems(name, walk) {
@@ -67,7 +71,7 @@ function withTimeout(promise, ms, message) {
   return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
 }
 
-async function walkTrap(cdp, url, trap) {
+async function walkTrap(cdp, url) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   try {
     const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
@@ -84,14 +88,6 @@ async function walkTrap(cdp, url, trap) {
     };
 
     await ev(`new Promise((r) => setTimeout(r, ${SETTLE_MS}))`);
-    if (trap.open) {
-      await ev(`(() => {
-        const button = [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === ${JSON.stringify(trap.open)});
-        if (button) button.click();
-        return true;
-      })()`);
-      await ev(`new Promise((r) => setTimeout(r, ${SETTLE_MS}))`);
-    }
 
     const seen = (await ev(`(() => {
       const panel = document.querySelector(${JSON.stringify(PANEL)});
@@ -153,7 +149,7 @@ async function main() {
   const problems = [];
   try {
     for (const trap of TRAPS) {
-      const walk = await walkTrap(cdp, `http://127.0.0.1:${server.port}/${trap.page}`, trap);
+      const walk = await walkTrap(cdp, `http://127.0.0.1:${server.port}/${trap.page}`);
       problems.push(...walkProblems(trap.name, walk));
     }
   } finally {

@@ -10,10 +10,10 @@ test('a change confined to one layer routes to that layer alone', () => {
   );
 });
 
-test('a Tailwind change routes to Angular too, because ngc reads the generated manifests', () => {
+test('a Tailwind change routes to both other layers, because both compile what it emits', () => {
   assert.deepEqual(
     layersChanged(['frameworks/tailwind/components/forms/button/Button.manifest.json']),
-    { react: false, angular: true, tailwind: true },
+    { react: true, angular: true, tailwind: true },
   );
 });
 

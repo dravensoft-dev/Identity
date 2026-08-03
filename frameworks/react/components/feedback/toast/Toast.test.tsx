@@ -39,17 +39,17 @@ test('the danger tone announces assertively as an alert', () => {
   const html = renderToStaticMarkup(<Toast tone="danger" title="Pipeline failed" />);
   assert.match(html, /role="alert"/);
   assert.match(html, /aria-live="assertive"/);
-  assert.match(html, /var\(--danger\)/, 'the danger tone did not reach the side bar');
+  assert.match(html, /\barena-toast__root--tone-danger\b/, 'the danger tone did not reach the side bar');
 });
 
 test('every other tone announces politely as a status', () => {
-  const expected = { neutral: 'var(--line-strong)', success: 'var(--success)', gold: 'var(--gold)' };
+  const expected = { neutral: 'arena-toast__root--tone-neutral', success: 'arena-toast__root--tone-success', gold: 'arena-toast__root--tone-gold' };
   for (const [tone, token] of Object.entries(expected)) {
     // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
     const html = renderToStaticMarkup(<Toast tone={tone} title="Deployment archived" />);
     assert.match(html, /role="status"/, `tone="${tone}" announced as an alert`);
     assert.match(html, /aria-live="polite"/, `tone="${tone}" announced assertively`);
-    assert.ok(html.includes(token), `tone="${tone}" did not reach the side bar as ${token}`);
+    assert.ok(new RegExp(`\\b${token}\\b`).test(html), `tone="${tone}" did not reach the side bar as ${token}`);
   }
 
   assert.match(renderToStaticMarkup(<Toast title="Deployment archived" />), /role="status"/);

@@ -1,6 +1,5 @@
 Arena status/emphasis tag, a pill whose `tone` follows the Badge/Tag taxonomy.
-Standalone, `OnPush`, signal I/O. Styling is the sibling `Tag.variants.ts`
-recipe; the component carries no CSS classes of its own. `removable` shows an
+Standalone, `OnPush`, signal I/O. `removable` shows an
 Arena-drawn dismiss `×` that emits `remove` on click.
 
 ```html
@@ -9,6 +8,20 @@ Arena-drawn dismiss `×` that emits `remove` on click.
 <arena-tag tone="danger">Blocked</arena-tag>
 <arena-tag removable (remove)="drop('staging')">Staging</arena-tag>
 ```
+
+<!-- @api GENERATED from contracts/api/components/Tag.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `content` | slot |  |  | The tag's label. |
+| `tone` | enum | `TagTone` | `"neutral"` | The tag's emphasis colour. |
+| `removable` | primitive | `boolean` | `false` | Whether the dismiss × is shown. Every layer gates the × on this member and never on whether anything listens for `remove`, because Arena never derives what it draws from what a consumer listens for. Removability is a declared input, not something inferred from the event. |
+| `disabled` | primitive | `boolean` | `false` | Whether removal is unavailable while the tag stays visible: a filter a consumer's permissions lock, not a tag that is merely inert. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the × keeps its place in the tab order and a screen-reader user is told the action is unavailable instead of never finding it. With `removable` false there is no × and nothing to disable. |
+| `remove` | event |  |  | The dismiss × was activated. Never emitted while `disabled`. |
+
+<!-- @api end -->
 
 **Do / Don't**
 - Use `tone="danger"` for a blocked/destructive status: the pill's border and

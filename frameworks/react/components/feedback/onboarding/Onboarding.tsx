@@ -1,4 +1,6 @@
 import React, { useRef } from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Onboarding.classes.generated.ts';
 import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated.js';
 
 const SSR_VIEWPORT_H = 900;
@@ -36,6 +38,8 @@ export interface OnboardingProps {
 }
 
 
+const onboardingStyles = arenaStyles(manifest);
+
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }: OnboardingProps) {
   if (open == null) throw new Error('Onboarding: `open` is required');
   if (steps == null) throw new Error('Onboarding: `steps` is required');
@@ -51,40 +55,33 @@ export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onD
   const W = onboardingWidth;
   const EDGE = sp4;
 
-  let pos: React.CSSProperties = { position: 'fixed', right: 'calc(var(--sp-1) * 6)', bottom: 'calc(var(--sp-1) * 6)', zIndex: 'var(--z-onboarding)' };
+  let pos: React.CSSProperties | undefined;
   if (anchor) {
 
     const top = Math.min(anchor.bottom + sp3, (typeof window !== 'undefined' ? window.innerHeight : SSR_VIEWPORT_H) - onboardingHeightReserve);
     let left = anchor.left;
     if (typeof window !== 'undefined') left = Math.min(left, window.innerWidth - W - EDGE);
-    pos = { position: 'fixed', top, left: Math.max(EDGE, left), zIndex: 'var(--z-onboarding)' };
+    pos = { top, left: Math.max(EDGE, left) };
   }
 
-  const foot: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-uppercase-status)' };
+  const styles = onboardingStyles({ placement: anchor ? 'anchored' : 'floating', open: true });
   return (
-    <div onClick={onSkip} style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-onboarding)', background: 'var(--scrim)' }}>
+    <div onClick={onSkip} className={styles.root()}>
       <div role="dialog" aria-modal="true" aria-label={label}
         ref={panelRef} tabIndex={-1} onKeyDown={onKeyDown} onClick={(e) => e.stopPropagation()}
-        style={{ ...pos, width: 'var(--onboarding-width)', maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
-          borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', padding: 'calc(var(--sp-1) * 5)' }}>
-        {step.eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{step.eyebrow}</div>}
-        {step.title && <div style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h4)', color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{step.title}</div>}
-        {step.body && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', lineHeight: 'var(--lh-body)', color: 'var(--bone-dim)', marginTop: 'calc(var(--sp-1) * 2)' }}>{step.body}</div>}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', marginTop: 'calc(var(--sp-1) * 4.5)' }}>
-          <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 1.5)', flex: 1 }} aria-label={'Progress: step ' + (index + 1) + ' of ' + steps.length}>
+        className={styles.panel()} style={pos}>
+        {step.eyebrow && <div className={styles.eyebrow()}>{step.eyebrow}</div>}
+        {step.title && <div className={styles.title()}>{step.title}</div>}
+        {step.body && <div className={styles.body()}>{step.body}</div>}
+        <div className={styles.foot()}>
+          <div className={styles.dots()} aria-label={'Progress: step ' + (index + 1) + ' of ' + steps.length}>
             {steps.map((_, i) => (
-              <span key={i} style={{ width: i === index ? 'calc(var(--sp-1) * 4.5)' : 'var(--sp-2)', height: 'calc(var(--sp-1) * 2)', borderRadius: 'var(--r-pill)', background: i === index ? 'var(--crimson)' : 'var(--line-strong)', transition: 'width var(--dur-mid) var(--ease-out)' }} />
+              <span key={i} className={`${styles.dot()} ${i === index ? styles.dotOn() : styles.dotOff()}`} />
             ))}
           </div>
-          {index > 0 && (
-            <button onClick={onBack} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Back</button>
-          )}
-          {!last && (
-            <button onClick={onSkip} style={{ ...foot, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontWeight: 'var(--fw-bold)', textTransform: 'uppercase' }}>Skip</button>
-          )}
-          <button onClick={last ? onDone : onNext}
-            style={{ height: 'calc(var(--sp-1) * 8.5)', padding: '0 calc(var(--sp-1) * 4)', background: 'var(--crimson)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--r-sm)',
-              fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-semibold)', fontSize: 'var(--dz-text-md)', cursor: 'pointer' }}>
+          {index > 0 && <button onClick={onBack} className={styles.text()}>Back</button>}
+          {!last && <button onClick={onSkip} className={styles.text()}>Skip</button>}
+          <button onClick={last ? onDone : onNext} className={styles.next()}>
             {last ? 'Got it' : 'Next'}
           </button>
         </div>

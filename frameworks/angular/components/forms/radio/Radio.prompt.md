@@ -9,6 +9,19 @@ of authored ARIA.
 <arena-radio value="qa" label="QA" disabled />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Radio.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `value*` | primitive | `string` |  | This option's value, matched against the group's. |
+| `label` | primitive | `string` |  | The option's label. |
+| `hint` | primitive | `string` |  | A line of help under the label. |
+| `disabled` | primitive | `boolean` | `false` | Blocks selection and dims the option. |
+
+<!-- @api end -->
+
 **Do / Don't**
 - It has **no `checked` and no event**, and that is the contract rather than an omission. The
   option reads the selected value from the `RadioGroupState` its group provides and reports a
@@ -30,7 +43,7 @@ of authored ARIA.
   effect and `arena-checkbox` for a pending form value.
 
 **By hand, in real Chromium**: the option's own visuals, on the group's page (`bun run demos`,
-`/frameworks/angular/components/forms/radio-group/RadioGroup.card.html`):
+`/frameworks/angular/components/forms/radio-group/RadioGroup.demo.generated.html`):
 - Selecting changes **only** the ring's border colour and adds the dot; the ring's size and
   surface do not move, so the row does not shift by a pixel.
 - With a hint present, the ring stays level with the first line of the label rather than centring

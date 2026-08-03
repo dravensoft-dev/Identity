@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/tag/Tag.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Tag.classes.generated';
 
-export const tagStyles = tv(manifest);
+export const tagStyles = arenaStyles(manifest);

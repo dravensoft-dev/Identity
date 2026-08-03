@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/forms/textarea/Textarea.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Textarea.classes.generated';
 
-export const textareaStyles = tv(manifest);
+export const textareaStyles = arenaStyles(manifest);

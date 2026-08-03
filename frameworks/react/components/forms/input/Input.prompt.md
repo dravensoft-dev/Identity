@@ -7,11 +7,44 @@ Text field with validation (H5). Focus = gold ring, error = crimson with icon, v
 <Input label="Slug" valid value={slug} onChange={setSlug} hint="Available" />
 ```
 
+<!-- @api GENERATED from contracts/api/components/Input.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `label` | primitive | `string` |  | Field label above the control. |
+| `id` | primitive | `string` |  | The control's id, and what the label's `for` points at. Generated from `label` when omitted, as `in-` followed by the label with each run of whitespace replaced by a single hyphen and the whole lowercased. The derivation is normative, and the prefix differs per component on purpose: the same markup must get the same id in every layer, and an Input and a Textarea sharing a label must not collide. |
+| `hint` | primitive | `string` |  | A line of help under the field. |
+| `error` | primitive | `string` |  | Controlled error message; wins over `validate`. |
+| `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
+| `required` | primitive | `boolean` | `false` | Marks the label and the control required. |
+| `validate` | functionInput | `(value: string) => string` |  | Called on the value; returns the error message, or empty for valid. |
+| `validateOn` | enum | `ValidateOn` | `"blur"` | When `validate` runs. |
+| `type` | enum | `InputType` | `"text"` | Native input type. |
+| `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
+| `prefix` | primitive | `string` |  | Static text Arena draws before the value, e.g. `git@`. |
+| `value` | primitive | `string` |  | The controlled text. |
+| `disabled` | primitive | `boolean` | `false` | Blocks editing and dims it. |
+| `readOnly` | primitive | `boolean` | `false` | Shows the value but blocks editing. |
+| `placeholder` | primitive | `string` |  | Shown when empty. |
+| `name` | primitive | `string` |  | Submitted with the form. |
+| `autoComplete` | primitive | `string` |  | The browser autofill hint. |
+| `min` | primitive | `string` |  | Minimum, for number/date types. |
+| `max` | primitive | `string` |  | Maximum, for number/date types. |
+| `step` | primitive | `string` |  | Step, for number/date types. |
+| `maxLength` | primitive | `number` |  | Caps the length. |
+| `pattern` | primitive | `string` |  | A regex the value must match. |
+| `onChange` | event | `string` |  | Edited; carries the new value. |
+| `onBlur` | event | `string` |  | Left the field; carries the value. |
+
+<!-- @api end -->
+
 Rules: validates on `blur` by default; use `validateOn="change"` only for live feedback (passwords, availability). Mark required fields with `required`.
 
 `validate` is the **ninth form**, a `functionInput`: the consumer hands Arena a function it calls on the field's value and whose result it uses. It takes the value as a string and returns the error message, or nothing when the value is valid. It is the only inbound function in the library, and it is legal only because `Input` is a data-entry control.
 
-`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent`, because a platform event type is an R4 violation inside a payload, so the event does not travel. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
+`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent`, because a platform's own event type never travels in a payload, so the event does not reach you. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
 
 `icon` is a **Phosphor class name Arena draws** (`icon="ph-bold ph-magnifying-glass"`), not a node you pass in; Arena renders the `<i>` and hides it from assistive tech. `prefix` is likewise **static text Arena draws** before the value (`prefix="git@"`).
 
@@ -41,3 +74,24 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 - Don't build a custom calendar popover to replace it. That is a deliberate non-goal: a custom picker is a large accessibility surface to re-earn, and the native one already has it.
 - Don't fake a date field with `type="text"` and a mask. It loses the picker, the mobile keyboard and the locale.
 - Don't reach for a wrapper attribute or an inline `style` to size the field; wrap it in a container you control instead.
+
+### Taking focus, the one handle on the component
+
+`Input` forwards a ref carrying `focus()` and `select()`. Reach them through it, and never by
+querying the real `<input>` out of the DOM, which is Arena's markup and can move:
+
+```tsx
+const search = useRef<InputHandle>(null);
+
+function completeSale() {
+  record();
+  search.current?.focus();
+  search.current?.select();
+}
+
+<Input ref={search} label="Search" value={query} onChange={setQuery} />
+```
+
+They are a handle rather than props because no member is imperative, and an `autoFocus` prop
+would answer a different question: it fires once at mount, and chaining sales needs focus back
+after **every** completion. These two are the whole handle; `Input` exposes nothing else.

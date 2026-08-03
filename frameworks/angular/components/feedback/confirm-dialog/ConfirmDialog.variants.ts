@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/confirm-dialog/ConfirmDialog.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './ConfirmDialog.classes.generated';
 
-export const confirmDialogStyles = tv(manifest);
+export const confirmDialogStyles = arenaStyles(manifest);

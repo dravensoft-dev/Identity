@@ -16,7 +16,7 @@
     "action": { "form": "event",
                 "description": "The inline action button was activated." },
     "dismissible": { "form": "primitive", "type": "boolean", "default": false,
-                     "description": "Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6." },
+                     "description": "Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, because Arena never derives what it draws from what a consumer listens for." },
     "close": { "form": "event",
                "description": "The × was activated." }
   }

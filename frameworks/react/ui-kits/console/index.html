@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Delivery Console — Dravensoft</title>
 <link rel="stylesheet" href="../../../../intro/styles.css">
+<link rel="stylesheet" href="../../../tailwind/consume/Components.generated.css">
 <!-- Applies the saved theme before first paint. Shell's own Switch writes the
      same `draven-theme` key but only reads the live class, so without this the
      console would forget the choice on every reload. -->
@@ -17,7 +18,6 @@
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--text-strong);font-family:var(--font-body)}
 #root{height:100vh}
-.toast-wrap{position:fixed;right:24px;bottom:24px;z-index:1200;display:flex;flex-direction:column;gap:12px}
 </style>
 <script type="importmap">
 {"imports":{"react":"../../../../frameworks/react/vendor/React.generated.js","react/jsx-runtime":"../../../../frameworks/react/vendor/ReactJsxRuntime.generated.js","react-dom/client":"../../../../frameworks/react/vendor/ReactDomClient.generated.js"}}
