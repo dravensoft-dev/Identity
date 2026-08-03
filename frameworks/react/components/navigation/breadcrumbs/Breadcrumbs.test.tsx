@@ -56,3 +56,12 @@ test('an empty items array is supplied-but-empty and stays legal', () => {
   assert.match(html, new RegExp(`<nav aria-label="${LABEL}"`));
   assert.doesNotMatch(html, /<a /);
 });
+
+test('the last crumb and the ones before it are two slots of one recipe', () => {
+  const html = renderToStaticMarkup(
+    <Breadcrumbs ariaLabel="Where" items={[{ id: 'a', label: 'Root', href: '/a' }, { id: 'b', label: 'Here' }]} />,
+  );
+  assert.match(html, /class="[^"]*\btext-base-content\/62\b[^"]*"[^>]*>Root/, 'a link crumb is dimmed');
+  assert.match(html, /hover:text-base-content\/82/, 'and lifts on hover through a modifier, not a handler');
+  assert.match(html, /class="[^"]*\bfont-bold\b[^"]*"[^>]*>Here/, 'the current crumb is the emphatic one');
+});

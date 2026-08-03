@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Breadcrumbs.manifest.generated.ts';
 import type { Crumb } from '../../../Api.generated';
 
 export type { Crumb };
@@ -20,18 +22,20 @@ export interface BreadcrumbsProps {
 }
 
 
+const breadcrumbStyles = tv(manifest);
+
 export function Breadcrumbs({ items, ariaLabel, separator = '/', onNavigate }: BreadcrumbsProps) {
   if (!ariaLabel?.trim()) throw new Error('Breadcrumbs: `ariaLabel` is required');
   if (!items) throw new Error('Breadcrumbs: `items` is required');
+  const styles = breadcrumbStyles();
   return (
-    <nav aria-label={ariaLabel} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'calc(var(--sp-1) * 2)' }}>
+    <nav aria-label={ariaLabel} className={styles.root()}>
       {items.map((it, i) => {
         const last = i === items.length - 1;
-        const common = { fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', letterSpacing: 'var(--ls-mono-nav)' };
         return (
           <React.Fragment key={i}>
             {last ? (
-              <span aria-current="page" style={{ ...common, color: 'var(--bone)', fontWeight: 'var(--fw-bold)' }}>{it.label}</span>
+              <span aria-current="page" className={styles.current()}>{it.label}</span>
             ) : (
               <a href={it.href || '#'}
                 onClick={(e) => {
@@ -39,13 +43,11 @@ export function Breadcrumbs({ items, ariaLabel, separator = '/', onNavigate }: B
                   e.preventDefault();
                   onNavigate?.(it);
                 }}
-                style={{ ...common, color: 'var(--mute)', textDecoration: 'none', cursor: 'pointer', transition: 'color var(--dur-fast) var(--ease-out)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--bone-dim)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--mute)')}>
+                className={styles.crumb()}>
                 {it.label}
               </a>
             )}
-            {!last && <span aria-hidden="true" style={{ color: 'var(--line-strong)', fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)' }}>{separator}</span>}
+            {!last && <span aria-hidden="true" className={styles.separator()}>{separator}</span>}
           </React.Fragment>
         );
       })}
