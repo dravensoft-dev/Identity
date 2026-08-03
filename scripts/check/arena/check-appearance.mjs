@@ -19,7 +19,6 @@ export const PENDING = new Map([
 
 
 
-  ['ToastHost', 'group F: the overlay stack and the safe-area insets, still typed out inline'],
 
   ['Tabs', 'group G: the family parent, whose manifest its tab must read'],
   ['Tab', 'group G: reads Tabs\' manifest and does not yet render it'],

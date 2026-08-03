@@ -1,6 +1,6 @@
-/* Every assertion reads the rendered style through declarations(), never by searching
- * the markup for a "name: value" string. A test that spelt one out would itself be a
- * bare dimension literal under frameworks/, and check:dimensions reads this file too. */
+/* Every assertion reads the rendered class list, never a "name: value" string. A test that
+ * spelt one out would itself be a bare dimension literal under frameworks/, and
+ * check:dimensions reads this file too; the edge names below are class prefixes, not lengths. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -12,32 +12,26 @@ import type { ToastPlacement } from '../../../Api.generated';
 const PLACEMENTS = ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const;
 
 const BLOCK = ['top', 'bottom'] as const;
-const INLINE = ['inset-inline-start', 'inset-inline-end'] as const;
+const INLINE = ['start', 'end'] as const;
 
-function declarations(html: string): Record<string, string> {
-  const style = /style="([^"]*)"/.exec(html)?.[1] ?? '';
-  const out: Record<string, string> = {};
-  for (const part of style.split(';')) {
-    const at = part.indexOf(':');
-    if (at > 0) out[part.slice(0, at).trim()] = part.slice(at + 1).trim();
-  }
-  return out;
+function classesOf(html: string): string[] {
+  return (/class="([^"]*)"/.exec(html)?.[1] ?? '').split(/\s+/).filter(Boolean);
 }
 
 function pinnedOf(placement: ToastPlacement): { block: string[]; inline: string[] } {
-  const style = declarations(renderToStaticMarkup(<ToastHost placement={placement} />));
+  const drawn = classesOf(renderToStaticMarkup(<ToastHost placement={placement} />));
   return {
-    block: BLOCK.filter((edge) => edge in style),
-    inline: INLINE.filter((edge) => edge in style),
+    block: BLOCK.filter((edge) => drawn.some((c) => c.startsWith(`${edge}-[`))),
+    inline: INLINE.filter((edge) => drawn.includes(`${edge}-6`)),
   };
 }
 
 test('every placement pins one block edge and one inline edge, and it is the pair its own name states', () => {
   const expected = {
-    'top-start': { block: ['top'], inline: ['inset-inline-start'] },
-    'top-end': { block: ['top'], inline: ['inset-inline-end'] },
-    'bottom-start': { block: ['bottom'], inline: ['inset-inline-start'] },
-    'bottom-end': { block: ['bottom'], inline: ['inset-inline-end'] },
+    'top-start': { block: ['top'], inline: ['start'] },
+    'top-end': { block: ['top'], inline: ['end'] },
+    'bottom-start': { block: ['bottom'], inline: ['start'] },
+    'bottom-end': { block: ['bottom'], inline: ['end'] },
   } as const;
   for (const placement of PLACEMENTS) {
     assert.deepEqual(pinnedOf(placement), expected[placement],
@@ -50,22 +44,22 @@ test('the default placement is bottom-end, matching the contract', () => {
 });
 
 test('a bottom placement clears the device inset and a top one clears its own, and neither retypes a number', () => {
-  const bottom = declarations(renderToStaticMarkup(<ToastHost placement="bottom-end" />));
-  assert.equal(bottom.bottom, 'max(var(--sp-6), var(--pad-safe-bottom))');
-  const top = declarations(renderToStaticMarkup(<ToastHost placement="top-end" />));
-  assert.equal(top.top, 'max(var(--sp-6), var(--pad-safe-top))');
-  for (const style of [bottom, top]) {
-    assert.equal(style['inset-inline-end'], 'var(--sp-6)', 'the inline standoff is a scale step, not a literal');
+  const bottom = classesOf(renderToStaticMarkup(<ToastHost placement="bottom-end" />));
+  assert.ok(bottom.includes('bottom-[max(var(--sp-6),var(--pad-safe-bottom))]'));
+  const top = classesOf(renderToStaticMarkup(<ToastHost placement="top-end" />));
+  assert.ok(top.includes('top-[max(var(--sp-6),var(--pad-safe-top))]'));
+  for (const drawn of [bottom, top]) {
+    assert.ok(drawn.includes('end-6'), 'the inline standoff is a scale step, not a literal');
   }
 });
 
 test('the box is fixed, a flex column, and on --z-toast -- the three things a Toast cannot do for itself', () => {
-  const style = declarations(renderToStaticMarkup(<ToastHost />));
-  assert.equal(style.position, 'fixed', 'a static box ignores z-index entirely, which is what this exists to fix');
-  assert.equal(style.display, 'flex');
-  assert.equal(style['flex-direction'], 'column');
-  assert.equal(style['z-index'], 'var(--z-toast)');
-  assert.equal(style.gap, 'var(--sp-3)');
+  const drawn = classesOf(renderToStaticMarkup(<ToastHost />));
+  assert.ok(drawn.includes('fixed'), 'a static box ignores z-index entirely, which is what this exists to fix');
+  assert.ok(drawn.includes('flex'));
+  assert.ok(drawn.includes('flex-col'));
+  assert.ok(drawn.includes('z-toast'));
+  assert.ok(drawn.includes('gap-3'));
 });
 
 test('the notices come out in the order they went in, so the reading order is the visual order', () => {
@@ -95,5 +89,7 @@ test('ToastHost drops a consumer style object and a consumer attribute -- no R4 
 });
 
 test('an unknown placement falls back to the default rather than rendering an unpinned box', () => {
-  assert.deepEqual(pinnedOf('corner' as ToastPlacement), { block: ['bottom'], inline: ['inset-inline-end'] });
+  assert.deepEqual(pinnedOf('corner' as ToastPlacement), { block: ['bottom'], inline: ['end'] },
+    'a variant key the manifest does not declare resolves to no classes at all, so the guard '
+    + 'that answers it is derived from the manifest rather than written out beside it');
 });

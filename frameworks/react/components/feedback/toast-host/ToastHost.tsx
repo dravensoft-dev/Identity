@@ -1,4 +1,6 @@
 import React from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './ToastHost.manifest.generated.ts';
 
 import type { ToastPlacement } from '../../../Api.generated';
 
@@ -11,13 +13,11 @@ export interface ToastHostProps {
   children?: React.ReactNode;
 }
 
+const toastHostStyles = tv(manifest);
+const PLACEMENTS = Object.keys(manifest.variants.placement);
+const placementOf = (placement: string | undefined): ToastPlacement | undefined =>
+  (placement && PLACEMENTS.includes(placement) ? placement as ToastPlacement : undefined);
+
 export function ToastHost({ placement = 'bottom-end', children }: ToastHostProps) {
-  const atTop = placement.startsWith('top');
-  const atStart = placement.endsWith('start');
-  const style: React.CSSProperties = {
-    position: 'fixed', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)', zIndex: 'var(--z-toast)',
-    [atTop ? 'top' : 'bottom']: `max(var(--sp-6), var(${atTop ? '--pad-safe-top' : '--pad-safe-bottom'}))`,
-    [atStart ? 'insetInlineStart' : 'insetInlineEnd']: 'var(--sp-6)',
-  };
-  return <div style={style}>{children}</div>;
+  return <div className={toastHostStyles({ placement: placementOf(placement) }).root()}>{children}</div>;
 }
