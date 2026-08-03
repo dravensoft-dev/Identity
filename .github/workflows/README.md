@@ -27,10 +27,11 @@ build              bun run build, then build:packages, then one cache entry
 pr-gate            the only required check
 ```
 
-**`build` is one job because the build is one thing.** `bun run build` runs seven steps in
+**`build` is one job because the build is one thing.** `bun run build` runs a chain of steps in
 order and the order is not decorative: the Tailwind preset compiles against the token CSS,
 and every layer's components read the class names that step writes. A build
 job per layer would have each of them redoing most of what the others did.
+[`../../scripts/build/README.md`](../../scripts/build/README.md) carries the chain.
 
 **The four names are on the test stage, where the layers are genuinely disjoint.** A gate
 belongs to exactly one of the five domains `check-all.mjs` sorts by, and the jobs partition

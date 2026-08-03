@@ -130,9 +130,12 @@ in a patch. It is also the reason prefixing Arena's utilities, if that is ever w
 would be an implementation change and not a break: without this paragraph it would be a break
 nobody announced.
 
-**The Tailwind layer is still not a third package.** It is data travelling one way into
-Angular, the single edge `check:layer-independence` declares `ALLOWED`, and no consumer of
-the Angular package ever imports it by name.
+**The Tailwind layer is still not a third package.** It is where a component's appearance is
+authored, and it is compiled away before anything ships: no consumer of either package imports
+it, or can name it. `check:layer-independence` declares `ALLOWED` and `EXEMPT` empty, and the
+one authorised edge lives in `ALLOWED_SPECIFIERS`: a page **linking** the compiled CSS under
+`frameworks/tailwind/consume/`, which is generated, identical whoever renders it, and read by
+nobody as a source.
 
 ## Assembly, not restructuring
 
@@ -157,15 +160,18 @@ fails the build rather than the consumer's editor. The entry point is
 directories, and it goes through that same compile, so the package exports
 `Index.generated.js` beside the declaration `tsc` emits for it.
 
-**Angular** goes through `ng-packagr` into Angular Package Format. That needs a staging tree,
-and the reason is worth stating because it is not obvious: ng-packagr infers `rootDir` from
-the entry file's directory and refuses any source outside it, while every `.variants.ts`
-imports a Tailwind manifest four directories up. So the layer is staged at
-`frameworks/angular/build/package/` with that slice of `frameworks/tailwind/` beside it, and each
-specifier is repointed to the depth it now sits at.
+**Angular** goes through `ng-packagr` into Angular Package Format. That needs a staging tree at
+`frameworks/angular/build/package/`, and the reason is narrower than it used to be: ng-packagr
+wants its own `ng-package.json`, `tsconfig.lib.json` and `package.json` at the root it compiles
+from, and writing those into the tracked layer would leave build files beside the source.
 
-**Angular's staging tree is the shape that coupling takes at build time**, and the section
-above is what it means for an adopter.
+**It stages nothing of another layer**, and that is the property to check rather than assume,
+because it was not always true: a `.variants.ts` used to import a Tailwind manifest four
+directories up, which ng-packagr refuses, since it infers `rootDir` from the entry file's
+directory. A component composes its own class names now, from a table emitted beside it, so
+nothing reaches out and the staging tree is a compiler's requirement rather than the shape of a
+coupling. `build-angular-package.mjs` fails on a staging run that copies zero files, so a layer
+that moved is loud rather than silently empty.
 
 ### What never ships
 

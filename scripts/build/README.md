@@ -19,11 +19,12 @@ bun install
 bun run build
 ```
 
-That runs the nine steps in order, the token layer first, because the Tailwind preset compiles
-against the token CSS:
+That runs the steps below in order, the token layer first, because the Tailwind preset compiles
+against the token CSS. The chain is the one `package.json`'s `build` script declares, and
+reading it there is how the count is derived rather than remembered:
 
 ```
-generate:tokens → generate:api → generate:playgrounds → generate:catalog → build:react-barrel →
+generate:tokens → generate:api → generate:playgrounds → generate:skills → build:react-barrel →
 build:tailwind → build:vendor → build:demos → build:angular-demo
 ```
 

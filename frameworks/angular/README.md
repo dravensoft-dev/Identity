@@ -219,8 +219,8 @@ component here meets.** A component whose DOM and CSS belong to somebody else si
 `check:dimensions` and `check:tailwind`, because a compiled third-party stylesheet is
 invisible to both; outside `check:compliance`, because there is no Arena render to verify;
 and outside the Angular arm of `check:api`, which skips a contract no layer implements
-there. A primitive is inside all three the day it is written. The argument in full is
-`docs/superpowers/specs/2026-07-23-8-api-contracts-design.md`.
+there. A primitive is inside every one of them the day it is written, which is the whole of
+the argument: a control Arena does not write is a control no gate here can read.
 
 ### CDK bridge: supported and verified
 
