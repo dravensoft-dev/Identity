@@ -52,8 +52,8 @@ not the utilities it reaches.
 ## The breakpoints are the one value spelled twice, and a script spells both
 
 `--bp-sm`, `--bp-md` and `--bp-lg` are read by JS through `getComputedStyle`, which is what
-a component needs, because a component styles itself with an inline style object and an
-inline style holds no media query. A consumer writing their own page CSS needs the other
+a component needs, because a component branches on the width of its own CONTAINER and no
+media query can ask about that. A consumer writing their own page CSS needs the other
 half: a threshold they can name instead of inventing one.
 
 They cannot be the same custom property. **A media query condition holds no `var()`**, and
@@ -104,8 +104,8 @@ Three shapes are legal, and nothing else. A `var()` into a token
 (`border-[length:var(--bw)]`). A **derivation** of tokens, meaning a `calc()`, `min()`,
 `max()` or `clamp()` whose operands are tokens, zeros and multipliers
 (`text-[length:calc(var(--avatar-md)*0.4)]`), which is the same rule
-`CLAUDE.md` states for an inline style: a dimension is a token *or a derivation
-of tokens*. And a single value in a unit the token layer does not model,
+`CLAUDE.md` states for a dimension anywhere in a framework layer: a token *or a
+derivation of tokens*. And a single value in a unit the token layer does not model,
 such as `max-w-[42ch]`, `max-w-[92vw]`, `w-[62%]` or `rotate-[120deg]`, because DTCG
 admits only `px` and `rem` in a dimension, so there is no token to reference and
 inventing one would be worse than the literal.

@@ -325,8 +325,9 @@ when it is `var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over one, zero, 
 the token layer does not model. A handful of sites are exempt by name with a reason each;
 read `EXEMPT` in `scripts/check/arena/check-dimension-literals.mjs` for the current set.
 
-Responsive branches are JS rather than media queries, because inline styles cannot hold one,
-and they measure the **container** via `useContainerWidth`, not the viewport. The hook owns a
+Responsive branches are JS rather than media queries, and they measure the **container** via
+`useContainerWidth`: a media query can only ask about the viewport, and the box that decides
+whether a component narrows is the one containing it. The hook owns a
 ref and returns it, and takes one when the caller already holds the box to measure, so an
 inner panel does not have to become a component to be measured. It reports `null` until it
 has measured, which is the wide branch: a component renders wide first and narrows when it

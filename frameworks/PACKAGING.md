@@ -62,13 +62,18 @@ because an adopter budgets for a dependency they were told about and resents one
 - **Phosphor** travels as a **peer dependency** of both packages. Every `icon` member is a
   class name the consumer supplies and a component renders, so the font has to be installed
   and the names have to be Phosphor's. `check:icons` holds the names Arena itself writes.
-- **Tailwind** travels as **two runtime dependencies of the Angular package**,
-  `tailwind-variants` and `tailwind-merge`, plus a slice of `frameworks/tailwind/` staged
-  beside the layer. Every Angular component's appearance is a class string resolved from the
-  shared recipe layer through the configured `tv`, so the recipes are not swappable for
-  another styling system without rewriting every component. The React layer styles itself
-  with inline style objects and carries neither dependency, which is the one place the two
-  packages genuinely differ.
+- **Tailwind** travels as **two runtime dependencies of both packages**, `tailwind-variants`
+  and `tailwind-merge`. Every component's appearance, in either layer, is a class string
+  resolved from the shared recipe layer through the configured `tv`, so the recipes are not
+  swappable for another styling system without rewriting every component, and the compiled
+  sheet inside `arena.css` is what those classes resolve against.
+
+  What differs between the two packages is how the recipe reaches them, and it is an assembly
+  detail rather than a second coupling. The Angular package stages a slice of
+  `frameworks/tailwind/` beside the layer and rewrites each specifier to reach it; the React
+  package stages none, because its manifest modules and its configured `tv` are emitted into
+  the React layer itself, so a component's import crosses no boundary and the layer compiles
+  with no `rootDir` outside it.
 
 **What the compiled `Utilities.generated.css` saves is the BUILD, not the coupling.** It
 ships as `css/utilities.css`, so an adopter who does not run Tailwind never compiles

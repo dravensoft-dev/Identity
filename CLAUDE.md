@@ -81,10 +81,10 @@ the consuming project writes, and the `arena-theme` command each package ships t
 the one stylesheet a package cannot carry. **Two couplings are part of the adoption contract
 and are stated as such**: Phosphor for iconography, a peer dependency in both packages and
 never a bundled asset, and Tailwind, whose compiled sheet **both** packages carry inside
-`arena.css`, for different amounts: Angular's whole appearance is a class string from the
-shared recipe layer, whose `tailwind-variants` and `tailwind-merge` are runtime dependencies of
-that package; React takes it for its `@layer base`, **which is not optional and whose absence
-was silent**. What the compiled utility sheet saves an adopter is the BUILD, not the coupling. **`dist/` is git-ignored and six gates skip a directory of that name**, because
+`arena.css` for the same reason: the recipe's class string, which both layers render, resolves
+against it, so `tailwind-variants` and `tailwind-merge` are runtime dependencies of both. It
+also carries the `@layer base` a form control needs, **which is not optional and whose absence
+was silent**. What it saves an adopter is the BUILD, not the coupling. **`dist/` is git-ignored and six gates skip a directory of that name**, because
 it puts a copy of each layer inside the tree they walk; the exclusion is asserted in each
 gate's own suite. Both packages are **live on npm**, **published by a workflow** over OIDC, one
 per layer that changed, so the two sit at different versions whenever a release left one alone;
