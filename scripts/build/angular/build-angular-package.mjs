@@ -121,9 +121,6 @@ export function buildAngularPackage(root = repoRoot) {
     { from: 'frameworks/angular/theme/arena-cdk.css', to: 'css/arena-cdk.css' },
   ], root)) written.push(join(dist, to));
   written.push(join(dist, 'arena.css'));
-  written.push(copy(join(root, 'frameworks/tailwind/Theme.css'), dist, 'css/theme-preset.css'));
-  written.push(copy(join(root, 'frameworks/tailwind/Animations.css'), dist, 'css/animations.css'));
-  written.push(copy(join(root, 'frameworks/tailwind/Numerals.css'), dist, 'css/numerals.css'));
 
   for (const rel of copyCli(dist, root)) written.push(join(dist, rel));
 

@@ -1,6 +1,6 @@
 Arena surface container, the hairline border on the base surface scale, with an
 optional header. Standalone, `OnPush`, signal inputs. Styling is the sibling
-`Card.variants.ts` recipe, read from `Card.manifest.json` in the shared Tailwind
+`Card.variants.ts` table, compiled from `Card.manifest.json` in the shared design
 layer; the component carries no CSS classes of its own. **The root slot is NOT host-bound**, and that is
 forced rather than chosen: `click` is an output whose name is also a native DOM event, and Angular
 installs both a DOM listener and an output subscription for such a name, so a host that both

@@ -4,7 +4,7 @@ serves sign-in, "check your inbox", "this link expired" and two-factor entry. St
 the sibling `UnauthCard.variants.ts` recipe.
 
 ```html
-<div class="flex min-h-screen items-center justify-center p-gutter">
+<div style="display:flex;min-height:100vh;align-items:center;justify-content:center">
   <arena-unauth-card eyebrow="Delivery Console" title="Sign in">
     <arena-app-logo brand name="Draven" dim="soft" size="md">
       <img src="/assets/your-mark.svg" alt="" />

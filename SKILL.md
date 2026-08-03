@@ -97,10 +97,11 @@ than opened from `file://`.
 
 **Production code**: use the component library for the consumer's framework, import from
 `@dravensoft/arena-react` or `@dravensoft/arena-angular`, and follow the prompts. **Put no class
-of your own on an Arena component**, and write no rule targeting one. A component renders the
-class string of the recipe its surface is described by, so a rule of yours can reach it by
-specificity; nothing stops you and nothing supports you either, because no contract names a
-class and a slot may be renamed in any release. Re-skin through `arena.config.json`, which is
+of your own on an Arena component**, and write no rule targeting one. A component renders
+`arena-<component>__<slot>` class names, so a rule of yours can reach one by specificity;
+nothing stops you and nothing supports you either. The name reads like a BEM surface somebody
+meant you to target and it is not one: it is compiler output, no contract names it, and a slot
+may be renamed in any release. Re-skin through `arena.config.json`, which is
 what it is for. Content you draw yourself is yours, styled through the same tokens.
 
 ## Invoked with no other guidance

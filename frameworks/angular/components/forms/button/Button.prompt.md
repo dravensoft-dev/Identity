@@ -20,7 +20,7 @@ already knows how to focus, activate and disable.
 - `loading` implies `disabled`: it swaps the leading icon for a spinner and blocks activation,
   so there is no need to set both. The spin **slows** under `prefers-reduced-motion` rather
   than stopping, because a frozen spinner reads as a hung process; that answer comes from the
-  `arena-btn-spin` utility in the Tailwind layer, not from this component.
+  shared design layer, not from this component.
 - `icon` and `iconRight` are Phosphor class-name strings Arena draws, never slots. That is the
   single-icon convention, and it is why this component projects a label and nothing else.
 - Set `type` explicitly when the button sits in a form. It defaults to `button` on purpose: a

@@ -39,7 +39,8 @@ clone has none of them:
 | `frameworks/react/**/*.generated.js`, one per component and demo entry source | every React demo page; `check:demos` |
 | `frameworks/tailwind/components/**/*.manifest.generated.ts`, one per `<Name>.manifest.json` | every Angular `<Component>.variants.ts`; `check:tailwind-generated` |
 | `frameworks/tailwind/Breakpoints.generated.css` | `Theme.css` imports it, so `build:tailwind` fails outright without it; `check:tokens` |
-| `frameworks/tailwind/Utilities.generated.css` | every Tailwind and Angular specimen; `check:tailwind-generated` |
+| `frameworks/tailwind/Utilities.generated.css` | the oracle `check:style-parity` measures against; never published |
+| `frameworks/tailwind/components/**/*.styles.generated.css`, `Prelude`, `Preflight`, `Components` | every specimen and playground, and both packages |
 | `frameworks/angular/build/demo/` | the Angular demo pages; `check:angular-demos` |
 | `frameworks/**/*.demo.generated.html` and its entry, one per component per layer | the demo pages themselves; `check:playgrounds`, and `check:angular-demos` for the Angular half |
 

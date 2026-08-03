@@ -34,8 +34,9 @@ the box to measure is a different one, so a component whose responsive question 
 inner panel does not have to make that panel a component of its own. The injection context is
 required either way, and not because of the element: `DestroyRef` disconnects the observer and
 `afterNextRender` decides when there is a box to measure at all. For page CSS rather than a
-component, name the threshold with Tailwind's `sm:`, `md:` and `lg:`, which Arena emits from
-the same tokens.
+component, write the media query yourself against the same three thresholds Arena uses,
+480px, 768px and 1024px. A media query condition holds no `var()`, so there is no token form
+of them to import.
 
 **Do / Don't**
 - Exactly one `arena-page-head` per screen. It emits the `h1`, and a page with two

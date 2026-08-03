@@ -10,7 +10,7 @@ and this document is that one: **two npm packages a project installs with `bun a
 | package | assembled into | from |
 | --- | --- | --- |
 | `@dravensoft/arena-react` | `frameworks/react/dist/` | `frameworks/react/` |
-| `@dravensoft/arena-angular` | `frameworks/angular/dist/` | `frameworks/angular/` plus the slice of `frameworks/tailwind/` its recipes read |
+| `@dravensoft/arena-angular` | `frameworks/angular/dist/` | `frameworks/angular/` |
 
 ```bash
 bun run build               # the generated sources build:packages reads
@@ -53,56 +53,59 @@ equal specificity, so source order decides and the consumer's values win.
 renders, so the icons are a peer dependency in both packages. Bundling them would ship a
 font the consumer may already have and cannot swap.
 
-## Two couplings, and they are part of the contract
+## One coupling, and it is part of the contract
 
-**A package's appearance is Tailwind, the way its iconography is Phosphor.** Neither is an
-implementation detail a future version quietly swaps, and both are worth saying plainly,
-because an adopter budgets for a dependency they were told about and resents one they find.
+**A package's iconography is Phosphor.** It is not an implementation detail a future version
+quietly swaps, and it is worth saying plainly, because an adopter budgets for a dependency they
+were told about and resents one they find.
 
 - **Phosphor** travels as a **peer dependency** of both packages. Every `icon` member is a
   class name the consumer supplies and a component renders, so the font has to be installed
   and the names have to be Phosphor's. `check:icons` holds the names Arena itself writes.
-- **Tailwind** travels as **two runtime dependencies of both packages**, `tailwind-variants`
-  and `tailwind-merge`. Every component's appearance, in either layer, is a class string
-  resolved from the shared recipe layer through the configured `tv`, so the recipes are not
-  swappable for another styling system without rewriting every component, and the compiled
-  sheet inside `arena.css` is what those classes resolve against.
 
-  What differs between the two packages is how the recipe reaches them, and it is an assembly
-  detail rather than a second coupling. The Angular package stages a slice of
-  `frameworks/tailwind/` beside the layer and rewrites each specifier to reach it; the React
-  package stages none, because its manifest modules and its configured `tv` are emitted into
-  the React layer itself, so a component's import crosses no boundary and the layer compiles
-  with no `rootDir` outside it.
+**Tailwind is no longer one.** It is how Arena's CSS is *authored*, and it stops there: a
+manifest's class string is compiled through `@apply`, stripped of every Tailwind theme
+indirection, and emitted as plain declarations under Arena's own class names. Nothing a package
+ships names a Tailwind utility, and neither package declares a runtime dependency of any kind
+except `tslib`, which is Angular's own helper import. A project that runs its own Tailwind can
+declare whatever `--spacing` it likes and nothing of Arena's moves.
 
-**What the compiled `Utilities.generated.css` saves is the BUILD, not the coupling.** An
-adopter who does not run Tailwind never compiles anything and still gets the right rules; an
-adopter who does run Tailwind v4 imports the `@theme` preset beside it and compiles their own,
-which is smaller. Either way the class strings on the elements are Tailwind's, and a project
-that wants none of that wants a different design system.
+**That indirection is the reason the strip exists rather than an optimisation.** `@apply` emits
+`gap: calc(var(--spacing, var(--sp-1)) * 1.5)`, not the Arena token: the adopter's own
+`--spacing` on an unlayered `:root` wins, the fallback is never reached, and every component
+rescales with nothing in the DOM to point at. Compiling to CSS without stripping would move the
+collision from class names to custom properties rather than remove it.
 
-**It ships as two files, and the cut is where an adopter's own Tailwind would collide.**
-`splitCompiledSheet()` in `scripts/lib/tailwind/sheet-split.mjs` lifts the `@layer base` block
-out: `css/base.css` is Tailwind's preflight and nothing of Arena's, `css/utilities.css` is the
-theme and the utilities. A project that already runs Tailwind ships an equivalent preflight, so
-importing the one bundled file gave it a second copy of every rule in that one, with the same
-selectors and possibly different values; it can now take the utilities alone. **What that half
-carries is not optional and its absence was silent**: the `@layer base` is where the
-`font: inherit` a form control needs lives, so a package that shipped the utilities and not
-the preflight renders every control at the browser's own size and reports nothing. **Both halves
-repeat the layer declarations**, because `@layer properties;` is declared before the four-name
-order and a half that dropped it would sort Tailwind's own property fallbacks above everything.
-The halves are verbatim slices rather than a re-serialisation, which the paired suite asserts
-by reassembling them against the one file.
+**What ships is a tree, and an adopter picks their depth.** `css/prelude.css` carries the layer
+order, the `@property` registrations and the keyframes; `css/base.css` is Tailwind's preflight
+and nothing of Arena's; `css/components/<name>.css` is one component, and each imports the
+prelude itself, so importing one alone is safe; `css/components.css` is all of them.
+`arena.css` imports the token chain and then all of that, which is the zero-friction path.
 
-## The class string is not the API, and that is a versioning statement
+**The prelude is not optional and its absence is silent.** Without the `@property --tw-*`
+registrations, `border-style: var(--tw-border-style)` is invalid at computed-value time and
+every border disappears, and the `box-shadow` chain takes the focus ring with it. That is why a
+component sheet imports the prelude rather than documenting the dependency. The preflight is
+the same shape one level up: it is where the `font: inherit` a form control needs lives, so a
+package that shipped the components and not the preflight renders every control at the
+browser's own size and reports nothing.
 
-Every component renders the class string of the recipe its surface is described by, so it is
-in the DOM and a consumer's own rule reaches it by specificity. That is not a hole to be
-closed. It is what rendering classes means, and the alternative, an inline style object that
-beats every author rule short of `!important`, was worse in every way that matters. What has
-to be written down is the promise, because the observable thing and the promised thing are not
-the same thing.
+**A project that already runs Tailwind ships an equivalent preflight**, so it may import
+`css/components.css` alone instead of `arena.css` and avoid a second copy of every rule in it.
+Doing that makes the order yours to get right: the preflight must come before Arena's
+components.
+
+## The class name is not the API, and that is a versioning statement
+
+Every component renders `arena-<manifest>__<slot>` class names, so they are in the DOM and a
+consumer's own rule reaches them by specificity. That is not a hole to be closed. It is what
+rendering classes means, and the alternative, an inline style object that beats every author
+rule short of `!important`, was worse in every way that matters. What has to be written down
+is the promise, because the observable thing and the promised thing are not the same thing.
+
+**A name that reads like an API is not one.** `arena-badge__root--tone-error` looks like a BEM
+surface somebody meant you to target, and it is not: it is the compiler's output, and it is
+named for a human reading a devtools pane rather than for a consumer writing a selector.
 
 **No contract names a class.** `contracts/api/components/<Name>.json` states members, and
 `check:api` reads the implementations for those members and cannot see a class at all. Nothing
@@ -111,9 +114,9 @@ anything an adopter can rely on.
 
 So the policy is the short one: **a manifest may rename a slot, split it, merge it, re-order
 its classes or change which utility draws a value, in any release, and none of that is a
-breaking change.** It is an implementation moving. A consumer who wrote a rule against
-`.bg-base-200` on Arena's own element gets no deprecation and no warning, because there was
-never anything to deprecate.
+breaking change** even though a class name in the DOM moves with it. It is an implementation
+moving. A consumer who wrote a rule against `.arena-badge__root--tone-error` on Arena's own
+element gets no deprecation and no warning, because there was never anything to deprecate.
 
 What IS the API is the list every gate already holds: the members in `contracts/api/`, the
 symbols each package exports, the files under `css/`, and the shape of `arena.config.json`.
@@ -196,8 +199,8 @@ suite against a fixture holding exactly the file that would otherwise fail:
 marketplace, the README's artifact list and the tag. `baseManifest()` stamps it into both packages,
 so no manifest is ever hand-versioned and the two cannot drift apart.
 
-What makes a number a major is the API, and the class string is not part of it: see "The class
-string is not the API" above before treating a manifest edit as a break.
+What makes a number a major is the API, and a class name is not part of it: see "The class
+name is not the API" above before treating a manifest edit as a break.
 
 ## What `check:packages` holds
 

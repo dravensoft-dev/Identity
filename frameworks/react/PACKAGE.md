@@ -8,13 +8,18 @@ your tree in.
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
 
-**No CSS toolchain, and Phosphor is required.** The compiled utility sheet ships inside
-`arena.css`, so one import is the whole of it and you compile nothing. That sheet is what draws
-the components: each one renders the class string of the shared recipe its surface is described
-by, and the utilities those classes resolve to are in the file. It brings a browser base with
-it too: a form control that inherits nothing falls back to the browser's own 13.33px Arial, and
-a `<button>` styled that way is 20% off in every measurement that matters. Arena's other layer
-reads the same file, so the two render one component one way.
+**No CSS toolchain, no runtime dependency, and Phosphor is required.** Every component's CSS
+ships compiled inside `arena.css`, so one import is the whole of it and you compile nothing.
+The rules are written against Arena's own class names and read Arena's own tokens, and against
+nothing else: no utility class and no custom property from any other framework appears in this
+package, so a project running its own utility framework cannot collide with it in either
+direction. It brings a browser base with it too:
+a form control that inherits nothing falls back to the browser's own 13.33px Arial, and a
+`<button>` styled that way is 20% off in every measurement that matters. Arena's other layer
+reads the same rules, so the two render one component one way.
+
+**You can pay for only what you render.** `css/components/<name>.css` is one component and
+imports the prelude it needs itself, so importing one alone is safe.
 
 Because the components render classes, a rule of yours can reach them by specificity. Nothing
 stops you, and nothing supports you either: a class is not part of the API, no contract names
@@ -169,23 +174,33 @@ import './arena.generated.css';
 
 `arena.css` carries two halves of the compiled sheet, and they are separate files so you can
 take one without the other. `css/base.css` is the stock browser reset and nothing of Arena's:
-`box-sizing`, the margin and padding zeroing, `font: inherit` on form controls. `css/utilities.css`
-is Arena's theme and the utilities every component's class string resolves against.
+`box-sizing`, the margin and padding zeroing, `font: inherit` on form controls.
+`css/components.css` is every component Arena draws, and `css/components/<name>.css` is one
+of them.
 
 If your own build already emits that reset, importing `arena.css` gives you a second copy of
 every rule in it, with the same selectors and possibly different values, and the cascade order
 decides which wins. Import the halves instead and skip the one you already have:
 
 ```js
-import '@dravensoft/arena-react/css/utilities.css';
+import '@dravensoft/arena-react/css/components.css';
 import './arena.generated.css';
 ```
 
-Two things become yours when you do that. **Order**, because nothing composes it for you: the
-utilities have to come before your own rules if you want yours to win. And **the preflight
-itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
+Two things become yours when you do that. **Order**, because nothing composes it for you:
+Arena's components have to come before your own rules if you want yours to win. And **the
+preflight itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
 a control falls back to the browser's 13.33px Arial and every control in the library is 20%
 off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
+
+## One stylesheet gives you a treatment, not a component
+
+`css/numerals.css` holds `.arena-num`: the mono face and `tabular-nums`, and no colour. Put it
+on a figure you draw yourself, in a definition list, a KPI or a cart line, and a column of them
+aligns by digit the way a table's does.
+
+`arena.css` already imports it, so the separate file is only for an app importing the halves
+by hand.
 
 ## Use it
 

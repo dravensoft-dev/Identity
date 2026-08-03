@@ -496,9 +496,9 @@ a test asserting it would pass identically against a perfect trap and against no
 interior is `check:focus-trap`'s: real Chromium over each declared page, one real Tab press per
 stop, one page per layer that binds the pattern.
 
-**A component is self-contained, and no layer targets another's markup.** Both layers render
-the shared recipe's class string, each reaching it in its own idiom, and what survives inline
-is a value computed at runtime from data or a measurement. `check:appearance` fails one that
+**A component is self-contained, and no layer targets another's markup.** Both layers compose
+their own `arena-<manifest>__<slot>` class names, which the manifest's class string is compiled
+into, and what survives inline is a value computed at runtime from data or a measurement. `check:appearance` fails one that
 writes its appearance by hand, and `HAND_DRAWN`, in
 `scripts/lib/tailwind/manifest-surfaces.mjs`, names the three that still do with a reason
 each. Both README files carry the layer's shape.
@@ -597,10 +597,8 @@ run, and each layer's knob model to the other's.
 
 **The layers are peers, and no layer is any other's authority.** A file under
 `frameworks/<A>` may not name layer B nor any of B's source files, by import or in prose;
-`check:layer-independence` fails one that does, and `EXEMPT` is empty. **One edge is
-`ALLOWED`**: an Angular `<Component>.variants.ts` imports the generated
-`<Component>.manifest.generated` through `frameworks/tailwind/Tv.ts`, because a manifest is
-data travelling one way. Where two layers answer the same question differently, the contract
+`check:layer-independence` fails one that does, and `EXEMPT` and `ALLOWED` are both empty:
+**no edge between two framework layers is authorised at all.** Where two layers answer the same question differently, the contract
 is what makes the answers comparable: a cross-layer *gate* under `scripts/check/arena/`
 reading several layers is that mechanism rather than an instance of the coupling, which is why
 `scripts/` is outside the gate's scope. A fact only recorded as "matching the other layer" is
@@ -620,8 +618,8 @@ harness plus the suites belonging to no one component under `test/`.
 `frameworks/react/README.md` names what sits at the layer root and why each is there.
 
 `frameworks/angular/` holds the theme bridge (`theme/`), the Phosphor icon manifest (`icons/`),
-and standalone `OnPush` primitives styled by the shared `frameworks/tailwind/` recipes through
-the configured `tv`. Count the components with
+and standalone `OnPush` primitives styled by the class names the shared `frameworks/tailwind/`
+manifests compile into. Count the components with
 `find frameworks/angular/components -mindepth 2 -maxdepth 2 -type d | wc -l`. A primitive whose
 behaviour only a browser can show is opened through its generated `<Component>.demo.generated.html`,
 and those pages carry **no** `@dsCard`. [`frameworks/angular/README.md`](./frameworks/angular/README.md)
@@ -634,12 +632,14 @@ manifests), authored once because the token→utility mapping is pure CSS. Count
 root, and the three files a component keeps together.
 
 **The Tailwind layer derives every utility from an existing token and introduces no new hex and
-no new value**: add the token first, then reference it. Four gates hold it, `check:tailwind`,
-`check:coverage`, `check:arbitrary` and `check:radius`, and `frameworks/tailwind/README.md`
+no new value**: add the token first, then reference it. Six gates hold it, `check:tailwind`,
+`check:coverage`, `check:arbitrary`, `check:radius`, `check:component-css` and
+`check:style-parity`, and `frameworks/tailwind/README.md`
 states what each reaches and what none of them does.
 
 `bun run check` runs every gate plus the test suite, without stopping at the first failure.
-**Five gates are not runtime-portable**: `check:cards`, `check:focus-trap` and `check:parity`
+**Six gates are not runtime-portable**: `check:cards`, `check:focus-trap`, `check:parity`,
+`check:playgrounds` and `check:style-parity`
 need a headless browser, `check:vendor` needs `Bun.build`, `check:demos` needs `Bun.Transpiler`. Where a
 dependency is missing the gate exits 2 and is reported `SKIP`, **except that the repository
 declares itself strict**, so it fails instead. Every environment variable they read is declared

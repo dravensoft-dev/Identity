@@ -95,8 +95,8 @@ rather than a gate.
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/README.md) | 17 | two or more layers at once, or the repository root |
-| [`tailwind/`](./tailwind/README.md) | 6 | the shared Tailwind layer |
+| [`arena/`](./arena/README.md) | 21 | two or more layers at once, or the repository root |
+| [`tailwind/`](./tailwind/README.md) | 8 | the shared Tailwind layer |
 | [`angular/`](./angular/README.md) | 4 | the Angular layer |
 | [`core/`](./core/README.md) | 5 | `contracts/` and `assets/` only |
 | [`react/`](./react/README.md) | 4 | the React layer |

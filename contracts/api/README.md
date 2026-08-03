@@ -301,7 +301,7 @@ the rest, and a manifest, which has no composition and types those buttons out a
 slots, is licensed for `hover` by `Button`'s declaration through the gate's `MANIFEST_COVERS`.
 
 **Angular is structurally unaskable here**, and that is worth stating so nobody adds a third
-half: an Angular primitive realises an affordance by rendering the manifest's own class, so
+half: an Angular primitive realises an affordance by rendering the class the manifest compiles to, so
 asking the layer would be asking the manifest.
 
 ### The binding table

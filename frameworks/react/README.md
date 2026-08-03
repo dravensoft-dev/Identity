@@ -21,27 +21,34 @@ same problem differently, the contract is what makes the two answers comparable,
 implementation is the other's record. `bun run check:layer-independence` fails a file here that
 cites a sibling layer, by import or in prose.
 
-## Components render their manifest's class string
+## Components compose their own class names
 
-Each component draws its appearance from the manifest that describes its surface, through
-`tv()` and the module generated beside it. Both are emitted **into this layer**, so the import
+Each component draws its appearance from the manifest that describes its surface, but never
+from that manifest's class string: the string is compiled into a stylesheet of
+`arena-<manifest>__<slot>` rules, and what a component composes at runtime is those names.
+The table and the twenty-line composer are both emitted **into this layer**, so the import
 crosses no boundary:
 
 ```tsx
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Tag.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Tag.classes.generated.ts';
 
-const tagStyles = tv(manifest);
+const tagStyles = arenaStyles(manifest);
 const styles = tagStyles({ tone, disabled });
 <span className={styles.root()}>
 ```
 
 `components/display/tag/Tag.tsx` is the reference shape. A compound child reaches the parent's
-manifest the same way, by importing `tv` and the parent's generated module rather than a
+table the same way, by importing the composer and the parent's generated module rather than a
 sibling component's exported recipe, so no component depends on another's module:
 `components/display/calendar-event/CalendarEvent.tsx` is that shape.
 
-Both layers render the same recipe, and neither is the other's authority: the manifest is.
+**Nothing here merges classes, and nothing needs to.** A variant is additive and its rule is
+emitted after the base at equal specificity, so source order decides; that is what
+`tailwind-variants` and `tailwind-merge` used to do at render time, and both left the package
+with this arrangement.
+
+Both layers compose the same names, and neither is the other's authority: the manifest is.
 Where a manifest and a component disagreed, the manifest won, which is how `Card` came to draw
 a focus ring rather than an outline. `check:appearance` holds the arrangement, and
 `check:parity` renders the two pages and compares them.

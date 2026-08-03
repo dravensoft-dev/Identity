@@ -162,11 +162,10 @@ extension it is itself a failure.
 
 **Directories are `kebab-case` and lowercase; a file name begins with a capital, and a
 multi-word stem is `PascalCase` with hyphens removed; a secondary dotted segment stays
-`lowerCamelCase`.** So the layer root's eight source files are `Tv.ts`,
-`ManifestClasses.js`, `Theme.css`, `Utilities.generated.css`, `Animations.css`, `Numerals.css`,
-`Specimen.css` and
-`Specimen.js`. This file sits beside them and complies as it stands, `README` being a
-capital-initial name like any other, and a component's three files sit together in one
+`lowerCamelCase`.** List the layer root's own source rather than trusting a count here, with
+`ls frameworks/tailwind/*.ts frameworks/tailwind/*.js frameworks/tailwind/*.css | grep -v generated`.
+This file sits beside them and complies as it stands, `README` being a
+capital-initial name like any other, and a component's files sit together in one
 directory:
 
 ```
@@ -261,17 +260,20 @@ a variant *name* that collides with a utility (`visible`, `block`, `line`, `fixe
 accumulates across the set; `BulkActionBar` hit it with `visible` and the layer settled
 on `open` as the shared name for a shown/hidden boolean. Name variants with that in mind.
 
-**`compoundVariants` are unusable here**, for two independent reasons: the
-`classesFor()` helper every specimen uses throws on a manifest carrying them by design,
-and the generated `manifest.generated.ts`'s `as const` makes the array a readonly tuple that
-`tailwind-variants` rejects, failing `check:angular`. Model the same thing as a plain
-boolean variant.
+**`compoundVariants` work and one manifest uses them.** `PageHead` needs a class that depends
+on two variants at once, `classesFor()` resolves them after every single-variant slot, and
+`arenaStyles` applies one only when every condition it names holds. They compile to a
+`--cv<n>` class in declaration order. Prefer a plain boolean variant where one will do: a
+compound is harder to read and the emitted name says less.
 
-## Three consumption paths
+## What a manifest is compiled into
 
-- **Raw `className`:** read `slots`/`variants` and concatenate the strings yourself.
-- **`tailwind-variants`:** feed the manifest straight into `tv({ slots, variants, defaultVariants })`.
-- **`cva`:** map `variants`/`defaultVariants` onto a `cva` config.
+A manifest is authored as Tailwind and never shipped as Tailwind. `bun run build:tailwind`
+translates each slot and each variant branch into an `@apply` rule under an
+`arena-<manifest>__<slot>` class name, compiles the lot, strips Tailwind's own theme
+indirection back to the Arena token behind it, and cuts the result into one stylesheet per
+component plus the prelude they share. What a component composes at runtime is the class
+names, never the utilities.
 
 ## Invariants the manifests must reproduce
 

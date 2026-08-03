@@ -8,14 +8,14 @@ component, and shipped in Angular Package Format.
 are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
 that file into the stylesheet Arena reads.
 
-**You do not need to RUN Tailwind, and the appearance is Tailwind either way.** The compiled
-utility sheet ships with the package, so one `@import` is enough and you compile nothing; if
-your app already runs Tailwind v4, the `@theme` preset is here too and you compile a smaller
-sheet from it. What is fixed is that every component's appearance is a class string from a
-shared recipe layer, resolved through `tailwind-variants` and `tailwind-merge`, which travel
-as runtime dependencies of this package. **This is a coupling and not a detail**, the way
-Phosphor is for iconography: a project that wants a different styling system underneath wants
-a different design system.
+**You do not need to run Tailwind, and running your own cannot collide with this one.** Every
+component's CSS ships compiled, so one `@import` is enough and you compile nothing. The rules
+are written against Arena's own class names and read Arena's own tokens: Tailwind is how they
+were authored and nothing more, so a `--spacing` of your own moves nothing here. The only
+runtime dependency this package declares is `tslib`.
+
+**You can pay for only what you render.** `css/components/<name>.css` is one component and
+imports the prelude it needs itself, so importing one alone is safe.
 
 ## It works with the repository, and that is the point
 
@@ -167,22 +167,21 @@ There are two ways out of importing a second copy of what you already have, and 
 different things.
 
 The bundled sheet is two files, so you can take one without the other. `css/base.css` is
-Tailwind's preflight and nothing of Arena's; `css/utilities.css` is Arena's theme and the
-utilities every component's class string resolves against. Your project already ships a
+Tailwind's preflight and nothing of Arena's; `css/components.css` is every component Arena
+draws, and `css/components/<name>.css` is one of them. Your project already ships a
 preflight, so import the utilities alone:
 
 ```css
-@import '@dravensoft/arena-angular/css/utilities.css';
+@import '@dravensoft/arena-angular/css/components.css';
 @import './arena.generated.css';
 @import '@dravensoft/arena-angular/css/arena-cdk.css';
 ```
 
-Or compile the utilities yourself: import
-`@dravensoft/arena-angular/css/theme-preset.css` instead of the bundled sheet, and point a
-`@source` at the package.
+There is nothing to compile yourself: no file in this package carries a Tailwind class, so
+pointing a `@source` at it would produce an empty sheet.
 
-Two things become yours either way. **Order**, because nothing composes it for you: the
-utilities have to come before your own rules if you want yours to win. And **the preflight
+Two things become yours either way. **Order**, because nothing composes it for you: Arena's
+components have to come before your own rules if you want yours to win. And **the preflight
 itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
 a control falls back to the browser's 13.33px Arial and every control in the library is 20%
 off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
@@ -312,13 +311,8 @@ is not curated, and carries no compatibility promise.
 on a figure you draw yourself, in a definition list, a KPI or a cart line, and a column of them
 aligns by digit the way a table's does.
 
-It is already inside the bundled utility sheet, so importing the file separately is only for an
-app compiling its own utilities from the `@theme` preset.
-
-It carries no ink on purpose. A table column's `mono` is this treatment **plus** the gold, and
-the gold is what stops the treatment travelling: gold reads as an identifier, so a sale total in
-gold inside a card says the wrong thing.
-
+`arena.css` already imports it, so the separate file is only for an app importing the halves
+by hand.
 ## What is in the package
 
 Every component in Angular Package Format, the shared Tailwind recipes they read, the

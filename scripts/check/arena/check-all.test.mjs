@@ -21,6 +21,22 @@ test('GATES lists every check gate', () => {
   );
 });
 
+test('the domain table in scripts/check/README.md counts what GATES holds, or it goes quietly stale', () => {
+  const readme = readFileSync(join(repoRoot, 'scripts', 'check', 'README.md'), 'utf8');
+  const counted = {};
+  for (const { file } of GATES) {
+    const domain = file.split('/')[0];
+    counted[domain] = (counted[domain] ?? 0) + 1;
+  }
+  for (const [domain, n] of Object.entries(counted)) {
+    const row = new RegExp(`\\[\`${domain}/\`\\]\\([^)]*\\) \\| (\\d+) \\|`);
+    const found = row.exec(readme);
+    assert.ok(found, `the domain table names no ${domain}/ row`);
+    assert.equal(Number(found[1]), n,
+      `the table says ${domain}/ holds ${found[1]} gate(s) and GATES holds ${n}`);
+  }
+});
+
 test('every gate in the array is also an npm script -- a gate a reader cannot invoke by name is the shape check:text-contrast shipped in', () => {
   const scripts = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')).scripts;
   for (const { name } of GATES) {

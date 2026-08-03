@@ -19,17 +19,17 @@ changes            which layers this diff reaches
    |
 build              bun run build, then build:packages, then one cache entry
    |
-   +-- test-core       always            20 gates + the suites under scripts/
+   +-- test-core       always            26 gates + the suites under scripts/
    +-- test-react      if react           4 gates + the two React invocations
    +-- test-angular    if angular         4 gates + the suites off the ngc emit
-   +-- test-tailwind   if tailwind        6 gates
+   +-- test-tailwind   if tailwind        8 gates
    |
 pr-gate            the only required check
 ```
 
 **`build` is one job because the build is one thing.** `bun run build` runs seven steps in
 order and the order is not decorative: the Tailwind preset compiles against the token CSS,
-and every `.variants.ts` in the Angular layer imports a manifest that step writes. A build
+and every layer's components read the class names that step writes. A build
 job per layer would have each of them redoing most of what the others did.
 
 **The four names are on the test stage, where the layers are genuinely disjoint.** A gate

@@ -11,14 +11,13 @@ Arena support for an Angular 20+/Tailwind-v4 app. Two kinds of artifact:
 
 ## This layer stands on the contracts alone
 
-**It names no other framework layer, and imports from exactly one.** What a component is and
+**It names no other framework layer and imports from none.** What a component is and
 what members it presents is `contracts/api/components/<Name>.json`; what it must do is
-`contracts/behaviour/`; what a value is, `contracts/design/`. The single edge to another layer
-is styling: a `<Component>.variants.ts` imports the generated
-`<Component>.manifest.generated` beside its manifest in `frameworks/tailwind/`, through the
-configured `tv` in `frameworks/tailwind/Tv.ts`. A manifest is data, meaning slots, variants and class
-strings, so nothing travels the other way. `bun run check:layer-independence` holds both
-halves: that edge is `ALLOWED` with its reason, and everything else fails.
+`contracts/behaviour/`; what a value is, `contracts/design/`. Styling used to be the one
+exception, a `<Component>.variants.ts` reaching four directories up into `frameworks/tailwind/`
+for a manifest and a recipe. It is not one any more: the class names a component composes are
+emitted into this layer beside the component, the way the contract types and the script tokens
+are. `bun run check:layer-independence` holds it, and `ALLOWED` is empty.
 
 **Bridge (foundation), to bring Arena's tokens, icons and theming into an existing Angular app:**
 - `theme/arena-tailwind.css`: one import that brings Arena's tokens (including
@@ -46,7 +45,7 @@ ships, so every one of them is in reach of `check:dimensions`, `check:tailwind`,
 else's library is in reach of none of them. Each lives in
 `components/<category>/<component-kebab>/` and is a
 quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
-`<Component>.variants.ts` (a `tailwind-variants` recipe built with the shared `tv`),
+`<Component>.variants.ts` (the class-name table, composed by the shared `arenaStyles`),
 `<Component>.prompt.md` (usage and Do/Don't), and an `index.ts` barrel.
 `components/display/tag/` is the
 reference shape. **A directory with no `<Component>.variants.ts` is one of two declared cases
@@ -151,24 +150,23 @@ at mount and answers a different question. `IMPERATIVE_HANDLES` in
 class at all, it names these two and no others with a reason each, and any other public method
 still fails the gate as an undeclared surface.
 
-A primitive defines no styling of its own. Its recipe lives in
-`frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`,
-under the same category, and reaches the
-component through the shared `tv`:
+A primitive defines no styling of its own. Its appearance is authored one layer over, as
+`frameworks/tailwind/components/<category>/<component-kebab>/<Component>.manifest.json`, and
+compiled from there into a stylesheet and a table of the class names that stylesheet defines.
+Both are emitted into THIS layer, beside the component, so nothing here reaches out:
 
 ```ts
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/tag/Tag.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Tag.classes.generated';
 
-export const tagStyles = tv(manifest);
+export const tagStyles = arenaStyles(manifest);
 ```
 
-The manifest import is extensionless, and it names a stem nothing else claims. An
-extensionless import of `Tag.manifest` would resolve to the `.ts` **only because** TS and bun
-probe `.ts` before `.json`, so a bundler configured `.json`-first would silently widen every
-variant back to `string`. The `.generated` infix is what removes the ambiguity: the build
-output is `Tag.manifest.generated.ts`, the source is `Tag.manifest.json`, and no probe order
-can confuse one for the other.
+The import is extensionless and names a stem nothing else claims. An extensionless import of
+`Tag.classes` would resolve to the `.ts` **only because** TS and bun probe `.ts` before
+`.json`, so a bundler configured `.json`-first could resolve something else entirely. The
+`.generated` infix is what removes the ambiguity, and it says the same thing to a reader: this
+file is written by `bun run build:tailwind` and editing it is editing the wrong file.
 
 ## Conventions
 
