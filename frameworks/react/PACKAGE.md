@@ -308,8 +308,9 @@ click with no modifier, false for every modified click, middle click and context
 you draw an anchor of your own beside Arena's and want the same split.
 
 Every other symbol reaching the root is an internal of this layer, exported because the barrel
-is generated wholesale rather than curated, and carries no compatibility promise. The set is
-`ROOT_TS` in `scripts/build/react/build-react-package.mjs` in the repository.
+is generated wholesale rather than curated, and **carries no compatibility promise**. Nothing
+lists that set for you, and the rule is the safe one to follow instead: what this page names is
+what you may lean on, and a symbol you found by autocomplete is not.
 
 ## What is in the package
 

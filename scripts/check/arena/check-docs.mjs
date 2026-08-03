@@ -94,11 +94,22 @@ export const BRANCH_SWITCH = {
     + 'choice and has nobody left to redirect.',
 };
 
+export const CONSUMER_PACKAGE_PAGE = 'PACKAGE.md';
+
 export function isConsumerDocument(repoRelativePath) {
   if (Object.hasOwn(BRANCH_SWITCH, repoRelativePath)) return false;
   if (repoRelativePath.endsWith(CONSUMER_LAST_STOP)) return true;
+  if (basename(repoRelativePath) === CONSUMER_PACKAGE_PAGE && repoRelativePath.startsWith(CONSUMER_TREE)) return true;
   return basename(repoRelativePath) === CONSUMER_INDEX && repoRelativePath.startsWith(CONSUMER_TREE);
 }
+
+export const CONSUMER_OWN_OUTPUT = new Map([
+  ['arena.generated.css',
+   "the stylesheet the CONSUMER generates, in their own project, by running the arena-theme "
+   + 'command each package ships. It carries the .generated. infix and is nothing this repository '
+   + 'builds, so the build-product rule below reads it backwards: a reader of the npm page has '
+   + 'this file and is being told to make it.'],
+]);
 
 export const CONTRIBUTOR_PATHS = [
   [/\bscripts\/[\w./-]+/g, 'a path under scripts/, which no consumer of Arena has'],
@@ -139,19 +150,28 @@ export const RULE_OWNERS = [
       + 'the router tells them not to open.',
   },
   {
-    phrase: 'R4 violation',
+    phrase: /\bR[1-6]\b/,
     owner: CONTRIBUTOR_BRANCH,
     reason:
-      'one of the six derived rules, by number. It reached a published .d.ts through a contract '
-      + 'description once, so a consumer read it on hover with no way to learn what R4 is. State '
-      + "the consequence instead: a platform's own event type never travels in a payload.",
+      'one of the six derived rules, cited by number. A rule number is a pointer into a rulebook '
+      + 'the consumer branch never hands anybody, and it reaches a published .d.ts whenever it is '
+      + "written into a contract description. State the consequence instead: \"a platform's own "
+      + 'event type never travels in a payload\" says the same thing to a reader who has no R4. '
+      + 'Registered as the family rather than as one number, because the first version of this '
+      + 'entry named R4 alone and twenty-two live instances of R6 sat behind it.',
   },
   {
-    phrase: 'check:api',
+    phrase: /\bcheck:[a-z-]+/,
     owner: CONTRIBUTOR_BRANCH,
-    reason: 'a gate, which nobody consuming a package can run and which no prompt should cite.',
+    reason:
+      'a gate. Nobody consuming a package has the repository that runs one, so citing it as the '
+      + 'reason for an API decision explains nothing and names a thing the reader cannot look at.',
   },
 ];
+
+export function statesRule(text, phrase) {
+  return typeof phrase === 'string' ? text.includes(phrase) : phrase.test(text);
+}
 
 export function ruleOwnerProblems(root = ROOT, owners = RULE_OWNERS) {
   const problems = [];
@@ -161,7 +181,7 @@ export function ruleOwnerProblems(root = ROOT, owners = RULE_OWNERS) {
     const branch = isConsumerDocument(rel) ? CONSUMER_BRANCH : CONTRIBUTOR_BRANCH;
     const text = readFileSync(path, 'utf8');
     for (const { phrase, owner, reason } of owners) {
-      if (!text.includes(phrase)) continue;
+      if (!statesRule(text, phrase)) continue;
       if (branch === owner) { met.add(phrase); continue; }
       problems.push(
         `${rel}: states "${phrase}", a ${owner} rule, on the ${branch} branch. `
@@ -310,6 +330,7 @@ export function consumerBranchProblems(root = ROOT) {
     const source = readFileSync(path, 'utf8');
     for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
       for (const hit of source.match(pattern) ?? []) {
+        if ([...CONSUMER_OWN_OUTPUT.keys()].some((name) => name.startsWith(hit))) continue;
         problems.push(
           `${rel}: cites "${hit}", ${reason}. A consumer document is a stop on the way to writing `
           + 'a component: state the consequence here, and leave the reason on the contributor branch',

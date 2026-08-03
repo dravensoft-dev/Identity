@@ -59,7 +59,7 @@ three.
 
 Every component declares, in every layer, beside its own source:
 
-- React: `frameworks/react/components/<group>/<Name>.behaviour.json`
+- React: `frameworks/react/components/<category>/<component-kebab>/<Name>.behaviour.json`
 - Angular: `frameworks/angular/components/<category>/<component-kebab>/<Component>.behaviour.json`
 - Angular, absent: one entry in `frameworks/angular/BehaviourDelegated.json`,
   because a component the layer does not have has no directory to sit beside. That

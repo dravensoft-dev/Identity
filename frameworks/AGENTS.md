@@ -56,9 +56,11 @@ a gate with nothing to check rather than something to fail.
    only where the tree tracks it.
 
 **Two literal counts move outside the layer you touched, and the layer's own suite cannot see
-either.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts `reactComponents('.').length`
-by literal value, so a new component **directory** moves it by one and the assertion follows in
-the same commit. Verify with the merged process, the args array in `testStep()`, because
+either.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts an inventory **per layer** by
+literal value, one for React and one for Angular, so a new component **directory** moves the one
+for that layer and a component landing in both moves both. Find them with
+`grep -n 'found.length' scripts/lib/arena/behaviour-contracts.test.mjs` rather than assuming
+there is one, and move them in the same commit. Verify with the merged process, the args array in `testStep()`, because
 `bun test frameworks/react` never matches `scripts/` and reports green over a tree whose run is
 red.
 
@@ -72,9 +74,9 @@ stale one and an untracked one.
 ## What each layer's shape is
 
 **React is a trio, in the component's own directory**,
-`react/components/<category>/<component-kebab>/`: `X.tsx` (implementation and its exported
-`XProps`), `X.prompt.md` (its prose, its examples and its Do/Don't around a generated member
-table) and a fixture at `demos/X.demo.json`. **The layer carries no hand-written `.d.ts`**: the
+`react/components/<category>/<component-kebab>/`: `<Name>.tsx` (implementation and its exported
+`<Name>Props`), `<Name>.prompt.md` (its prose, its examples and its Do/Don't around a generated
+member table) and a fixture at `demos/<Name>.demo.json`. **The layer carries no hand-written `.d.ts`**: the
 published one is emitted from the source, so the two cannot disagree.
 
 **Angular is a quartet**, the same three plus its recipe, in

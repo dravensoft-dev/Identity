@@ -96,8 +96,10 @@ style **objects**, meaning the camelCase
 `check:dimensions` can actually read. `chart-card` is not one of them: it is a bordered
 tile with a microlabel, so it has a manifest like every other expressible component.
 
-Five shared files are not components, and each sits at the narrowest level that contains
-all of its consumers rather than in one shared bucket:
+Some files at the layer root are not components, and each sits at the narrowest level that
+contains all of its consumers rather than in one shared bucket. **List them rather than trusting
+this paragraph**, with `ls *.ts | grep -v generated`; what follows is why the interesting ones
+are where they are:
 `ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
 once per name when a breakpoint token does not resolve and never caches the failure**: every
 comparison against `NaN` is false, so a silent one leaves `Table`, `Calendar` and `PageHead` on
@@ -338,7 +340,7 @@ by the build always running ahead of the tests that read it, and `build-angular-
 output whose source is gone, because `ngc` does not. **The compile itself is skipped when no input
 has moved since the last one**, which is what keeps a step that costs around seventeen seconds
 ahead of suites that cost around twelve; `--force` compiles anyway, and the rule it decides by is
-its own README's.
+its own document's.
 
 **A green compile is a claim about TYPES, and never about behaviour.**
 

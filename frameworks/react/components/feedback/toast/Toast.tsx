@@ -25,7 +25,7 @@ export interface ToastProps {
   /** Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. */
   persist?: boolean;
 
-  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. */
+  /** Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, because Arena never derives what it draws from what a consumer listens for. */
   dismissible?: boolean;
 
   /** The × was activated. */

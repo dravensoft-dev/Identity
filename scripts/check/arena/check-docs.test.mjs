@@ -13,7 +13,7 @@ import {
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
   consumerBranchProblems, CONSUMER_LAST_STOP, CONSUMER_INDEX, CONTRIBUTOR_PATHS,
   isConsumerDocument, BRANCH_SWITCH, branchSwitchProblems,
-  RULE_OWNERS, CONTRIBUTOR_BRANCH, ruleOwnerProblems,
+  RULE_OWNERS, CONTRIBUTOR_BRANCH, ruleOwnerProblems, statesRule, CONSUMER_OWN_OUTPUT,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -456,9 +456,16 @@ test('the carve-out is the /** shape only, and only under a component directory'
   assert.doesNotMatch('frameworks/react/Theme.ts', MEMBER_DOC_TREE);
 });
 
+test('a rule may be registered as a family, not only as one phrase', () => {
+  assert.equal(statesRule('none of the nine forms is imperative', 'the nine forms'), true);
+  assert.equal(statesRule('an R6 violation', /\bR[1-6]\b/), true);
+  assert.equal(statesRule('a Radio inside a RadioGroup', /\bR[1-6]\b/), false);
+  assert.equal(statesRule('run `check:dimensions` after', /\bcheck:[a-z-]+/), true);
+});
+
 test('RULE_OWNERS names each rule, its branch and why, and every entry is contributor-owned today', () => {
-  assert.deepEqual(RULE_OWNERS.map((r) => r.phrase),
-    ['the nine forms', 'binding table', 'R4 violation', 'check:api']);
+  assert.deepEqual(RULE_OWNERS.map((r) => String(r.phrase)),
+    ['the nine forms', 'binding table', '/\\bR[1-6]\\b/', '/\\bcheck:[a-z-]+/']);
   for (const { owner, reason } of RULE_OWNERS) {
     assert.equal(owner, CONTRIBUTOR_BRANCH);
     assert.ok(reason.length > 60, 'an entry states its reason');

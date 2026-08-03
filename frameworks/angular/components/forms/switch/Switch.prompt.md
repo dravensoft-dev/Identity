@@ -52,7 +52,7 @@ supplies the state.
   `confirm` set with no `(requestChange)` binding is a switch that
   does nothing at all. That is the accepted cost of that rule and the one worth paying, because what
   it replaced applied a guarded change silently. **No runtime guard can catch it**: "is anything
-  subscribed?" is precisely the question R6 says a component may not ask. The behaviour is
+  subscribed?" is precisely the question Arena never asks, because at least one framework cannot answer it. The behaviour is
   pinned, so the fallback cannot come back unnoticed.
 - `iconOn` and `iconOff` are Phosphor class-name strings drawn inside the knob, and only the
   current state's glyph is in the DOM. They are decoration; the knob is `aria-hidden`, and

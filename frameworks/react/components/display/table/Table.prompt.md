@@ -131,7 +131,7 @@ Serve the tree with `bun run demos`, open
    already on screen. Check that a card whose row has `onClick` is a single tab stop
    that announces itself as a button and activates on Enter and Space, and that a card
    whose row has none took no `role`, `tabindex` or key handler by accident. `interactive`
-   is what decides that, never whether `onClick` was passed -- R6.
+   is what decides that, never whether `onClick` was passed: Arena derives no render from a bound listener.
 
 ### Sorting and paging
 

@@ -23,7 +23,7 @@ the same shape as `Table`/`TableRow` and `RadioGroup`/`Radio`, one size down.
 | `active` | primitive | `string` |  | The id of the current destination. The SideNavItem whose id matches is marked aria-current="page", and no item is marked when it names none of them. |
 | `ariaLabel*` | primitive | `string` |  | Names this navigation landmark. Required, and guarded at runtime: the guard trims before it decides, so a blank name is refused as well as an absent one, because ariaLabel="" renders a landmark with no accessible name, which is the defect arriving through a value that is present. Guarded rather than defaulted: the navigation pattern asks each landmark on a page for a UNIQUE name, and a constant default satisfies the existence half while two sidebars on one page stay indistinguishable. Nothing can derive it either; what a nav is FOR is editorial. Say what it navigates -- "Primary", "Project settings" -- the Table.label and SegmentedControl.ariaLabel shape. |
 | `children` | slot |  |  | The navigation tree. One SideNavItem per destination, optionally grouped by SideNavSection and SideNavCollapsible; where each child sits, which id is active and how it reports `nav` are the parent's to settle, and none of it is a member here. |
-| `indentStep` | primitive | `number` | `3` | How far each nesting level indents, as a MULTIPLIER of --sp-1 rather than a length: the row at depth N is padded calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N). A CSS string was rejected -- a caller-supplied "1.5rem" is neither a token nor a derivation of one, so it would stop re-densifying inside .arena-compact, and no gate would catch it because check:dimensions scans source and not the values a caller passes in. |
+| `indentStep` | primitive | `number` | `3` | How far each nesting level indents, as a MULTIPLIER of --sp-1 rather than a length: the row at depth N is padded calc(var(--sp-1) * 3 + var(--sp-1) * indentStep * N). A CSS string was rejected -- a caller-supplied "1.5rem" is neither a token nor a derivation of one, so it would stop re-densifying inside .arena-compact, and no gate would catch it because the gate that forbids a bare length scans source and not the values a caller passes in. |
 | `onNav` | event | `string` |  | An item was activated, carrying its id. It carries the id alone, on the Breadcrumbs precedent that the platform event leaves the payload and the item travels by itself, and under the compound shape there is no item datum left to carry either, because the consumer wrote the element and already holds everything on it. Where the item has an href, Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working column of real links. |
 
 <!-- @api end -->
@@ -127,7 +127,7 @@ carries. Pass `icon="ph-bold ph-house"` once per destination; do not concatenate
 yourself against a condition, which is Arena's own convention reimplemented in every project
 that adopts it. The swap is idempotent, so passing `ph-fill` yourself changes nothing.
 
-Every `ph-` name in this repository is checked against the installed `@phosphor-icons/web` by
-`bun run check:icons`, so a typo fails the build instead of rendering an empty box. That gate
-reaches Arena's tree and not yours; run the same check in your own if a wrong name would be
+**A misspelled `ph-` name renders an empty box, silently**, because an icon is a class name
+and a class that matches no glyph is not an error. Nothing on your side catches that for you,
+so check a name against the `@phosphor-icons/web` you installed if a wrong one would be
 expensive.

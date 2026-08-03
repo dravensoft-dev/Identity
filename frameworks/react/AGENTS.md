@@ -102,21 +102,17 @@ A component is a directory: `components/<category>/<component-kebab>/`. Everythi
 belonging to one component lives in it: its source, its types, its binding, its prompt,
 its demo page and its suites.
 
-Six categories: `forms/` (Button, IconButton, Input, Textarea, Select, Checkbox,
-Radio/RadioGroup, Switch), `display/` (Card, Badge, Tag, Avatar, Table/TableRow/TableCell,
-Skeleton, StatCard, Calendar/CalendarEvent, ActivityFeed, UnauthCard), `navigation/`
-(Tabs/Tab, SegmentedControl, Breadcrumbs, Menu, Pagination, CommandPalette, BulkActionBar,
-PageHead, SideNav and its family), `feedback/` (Alert, Dialog, ConfirmDialog, Toast,
-Tooltip, EmptyState, ErrorState, ProgressBar, Onboarding, Spinner), `charts/` (ChartCard,
-BarChart, LineChart, DoughnutChart, all dependency-free SVG) and `brand/` (AppLogo).
+**Read the categories and their contents from the tree rather than from a list here**, because
+a list here rots and nothing checks it: `ls components` for the set, and
+`frameworks/Components.json` for which component each holds, which is the declaration
+`check:structure` reads.
 
 A file that is not one component's rises to the narrowest level containing all of its
 consumers, and a compound family counts as its parent rather than as the category. The
-layer root holds the generated `Api.generated.ts` and `Tokens.generated.js` plus five
-shared internals: `DataVisuals.ts`, `UseContainerWidth.ts`, `Theme.ts`, `AnchorActivation.ts`
-and `UseDialogModal.ts`,
-that last one because its suite counts as a consumer: its three component consumers are all in
-`feedback/`, but `test/UseDialogModal.dom.test.tsx` is one too.
+layer root holds the generated modules plus the shared internals, which
+`ls *.ts *.tsx | grep -v generated` lists. `UseDialogModal.ts` is the one whose placement needs
+explaining: its three component consumers are all in `feedback/`, so the rule would put it
+there, and its suite counts as a consumer too.
 
 `playground/` sits beside them and is the one directory here that is **not** part of the
 package: `tsconfig.dist.json` excludes it and no barrel exports it. It holds the harness every
@@ -209,8 +205,10 @@ what covers it: real Chromium over each declared page, one real Tab press per st
 ## Every component is a trio
 
 `<Name>.tsx` (implementation and its exported `<Name>Props`), `<Name>.prompt.md` (usage and
-examples) and a fixture at `frameworks/demos/<Name>.demo.json`. Adding a component means adding
-all three. The demo **page** is not one of them: it is generated from the API contract and that
+examples) and a fixture at `frameworks/demos/<Name>.demo.json`. **Those three are what this
+layer contributes, and they are not the whole of adding a component**: the behaviour binding
+beside the source and the manifest one layer over are the rest of it, and
+[`../AGENTS.md`](../AGENTS.md) carries the ordered list. The demo **page** is not one of them: it is generated from the API contract and that
 fixture, into this layer and into every other, which is what makes two layers' pages comparable
 at all.
 

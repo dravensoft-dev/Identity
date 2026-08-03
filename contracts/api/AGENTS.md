@@ -61,7 +61,7 @@ identical members, idiomatic binding.
 **None of the nine forms is imperative**, and that is a property of what a contract can state
 rather than an omission: every form is a value that flows in or a report that flows out, and a
 method the consumer calls at a moment of their own choosing is neither. So a component that
-needs one exposes it on the class in each layer, documented in that layer's README, and it
+needs one exposes it on the class in each layer, documented in that layer's `AGENTS.md`, and it
 appears in no contract.
 
 It is not free. `check:api` reads a layer's class and refuses any public member it cannot
@@ -258,7 +258,7 @@ single exchange, and the decision is the maintainer's:
 2. which member breaks which rule, cited to the rule;
 3. two or three concrete reshapes, each with its cost.
 
-This is the explicit remedy for the failure `components-divergences.md` records:
+This is the explicit remedy for a failure this repository has already paid for:
 `StatCard` became an object in React and three flat inputs in Angular because each layer
 answered the question separately and each answer was defensible on its own terms. A
 contract written by whoever migrates the component reproduces exactly that.

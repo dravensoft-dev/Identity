@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import {
   EXEMPT, SKIPPED_ANYWHERE, SKIPPED_UNDER_FRAMEWORKS, skips, repoRoots, pathPattern,
   documents, namesAFile, citationProblems, zeroDocumentProblems, zeroRootProblems,
+  BARE_DOCUMENT, basenames, bareDocumentProblems,
 } from './check-citations.mjs';
 
 function tree(files) {
@@ -102,4 +103,21 @@ test('a walk that reaches no document is a failure, not a clean pass', () => {
   assert.equal(zeroDocumentProblems([]).length, 1);
   assert.match(zeroDocumentProblems([])[0], /empty result set is a failure/);
   assert.deepEqual(zeroDocumentProblems(['a.md']), []);
+});
+
+test('a bare document name no file in the tree carries is a problem', () => {
+  const base = tree({ 'a.md': 'the failure `components-divergences.md` records', 'b.md': 'x' });
+  const problems = bareDocumentProblems(base);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /names components-divergences\.md, and no document in the tree/);
+});
+
+test('a bare name that does exist passes, wherever in the tree it sits', () => {
+  const base = tree({ 'a.md': 'see AGENTS.md', 'deep/nested/AGENTS.md': 'x' });
+  assert.deepEqual(bareDocumentProblems(base), []);
+});
+
+test('a metavariable is written <Name>, which the pattern cannot match, so it needs no exception', () => {
+  assert.equal('a fixture at <Name>.demo.json'.match(BARE_DOCUMENT), null);
+  assert.deepEqual('see X.prompt.md'.match(BARE_DOCUMENT), ['X.prompt.md']);
 });

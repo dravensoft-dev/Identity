@@ -13,7 +13,7 @@ scripts/
   ci/         what a runner asks: what to run, what the suite reported, what to publish
 ```
 
-Each phase has its own README, and each `<phase>/<domain>/` that holds scripts has a table
+Each phase has its own `AGENTS.md`, and each `<phase>/<domain>/` that holds scripts has a table
 saying why every file in it exists.
 
 - [`build/AGENTS.md`](./build/AGENTS.md): **and how to compile Arena for the first time.**

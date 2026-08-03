@@ -51,8 +51,8 @@ nothing can reach one in yours.
 Focus is Arena's own, and it implements
 `contracts/behaviour/dialog-modal.json` clause by clause. Opening moves focus to the first
 focusable element inside the panel; closing returns it to whatever held focus before. Tab and
-Shift+Tab wrap at the panel's edges, and `bun run check:focus-trap` presses a real Tab in real
-Chromium to prove the interior, which happy-dom cannot. The CDK is **not** involved: this dialog is in flow, on `--z-modal`.
+Shift+Tab wrap at the panel's edges, and that wrap is verified against a real browser rather
+than asserted. The CDK is **not** involved: this dialog is in flow, on `--z-modal`.
 
 Arena dismisses two ways and both report through `close`: **Escape**, and a click on the scrim.
 A click inside the panel is stopped before it reaches the host, so only the scrim dismisses. A

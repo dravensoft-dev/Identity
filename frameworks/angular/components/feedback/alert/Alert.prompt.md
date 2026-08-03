@@ -26,7 +26,7 @@ uppercase mono action; `dismissible` adds the single `ph-x` close control.
 | `icon` | primitive | `string` |  | A Phosphor class name overriding the tone's default glyph. Arena draws it. |
 | `actionLabel` | primitive | `string` |  | The label of a single inline action button. Absent renders no action. |
 | `action` | event |  |  | The inline action button was activated. |
-| `dismissible` | primitive | `boolean` | `false` | Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, per R6. |
+| `dismissible` | primitive | `boolean` | `false` | Whether the × is shown. Every layer gates the × on this member and never on whether anything listens for `close`, because Arena never derives what it draws from what a consumer listens for. |
 | `close` | event |  |  | The × was activated. |
 
 <!-- @api end -->

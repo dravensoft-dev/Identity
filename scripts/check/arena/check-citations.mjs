@@ -1,12 +1,12 @@
-/* Holds every .md to the repository paths it names: a cited file that is not there sends a
- * reader nowhere, and nothing else notices, because a document compiles no matter what it
- * says. A match is judged only when it names a FILE, meaning it carries an extension, since
- * prose shortens a path freely (`intro/Arena`, `contracts/design/palette`) and a shortened
- * one is not a claim. A `.generated.` name is skipped unless a contract emits it, because a
- * fresh clone has none of them. A LEADING SLASH means a URL from a site root and never a repo
- * path, which is what an example `<img src="/assets/...">` in a prompt is. The roots are read
- * from the tree rather than listed, so a new top-level directory is covered the day it lands.
- * EXEMPT carries what is absent on purpose, with a reason, and a stale entry fails. */
+/* Holds every .md to the repository paths it names, and to the bare document names too, that
+ * second shape being the one a rename rewrites in every import specifier and in no sentence.
+ * A match is judged only when it names a FILE, carrying an extension, since prose shortens a
+ * path freely (`intro/Arena`) and a shortened one is not a claim; a leading slash is a URL
+ * from a site root rather than a repo path; and a `.generated.` name is skipped, because a
+ * fresh clone has none. The roots come from the tree rather than a list, so a new top-level
+ * directory is covered the day it lands, and finding none of them fails rather than reporting
+ * every absolute path missing. EXEMPT carries what is absent on purpose, and a stale entry
+ * fails. Use `<Name>` for a metavariable: an `X.prompt.md` reads as a claim. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -66,6 +66,39 @@ export function namesAFile(cited) {
   return EXTENSION.test(cited);
 }
 
+export const BARE_DOCUMENT = /(?<![A-Za-z0-9._/-])[A-Za-z][A-Za-z0-9-]*(?:\.[a-z0-9-]+)*\.md\b/g;
+
+export function basenames(base = root) {
+  const found = new Set();
+  const walk = (dir, relative) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (skips(entry.name, relative)) continue;
+      if (entry.isDirectory()) walk(join(dir, entry.name), relative ? `${relative}/${entry.name}` : entry.name);
+      else found.add(entry.name);
+    }
+  };
+  walk(base, '');
+  return found;
+}
+
+export function bareDocumentProblems(base = root, files = documents(base), names = basenames(base)) {
+  const problems = [];
+  for (const path of files) {
+    const rel = path.slice(base.length + 1);
+    for (const [line, text] of readFileSync(path, 'utf8').split('\n').entries()) {
+      for (const cited of text.match(BARE_DOCUMENT) ?? []) {
+        if (names.has(cited)) continue;
+        problems.push(
+          `${rel}:${line + 1}: names ${cited}, and no document in the tree is called that. `
+          + 'A sibling cited by its bare filename is the one shape a rename rewrites in every '
+          + 'import specifier and in no sentence.',
+        );
+      }
+    }
+  }
+  return problems;
+}
+
 export function citationProblems(base = root, files = documents(base), exempt = EXEMPT) {
   const pattern = pathPattern(repoRoots(base));
   const problems = [];
@@ -114,6 +147,7 @@ function main() {
     ...zeroRootProblems(repoRoots()),
     ...zeroDocumentProblems(files),
     ...citationProblems(root, files),
+    ...bareDocumentProblems(root, files),
   ];
   if (problems.length > 0) {
     console.error(`check-citations: ${problems.length} problem(s)\n`);
