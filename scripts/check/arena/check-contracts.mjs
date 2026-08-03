@@ -1,8 +1,10 @@
-/* contracts/AGENTS.md states a shape -- three levels, one normative document each, one
+/* contracts/AGENTS.md states a shape -- three levels, a normative statement each, one
  * generated sibling, and an inner directory only where it separates two vocabularies a gate
- * reads as two sets. Nothing checked any of it: a stray file, a level missing its README, or
- * a fourth directory beside the three passed every gate. check:structure is the analogue for
- * frameworks/ and had no counterpart here. */
+ * reads as two sets. Nothing checked any of it: a stray file, a level missing its document, or
+ * a fourth directory beside the three passed every gate. A level's statement is one file or
+ * several, split by AUDIENCE rather than by topic, and each is named in SHAPE so an unnamed
+ * one fails rather than sitting invisible to every gate that reads the level by extension.
+ * check:structure is the analogue for frameworks/ and had no counterpart here. */
 
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -13,9 +15,9 @@ export const LEVELS = ['api', 'behaviour', 'design'];
 export const GENERATED = 'design-generated';
 
 export const SHAPE = new Map([
-  ['api', { dirs: ['components', 'types'], files: ['AGENTS.md'], ext: null }],
+  ['api', { dirs: ['components', 'types'], files: ['AGENTS.md', 'MemberForms.md'], ext: null }],
   ['behaviour', { dirs: [], files: ['AGENTS.md'], ext: '.json' }],
-  ['design', { dirs: [], files: ['AGENTS.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], ext: '.json' }],
+  ['design', { dirs: [], files: ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], ext: '.json' }],
 ]);
 
 export function rootProblems(entries) {

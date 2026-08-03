@@ -4,18 +4,30 @@ Three levels, one roof. Each states, once and neutrally, something every platfor
 target implements, and each level's normative statement starts at the `AGENTS.md`
 in its directory.
 
-| Level | Governs | Normative document |
+| Level | Governs | Normative statement |
 |---|---|---|
-| [`api/`](api/AGENTS.md) | the members a component's API presents | `api/AGENTS.md` |
+| [`api/`](api/AGENTS.md) | the members a component's API presents | `api/AGENTS.md`, plus [`api/MemberForms.md`](api/MemberForms.md) |
 | [`behaviour/`](behaviour/AGENTS.md) | what a kind of component must do: roles, keys, focus, dismissal | `behaviour/AGENTS.md` |
-| [`design/`](design/AGENTS.md) | what a value is | `design/AGENTS.md`, plus [`design/TokenTypes.md`](design/TokenTypes.md) for the shape a value arrives in |
+| [`design/`](design/AGENTS.md) | what a value is | `design/AGENTS.md`, plus [`design/Scales.md`](design/Scales.md) and [`design/TokenTypes.md`](design/TokenTypes.md) |
 
-**`design/` is the one level whose statement is two files, and the split is by audience
-rather than by topic.** `design/AGENTS.md` says what a value MEANS, which is what anyone
-choosing a colour or a spacing step needs; `design/TokenTypes.md` says what DTCG `$type` it
-carries and what shape it is authored in, which only somebody authoring a token or targeting
-a new platform needs. The other two levels are one file each because neither has a second
-audience to separate: nobody reads an API contract without intending to implement it.
+**A level's statement is one file or several, and where it is several the split is by AUDIENCE
+rather than by topic.** The `AGENTS.md` is always the half that **decides**, and a sibling is
+what a reader **consults** while doing the work:
+
+- `api/AGENTS.md` decides whether a member should exist, what required means and what the gate
+  can hold; `api/MemberForms.md` is the vocabulary you write it in, the nine forms, the six
+  derived rules, the binding table and the file format.
+- `design/AGENTS.md` says what a value MEANS; `design/Scales.md` is every scale step by step and
+  which role each step plays; `design/TokenTypes.md` says what DTCG `$type` it carries and what
+  shape it is authored in, which only somebody authoring a token or targeting a new platform
+  needs.
+- `behaviour/` is one file, because it has no second audience to separate: nobody reads a
+  pattern without intending to implement it.
+
+**Every one of those files is named in `SHAPE`**, in `scripts/check/arena/check-contracts.mjs`,
+so a sibling nobody declared fails rather than sitting invisible to every gate that reads a
+level by extension. **Splitting a level is therefore a two-file change**, the document and the
+declaration, and the gate is what makes it one.
 
 Read the one for the level you are implementing. None of the three is a summary of
 another: `design/` answers *what is this value*, `behaviour/` answers *what must this

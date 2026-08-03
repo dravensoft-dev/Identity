@@ -36,7 +36,7 @@ test('a missing level is reported, not silently skipped', () => {
 
 test('api keeps two vocabulary directories and behaviour keeps none', () => {
   const isDir = (n) => !n.includes('.');
-  assert.deepEqual(levelProblems('api', ['AGENTS.md', 'components', 'types'], isDir), []);
+  assert.deepEqual(levelProblems('api', ['AGENTS.md', 'MemberForms.md', 'components', 'types'], isDir), []);
   assert.deepEqual(levelProblems('behaviour', ['AGENTS.md', 'button.json', 'none.json'], isDir), []);
 });
 
@@ -62,21 +62,21 @@ test('a stray file inside a level is caught by extension, which is how every rea
 
 test('design keeps its three hand-authored stylesheets by name, because none is a token source', () => {
   assert.deepEqual(
-    levelProblems('design', ['AGENTS.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css', 'palette.dark.json'], () => false),
+    levelProblems('design', ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css', 'palette.dark.json'], () => false),
     [],
   );
 });
 
-test('design is the one level whose normative statement is two documents, split by audience', () => {
-  const problems = levelProblems('design', ['TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], () => false);
+test("a level's statement may be several documents, and every one of them is named or it is a stray", () => {
+  const problems = levelProblems('design', ['Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], () => false);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /contracts\/design\/AGENTS\.md is missing/);
 });
 
 test('a fourth stylesheet is a problem until contracts/AGENTS.md names it, which is the point of listing them', () => {
-  const problems = levelProblems('design', ['AGENTS.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css', 'motion.css'], () => false);
+  const problems = levelProblems('design', ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css', 'motion.css'], () => false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /contracts\/design\/motion\.css is neither AGENTS\.md nor TokenTypes\.md nor colors\.css nor environment\.css nor reset\.css/);
+  assert.match(problems[0], /contracts\/design\/motion\.css is neither AGENTS\.md nor Scales\.md nor TokenTypes\.md/);
 });
 
 test('a generated stylesheet without the infix is a problem', () => {
