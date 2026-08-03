@@ -1,5 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { delayOpen, delayClose } from '../../../Tokens.generated.js';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Tooltip.manifest.generated.ts';
 
 export interface TooltipProps {
 
@@ -11,17 +13,7 @@ export interface TooltipProps {
 }
 
 
-let injected = false;
-function useFadeKeyframes() {
-  useEffect(() => {
-    if (injected || typeof document === 'undefined') return;
-    injected = true;
-    const s = document.createElement('style');
-    s.setAttribute('data-arena-tooltip', '');
-    s.textContent = '@keyframes arena-fade{from{opacity:0}to{opacity:1}}';
-    document.head.appendChild(s);
-  }, []);
-}
+const tooltipStyles = tv(manifest);
 
 export function Tooltip({ children, label }: TooltipProps) {
   if (!label) throw new Error('Tooltip: `label` is required');
@@ -31,7 +23,6 @@ export function Tooltip({ children, label }: TooltipProps) {
       + 'A fragment or a bare string takes aria-describedby nowhere, so the bubble names nothing.',
     );
   }
-  useFadeKeyframes();
   const [show, setShow] = useState(false);
 
   const bubbleId = `tooltip-${useId().replace(/:/g, '')}`;
@@ -61,18 +52,16 @@ export function Tooltip({ children, label }: TooltipProps) {
     if (describedBy) el.setAttribute('aria-describedby', describedBy);
     else el.removeAttribute('aria-describedby');
   }, [describedBy]);
+  const styles = tooltipStyles();
   return (
-    <span ref={wrapRef} style={{ position: 'relative', display: 'inline-flex' }}
+    <span ref={wrapRef} className={styles.root()}
       onMouseEnter={() => schedule(true, delayOpen)}
       onMouseLeave={() => schedule(false, delayClose)}
       onFocus={() => now(true)}
       onBlur={() => now(false)}>
       {described}
       {show && (
-        <span role="tooltip" id={bubbleId} style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%) translateY(calc(var(--sp-2) * -1))',
-          whiteSpace: 'nowrap', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)', background: 'var(--bone)', color: 'var(--ink)',
-          fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', zIndex: 'var(--z-tooltip)',
-          animation: 'arena-fade var(--dur-fast) var(--ease-out)' }}>
+        <span role="tooltip" id={bubbleId} className={styles.bubble()}>
           {label}
         </span>
       )}
