@@ -44,7 +44,7 @@ Rules: validates on `blur` by default; use `validateOn="change"` only for live f
 
 `validate` is the **ninth form**, a `functionInput`: the consumer hands Arena a function it calls on the field's value and whose result it uses. It takes the value as a string and returns the error message, or nothing when the value is valid. It is the only inbound function in the library, and it is legal only because `Input` is a data-entry control.
 
-`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent`, because a platform event type is an R4 violation inside a payload, so the event does not travel. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
+`onChange` and `onBlur` carry the **value as a string**, not the `ChangeEvent`/`FocusEvent`, because a platform's own event type never travels in a payload, so the event does not reach you. Read the value directly (`onChange={setEmail}`); there is no `e.target` and no `preventDefault()`.
 
 `icon` is a **Phosphor class name Arena draws** (`icon="ph-bold ph-magnifying-glass"`), not a node you pass in; Arena renders the `<i>` and hides it from assistive tech. `prefix` is likewise **static text Arena draws** before the value (`prefix="git@"`).
 

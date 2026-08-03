@@ -3,10 +3,10 @@
  * a document's prose, the comment rule, which lets scripts and tests carry one
  * header of at most HEADER_MAX_LINES and every other hand-written source none,
  * and the branch boundary, which keeps a contributor path out of a consumer's
- * last stop. SIZE_ALLOWANCE is empty, and that emptiness is the claim: every
- * document holds to the shared limit, and one that falls back inside it after
- * being raised fails, so a ceiling cannot quietly become permanent.
- * A file a script generates is outside the comment rule and is never read. */
+ * last stop and, through RULE_OWNERS, a rule off the branch that does not own
+ * it. SIZE_ALLOWANCE is empty, and that emptiness is the claim: a document that
+ * falls back inside the shared limit after being raised fails, so a ceiling
+ * cannot quietly become permanent. A generated file is never read here. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
@@ -117,6 +117,67 @@ export const CONTRIBUTOR_PATHS = [
     'a build product, which a consumer reaches by importing the package rather than by name. '
     + 'A generated demo page is the exception, being the one a by-hand check opens'],
 ];
+
+export const CONTRIBUTOR_BRANCH = 'contributor';
+export const CONSUMER_BRANCH = 'consumer';
+
+export const RULE_OWNERS = [
+  {
+    phrase: 'the nine forms',
+    owner: CONTRIBUTOR_BRANCH,
+    reason:
+      "the API contract's own vocabulary. A consumer reads a member's type and default from the "
+      + 'prompt table and never has to know how many forms exist, so a prompt reaching for the '
+      + 'count is explaining a rule rather than a component.',
+  },
+  {
+    phrase: 'binding table',
+    owner: CONTRIBUTOR_BRANCH,
+    reason:
+      "the mapping from a contract member to each layer's idiom, which the layer has already "
+      + 'applied by the time a consumer reads the prompt. Naming it sends a reader to a document '
+      + 'the router tells them not to open.',
+  },
+  {
+    phrase: 'R4 violation',
+    owner: CONTRIBUTOR_BRANCH,
+    reason:
+      'one of the six derived rules, by number. It reached a published .d.ts through a contract '
+      + 'description once, so a consumer read it on hover with no way to learn what R4 is. State '
+      + "the consequence instead: a platform's own event type never travels in a payload.",
+  },
+  {
+    phrase: 'check:api',
+    owner: CONTRIBUTOR_BRANCH,
+    reason: 'a gate, which nobody consuming a package can run and which no prompt should cite.',
+  },
+];
+
+export function ruleOwnerProblems(root = ROOT, owners = RULE_OWNERS) {
+  const problems = [];
+  const met = new Set();
+  for (const path of documents(root)) {
+    const rel = relative(root, path);
+    const branch = isConsumerDocument(rel) ? CONSUMER_BRANCH : CONTRIBUTOR_BRANCH;
+    const text = readFileSync(path, 'utf8');
+    for (const { phrase, owner, reason } of owners) {
+      if (!text.includes(phrase)) continue;
+      if (branch === owner) { met.add(phrase); continue; }
+      problems.push(
+        `${rel}: states "${phrase}", a ${owner} rule, on the ${branch} branch. `
+        + `A rule written into both branches goes stale in one of them: ${reason}`,
+      );
+    }
+  }
+  for (const { phrase, owner, reason } of owners) {
+    if (met.has(phrase)) continue;
+    problems.push(
+      `RULE_OWNERS assigns "${phrase}" to the ${owner} branch, and no document there states it, `
+      + `so the entry outlived the rule it was written for: ${reason}`,
+    );
+  }
+  return problems;
+}
 
 export const MEMBER_DOC_TREE = /^frameworks\/[^/]+\/components\//;
 
@@ -285,7 +346,7 @@ function main() {
   });
   const problems = [
     ...empty, ...branchSwitchProblems(), ...sizes.problems, ...punctuation.problems,
-    ...comments.problems, ...branch.problems,
+    ...comments.problems, ...branch.problems, ...ruleOwnerProblems(),
   ];
 
   if (problems.length > 0) {
@@ -297,7 +358,8 @@ function main() {
     `check-docs: ${sizes.scanned} document(s) inside their limit, ${MAX_DOCUMENT_CHARS} characters `
     + `bar ${SIZE_ALLOWANCE.size} on the record, and clear of `
     + `banned punctuation; ${comments.scanned} hand-written source(s) hold to the comment rule; `
-    + `${branch.scanned} consumer document(s) cite no contributor path`,
+    + `${branch.scanned} consumer document(s) cite no contributor path, and neither branch `
+    + `states one of the other's ${RULE_OWNERS.length} registered rules`,
   );
 }
 

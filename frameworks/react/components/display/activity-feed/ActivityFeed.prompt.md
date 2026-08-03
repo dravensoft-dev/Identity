@@ -25,10 +25,9 @@ each row.
 `tone` is Badge's vocabulary: `neutral · accent · gold · success · warning · danger ·
 info`, and defaults to `accent`.
 
-**There is no row escape hatch.** `renderItem` is not in the API contract: a per-item
-render function is not one of the nine forms, because no row of the contract's binding table
-covers per-item projection in every platform. Arena declares only what every layer can implement. A consumer places no markup of their own
-inside one row: the event must fit `actor` / `action` / `target` / `time` / `tone`,
+**There is no row escape hatch.** There is no `renderItem`, because per-item projection has
+no expression every framework Arena ships for can offer, and Arena declares only what all of
+them can implement. A consumer places no markup of their own inside one row: the event must fit `actor` / `action` / `target` / `time` / `tone`,
 or it does not belong in this component.
 
 ## Do / Don't

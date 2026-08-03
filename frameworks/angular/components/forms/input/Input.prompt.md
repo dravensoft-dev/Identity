@@ -50,11 +50,10 @@ the column its parent lays out. The control is a real `<input>`, named by a real
 
 <!-- @api end -->
 
-**This is the repository's only `functionInput`.** `validate` is a function the consumer supplies
-and the component calls on the value; its signature is modelled in the contract
-(`params { value: string }`, `returns string`) and `check:api` compares it against this class
-member, so the type is written as the bare arrow with required-ness carried by `input()` rather
-than by a `| undefined` in the type:
+**`validate` is the one member that takes a function.** You supply it, the component calls it on
+the field's value, and it returns the error message or the empty string. Bind it as a bare
+arrow: the input is optional already, so a `| undefined` arm in the type says a second time what
+leaving it unbound says once.
 
 ```ts
 readonly validate = input<(value: string) => string>();

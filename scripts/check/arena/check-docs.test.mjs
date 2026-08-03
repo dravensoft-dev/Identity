@@ -13,6 +13,7 @@ import {
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
   consumerBranchProblems, CONSUMER_LAST_STOP, CONSUMER_INDEX, CONTRIBUTOR_PATHS,
   isConsumerDocument, BRANCH_SWITCH, branchSwitchProblems,
+  RULE_OWNERS, CONTRIBUTOR_BRANCH, ruleOwnerProblems,
 } from './check-docs.mjs';
 
 function tree(files) {
@@ -453,4 +454,41 @@ test('the carve-out is the /** shape only, and only under a component directory'
 
   assert.match('frameworks/angular/components/display/card/Card.ts', MEMBER_DOC_TREE);
   assert.doesNotMatch('frameworks/react/Theme.ts', MEMBER_DOC_TREE);
+});
+
+test('RULE_OWNERS names each rule, its branch and why, and every entry is contributor-owned today', () => {
+  assert.deepEqual(RULE_OWNERS.map((r) => r.phrase),
+    ['the nine forms', 'binding table', 'R4 violation', 'check:api']);
+  for (const { owner, reason } of RULE_OWNERS) {
+    assert.equal(owner, CONTRIBUTOR_BRANCH);
+    assert.ok(reason.length > 60, 'an entry states its reason');
+  }
+});
+
+test('a contributor rule stated in a prompt is a problem, which is the leak that reached a .d.ts', () => {
+  const root = tree({
+    'contracts/api/AGENTS.md': 'A member is one of the nine forms.',
+    'frameworks/react/components/a/A.prompt.md': 'A per-item render function is not one of the nine forms.',
+  });
+  const owners = [{ phrase: 'the nine forms', owner: CONTRIBUTOR_BRANCH, reason: 'the API contract vocabulary, which a consumer never needs' }];
+  const problems = ruleOwnerProblems(root, owners);
+  assert.equal(problems.length, 1, 'the owning document keeps the entry live, so only the leak is reported');
+  assert.match(problems[0], /states "the nine forms", a contributor rule, on the consumer branch/);
+  rmSync(root, { recursive: true });
+});
+
+test('the same rule on its own branch passes, so the register is about the branch and not the phrase', () => {
+  const root = tree({ 'contracts/api/AGENTS.md': 'A member is one of the nine forms.' });
+  const owners = [{ phrase: 'the nine forms', owner: CONTRIBUTOR_BRANCH, reason: 'the API contract vocabulary, which a consumer never needs' }];
+  assert.deepEqual(ruleOwnerProblems(root, owners), []);
+  rmSync(root, { recursive: true });
+});
+
+test('an entry no document on its own branch states fails as a stale registration', () => {
+  const root = tree({ 'AGENTS.md': 'nothing relevant here' });
+  const owners = [{ phrase: 'check:retired', owner: CONTRIBUTOR_BRANCH, reason: 'a gate nobody consuming a package can run, so no prompt should cite it' }];
+  const problems = ruleOwnerProblems(root, owners);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /outlived the rule it was written for/);
+  rmSync(root, { recursive: true });
 });

@@ -31,7 +31,7 @@ Multi-line text input. Shares the same visual states as `Input`.
 <!-- @api end -->
 
 `onChange` carries the **new text as a string**, not the `ChangeEvent`, because a platform
-event type is an R4 violation inside a payload, so the event does not travel. Read the
+event type never travels in a payload, so the event does not reach you. Read the
 value directly (`onChange={setNotes}`); there is no `e.target` and no `preventDefault()`.
 
 The members are `label`, `id`, `hint`, `error`, `required`, `counter`, `autoResize`, `value`,

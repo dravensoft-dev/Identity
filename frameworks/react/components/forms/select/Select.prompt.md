@@ -35,7 +35,7 @@ a stable `value` with a translatable `label` cannot be said in the string form a
 Where value and label are the same, write it: `{value:'QA', label:'QA'}`.
 
 `onChange` carries the **chosen option's value as a string**, not the `ChangeEvent`, because a
-platform event type is an R4 violation inside a payload, so the event does not travel.
+platform's own event type never travels in a payload, so the event does not reach you.
 Read the value directly (`onChange={setEnv}`); there is no `e.target` and no
 `preventDefault()`.
 
