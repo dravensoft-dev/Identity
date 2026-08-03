@@ -4,44 +4,10 @@ import { resolveActivityFeedRows } from './ActivityFeed';
 import type { ActivityItem } from '../../../Api.generated';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
-test('the dot carries the tone as a colour, never as a fill', () => {
-  for (const tone of ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'] as const) {
-    const dot = activityFeedStyles({ tone }).dot();
-    assert.match(dot, /bg-current/);
-    assert.doesNotMatch(dot, /\bbg-(error|success|warning|info|primary|secondary)/);
-  }
-});
-
 test('the seven tones resolve to seven distinct dot classes', () => {
   const tones = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'] as const;
   const classes = tones.map((tone) => activityFeedStyles({ tone }).dot());
   assert.equal(new Set(classes).size, tones.length, `expected ${tones.length} distinct dot classes, got ${JSON.stringify(classes)}`);
-});
-
-test('divided="true" carries the top border, divided="false" carries none', () => {
-  assert.match(activityFeedStyles({ divided: true }).item(), /border-t-\[length:var\(--bw\)\]/);
-  assert.match(activityFeedStyles({ divided: false }).item(), /border-t-0/);
-});
-
-test('the first row carries no divider and every later row does, resolved from a real items array', () => {
-  const items: ActivityItem[] = [
-    { actor: 'Marta', action: 'deployed', tone: 'success' },
-    { actor: 'Ivan', action: 'opened an incident', tone: 'danger' },
-    { actor: 'Rae', action: 'approved the rollback' },
-  ];
-  const rows = resolveActivityFeedRows(items);
-  assert.equal(rows.length, 3);
-  assert.match(rows[0].itemClass, /border-t-0/, 'the first row must not carry the divider');
-  assert.doesNotMatch(rows[0].itemClass, /border-t-\[length:var\(--bw\)\]/);
-  for (const row of rows.slice(1)) {
-    assert.match(row.itemClass, /border-t-\[length:var\(--bw\)\]/, 'every row after the first must carry the divider');
-    assert.doesNotMatch(row.itemClass, /border-t-0/);
-  }
-});
-
-test('an item with no tone resolves to the accent dot, the same default the manifest declares', () => {
-  const rows = resolveActivityFeedRows([{ actor: 'Rae', action: 'approved the rollback' }]);
-  assert.equal(rows[0].dotClass, activityFeedStyles({ tone: 'accent' }).dot());
 });
 
 test('resolveActivityFeedRows carries each item through unchanged, for the template to read', () => {

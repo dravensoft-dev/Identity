@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Breadcrumbs.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Breadcrumbs.classes.generated.ts';
 import type { Crumb } from '../../../Api.generated';
 
 export type { Crumb };
@@ -22,7 +22,7 @@ export interface BreadcrumbsProps {
 }
 
 
-const breadcrumbStyles = tv(manifest);
+const breadcrumbStyles = arenaStyles(manifest);
 
 export function Breadcrumbs({ items, ariaLabel, separator = '/', onNavigate }: BreadcrumbsProps) {
   if (!ariaLabel?.trim()) throw new Error('Breadcrumbs: `ariaLabel` is required');

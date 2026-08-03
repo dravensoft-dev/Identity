@@ -2,8 +2,8 @@ import React from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import { activeWeight, badgeCount } from '../NavRow.ts';
 import type { BottomNavInjected } from '../bottom-nav/BottomNavInject.tsx';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../bottom-nav/BottomNav.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../bottom-nav/BottomNav.classes.generated.ts';
 
 export interface BottomNavItemProps {
 
@@ -26,7 +26,7 @@ export interface BottomNavItemProps {
   disabled?: boolean;
 }
 
-const bottomNavStyles = tv(manifest);
+const bottomNavStyles = arenaStyles(manifest);
 
 export function BottomNavItem({
   id, label, icon, badge, href, disabled = false,

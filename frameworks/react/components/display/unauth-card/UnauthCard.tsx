@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './UnauthCard.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './UnauthCard.classes.generated.ts';
 import { Card } from '../card/Card.tsx';
 
 export interface UnauthCardProps {
@@ -22,7 +22,7 @@ export interface UnauthCardProps {
 }
 
 
-const unauthStyles = tv(manifest);
+const unauthStyles = arenaStyles(manifest);
 
 export function UnauthCard({ brand, eyebrow, title, footer, children }: UnauthCardProps) {
   const styles = unauthStyles();

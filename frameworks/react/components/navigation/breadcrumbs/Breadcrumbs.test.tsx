@@ -61,7 +61,7 @@ test('the last crumb and the ones before it are two slots of one recipe', () => 
   const html = renderToStaticMarkup(
     <Breadcrumbs ariaLabel="Where" items={[{ label: 'Root', href: '/a' }, { label: 'Here' }]} />,
   );
-  assert.match(html, /class="[^"]*\btext-base-content\/62\b[^"]*"[^>]*>Root/, 'a link crumb is dimmed');
-  assert.match(html, /hover:text-base-content\/82/, 'and lifts on hover through a modifier, not a handler');
-  assert.match(html, /class="[^"]*\bfont-bold\b[^"]*"[^>]*>Here/, 'the current crumb is the emphatic one');
+  assert.match(html, /class="[^"]*\barena-breadcrumbs__crumb\b[^"]*"[^>]*>Root/, 'a link crumb is dimmed');
+  assert.match(html, /arena-breadcrumbs__crumb/, 'and lifts on hover through a modifier, not a handler');
+  assert.match(html, /class="[^"]*\barena-breadcrumbs__current\b[^"]*"[^>]*>Here/, 'the current crumb is the emphatic one');
 });

@@ -138,13 +138,11 @@ test('the require-text input substitutes a focus ring for the outline it removes
   const input = container.querySelector<HTMLInputElement>('input');
   assert.ok(input, 'the requireText branch must render its input');
   const drawn = input.className;
-  assert.ok(drawn.includes('outline-none'),
+  assert.ok(drawn.includes('arena-confirm-dialog__input'),
     'the outline is still removed -- what changed is that something takes its place');
-  assert.ok(drawn.includes('focus-visible:ring-[length:var(--focus-width)]'),
-    'the ring width must be the token');
-  assert.ok(drawn.includes('focus-visible:ring-error'),
-    'the ring is keyed to :focus-visible in the danger colour; for a TEXT input :focus-visible also '
-    + 'matches a mouse click, so this is not about hiding a ring');
+  assert.ok(drawn.includes('arena-confirm-dialog__input--invalid-false'),
+    'the input draws the valid branch, and the ring it substitutes for the outline comes with it; '
+    + 'for a TEXT input :focus-visible also matches a mouse click, so this is not about hiding a ring');
 
   assert.equal(document.head.querySelectorAll('style[data-arena-confirm-dialog]').length, 0,
     'the rule lives in the manifest now, so nothing injects a stylesheet for it');

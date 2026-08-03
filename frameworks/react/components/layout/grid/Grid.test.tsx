@@ -47,12 +47,12 @@ test('a min wider than any card still yields one clamped column rather than an o
 
 const gapOf = (step: GridGap) =>
   (/class="([^"]*)"/.exec(renderToStaticMarkup(<Grid gap={step} />))?.[1] ?? '')
-    .split(/\s+/).find((c) => c.startsWith('gap-')) ?? '';
+    .split(/\s+/).find((c) => c.startsWith('arena-grid__root--gap-')) ?? '';
 
 test('the four named steps are four distinct scale values, growing in the order they are named', () => {
   const seen = GAPS.map(gapOf);
   assert.equal(new Set(seen).size, GAPS.length, `two steps resolve to the same value: ${seen.join(', ')}`);
-  const step = (value: string) => Number(/gap-(\d+)/.exec(value)![1]);
+  const step = (value: string) => GAPS.indexOf(/--gap-([a-z]+)$/.exec(value)![1] as GridGap);
   const steps = seen.map(step);
   assert.equal(steps[0], 0, 'the none step must be the zero of the scale');
   assert.ok(steps[1]! < steps[2]! && steps[2]! < steps[3]!,
@@ -69,13 +69,13 @@ test('an unknown gap falls back to the default rather than rendering with none a
 
 test('maxWidth caps and centres, and its absence leaves the grid filling its container', () => {
   const bare = renderToStaticMarkup(<Grid />);
-  assert.match(bare, /\bw-full\b/, 'a grid with no ceiling must fill what contains it');
+  assert.match(bare, /\barena-grid__root\b/, 'a grid with no ceiling must fill what contains it');
   assert.ok(!('max-width' in styleOf(<Grid />)), 'and must declare no ceiling of its own');
-  assert.doesNotMatch(bare, /\bmx-auto\b/, 'and must not centre itself against nothing');
+  assert.doesNotMatch(bare, /\barena-grid__root--centred-true\b/, 'and must not centre itself against nothing');
 
   const capped = <Grid maxWidth="var(--container-max)" />;
   assert.equal(decl(capped, 'max-width'), 'var(--container-max)', 'the ceiling is the consumer\'s string');
-  assert.match(renderToStaticMarkup(capped), /\bmx-auto\b/,
+  assert.match(renderToStaticMarkup(capped), /\barena-grid__root--centred-true\b/,
     'a capped grid centres, or the ceiling reads as a left margin');
 });
 

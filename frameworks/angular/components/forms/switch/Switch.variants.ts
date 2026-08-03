@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/forms/switch/Switch.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Switch.classes.generated';
 
-export const switchStyles = tv(manifest);
+export const switchStyles = arenaStyles(manifest);

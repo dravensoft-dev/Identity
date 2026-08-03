@@ -2,8 +2,8 @@ import React from 'react';
 import { focusableElements } from '../../../UseDialogModal.ts';
 
 import type { ActivityItem } from '../../../Api.generated';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './ActivityFeed.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ActivityFeed.classes.generated.ts';
 
 export type { ActivityItem };
 
@@ -20,7 +20,7 @@ export interface ActivityFeedProps {
 }
 
 
-const feedStyles = tv(manifest);
+const feedStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);
 type Tone = NonNullable<ActivityItem['tone']>;
 const toneOf = (tone: string | undefined): Tone | undefined =>

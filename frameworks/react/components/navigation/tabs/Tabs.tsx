@@ -1,6 +1,6 @@
 import React, { useId, useRef, useState } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Tabs.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Tabs.classes.generated.ts';
 
 export interface TabsProps {
 
@@ -30,7 +30,7 @@ interface TabInjected {
   onSelect: (value: string) => void;
 }
 
-const tabsStyles = tv(manifest);
+const tabsStyles = arenaStyles(manifest);
 
 export function Tabs({ children, value, defaultValue, onChange }: TabsProps) {
 

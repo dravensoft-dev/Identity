@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/segmented-control/SegmentedControl.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './SegmentedControl.classes.generated';
 
-export const segmentedControlStyles = tv(manifest);
+export const segmentedControlStyles = arenaStyles(manifest);

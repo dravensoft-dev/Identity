@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/forms/icon-button/IconButton.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './IconButton.classes.generated';
 
-export const iconButtonStyles = tv(manifest);
+export const iconButtonStyles = arenaStyles(manifest);

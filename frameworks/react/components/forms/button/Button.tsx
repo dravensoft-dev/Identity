@@ -1,8 +1,8 @@
 import React from 'react';
 
 import type { ButtonType, ButtonVariant, ControlSize } from '../../../Api.generated';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Button.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Button.classes.generated.ts';
 
 export interface ButtonProps {
 
@@ -50,7 +50,7 @@ export interface ButtonProps {
 }
 
 
-const buttonStyles = tv(manifest);
+const buttonStyles = arenaStyles(manifest);
 
 export function Button({
   children, variant = 'primary', size = 'md', icon, iconRight,

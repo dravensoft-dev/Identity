@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/alert/Alert.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Alert.classes.generated';
 
-export const alertStyles = tv(manifest);
+export const alertStyles = arenaStyles(manifest);

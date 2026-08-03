@@ -129,7 +129,7 @@ test('a chip is placed across the WHOLE grid, so its share is its column share d
       'a chip with the column to itself takes the whole column');
 
     for (const chip of [long, over, alone]) {
-      assert.ok(chip.className.includes('mx-0.5'),
+      assert.ok(chip.className.includes('arena-calendar__chip'),
         'the chip gutter is a manifest class, not a number frozen into JS -- inline left/right are '
         + 'pure percentages so that --sp-1 never has to enter the layer as a number');
       assert.equal(chip.style.width, '', 'left and right size the chip; an inline width would fight them');
@@ -203,7 +203,7 @@ test('a narrow container drops the time label on width alone, and that is what l
     assert.ok(paneled, 'the chip carrying a kebab did not render');
     const wrap = paneled.querySelector('arena-icon-button')?.parentElement as HTMLElement;
     assert.ok(wrap, 'the kebab wrapper did not render');
-    assert.ok(wrap.className.includes('bottom-0'),
+    assert.ok(wrap.className.includes('arena-calendar__kebab-wrap--actions-below-true'),
       `a chip at or above the stacking height with no time label puts its kebab below the title: "${wrap.className}"`);
     assert.ok(!paneled.className.includes('pr-['),
       'a chip stacking its kebab must stop reserving the lateral band as well');

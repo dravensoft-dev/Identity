@@ -20,17 +20,17 @@ test('off renders iconOff and aria-checked="false"', () => {
 
 test('the track footprint and the knob travel are two composite variants, not a size table', () => {
   const off = renderToStaticMarkup(<Switch label="Dark theme" />);
-  assert.match(off, /\bw-10\b/);
-  assert.match(off, /\bh-5\.5\b/);
-  assert.match(off, /\btranslate-x-0\b/);
-  assert.match(off, /\bbg-neutral\b/);
+  assert.match(off, /\barena-switch__track--footprint-horizontal-md\b/);
+  assert.match(off, /\barena-switch__track--footprint-horizontal-md\b/);
+  assert.match(off, /\barena-switch__knob--thumb-off-horizontal\b/);
+  assert.match(off, /\barena-switch__track--checked-false\b/);
 
   const on = renderToStaticMarkup(<Switch state label="Dark theme" />);
-  assert.match(on, /\btranslate-x-full\b/);
-  assert.match(on, /\bbg-primary\b/);
+  assert.match(on, /\barena-switch__knob--thumb-on-horizontal\b/);
+  assert.match(on, /\barena-switch__track--checked-true\b/);
 
   const tall = renderToStaticMarkup(<Switch label="Dark theme" orientation="vertical" size="lg" />);
-  assert.match(tall, /\bw-6\.5\b/);
-  assert.match(tall, /\bh-12\b/);
-  assert.match(tall, /\btranslate-y-0\b/, 'a vertical knob travels on the other axis');
+  assert.match(tall, /\barena-switch__track--footprint-vertical-lg\b/);
+  assert.match(tall, /\barena-switch__track--footprint-vertical-lg\b/);
+  assert.match(tall, /\barena-switch__knob--thumb-off-vertical\b/, 'a vertical knob travels on the other axis');
 });

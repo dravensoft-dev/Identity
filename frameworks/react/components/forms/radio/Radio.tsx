@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Radio.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Radio.classes.generated.ts';
 
 export interface RadioInjected {
   name: string;
@@ -24,7 +24,7 @@ export interface RadioProps {
 }
 
 
-const radioStyles = tv(manifest);
+const radioStyles = arenaStyles(manifest);
 
 export function Radio({ value, label, hint, name, checked = false, onSelect, disabled = false }: RadioProps & Partial<RadioInjected>) {
   if (!value) throw new Error('Radio: `value` is required');

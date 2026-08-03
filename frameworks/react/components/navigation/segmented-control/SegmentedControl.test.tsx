@@ -21,9 +21,9 @@ test('value selects the option whose `value` matches, and only it is checked and
       options={[{ value: 'ov', label: 'Overview' }, { value: 'dp', label: 'Deployments' }]} />,
   );
 
-  assert.match(html, /<label[^>]*\bshadow-1\b[^>]*>Deployments</);
+  assert.match(html, /<label[^>]*\barena-segmented-control__segment--selected-true\b[^>]*>Deployments</);
 
-  assert.equal((html.match(/\bshadow-1\b/g) || []).length, 1,
+  assert.equal((html.match(/\barena-segmented-control__segment--selected-true\b/g) || []).length, 1,
     'more than one segment wore the raised thumb');
   assert.equal((html.match(/checked=""/g) || []).length, 1,
     'more than one radio was checked');
@@ -79,8 +79,8 @@ test('the track takes its focus ring from focus-within, so no segment reports fo
     <SegmentedControl ariaLabel="Time range" name="tr" value="ov"
       options={[{ value: 'ov', label: 'Overview' }, { value: 'dp', label: 'Deployments' }]} />,
   );
-  assert.match(html, /focus-within:border-secondary/);
-  assert.match(html, /hover:text-base-content\/82/, 'and an unselected segment lifts through a modifier');
-  assert.doesNotMatch(html, /<label[^>]*\bbg-neutral\b[^>]*>Deployments</,
+  assert.match(html, /arena-segmented-control__track/);
+  assert.match(html, /arena-segmented-control__segment--selected-false/, 'and an unselected segment lifts through a modifier');
+  assert.doesNotMatch(html, /<label[^>]*\barena-segmented-control__segment--selected-true\b[^>]*>Deployments</,
     'the unselected segment draws no thumb');
 });

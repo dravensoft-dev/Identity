@@ -18,21 +18,21 @@ test('Spinner falls back to "Loading" when no label is given', () => {
 });
 
 test('Spinner renders the diameter its size names, not the default', () => {
-  assert.match(renderToStaticMarkup(<Spinner size="sm" />), /\bsize-icon-sm\b/);
-  assert.match(renderToStaticMarkup(<Spinner size="lg" />), /\bsize-8\b/);
-  assert.doesNotMatch(renderToStaticMarkup(<Spinner size="lg" />), /\bsize-5\b/);
+  assert.match(renderToStaticMarkup(<Spinner size="sm" />), /\barena-spinner__circle--size-sm\b/);
+  assert.match(renderToStaticMarkup(<Spinner size="lg" />), /\barena-spinner__circle--size-lg\b/);
+  assert.doesNotMatch(renderToStaticMarkup(<Spinner size="lg" />), /\barena-spinner__circle--size-md\b/);
 });
 
 test('Spinner renders the colour its tone names, and the ring takes it from currentColor', () => {
-  assert.match(renderToStaticMarkup(<Spinner tone="on-accent" />), /\btext-primary-content\b/);
-  assert.match(renderToStaticMarkup(<Spinner tone="gold" />), /\btext-secondary\b/);
-  assert.match(renderToStaticMarkup(<Spinner />), /\bborder-current\b/,
+  assert.match(renderToStaticMarkup(<Spinner tone="on-accent" />), /\barena-spinner__root--tone-on-accent\b/);
+  assert.match(renderToStaticMarkup(<Spinner tone="gold" />), /\barena-spinner__root--tone-gold\b/);
+  assert.match(renderToStaticMarkup(<Spinner />), /\barena-spinner__circle\b/,
     'the ring reads the tone off the root rather than naming a colour of its own');
 });
 
 test('the spin is the shared utility, so the reduced-motion slowdown is not a second copy', () => {
   const html = renderToStaticMarkup(<Spinner />);
-  assert.match(html, /\barena-spinner\b/,
+  assert.match(html, /\barena-spinner__circle\b/,
     'motion reporting work in progress slows rather than stops, and the utility is where that is said');
 });
 

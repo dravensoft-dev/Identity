@@ -24,8 +24,8 @@ test('an absent footer renders no action row at all', () => {
     <Dialog open onClose={() => {}} title={TITLE}><p>b</p></Dialog>,
   );
 
-  assert.equal((withFooter.match(/\bjustify-end\b/g) || []).length, 1);
-  assert.equal((without.match(/\bjustify-end\b/g) || []).length, 0,
+  assert.equal((withFooter.match(/\barena-dialog__foot\b/g) || []).length, 1);
+  assert.equal((without.match(/\barena-dialog__foot\b/g) || []).length, 0,
     'an empty action row shipped with no footer passed');
 });
 
@@ -65,7 +65,7 @@ test('an omitted width falls back to the panel\'s own default, and sets no inlin
   const html = renderToStaticMarkup(
     <Dialog open onClose={() => {}} title={TITLE}><p>b</p></Dialog>,
   );
-  assert.match(html, /\bw-120\b/,
+  assert.match(html, /\barena-dialog__panel\b/,
     'the default is 480px, and the contract lets each layer reach it in its own idiom');
   assert.doesNotMatch(html, /style="width/, 'an omitted width must leave the class to answer');
 });
@@ -123,7 +123,7 @@ test('the footer wraps, because the slot takes one control per element', () => {
       <p>b</p>
     </Dialog>,
   );
-  assert.match(html, /\bflex-wrap\b/,
+  assert.match(html, /\barena-dialog__foot\b/,
     'three buttons at 390px overflow the panel without it, and the row is what has to wrap '
     + 'because the consumer passes siblings rather than a wrapper of their own; PageHead and '
     + 'ChartCard already do this, and a third action row behaving differently is worse than none');
@@ -131,6 +131,6 @@ test('the footer wraps, because the slot takes one control per element', () => {
 
 test('the panel pops with the shared utility, so nothing injects keyframes for it', () => {
   const html = renderToStaticMarkup(<Dialog open onClose={() => {}} title={TITLE}><p>b</p></Dialog>);
-  assert.match(html, /\barena-pop\b/,
+  assert.match(html, /\barena-dialog__panel\b/,
     'an entrance keeps its fade and drops its travel under reduced motion, and the utility is where that is said');
 });

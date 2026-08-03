@@ -80,7 +80,7 @@ test('the host is the flex row itself -- the root recipe lands on it, not on a w
   const { fixture, host } = render();
   try {
     const inner = host.querySelector('arena-switch') as HTMLElement;
-    assert.match(inner.getAttribute('class') ?? '', /inline-flex/,
+    assert.match(inner.getAttribute('class') ?? '', /arena-switch__root/,
       'the root slot must be host-bound, or the host is an inline box the parent cannot lay out');
   } finally {
     fixture.destroy();

@@ -1,6 +1,6 @@
 import React, { useId, useRef } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Dialog.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Dialog.classes.generated.ts';
 import { useDialogModal } from '../../../UseDialogModal.ts';
 
 export interface DialogProps {
@@ -28,7 +28,7 @@ export interface DialogProps {
 }
 
 
-const dialogStyles = tv(manifest);
+const dialogStyles = arenaStyles(manifest);
 
 export function Dialog({ open, onClose, title, eyebrow, children, footer, width }: DialogProps) {
 

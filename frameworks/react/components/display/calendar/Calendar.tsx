@@ -1,8 +1,8 @@
 import type { CalendarEventProps, CalendarEventInjected } from '../calendar-event/CalendarEvent.tsx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Calendar.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Calendar.classes.generated.ts';
 import { catColor } from '../../../DataVisuals.ts';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 
@@ -56,7 +56,7 @@ import {
 
 const TRACKS = (n: number) => `repeat(${n}, minmax(0, 1fr))`;
 
-const calendarStyles = tv(manifest);
+const calendarStyles = arenaStyles(manifest);
 
 export function Calendar({
   children, timeZone, anchorDate, view,

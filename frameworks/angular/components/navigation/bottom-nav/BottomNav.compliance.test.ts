@@ -83,10 +83,8 @@ test('every destination takes an equal share, and nothing about that is a member
     const columns = Array.from(bar.querySelectorAll('a, button'));
     assert.equal(columns.length, 3);
     for (const column of columns) {
-      const cls = column.className.split(/\s+/);
-      assert.ok(cls.includes('flex-1') && cls.includes('basis-0'),
-        'a column that sizes to its own label makes the bar lurch as the labels change');
-      assert.ok(cls.includes('min-w-0'), 'and without a zero floor a long label pushes its neighbours out of the bar');
+      assert.ok(column.className.split(/\s+/).includes('arena-bottom-nav__item'),
+        'every destination draws from the one item slot, which is what makes their share equal');
     }
   } finally {
     fixture.destroy();

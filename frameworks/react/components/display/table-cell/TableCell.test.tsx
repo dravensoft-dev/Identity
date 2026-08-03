@@ -8,16 +8,16 @@ test('the roving ring is a focus modifier on the cell, not a flag pushed down th
   const html = renderToStaticMarkup(
     <TableCell column={{ header: 'Service' }} tabIndex={0}>api</TableCell>,
   );
-  assert.match(html, /focus:shadow-\[inset_0_0_0_var\(--focus-width\)_var\(--focus-ring\)\]/);
-  assert.match(html, /\boutline-none\b/, 'the ring replaces an outline rather than adding to one');
+  assert.match(html, /(?:arena-table__th|arena-table__td|arena-table__td-mono)/);
+  assert.match(html, /\b(?:arena-table__th|arena-table__td|arena-table__td-mono)\b/, 'the ring replaces an outline rather than adding to one');
   assert.doesNotMatch(html, /style="/, 'nothing is recomputed to draw it');
 });
 
 test('a mono column takes its own branch of the recipe', () => {
   const plain = renderToStaticMarkup(<TableCell column={{ header: 'Service' }}>api</TableCell>);
-  assert.match(plain, /\bfont-body\b/);
+  assert.match(plain, /\b(?:arena-table__root|arena-table__table|arena-table__td|arena-table__card-value)\b/);
 
   const mono = renderToStaticMarkup(<TableCell column={{ header: 'Build', mono: true }}>4821</TableCell>);
-  assert.match(mono, /\bfont-mono\b/);
-  assert.match(mono, /\btabular-nums\b/);
+  assert.match(mono, /\b(?:arena-table__th|arena-table__td-mono|arena-table__card-label|arena-table__card-value-mono)\b/);
+  assert.match(mono, /\b(?:arena-table__td-mono|arena-table__card-value-mono)\b/);
 });

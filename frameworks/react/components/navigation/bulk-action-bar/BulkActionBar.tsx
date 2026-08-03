@@ -2,8 +2,8 @@ import React, { useRef, useState } from 'react';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
 
 import type { BulkAction, BulkActionBarLayout } from '../../../Api.generated';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './BulkActionBar.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './BulkActionBar.classes.generated.ts';
 
 export type { BulkAction };
 
@@ -32,7 +32,7 @@ export interface BulkActionBarProps {
 }
 
 
-const barStyles = tv(manifest);
+const barStyles = arenaStyles(manifest);
 
 export function BulkActionBar({ count, noun = 'items', actions, layout = 'auto', onRun, onClear, clearable = true }: BulkActionBarProps) {
   if (count == null) throw new Error('BulkActionBar: `count` is required');

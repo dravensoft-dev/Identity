@@ -3,8 +3,8 @@ import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
 import { indentFor } from '../side-nav/SideNavInject.tsx';
 import { activeWeight, badgeCount } from '../NavRow.ts';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../side-nav/SideNav.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../side-nav/SideNav.classes.generated.ts';
 
 export interface SideNavItemProps {
 
@@ -28,7 +28,7 @@ export interface SideNavItemProps {
 }
 
 
-const sideNavStyles = tv(manifest);
+const sideNavStyles = arenaStyles(manifest);
 
 export function SideNavItem({
   id, label, icon, badge, href, disabled = false,

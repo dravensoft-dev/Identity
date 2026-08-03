@@ -1,8 +1,8 @@
 import React, { useId } from 'react';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
 import { indentFor, injectInto } from '../side-nav/SideNavInject.tsx';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../side-nav/SideNav.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../side-nav/SideNav.classes.generated.ts';
 
 export interface SideNavSectionProps {
 
@@ -14,7 +14,7 @@ export interface SideNavSectionProps {
 }
 
 
-const sideNavStyles = tv(manifest);
+const sideNavStyles = arenaStyles(manifest);
 
 export function SideNavSection({
   label, children,

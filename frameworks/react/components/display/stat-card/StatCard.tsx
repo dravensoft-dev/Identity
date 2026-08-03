@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './StatCard.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './StatCard.classes.generated.ts';
 
 import type { StatDelta, Tone } from '../../../Api.generated';
 
@@ -27,7 +27,7 @@ export interface StatCardProps {
 }
 
 
-const statCardStyles = tv(manifest);
+const statCardStyles = arenaStyles(manifest);
 
 export function StatCard({ label, value, tone = 'neutral', delta, sub, icon }: StatCardProps) {
   if (!label || !value) throw new Error('StatCard: `label` and `value` are required');

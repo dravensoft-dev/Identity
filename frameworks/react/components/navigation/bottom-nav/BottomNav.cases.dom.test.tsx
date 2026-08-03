@@ -150,9 +150,9 @@ test('the bar adds the safe-area inset to its height rather than eating into it'
     </BottomNav>,
   );
   const bar = root.querySelector('nav')!.getAttribute('class') ?? '';
-  assert.match(bar, /\bh-bar\b/);
-  assert.match(bar, /\bpb-\[var\(--pad-safe-bottom\)\]/);
-  assert.match(bar, /\bbox-content\b/,
+  assert.match(bar, /\barena-bottom-nav__root\b/);
+  assert.match(bar, /arena-bottom-nav__root/);
+  assert.match(bar, /\barena-bottom-nav__root\b/,
     'under border-box the device inset would come out of the row rather than below it, '
     + 'so the bar would stand shorter on a phone than on a desktop');
 });
@@ -165,8 +165,8 @@ test('the active column takes the accent from the variant, and its badge from th
     </BottomNav>,
   );
   const columns = [...root.querySelectorAll('nav > *')].map((c) => c.getAttribute('class') ?? '');
-  assert.equal(columns.filter((c) => /\btext-primary\b/.test(c)).length, 1,
+  assert.equal(columns.filter((c) => /\barena-bottom-nav__item--active-true\b/.test(c)).length, 1,
     'exactly the current column is accented');
-  assert.match(columns[0]!, /hover:text-base-content/, 'and every column lifts through a modifier');
-  assert.match(root.querySelector('nav')!.innerHTML, /\bbg-primary\b/, 'the badge is the accent chip');
+  assert.match(columns[0]!, /arena-bottom-nav__item/, 'and every column lifts through a modifier');
+  assert.match(root.querySelector('nav')!.innerHTML, /\barena-bottom-nav__badge\b/, 'the badge is the accent chip');
 });

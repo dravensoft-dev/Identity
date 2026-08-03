@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Skeleton.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Skeleton.classes.generated.ts';
 
 import type { SkeletonVariant } from '../../../Api.generated';
 
@@ -22,7 +22,7 @@ export interface SkeletonProps {
 }
 
 
-const skeletonStyles = tv(manifest);
+const skeletonStyles = arenaStyles(manifest);
 
 export function Skeleton({ variant = 'block', width, height, lines = 3, radius }: SkeletonProps) {
   const styles = skeletonStyles({ variant });

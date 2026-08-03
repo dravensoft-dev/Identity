@@ -67,8 +67,7 @@ test('the group is role="radiogroup" and not role="group" -- the defect this rep
 test('the host is the track itself, so the focus ring lands on the box the user sees', () => {
   const { fixture, group } = render();
   try {
-    assert.match(group.getAttribute('class') ?? '', /inline-flex/);
-    assert.match(group.getAttribute('class') ?? '', /focus-within:/);
+    assert.match(group.getAttribute('class') ?? '', /arena-segmented-control__track/);
   } finally {
     fixture.destroy();
   }
@@ -138,8 +137,8 @@ test('the selected segment is the styled one, and it changes when the value does
   const { fixture, host } = render();
   try {
     const labels = Array.from(host.querySelectorAll('label'));
-    assert.match(labels[1].getAttribute('class') ?? '', /bg-neutral/);
-    assert.match(labels[0].getAttribute('class') ?? '', /bg-transparent/);
+    assert.match(labels[1].getAttribute('class') ?? '', /arena-segmented-control__segment--selected-true/);
+    assert.match(labels[0].getAttribute('class') ?? '', /arena-segmented-control__segment--selected-false/);
   } finally {
     fixture.destroy();
   }
@@ -147,8 +146,8 @@ test('the selected segment is the styled one, and it changes when the value does
   const other = render({ value: '24h' });
   try {
     const labels = Array.from(other.host.querySelectorAll('label'));
-    assert.match(labels[0].getAttribute('class') ?? '', /bg-neutral/);
-    assert.match(labels[1].getAttribute('class') ?? '', /bg-transparent/);
+    assert.match(labels[0].getAttribute('class') ?? '', /arena-segmented-control__segment--selected-true/);
+    assert.match(labels[1].getAttribute('class') ?? '', /arena-segmented-control__segment--selected-false/);
   } finally {
     other.fixture.destroy();
   }

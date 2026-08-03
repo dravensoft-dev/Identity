@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './ErrorState.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ErrorState.classes.generated.ts';
 import { Button } from '../../forms/button/Button.tsx';
 
 export interface ErrorStateProps {
@@ -21,7 +21,7 @@ export interface ErrorStateProps {
 }
 
 
-const errorStyles = tv(manifest);
+const errorStyles = arenaStyles(manifest);
 
 export function ErrorState({ icon, title = 'Something went wrong', message, code, retryLabel, onRetry, secondaryAction }: ErrorStateProps) {
   const styles = errorStyles();

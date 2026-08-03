@@ -1,10 +1,10 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../table/Table.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../table/Table.classes.generated.ts';
 import type { TableColumn } from '../../../Api.generated';
 import type { TableCellInjected } from '../table-cell/TableCell.tsx';
 
-const rowStyles = tv(manifest);
+const rowStyles = arenaStyles(manifest);
 
 export interface TableRowInjected {
   rowIndex: number;

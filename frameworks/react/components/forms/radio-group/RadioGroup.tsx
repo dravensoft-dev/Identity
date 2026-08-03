@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../radio/Radio.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../radio/Radio.classes.generated.ts';
 
 export interface RadioGroupProps {
 
@@ -21,7 +21,7 @@ export interface RadioGroupProps {
 }
 
 
-const radioStyles = tv(manifest);
+const radioStyles = arenaStyles(manifest);
 
 export function RadioGroup({ value, onChange, name, ariaLabel, children }: RadioGroupProps) {
   if (!ariaLabel?.trim()) throw new Error('RadioGroup: `ariaLabel` is required');

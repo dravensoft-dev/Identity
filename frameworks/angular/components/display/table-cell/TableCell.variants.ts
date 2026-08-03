@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/table/Table.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from '../table/Table.classes.generated';
 
-export const tableCellStyles = tv(manifest);
+export const tableCellStyles = arenaStyles(manifest);

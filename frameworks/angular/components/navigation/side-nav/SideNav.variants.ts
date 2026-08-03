@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/side-nav/SideNav.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './SideNav.classes.generated';
 
-export const sideNavStyles = tv(manifest);
+export const sideNavStyles = arenaStyles(manifest);

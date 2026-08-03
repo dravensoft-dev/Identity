@@ -1,7 +1,7 @@
 import React from 'react';
 import { injectInto } from './BottomNavInject.tsx';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './BottomNav.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './BottomNav.classes.generated.ts';
 
 export interface BottomNavProps {
 
@@ -18,7 +18,7 @@ export interface BottomNavProps {
   onNav?: (id: string) => void;
 }
 
-const bottomNavStyles = tv(manifest);
+const bottomNavStyles = arenaStyles(manifest);
 
 export function BottomNav({ active, ariaLabel, children, onNav }: BottomNavProps) {
 

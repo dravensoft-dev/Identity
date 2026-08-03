@@ -272,7 +272,7 @@ test('the host is the field group itself -- the root recipe lands on it, not on 
   const { fixture, host } = render();
   try {
     const inner = host.querySelector('arena-input') as HTMLElement;
-    assert.match(inner.getAttribute('class') ?? '', /flex-col/);
+    assert.match(inner.getAttribute('class') ?? '', /arena-input__root/);
   } finally {
     fixture.destroy();
   }

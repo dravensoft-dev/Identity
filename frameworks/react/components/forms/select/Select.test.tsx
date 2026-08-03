@@ -50,7 +50,7 @@ test('error takes the crimson state and names itself to the control, so the fail
   const html = renderToStaticMarkup(<Select label="Customer" error="Pick a customer" />);
   assert.match(html, /aria-invalid="true"/, 'an errored select did not announce itself as invalid');
   assert.match(html, /Pick a customer/);
-  assert.match(html, /\bborder-error\b/, 'the error state did not reach the border');
+  assert.match(html, /\barena-select__field--state-error\b/, 'the error state did not reach the border');
   const described = /aria-describedby="([^"]+)"/.exec(html);
   assert.ok(described, 'the message is drawn but nothing points at it, so a screen reader never reaches it');
   assert.ok(html.includes(`id="${described![1]}"`), 'aria-describedby names an id the render does not contain');
@@ -71,10 +71,10 @@ test('a hint alone is neutral, and is still named to the control', () => {
 });
 
 test('valid takes the green state, and error still beats it', () => {
-  assert.match(renderToStaticMarkup(<Select label="A" valid />), /\bborder-success\b/);
-  assert.match(renderToStaticMarkup(<Select label="A" valid error="No" />), /\bborder-error\b/,
+  assert.match(renderToStaticMarkup(<Select label="A" valid />), /\barena-select__field--state-valid\b/);
+  assert.match(renderToStaticMarkup(<Select label="A" valid error="No" />), /\barena-select__field--state-error\b/,
     'valid won over error, so a field reports success while it is failing');
-  assert.doesNotMatch(renderToStaticMarkup(<Select label="A" valid error="No" />), /\bborder-success\b/);
+  assert.doesNotMatch(renderToStaticMarkup(<Select label="A" valid error="No" />), /\barena-select__field--state-valid\b/);
 });
 
 test('placeholder is a disabled empty first option, so "nothing chosen" is not the first choice', () => {
@@ -93,10 +93,10 @@ test('icon is drawn hidden and pushes the text clear of it', () => {
 });
 
 test('an icon shifts the field padding through a variant rather than a computed string', () => {
-  assert.doesNotMatch(renderToStaticMarkup(<Select label="A" options={[]} />), /\bpl-9\b/);
-  assert.match(renderToStaticMarkup(<Select label="A" options={[]} icon="ph-bold ph-globe" />), /\bpl-9\b/);
+  assert.doesNotMatch(renderToStaticMarkup(<Select label="A" options={[]} />), /\barena-select__field--has-icon-true\b/);
+  assert.match(renderToStaticMarkup(<Select label="A" options={[]} icon="ph-bold ph-globe" />), /\barena-select__field--has-icon-true\b/);
 });
 
 test('focus is a modifier the control answers, so nothing reports it to a state', () => {
-  assert.match(renderToStaticMarkup(<Select label="A" options={[]} />), /focus:border-secondary/);
+  assert.match(renderToStaticMarkup(<Select label="A" options={[]} />), /arena-select__field/);
 });

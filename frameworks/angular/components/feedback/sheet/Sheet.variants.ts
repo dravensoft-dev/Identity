@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/sheet/Sheet.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Sheet.classes.generated';
 
-export const sheetStyles = tv(manifest);
+export const sheetStyles = arenaStyles(manifest);

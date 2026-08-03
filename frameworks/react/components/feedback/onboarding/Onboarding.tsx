@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Onboarding.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Onboarding.classes.generated.ts';
 import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated.js';
 
 const SSR_VIEWPORT_H = 900;
@@ -38,7 +38,7 @@ export interface OnboardingProps {
 }
 
 
-const onboardingStyles = tv(manifest);
+const onboardingStyles = arenaStyles(manifest);
 
 export function Onboarding({ open, steps, index = 0, onNext, onBack, onSkip, onDone, anchor }: OnboardingProps) {
   if (open == null) throw new Error('Onboarding: `open` is required');

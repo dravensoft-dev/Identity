@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/tooltip/Tooltip.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Tooltip.classes.generated';
 
-export const tooltipStyles = tv(manifest);
+export const tooltipStyles = arenaStyles(manifest);

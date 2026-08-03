@@ -134,7 +134,7 @@ test('an item with href renders an anchor and one without renders a button, and 
     const button = nav.querySelector('button') as HTMLButtonElement;
     assert.equal(anchor.getAttribute('href'), '#projects');
     assert.equal(button.getAttribute('type'), 'button');
-    assert.equal(anchor.className.split(/\s+/).filter((c) => c.startsWith('bg-')).length > 0, true,
+    assert.ok(anchor.className.split(/\s+/).includes('arena-side-nav__item--active-true'),
       'the active row is inked');
     assert.ok(anchor.querySelector('i[aria-hidden="true"]'), 'the icon is a glyph Arena draws, not projected content');
   } finally {

@@ -29,7 +29,7 @@ test('indeterminate ignores progressPercentage: no fill, no aria-valuenow', () =
   assert.doesNotMatch(html, /aria-valuenow/, 'an indeterminate bar reported a value');
   assert.doesNotMatch(html, /width:64%/, 'an indeterminate bar drew a fill from progressPercentage');
 
-  assert.match(html, /\barena-prog-indeterminate\b/,
+  assert.match(html, /\barena-progress-bar__indeterminate\b/,
     'the sweep is the shared utility, whose reduced-motion clause slows it rather than stopping it');
 });
 
@@ -71,8 +71,9 @@ test('an absent label throws rather than falling back to a name that says only w
 
 test('every tone reaches the bar as its own branch of the recipe', () => {
   const expected = {
-    accent: 'text-primary', gold: 'text-secondary', success: 'text-success',
-    danger: 'text-error', info: 'text-info',
+    accent: 'arena-progress-bar__track--tone-accent', gold: 'arena-progress-bar__track--tone-gold',
+    success: 'arena-progress-bar__track--tone-success',
+    danger: 'arena-progress-bar__track--tone-danger', info: 'arena-progress-bar__track--tone-info',
   };
   for (const [tone, cls] of Object.entries(expected)) {
     // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
@@ -81,8 +82,8 @@ test('every tone reaches the bar as its own branch of the recipe', () => {
   }
 
   const fallback = renderToStaticMarkup(<ProgressBar label="Uploading build" progressPercentage={50} />);
-  assert.match(fallback, /\btext-primary\b/);
-  assert.match(fallback, /\bbg-current\b/,
+  assert.match(fallback, /\barena-progress-bar__track--tone-accent\b/);
+  assert.match(fallback, /\barena-progress-bar__fill\b/,
     'the fill reads the tone off the track rather than naming a colour of its own');
 });
 

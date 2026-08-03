@@ -182,7 +182,7 @@ test('the description reaches a child that drops every prop it is handed', () =>
 test('the bubble takes the shared fade utility rather than a keyframe of its own', () => {
   const root = mount(one());
   focusIn(root);
-  assert.match(bubble(root).getAttribute('class') ?? '', /\barena-fade\b/);
+  assert.match(bubble(root).getAttribute('class') ?? '', /\barena-tooltip__bubble\b/);
   assert.equal(document.querySelector('style[data-arena-tooltip]'), null,
     'nothing injects keyframes any more; the compiled sheet carries arena-fade');
 });

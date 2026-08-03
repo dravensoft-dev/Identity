@@ -39,11 +39,11 @@ test('the danger tone announces assertively as an alert', () => {
   const html = renderToStaticMarkup(<Toast tone="danger" title="Pipeline failed" />);
   assert.match(html, /role="alert"/);
   assert.match(html, /aria-live="assertive"/);
-  assert.match(html, /\bborder-l-error\b/, 'the danger tone did not reach the side bar');
+  assert.match(html, /\barena-toast__root--tone-danger\b/, 'the danger tone did not reach the side bar');
 });
 
 test('every other tone announces politely as a status', () => {
-  const expected = { neutral: 'border-l-neutral', success: 'border-l-success', gold: 'border-l-secondary' };
+  const expected = { neutral: 'arena-toast__root--tone-neutral', success: 'arena-toast__root--tone-success', gold: 'arena-toast__root--tone-gold' };
   for (const [tone, token] of Object.entries(expected)) {
     // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
     const html = renderToStaticMarkup(<Toast tone={tone} title="Deployment archived" />);

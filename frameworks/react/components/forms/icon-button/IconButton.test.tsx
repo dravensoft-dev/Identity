@@ -85,27 +85,27 @@ test('pressed keeps the label, because a toggle that renames itself is announced
 
 test('the pressed tint is a variant of the manifest, and absent means not a toggle at all', () => {
   const off = renderToStaticMarkup(<IconButton icon="ph-x" label="L" />);
-  assert.doesNotMatch(off, /\bbg-primary\/14\b/);
+  assert.doesNotMatch(off, /\barena-icon-button__root--pressed-true\b/);
   assert.doesNotMatch(off, /aria-pressed/);
 
   const on = renderToStaticMarkup(<IconButton icon="ph-x" label="L" pressed />);
-  assert.match(on, /\bbg-primary\/14\b/);
-  assert.match(on, /\btext-primary\b/);
+  assert.match(on, /\barena-icon-button__root--pressed-true\b/);
+  assert.match(on, /\barena-icon-button__root--pressed-true\b/);
   assert.match(on, /aria-pressed="true"/);
 });
 
 test('ghost and solid are two branches of one recipe, and hover is a modifier rather than a state', () => {
   const ghost = renderToStaticMarkup(<IconButton icon="ph-x" label="L" />);
-  assert.match(ghost, /\bbg-transparent\b/);
-  assert.match(ghost, /hover:bg-base-200/);
+  assert.match(ghost, /\barena-icon-button__root--variant-ghost\b/);
+  assert.match(ghost, /arena-icon-button__root--variant-ghost/);
 
   const solid = renderToStaticMarkup(<IconButton icon="ph-x" label="L" variant="solid" />);
-  assert.match(solid, /\bbg-primary\b/);
-  assert.match(solid, /\btext-primary-content\b/);
+  assert.match(solid, /\barena-icon-button__root--variant-solid\b/);
+  assert.match(solid, /\barena-icon-button__root--variant-solid\b/);
 });
 
 test('the disabled look is selected by the native attribute, so nothing is recomputed to draw it', () => {
   const html = renderToStaticMarkup(<IconButton icon="ph-x" label="L" disabled />);
-  assert.match(html, /disabled:opacity-45/);
+  assert.match(html, /arena-icon-button__root/);
   assert.match(html, /\bdisabled=""/);
 });

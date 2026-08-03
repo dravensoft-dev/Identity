@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { delayOpen, delayClose } from '../../../Tokens.generated.js';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Tooltip.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Tooltip.classes.generated.ts';
 
 export interface TooltipProps {
 
@@ -13,7 +13,7 @@ export interface TooltipProps {
 }
 
 
-const tooltipStyles = tv(manifest);
+const tooltipStyles = arenaStyles(manifest);
 
 export function Tooltip({ children, label }: TooltipProps) {
   if (!label) throw new Error('Tooltip: `label` is required');

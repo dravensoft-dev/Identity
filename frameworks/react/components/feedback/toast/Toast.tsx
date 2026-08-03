@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Toast.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Toast.classes.generated.ts';
 
 import type { ToastTone } from '../../../Api.generated';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js';
@@ -34,7 +34,7 @@ export interface ToastProps {
 
 export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
 
-const toastStyles = tv(manifest);
+const toastStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);
 type Tone = keyof typeof manifest.variants.tone;
 const toneOf = (tone: string | undefined): Tone =>

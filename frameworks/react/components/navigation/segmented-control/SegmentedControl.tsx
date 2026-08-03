@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './SegmentedControl.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './SegmentedControl.classes.generated.ts';
 
 import type { SegmentOption, SegmentedControlSize } from '../../../Api.generated';
 
@@ -30,7 +30,7 @@ export interface SegmentedControlProps {
 }
 
 
-const segmentedStyles = tv(manifest);
+const segmentedStyles = arenaStyles(manifest);
 
 export function SegmentedControl({
   options, value, defaultValue, onChange,

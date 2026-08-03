@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { warnOnce } from '../../../WarnOnce.ts';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Table.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Table.classes.generated.ts';
 
 import { Pagination } from '../../navigation/pagination/Pagination.tsx';
 import { Select } from '../../forms/select/Select.tsx';
@@ -58,7 +58,7 @@ export function parseSortOption(value: string): TableSort | null {
   return { column: index, direction };
 }
 
-const tableStyles = tv(manifest);
+const tableStyles = arenaStyles(manifest);
 
 export function Table({
   columns, children, empty = 'No data.', responsive = true, label,

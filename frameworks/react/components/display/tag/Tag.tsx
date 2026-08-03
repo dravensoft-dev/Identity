@@ -1,8 +1,8 @@
 import React from 'react';
 
 import type { TagTone } from '../../../Api.generated';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Tag.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Tag.classes.generated.ts';
 
 export interface TagProps {
   /** The tag's label. */
@@ -18,7 +18,7 @@ export interface TagProps {
 }
 
 
-const tagStyles = tv(manifest);
+const tagStyles = arenaStyles(manifest);
 
 export function Tag({ children, tone = 'neutral', removable = false, disabled = false, onRemove }: TagProps) {
   const styles = tagStyles({ tone, disabled });

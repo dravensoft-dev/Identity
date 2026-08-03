@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Pagination.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Pagination.classes.generated.ts';
 import { pageWindow } from './PaginationWindow.ts';
 
 export interface PaginationProps {
@@ -19,7 +19,7 @@ export interface PaginationProps {
 }
 
 
-const paginationStyles = tv(manifest);
+const paginationStyles = arenaStyles(manifest);
 
 export function Pagination({ page, pageCount, ariaLabel, onChange }: PaginationProps) {
 

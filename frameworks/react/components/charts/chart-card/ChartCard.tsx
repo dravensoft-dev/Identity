@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './ChartCard.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ChartCard.classes.generated.ts';
 
 export interface ChartCardProps {
 
@@ -14,7 +14,7 @@ export interface ChartCardProps {
 }
 
 
-const chartCardStyles = tv(manifest);
+const chartCardStyles = arenaStyles(manifest);
 
 export function ChartCard({ title, actions, children }: ChartCardProps) {
   const styles = chartCardStyles();

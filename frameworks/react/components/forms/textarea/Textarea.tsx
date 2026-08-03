@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Textarea.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Textarea.classes.generated.ts';
 
 export interface TextareaProps {
 
@@ -61,7 +61,7 @@ export function fitToContent(element: HTMLElement | null): void {
   element.style.height = `${element.scrollHeight + borderBoxSlack(element)}px`;
 }
 
-const textareaStyles = tv(manifest);
+const textareaStyles = arenaStyles(manifest);
 
 export function Textarea({
   label, id, hint, error, required = false, rows = 4, maxLength, counter = false,

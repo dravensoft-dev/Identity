@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './PageHead.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './PageHead.classes.generated.ts';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
 
 import type { PageHeadAlign } from '../../../Api.generated';
@@ -21,7 +21,7 @@ export interface PageHeadProps {
 }
 
 
-const pageHeadStyles = tv(manifest);
+const pageHeadStyles = arenaStyles(manifest);
 
 export function PageHead({ title, subtitle, actions, align = 'start' }: PageHeadProps) {
   if (!title) throw new Error('PageHead: `title` is required');

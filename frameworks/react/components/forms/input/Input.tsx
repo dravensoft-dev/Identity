@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Input.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Input.classes.generated.ts';
 
 import type { InputType, ValidateOn } from '../../../Api.generated';
 
@@ -80,7 +80,7 @@ export interface InputProps {
 }
 
 
-const inputStyles = tv(manifest);
+const inputStyles = arenaStyles(manifest);
 
 export interface InputHandle {
   focus(options?: FocusOptions): void;

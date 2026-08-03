@@ -7,12 +7,12 @@ import { Tag } from './Tag.tsx';
 test('a tone renders its dot and the tone colour; default is neutral', () => {
   const html = renderToStaticMarkup(<Tag tone="success">Shipped</Tag>);
   assert.match(html, /Shipped/);
-  assert.match(html, /\bborder-success\b/);
-  assert.match(html, /\btext-success\b/);
-  assert.match(html, /\bbg-current\b/, 'the dot takes the tone from the text colour and draws nothing of its own');
+  assert.match(html, /\barena-tag__root--tone-success\b/);
+  assert.match(html, /\barena-tag__root--tone-success\b/);
+  assert.match(html, /\barena-tag__dot\b/, 'the dot takes the tone from the text colour and draws nothing of its own');
   const neutral = renderToStaticMarkup(<Tag>Draft</Tag>);
-  assert.match(neutral, /\bborder-base-300\b/);
-  assert.match(neutral, /\btext-base-content\/70\b/);
+  assert.match(neutral, /\barena-tag__root--tone-neutral\b/);
+  assert.match(neutral, /\barena-tag__root--tone-neutral\b/);
 });
 
 test('removable renders a labelled dismiss button that calls onRemove', () => {

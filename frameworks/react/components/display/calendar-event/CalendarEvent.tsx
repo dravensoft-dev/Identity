@@ -1,5 +1,5 @@
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../calendar/Calendar.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../calendar/Calendar.classes.generated.ts';
 import React from 'react';
 import { IconButton } from '../../forms/icon-button/IconButton.tsx';
 
@@ -51,7 +51,7 @@ export interface CalendarEventInjected {
   defaultPanelOpen: boolean;
 }
 
-const chipStyles = tv(manifest);
+const chipStyles = arenaStyles(manifest);
 
 export const CalendarEvent = React.forwardRef<
 HTMLElement, CalendarEventProps & Partial<CalendarEventInjected>

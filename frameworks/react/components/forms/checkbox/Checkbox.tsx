@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Checkbox.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Checkbox.classes.generated.ts';
 
 export interface CheckboxProps {
 
@@ -27,7 +27,7 @@ export interface CheckboxProps {
 }
 
 
-const checkboxStyles = tv(manifest);
+const checkboxStyles = arenaStyles(manifest);
 
 export function Checkbox({ checked = false, onChange, label, disabled = false, required = false, name, value }: CheckboxProps) {
   const styles = checkboxStyles({ checked, disabled });

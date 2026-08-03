@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/layout/grid/Grid.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Grid.classes.generated';
 
-export const gridStyles = tv(manifest);
+export const gridStyles = arenaStyles(manifest);

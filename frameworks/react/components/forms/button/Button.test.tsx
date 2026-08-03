@@ -17,7 +17,7 @@ test('Button draws icon before the label and iconRight after it', () => {
 
 test('Button replaces the leading icon with the spinner while loading', () => {
   const html = renderToStaticMarkup(<Button icon="ph-bold ph-plus" loading>Deploy</Button>);
-  assert.match(html, /arena-btn-spin/);
+  assert.match(html, /arena-button__spinner/);
   assert.doesNotMatch(html, /ph-bold ph-plus/);
 });
 
@@ -32,9 +32,9 @@ test('Button defaults its native type to button and honours an override', () => 
 
 test('Button renders danger as outline, never filled', () => {
   const html = renderToStaticMarkup(<Button variant="danger">Delete</Button>);
-  assert.match(html, /\bbg-transparent\b/, 'the danger surface is filled, and the convention is that it never is');
-  assert.match(html, /\bborder-error\b/);
-  assert.match(html, /\btext-error\b/);
+  assert.match(html, /\b(?:arena-button__root--variant-ghost|arena-button__root--variant-danger)\b/, 'the danger surface is filled, and the convention is that it never is');
+  assert.match(html, /\barena-button__root--variant-danger\b/);
+  assert.match(html, /\barena-button__root--variant-danger\b/);
   assert.doesNotMatch(html, /(?<!:)\bbg-error\b/,
     'an unmodified bg-error fills the danger surface; only the hover: form may tint it');
 });

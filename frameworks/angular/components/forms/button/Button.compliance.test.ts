@@ -63,7 +63,7 @@ test('the host stays bare -- the recipe classes land on the <button> inside it, 
   const { fixture, host, control } = render();
   try {
     assert.equal(host.getAttribute('class'), null);
-    assert.match(control.getAttribute('class') ?? '', /inline-flex/);
+    assert.match(control.getAttribute('class') ?? '', /arena-button__root/);
   } finally {
     fixture.destroy();
   }
@@ -109,7 +109,7 @@ test('loading implies disabled and swaps the leading icon for the spinner', () =
     assert.equal(control.disabled, true, 'loading must block activation without the caller also setting disabled');
     const spinner = control.querySelector('span');
     assert.ok(spinner, 'loading rendered no spinner');
-    assert.match(spinner.getAttribute('class') ?? '', /arena-btn-spin/);
+    assert.match(spinner.getAttribute('class') ?? '', /arena-button__spinner/);
     assert.equal(spinner.getAttribute('aria-hidden'), 'true',
       'the spinner is decoration; the label already says what is happening');
   } finally {

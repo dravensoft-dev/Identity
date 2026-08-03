@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/brand/app-logo/AppLogo.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './AppLogo.classes.generated';
 
-export const appLogoStyles = tv(manifest);
+export const appLogoStyles = arenaStyles(manifest);

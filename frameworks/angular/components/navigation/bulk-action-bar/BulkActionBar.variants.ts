@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/bulk-action-bar/BulkActionBar.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './BulkActionBar.classes.generated';
 
-export const bulkActionBarStyles = tv(manifest);
+export const bulkActionBarStyles = arenaStyles(manifest);

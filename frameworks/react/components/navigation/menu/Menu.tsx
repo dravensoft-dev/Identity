@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Menu.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Menu.classes.generated.ts';
 
 import type { MenuItem, MenuAlign } from '../../../Api.generated';
 
@@ -22,7 +22,7 @@ export interface MenuProps {
 }
 
 
-const menuStyles = tv(manifest);
+const menuStyles = arenaStyles(manifest);
 
 export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
 

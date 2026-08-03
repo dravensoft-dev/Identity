@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './EmptyState.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './EmptyState.classes.generated.ts';
 
 export interface EmptyStateProps {
 
@@ -16,7 +16,7 @@ export interface EmptyStateProps {
 }
 
 
-const emptyStyles = tv(manifest);
+const emptyStyles = arenaStyles(manifest);
 
 export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
   if (!title) throw new Error('EmptyState: `title` is required');

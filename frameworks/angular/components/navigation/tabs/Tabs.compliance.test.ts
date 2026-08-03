@@ -125,9 +125,9 @@ test('only the active panel is shown, and the inactive ones are hidden rather th
   const { fixture, read } = render();
   try {
     const { panels } = read();
-    assert.match(panels[1].getAttribute('class') ?? '', /\bblock\b/);
-    assert.match(panels[0].getAttribute('class') ?? '', /\bhidden\b/);
-    assert.match(panels[2].getAttribute('class') ?? '', /\bhidden\b/);
+    assert.doesNotMatch(panels[1].getAttribute('class') ?? '', /arena-tabs__panel--selected-false/);
+    assert.match(panels[0].getAttribute('class') ?? '', /arena-tabs__panel--selected-false/);
+    assert.match(panels[2].getAttribute('class') ?? '', /arena-tabs__panel--selected-false/);
     assert.equal(panels[0].textContent?.trim(), 'Overview body',
       'an inactive panel keeps its content -- its side effects have already run, which the contract states');
   } finally {
@@ -219,7 +219,7 @@ test('with neither value nor defaultValue the first tab is selected, so a panel 
   const { fixture, read } = render({ value: undefined });
   try {
     assert.equal(read().tabs[0].getAttribute('aria-selected'), 'true');
-    assert.match(read().panels[0].getAttribute('class') ?? '', /\bblock\b/);
+    assert.doesNotMatch(read().panels[0].getAttribute('class') ?? '', /arena-tabs__panel--selected-false/);
   } finally {
     fixture.destroy();
   }

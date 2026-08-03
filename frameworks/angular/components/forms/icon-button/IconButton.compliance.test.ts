@@ -69,7 +69,7 @@ test('the host stays bare and out of layout -- the recipe classes land on the <b
     assert.equal(inner.getAttribute('class'), null);
     assert.match(inner.getAttribute('style') ?? '', /display:\s*contents/,
       'a bare host must leave layout, or as a flex item it shrinks to fit around the control');
-    assert.match(control.getAttribute('class') ?? '', /inline-flex/);
+    assert.match(control.getAttribute('class') ?? '', /arena-icon-button__root/);
   } finally {
     fixture.destroy();
   }

@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Select.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Select.classes.generated.ts';
 
 import type { SelectOption } from '../../../Api.generated';
 
@@ -45,7 +45,7 @@ export interface SelectProps {
   onChange?: (value: string) => void;
 }
 
-const selectStyles = tv(manifest);
+const selectStyles = arenaStyles(manifest);
 
 export function Select({
   label, placeholder, options = [], value, onChange, disabled = false, required = false,

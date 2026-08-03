@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './ToastHost.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ToastHost.classes.generated.ts';
 
 import type { ToastPlacement } from '../../../Api.generated';
 
@@ -13,7 +13,7 @@ export interface ToastHostProps {
   children?: React.ReactNode;
 }
 
-const toastHostStyles = tv(manifest);
+const toastHostStyles = arenaStyles(manifest);
 const PLACEMENTS = Object.keys(manifest.variants.placement);
 const placementOf = (placement: string | undefined): ToastPlacement | undefined =>
   (placement && PLACEMENTS.includes(placement) ? placement as ToastPlacement : undefined);

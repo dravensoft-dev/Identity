@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Sheet.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Sheet.classes.generated.ts';
 
 import type { SheetPlacement } from '../../../Api.generated';
 
@@ -34,7 +34,7 @@ export interface SheetProps {
   footer?: React.ReactNode;
 }
 
-const sheetStyles = tv(manifest);
+const sheetStyles = arenaStyles(manifest);
 
 export function Sheet({
   open, placement = 'bottom', title, collapsed = false, onCollapsedChange,

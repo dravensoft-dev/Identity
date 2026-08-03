@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './AppLogo.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './AppLogo.classes.generated.ts';
 
 import type { LogoSize, Orientation } from '../../../Api.generated';
 
@@ -22,7 +22,7 @@ export interface AppLogoProps {
 }
 
 
-const logoStyles = tv(manifest);
+const logoStyles = arenaStyles(manifest);
 
 export function AppLogo({ size = 'md', orientation = 'horizontal', mark, name, dim }: AppLogoProps) {
   if (!mark || !name) throw new Error('AppLogo: `mark` and `name` are required');

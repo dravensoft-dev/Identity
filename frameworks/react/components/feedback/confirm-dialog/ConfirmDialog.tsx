@@ -1,6 +1,6 @@
 import React, { useId, useRef, useState } from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './ConfirmDialog.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ConfirmDialog.classes.generated.ts';
 import { Button } from '../../forms/button/Button.tsx';
 import { useDialogModal } from '../../../UseDialogModal.ts';
 
@@ -29,7 +29,7 @@ export interface ConfirmDialogProps {
 }
 
 
-const confirmStyles = tv(manifest);
+const confirmStyles = arenaStyles(manifest);
 
 export function ConfirmDialog({ open, onCancel, onConfirm, title, eyebrow = 'Confirm', children,
   confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false, requireText }: ConfirmDialogProps) {

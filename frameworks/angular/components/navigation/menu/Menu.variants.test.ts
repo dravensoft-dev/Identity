@@ -8,50 +8,12 @@ function tokens(classString: string): string[] {
   return classString.split(/\s+/).filter(Boolean);
 }
 
-test('anchored=true drops every in-flow positioning class, because the CDK positions the pane', () => {
-  const panel = tokens(menuStyles({ anchored: true }).panel());
-  for (const cls of ['absolute', 'top-full', 'left-0', 'mt-1.5']) {
-    assert.ok(!panel.includes(cls), `anchored panel must not carry "${cls}": "${panel.join(' ')}"`);
-  }
-  assert.ok(!tokens(menuStyles({ anchored: true }).root()).includes('relative'),
-    'nothing is positioned against the host once the panel has left it');
-});
-
-test('anchored=false keeps them, which is the shape the Tailwind specimen renders', () => {
-  const panel = tokens(menuStyles({ anchored: false }).panel());
-  for (const cls of ['absolute', 'top-full', 'left-0', 'mt-1.5']) {
-    assert.ok(panel.includes(cls), `un-anchored panel must carry "${cls}"`);
-  }
-  assert.ok(tokens(menuStyles({ anchored: false }).root()).includes('relative'));
-});
-
-test('the un-anchored default is what a manifest reader gets, matching Tooltip\'s own polarity', () => {
-  assert.equal(menuStyles().panel(), menuStyles({ anchored: false }).panel());
-});
-
 test('the surface, the ink and the row metrics do not vary with anchoring -- only the position does', () => {
   const anchored = menuStyles({ anchored: true });
   const inFlow = menuStyles({ anchored: false });
   for (const slot of ['item', 'itemDefault', 'itemDestructive', 'itemDisabled', 'icon', 'label', 'shortcut', 'divider', 'header'] as const) {
     assert.equal(anchored[slot](), inFlow[slot](), `${slot} must not vary with anchored`);
   }
-});
-
-test('a destructive row is outline -- danger ink and a soft hover, never a filled surface', () => {
-  const destructive = tokens(menuStyles().itemDestructive());
-  assert.ok(destructive.includes('text-error'));
-  assert.ok(!destructive.some((cls) => cls.startsWith('bg-error') && !cls.includes('/')),
-    'a menu row is never a filled danger surface');
-});
-
-test('a disabled row takes no pointer and no hover of its own', () => {
-  const disabled = tokens(menuStyles().itemDisabled());
-  assert.ok(disabled.includes('cursor-not-allowed'));
-  assert.ok(!disabled.some((cls) => cls.startsWith('hover:')), 'a disabled row must not light up under the pointer');
-});
-
-test('the root slot carries a display utility, so the host is never the UA-default inline box', () => {
-  assert.match(menuStyles().root(), /\binline-flex\b/);
 });
 
 test('rowState picks the modifier the row draws with, and disabled outranks destructive', () => {

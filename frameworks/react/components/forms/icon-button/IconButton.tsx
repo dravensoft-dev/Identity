@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './IconButton.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './IconButton.classes.generated.ts';
 
 import type { ButtonType, ControlSize, IconButtonVariant } from '../../../Api.generated';
 
@@ -47,7 +47,7 @@ export interface IconButtonProps {
 }
 
 
-const iconButtonStyles = tv(manifest);
+const iconButtonStyles = arenaStyles(manifest);
 
 export function IconButton({
   icon, label, size = 'md', variant = 'ghost', pressed, showLabel = false, disabled = false,

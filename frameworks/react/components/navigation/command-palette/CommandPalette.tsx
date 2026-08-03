@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import { trapTabKey } from '../../../UseDialogModal.ts';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './CommandPalette.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './CommandPalette.classes.generated.ts';
 
 import type { Command } from '../../../Api.generated';
 
@@ -30,7 +30,7 @@ export interface CommandPaletteProps {
 }
 
 
-const paletteStyles = tv(manifest);
+const paletteStyles = arenaStyles(manifest);
 
 let nextId = 0;
 

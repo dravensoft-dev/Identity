@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/avatar/Avatar.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Avatar.classes.generated';
 
-export const avatarStyles = tv(manifest);
+export const avatarStyles = arenaStyles(manifest);

@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Switch.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Switch.classes.generated.ts';
 
 import type { Orientation, SwitchSize } from '../../../Api.generated';
 
@@ -30,7 +30,7 @@ export interface SwitchProps {
 }
 
 
-const switchStyles = tv(manifest);
+const switchStyles = arenaStyles(manifest);
 
 export function Switch({
   state = false, orientation = 'horizontal', size = 'md',

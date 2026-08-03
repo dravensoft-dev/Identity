@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/skeleton/Skeleton.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Skeleton.classes.generated';
 
-export const skeletonStyles = tv(manifest);
+export const skeletonStyles = arenaStyles(manifest);

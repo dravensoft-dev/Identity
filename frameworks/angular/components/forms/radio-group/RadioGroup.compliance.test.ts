@@ -60,7 +60,7 @@ test('the group is the host itself, carrying the role and the name it is asked f
     assertSameNode(group, host.querySelector('arena-radio-group'));
     assert.equal(group.getAttribute('aria-label'), 'Deployment target',
       'the group names what is being chosen; each option names only itself');
-    assert.match(group.getAttribute('class') ?? '', /flex-col/);
+    assert.match(group.getAttribute('class') ?? '', /arena-radio__group/);
   } finally {
     fixture.destroy();
   }

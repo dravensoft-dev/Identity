@@ -1,7 +1,7 @@
 import React from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Card.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Card.classes.generated.ts';
 
 export interface CardProps {
 
@@ -31,7 +31,7 @@ export interface CardProps {
   onClick?: () => void;
 }
 
-const cardStyles = tv(manifest);
+const cardStyles = arenaStyles(manifest);
 
 export function Card({
   children, title, eyebrow, action, floating = false, accent = false,

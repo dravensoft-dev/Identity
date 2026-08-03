@@ -79,8 +79,8 @@ test('the narrow shape stacks and reorders NOTHING, so focus order still matches
   try {
     narrow = await render();
     const root = bar(narrow);
-    assert.match(root.className, /\bflex-col\b/, 'the narrow shape must stack');
-    assert.match(root.className, /\bitems-stretch\b/);
+    assert.match(root.className, /arena-bulk-action-bar__root--narrow-true/, 'the narrow shape must stack');
+    assert.match(root.className, /arena-bulk-action-bar__root--narrow-true/);
 
     const stacked = labels(narrow);
     restore();
@@ -102,7 +102,7 @@ test('layout="inline" keeps the one row at every width', async () => {
   let fixture: ComponentFixture<BarHost> | null = null;
   try {
     fixture = await render({ layout: 'inline' });
-    assert.doesNotMatch(bar(fixture).className, /\bflex-col\b/,
+    assert.doesNotMatch(bar(fixture).className, /arena-bulk-action-bar__root--narrow-true/,
       'inline is the opt-out for a bar in a place the consumer knows is wide');
   } finally {
     fixture?.destroy();
@@ -115,7 +115,7 @@ test('the wide shape is the single row it always was', async () => {
   let fixture: ComponentFixture<BarHost> | null = null;
   try {
     fixture = await render();
-    assert.doesNotMatch(bar(fixture).className, /\bflex-col\b/);
+    assert.doesNotMatch(bar(fixture).className, /arena-bulk-action-bar__root--narrow-true/);
     assert.deepEqual(labels(fixture), ['Export', 'Archive', 'Delete', 'Clear']);
   } finally { fixture?.destroy(); }
 });

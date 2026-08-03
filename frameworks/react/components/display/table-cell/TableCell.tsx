@@ -1,9 +1,9 @@
 import React from 'react';
 import type { TableColumn } from '../../../Api.generated';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../table/Table.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../table/Table.classes.generated.ts';
 
-const cellStyles = tv(manifest);
+const cellStyles = arenaStyles(manifest);
 
 export interface TableCellProps {
 

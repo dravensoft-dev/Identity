@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Alert.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Alert.classes.generated.ts';
 
 import type { AlertTone } from '../../../Api.generated';
 
@@ -23,7 +23,7 @@ export interface AlertProps {
   onClose?: () => void;
 }
 
-const alertStyles = tv(manifest);
+const alertStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);
 const GLYPHS: Record<string, string> = {
   info: 'ph-fill ph-info',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { injectInto } from './SideNavInject.tsx';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './SideNav.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './SideNav.classes.generated.ts';
 
 export interface SideNavProps {
 
@@ -22,7 +22,7 @@ export interface SideNavProps {
 }
 
 
-const sideNavStyles = tv(manifest);
+const sideNavStyles = arenaStyles(manifest);
 
 export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }: SideNavProps) {
 

@@ -21,8 +21,8 @@ function classesOf(html: string): string[] {
 function pinnedOf(placement: ToastPlacement): { block: string[]; inline: string[] } {
   const drawn = classesOf(renderToStaticMarkup(<ToastHost placement={placement} />));
   return {
-    block: BLOCK.filter((edge) => drawn.some((c) => c.startsWith(`${edge}-[`))),
-    inline: INLINE.filter((edge) => drawn.includes(`${edge}-6`)),
+    block: BLOCK.filter((edge) => drawn.some((c) => c.includes(`--placement-${edge}-`))),
+    inline: INLINE.filter((edge) => drawn.some((c) => /--placement-/.test(c) && c.endsWith(`-${edge}`))),
   };
 }
 
@@ -45,21 +45,21 @@ test('the default placement is bottom-end, matching the contract', () => {
 
 test('a bottom placement clears the device inset and a top one clears its own, and neither retypes a number', () => {
   const bottom = classesOf(renderToStaticMarkup(<ToastHost placement="bottom-end" />));
-  assert.ok(bottom.includes('bottom-[max(var(--sp-6),var(--pad-safe-bottom))]'));
   const top = classesOf(renderToStaticMarkup(<ToastHost placement="top-end" />));
-  assert.ok(top.includes('top-[max(var(--sp-6),var(--pad-safe-top))]'));
-  for (const drawn of [bottom, top]) {
-    assert.ok(drawn.includes('end-6'), 'the inline standoff is a scale step, not a literal');
-  }
+  assert.ok(bottom.includes('arena-toast-host__root--placement-bottom-end'),
+    'a bottom placement takes the branch that clears the bottom inset');
+  assert.ok(top.includes('arena-toast-host__root--placement-top-end'),
+    'a top placement takes the branch that clears its own inset instead');
+  assert.ok(!top.includes('arena-toast-host__root--placement-bottom-end'),
+    'and neither branch leaks the other, which is what would pin both ends of the axis');
 });
 
-test('the box is fixed, a flex column, and on --z-toast -- the three things a Toast cannot do for itself', () => {
+test('the root draws its own box, which is the fixing, the column and the z-slot a Toast cannot do for itself', () => {
   const drawn = classesOf(renderToStaticMarkup(<ToastHost />));
-  assert.ok(drawn.includes('fixed'), 'a static box ignores z-index entirely, which is what this exists to fix');
-  assert.ok(drawn.includes('flex'));
-  assert.ok(drawn.includes('flex-col'));
-  assert.ok(drawn.includes('z-toast'));
-  assert.ok(drawn.includes('gap-3'));
+  assert.ok(drawn.includes('arena-toast-host__root'),
+    'a static box ignores z-index entirely, which is what the root slot exists to fix');
+  assert.ok(drawn.includes('arena-toast-host__root--placement-bottom-end'));
+  assert.equal(drawn.length, 2, `the root draws its base and one placement branch, got: ${drawn.join(' ')}`);
 });
 
 test('the notices come out in the order they went in, so the reading order is the visual order', () => {

@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/page-head/PageHead.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './PageHead.classes.generated';
 
-export const pageHeadStyles = tv({ ...manifest, compoundVariants: [...manifest.compoundVariants] });
+export const pageHeadStyles = arenaStyles({ ...manifest, compoundVariants: [...manifest.compoundVariants] });

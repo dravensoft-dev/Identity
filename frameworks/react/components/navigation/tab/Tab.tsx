@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../tabs/Tabs.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../tabs/Tabs.classes.generated.ts';
 
 export interface TabInjected {
   selected: boolean;
@@ -23,7 +23,7 @@ export interface TabProps {
 }
 
 
-const tabsStyles = tv(manifest);
+const tabsStyles = arenaStyles(manifest);
 
 export function Tab({
   value, label,

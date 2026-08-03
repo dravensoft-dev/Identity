@@ -118,7 +118,7 @@ test('the placement reaches the host class, and it is the only thing that varies
   try {
     const topClass = (top.nativeElement.querySelector('arena-toast-host') as HTMLElement).className;
     assert.notEqual(topClass, bottomClass, 'the placement input never reached the rendered class');
-    for (const shared of ['fixed', 'flex', 'flex-col', 'gap-3', 'z-toast']) {
+    for (const shared of ['arena-toast-host__root']) {
       assert.ok(topClass.split(/\s+/).includes(shared), `${shared} must not vary with placement`);
       assert.ok(bottomClass.split(/\s+/).includes(shared), `${shared} must not vary with placement`);
     }

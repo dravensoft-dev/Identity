@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/activity-feed/ActivityFeed.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './ActivityFeed.classes.generated';
 
-export const activityFeedStyles = tv(manifest);
+export const activityFeedStyles = arenaStyles(manifest);

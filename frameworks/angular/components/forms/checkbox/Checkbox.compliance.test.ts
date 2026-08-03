@@ -75,7 +75,7 @@ test('the host stays bare and out of layout -- the recipe classes land on the <l
     assert.equal(inner.getAttribute('class'), null);
     assert.match(inner.getAttribute('style') ?? '', /display:\s*contents/);
     const label = host.querySelector('label') as HTMLElement;
-    assert.match(label.getAttribute('class') ?? '', /inline-flex/);
+    assert.match(label.getAttribute('class') ?? '', /arena-checkbox__root/);
   } finally {
     fixture.destroy();
   }

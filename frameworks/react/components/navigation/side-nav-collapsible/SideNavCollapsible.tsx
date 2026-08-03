@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
 import { indentFor, injectInto } from '../side-nav/SideNavInject.tsx';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from '../side-nav/SideNav.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from '../side-nav/SideNav.classes.generated.ts';
 import { SideNavItem } from '../side-nav-item/SideNavItem.tsx';
 
 export interface SideNavCollapsibleProps {
@@ -27,7 +27,7 @@ export interface SideNavCollapsibleProps {
 }
 
 
-const sideNavStyles = tv(manifest);
+const sideNavStyles = arenaStyles(manifest);
 
 export function subtreeHasItem(children: React.ReactNode, id: string | undefined): boolean {
   if (!id) return false;

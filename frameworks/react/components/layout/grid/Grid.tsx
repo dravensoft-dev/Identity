@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Grid.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Grid.classes.generated.ts';
 
 import type { GridGap } from '../../../Api.generated';
 
@@ -19,7 +19,7 @@ export interface GridProps {
   children?: React.ReactNode;
 }
 
-const gridStyles = tv(manifest);
+const gridStyles = arenaStyles(manifest);
 const GAPS = Object.keys(manifest.variants.gap);
 const gapOf = (gap: string | undefined): GridGap =>
   (gap && GAPS.includes(gap) ? gap as GridGap : 'md');

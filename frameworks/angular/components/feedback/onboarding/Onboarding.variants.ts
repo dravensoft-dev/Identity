@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/onboarding/Onboarding.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Onboarding.classes.generated';
 
-export const onboardingStyles = tv(manifest);
+export const onboardingStyles = arenaStyles(manifest);

@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/feedback/dialog/Dialog.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Dialog.classes.generated';
 
-export const dialogStyles = tv(manifest);
+export const dialogStyles = arenaStyles(manifest);

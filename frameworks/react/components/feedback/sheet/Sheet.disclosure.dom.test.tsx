@@ -108,7 +108,7 @@ test('a sheet is not a dialog: no role, no aria-modal, no scrim, and it takes no
     assert.equal(panel.getAttribute('role'), null, 'a non-modal panel claims no dialog role');
     assert.equal(panel.getAttribute('aria-modal'), null);
     const drawn = panel.className;
-    assert.ok(drawn.includes('z-sheet'), 'a sheet belongs in its own slot, not the modal\'s');
+    assert.ok(drawn.includes('arena-sheet__root'), 'a sheet belongs in its own slot, not the modal\'s');
     assert.ok(!drawn.includes('backdrop-blur'), 'a sheet darkens nothing behind it');
     assert.ok(!drawn.includes('bg-scrim'), 'and lays no scrim over what it leaves usable');
     assert.equal(document.activeElement, anchor,

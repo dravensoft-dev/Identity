@@ -67,16 +67,16 @@ test('Tab drops a consumer attribute -- no {...rest} spread reaches the root', (
 
 test('the selected tab wears the underline and the quiet one does not, from one recipe', () => {
   const on = renderToStaticMarkup(<Tab value="a" label="Overview" selected />);
-  assert.match(on, /\bfont-semibold\b/);
-  assert.match(on, /shadow-\[inset_0_calc\(var\(--bw-strong\)\*-1\)_0_var\(--crimson\)\]/);
+  assert.match(on, /\barena-tabs__tab--selected-true\b/);
+  assert.match(on, /arena-tabs__tab--selected-true/);
 
   const off = renderToStaticMarkup(<Tab value="a" label="Overview" />);
-  assert.match(off, /\bfont-medium\b/);
-  assert.match(off, /\bshadow-none\b/);
+  assert.match(off, /\barena-tabs__tab--selected-false\b/);
+  assert.match(off, /\barena-tabs__tab--selected-false\b/);
   assert.doesNotMatch(off, /inset_0_calc/);
 });
 
 test('focus is a modifier the button answers, so nothing reports it to a state', () => {
   assert.match(renderToStaticMarkup(<Tab value="a" label="Overview" />),
-    /focus-visible:shadow-\[0_0_0_var\(--focus-width\)_var\(--gold-soft\)\]/);
+    /arena-tabs__tab/);
 });

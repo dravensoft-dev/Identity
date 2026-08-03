@@ -27,11 +27,11 @@ test('an anchor switches the coachmark from the bottom-right corner to top/left 
 
   assert.match(anchored, /style="top:\d/, 'the anchored branch pins a computed top');
   assert.match(anchored, /left:\d/, 'the anchored branch pins a computed left');
-  assert.doesNotMatch(anchored, /\bright-6\b/, 'and stops floating off the corner');
+  assert.doesNotMatch(anchored, /\barena-onboarding__panel--placement-floating\b/, 'and stops floating off the corner');
 
   assert.doesNotMatch(floating, /style="top:/, 'the default branch pins nothing computed');
-  assert.match(floating, /\bright-6\b/, 'the default branch floats off the corner through the recipe');
-  assert.match(floating, /\bbottom-6\b/);
+  assert.match(floating, /\barena-onboarding__panel--placement-floating\b/, 'the default branch floats off the corner through the recipe');
+  assert.match(floating, /\barena-onboarding__panel--placement-floating\b/);
 });
 
 test('an absent required member throws rather than rendering', () => {

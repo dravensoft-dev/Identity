@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Spinner.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Spinner.classes.generated.ts';
 
 import type { ControlSize, SpinnerTone } from '../../../Api.generated';
 
@@ -17,7 +17,7 @@ export interface SpinnerProps {
 }
 
 
-const spinnerStyles = tv(manifest);
+const spinnerStyles = arenaStyles(manifest);
 
 export function Spinner({ size = 'md', tone = 'accent', label = 'Loading' }: SpinnerProps) {
   const styles = spinnerStyles({ size, tone });

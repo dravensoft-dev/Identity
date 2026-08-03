@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './Avatar.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './Avatar.classes.generated.ts';
 
 import type { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
 
@@ -17,7 +17,7 @@ export interface AvatarProps {
   status?: AvatarStatus;
 }
 
-const avatarStyles = tv(manifest);
+const avatarStyles = arenaStyles(manifest);
 const STATUSES = Object.keys(manifest.variants.status);
 type Status = keyof typeof manifest.variants.status;
 const statusOf = (status: string | undefined): Status | undefined =>

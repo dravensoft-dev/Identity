@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/bottom-nav/BottomNav.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './BottomNav.classes.generated';
 
-export const bottomNavStyles = tv(manifest);
+export const bottomNavStyles = arenaStyles(manifest);

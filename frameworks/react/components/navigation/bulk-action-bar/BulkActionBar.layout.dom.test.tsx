@@ -52,8 +52,8 @@ function labels(root: Element): string[] {
 
 test('the narrow shape stacks and reorders NOTHING, so focus order still matches reading order', () => {
   const narrow = narrowWidths(NARROW_WIDTH, () => render());
-  assert.match(bar(narrow).className, /\bflex-col\b/, 'the narrow shape must stack');
-  assert.match(bar(narrow).className, /\bitems-stretch\b/);
+  assert.match(bar(narrow).className, /\barena-bulk-action-bar__root--narrow-true\b/, 'the narrow shape must stack');
+  assert.match(bar(narrow).className, /\barena-bulk-action-bar__root--narrow-true\b/);
   const stacked = labels(narrow);
 
   cleanup();
@@ -66,12 +66,12 @@ test('the narrow shape stacks and reorders NOTHING, so focus order still matches
 
 test('layout="inline" keeps the one row at every width', () => {
   const root = narrowWidths(NARROW_WIDTH, () => render('inline'));
-  assert.doesNotMatch(bar(root).className, /\bflex-col\b/,
+  assert.doesNotMatch(bar(root).className, /\barena-bulk-action-bar__root--narrow-true\b/,
     'inline is the opt-out for a bar in a place the consumer knows is wide');
 });
 
 test('the wide shape is the single row it always was', () => {
   const root = render();
-  assert.doesNotMatch(bar(root).className, /\bflex-col\b/);
+  assert.doesNotMatch(bar(root).className, /\barena-bulk-action-bar__root--narrow-true\b/);
   assert.deepEqual(labels(root), ['Export', 'Archive', 'Delete', 'Clear']);
 });

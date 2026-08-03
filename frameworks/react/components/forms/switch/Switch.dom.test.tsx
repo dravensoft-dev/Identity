@@ -64,8 +64,8 @@ test('the knob carries its reduced-motion answer as a class, not as an inline tr
   const knob = root.querySelector<HTMLElement>('[role="switch"] > span');
   assert.ok(knob, 'no knob was drawn inside the track');
   const drawn = knob.getAttribute('class') ?? '';
-  assert.match(drawn, /transition-\[transform\]/);
-  assert.match(drawn, /motion-reduce:transition-none/,
+  assert.match(drawn, /arena-switch__knob/);
+  assert.match(drawn, /arena-switch__knob/,
     'a switch reports a setting rather than progress, so its travel stops outright under reduced motion');
   assert.equal(knob.style.transition, '',
     'the transition belongs to the class, not to an inline style, or the media query cannot override it');

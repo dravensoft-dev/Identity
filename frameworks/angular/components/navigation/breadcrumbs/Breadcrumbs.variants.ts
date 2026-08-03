@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/navigation/breadcrumbs/Breadcrumbs.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './Breadcrumbs.classes.generated';
 
-export const breadcrumbsStyles = tv(manifest);
+export const breadcrumbsStyles = arenaStyles(manifest);

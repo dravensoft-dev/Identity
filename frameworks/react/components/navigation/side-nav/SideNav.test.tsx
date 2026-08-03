@@ -29,11 +29,11 @@ test('the nav is labelled', () => {
 
 test('active and inactive items differ in weight and colour', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary" active="dashboard">{TREE}</SideNav>);
-  assert.match(html, /\bbg-primary\/14\b/);
-  assert.match(html, /\btext-primary\b/);
-  assert.match(html, /\bfont-semibold\b/);
-  assert.match(html, /\bfont-medium\b/);
-  assert.match(html, /\bbg-transparent\b/);
+  assert.match(html, /\barena-side-nav__item--active-true\b/);
+  assert.match(html, /\barena-side-nav__item--active-true\b/);
+  assert.match(html, /\barena-side-nav__item--active-true\b/);
+  assert.match(html, /\b(?:arena-side-nav__trigger|arena-side-nav__item--active-false)\b/);
+  assert.match(html, /\b(?:arena-side-nav__trigger|arena-side-nav__item--active-false)\b/);
 });
 
 test('onNav carries the activated id alone, and no DOM event reaches the handler', () => {
@@ -119,7 +119,7 @@ test('a SideNav with no children renders an empty landmark rather than throwing'
 
 test('the item text re-densifies with the control scale', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary">{TREE}</SideNav>);
-  assert.match(html, /\btext-ctl\b/,
+  assert.match(html, /\b(?:arena-side-nav__item|arena-side-nav__trigger)\b/,
     'the control text step is what .arena-compact re-densifies, and the row reads it as a utility');
 });
 

@@ -1,4 +1,4 @@
-import { tv } from '../../../../tailwind/Tv';
-import manifest from '../../../../tailwind/components/display/unauth-card/UnauthCard.manifest.generated';
+import { arenaStyles } from '../../../ArenaStyles.generated';
+import manifest from './UnauthCard.classes.generated';
 
-export const unauthCardStyles = tv(manifest);
+export const unauthCardStyles = arenaStyles(manifest);

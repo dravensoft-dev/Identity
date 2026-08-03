@@ -1,6 +1,6 @@
 import React from 'react';
-import { tv } from '../../../Tv.generated.ts';
-import manifest from './ProgressBar.manifest.generated.ts';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ProgressBar.classes.generated.ts';
 
 import type { ControlSize, ProgressTone } from '../../../Api.generated';
 
@@ -26,7 +26,7 @@ export interface ProgressBarProps {
 }
 
 
-const progressStyles = tv(manifest);
+const progressStyles = arenaStyles(manifest);
 
 export function ProgressBar({ progressPercentage = 0, indeterminate = false, tone = 'accent', label, showPercentage = true, size = 'md' }: ProgressBarProps) {
   if (!label) throw new Error('ProgressBar: `label` is required (it names what is progressing, and nothing can derive that)');
