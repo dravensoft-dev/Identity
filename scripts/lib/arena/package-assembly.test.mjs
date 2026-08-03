@@ -2,10 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import {
   EXCLUDED_NAMES, EXCLUDED_PATTERNS, CSS_CHAIN, arenaCssHeader, excluded,
-  collectFiles, reset, write, copyTree, baseManifest, version,
+  collectFiles, reset, write, copyTree, baseManifest, version, componentSheets, writeCssChain,
 } from './package-assembly.mjs';
 import { repoRoot } from './repo-root.mjs';
 
@@ -113,4 +113,52 @@ test('write creates the directories leading to a file nobody made yet', () => {
   write(root, 'a/b/c/File.css', 'body{}');
   assert.equal(readFileSync(join(root, 'a', 'b', 'c', 'File.css'), 'utf8'), 'body{}');
   rmSync(root, { recursive: true });
+});
+
+function tailwindTree(names) {
+  const files = {
+    'frameworks/tailwind/Numerals.css': '.arena-num{}',
+    'frameworks/tailwind/consume/Prelude.generated.css': ':root{}',
+  };
+  for (const name of names) {
+    files[`frameworks/tailwind/components/display/${name}/${name}.manifest.json`] = '{}';
+    files[`frameworks/tailwind/consume/components/display/${name}/${name}.styles.generated.css`] =
+      `@import '../../../Prelude.generated.css';\n.arena-${name}{}`;
+  }
+  return tree(files);
+}
+
+const importsIn = (css) => [...css.matchAll(/@import\s+'([^']+)'/g)].map((m) => m[1]);
+
+test('every import the component barrel writes resolves to a sheet the same call emits', () => {
+  const root = tailwindTree(['tag', 'button']);
+  const sheets = componentSheets('', () => ({ base: '' }), root);
+  const emitted = new Set(sheets.map((s) => s.to.split(sep).join('/')));
+
+  const barrel = sheets.find((s) => s.to.split(sep).join('/') === 'css/components.css');
+  assert.ok(barrel, 'the barrel is emitted');
+  const links = importsIn(barrel.content);
+  assert.deepEqual(links, ['./components/button.css', './components/tag.css']);
+  for (const link of links) {
+    assert.ok(emitted.has(`css/${link.slice('./'.length)}`),
+      `the barrel imports ${link} and no such sheet is emitted beside it`);
+  }
+  rmSync(root, { recursive: true });
+});
+
+test('a component sheet is reached through the barrel alone, never named twice in arena.css', () => {
+  const root = tailwindTree(['tag']);
+  const sheets = componentSheets('', () => ({ base: '' }), root);
+  const dir = mkdtempSync(join(tmpdir(), 'arena-assembly-out-'));
+
+  writeCssChain(dir, '@dravensoft/arena-angular', sheets, repoRoot);
+  const links = importsIn(readFileSync(join(dir, 'arena.css'), 'utf8'));
+
+  assert.equal(links.filter((l) => l.startsWith('./css/components/')).length, 0,
+    'arena.css imports css/components.css, which imports every component sheet itself');
+  assert.ok(links.includes('./css/components.css'));
+  assert.equal(existsSync(join(dir, 'css', 'components', 'tag.css')), true,
+    'an unlinked sheet is still written, because ./css/components/* is an exported subpath');
+  rmSync(root, { recursive: true });
+  rmSync(dir, { recursive: true });
 });

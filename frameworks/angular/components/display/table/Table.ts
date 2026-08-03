@@ -70,7 +70,7 @@ export class Table {
   /** Names the grid for assistive technology. Required, and guarded at runtime: nothing can derive it; Calendar names its grid from the range it is showing, and a data table's subject is editorial. Say what the rows are, never "Table". */
   readonly label = input.required<string>();
   /** The columns, in order. A column heads and sets its cells; it never says what goes in them. */
-  readonly columns = input.required<TableColumn[]>();
+  readonly columns = input.required<readonly TableColumn[]>();
   /** Card mode below --bp-md. Set false only when the columns are meaningless apart. */
   readonly responsive = input(true, { transform: booleanAttribute });
   /** Which column the rows are ordered by and which way. Controlled: Table draws the caret and the aria-sort, and the consumer does the ordering, because Table does not hold the rows. Absent, no header is a sort target. */

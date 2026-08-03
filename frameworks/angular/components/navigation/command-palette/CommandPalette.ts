@@ -153,7 +153,7 @@ export class CommandPalette {
   /** Whether the palette is shown. Closed renders nothing. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
   /** Every command the palette can find. Filtered by label and hint as the user types. */
-  readonly commands = input.required<Command[]>();
+  readonly commands = input.required<readonly Command[]>();
   /** The search field's placeholder. */
   readonly placeholder = input('Search for an action or project…');
   /** How many matches the list shows at most. Absent, all of them. The ceiling applies AFTER the query has run over every command, which is what makes it different from the caller trimming `commands` before passing them: a trimmed list cannot match what was cut, and a capped one can, so the first rows are still the best the whole set has. It is the palette's rather than the domain's, because how many rows help before the list stops being an accelerator is a property of this control; a caller who caps their own collection has guessed at it once, for one collection, with no query in hand. It is not ranking: the order stays the order the caller passed, ungrouped first and then each group as it first appears. */

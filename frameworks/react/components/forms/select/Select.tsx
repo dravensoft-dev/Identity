@@ -14,7 +14,7 @@ export interface SelectProps {
   placeholder?: string;
 
   /** The choices, drawn as native options. */
-  options?: SelectOption[];
+  options?: readonly SelectOption[];
 
   /** The selected option's value. */
   value?: string;

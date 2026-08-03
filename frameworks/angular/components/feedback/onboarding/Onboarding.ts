@@ -67,7 +67,7 @@ export class Onboarding {
   /** Whether the tour is shown. Closed renders nothing, scrim included. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
   /** The tour, in order. An empty tour renders nothing. */
-  readonly steps = input.required<OnboardingStep[]>();
+  readonly steps = input.required<readonly OnboardingStep[]>();
   /** Which step is current. The host owns it and answers next/back. */
   readonly index = input(0);
   /** Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. */

@@ -15,7 +15,7 @@ Styled native dropdown selector. `options` is an array of `{value, label}` objec
 |---|---|---|---|---|
 | `label` | primitive | `string` |  | Field label above the control. |
 | `placeholder` | primitive | `string` |  | An empty-valued first option, drawn before the choices and unselectable once a real one is made -- "Choose a customer". It is an option rather than an attribute because a native select has no placeholder, and it is what makes "nothing chosen yet" distinguishable from "the first choice". |
-| `options` | array | `SelectOption[]` | `[]` | The choices, drawn as native options. |
+| `options` | array | `readonly SelectOption[]` | `[]` | The choices, drawn as native options. |
 | `value` | primitive | `string` |  | The selected option's value. |
 | `disabled` | primitive | `boolean` | `false` | Blocks the control and dims it. |
 | `required` | primitive | `boolean` | `false` | Must have a value for the form to submit. |

@@ -94,7 +94,9 @@ export function writeCssChain(dir, name, extra = [], root = repoRoot) {
     if (entry.content !== undefined) write(dir, entry.to, entry.content);
     else copy(join(root, entry.from), dir, entry.to);
   }
-  const imports = chain.map(({ to }) => `@import './${to.split(sep).join('/')}';`);
+  const imports = chain
+    .filter(({ linked }) => linked !== false)
+    .map(({ to }) => `@import './${to.split(sep).join('/')}';`);
   write(dir, 'arena.css', `${arenaCssHeader(name)}\n${imports.join('\n')}\n`);
   return chain.map((c) => c.to);
 }
@@ -128,8 +130,9 @@ export function componentSheets(css, split, root = repoRoot) {
   const named = files.map((file) => ({
     to: join('css', 'components', `${kebab(basename(file).split('.')[0])}.css`),
     content: readFileSync(file, 'utf8').replace(/@import '(?:\.\.\/)+Prelude\.generated\.css';/, "@import '../prelude.css';"),
+    linked: false,
   }));
-  const barrel = named.map(({ to }) => `@import './${basename(to)}';`).join('\n');
+  const barrel = named.map(({ to }) => `@import './components/${basename(to)}';`).join('\n');
   return [
     { to: join('css', 'base.css'), content: `${SHEET_BANNERS.base}\n${base}` },
     { to: join('css', 'numerals.css'), content: readFileSync(join(dir, 'Numerals.css'), 'utf8') },

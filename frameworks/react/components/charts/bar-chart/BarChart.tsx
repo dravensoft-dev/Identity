@@ -13,10 +13,10 @@ export type { SeriesTone };
 export interface BarChartProps {
 
   /** One label per bar, in the same order as `values`. A label with no value at its index is dropped. */
-  labels: string[];
+  labels: readonly string[];
 
   /** The plotted data. One bar per entry; a negative value clamps to the baseline. */
-  values: number[];
+  values: readonly number[];
 
   /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason Table.label is required. */
   seriesLabel: string;
@@ -25,7 +25,7 @@ export interface BarChartProps {
   slot?: number;
 
   /** Per-bar identity override, one ramp slot each. Wins over `slot`. */
-  slots?: number[];
+  slots?: readonly number[];
 
   /** Semantic colour, for a series that IS a state. Mutually exclusive with slot/slots; passing both warns in development and tone wins. */
   tone?: SeriesTone;

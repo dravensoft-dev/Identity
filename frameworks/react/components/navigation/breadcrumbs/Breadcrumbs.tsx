@@ -12,7 +12,7 @@ export interface BreadcrumbsProps {
   ariaLabel: string;
 
   /** The trail, root first. The last entry is the current location and is never a link. */
-  items: Crumb[];
+  items: readonly Crumb[];
 
   /** Drawn between crumbs, never before the first. Arena draws it, in its own aria-hidden span. */
   separator?: string;

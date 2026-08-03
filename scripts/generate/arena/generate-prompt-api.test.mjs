@@ -6,8 +6,8 @@ import {
 } from './generate-prompt-api.mjs';
 
 test('an array names what it holds, and consumer data keeps its one spelling', () => {
-  assert.equal(typeCell({ form: 'array', of: 'Crumb' }), '`Crumb[]`');
-  assert.equal(typeCell({ form: 'array', of: 'consumerData' }), `\`${CONSUMER_DATA}[]\``);
+  assert.equal(typeCell({ form: 'array', of: 'Crumb' }), '`readonly Crumb[]`');
+  assert.equal(typeCell({ form: 'array', of: 'consumerData' }), `\`readonly ${CONSUMER_DATA}[]\``);
   assert.equal(typeCell({ form: 'consumerData' }), `\`${CONSUMER_DATA}\``);
 });
 

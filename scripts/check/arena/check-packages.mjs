@@ -1,15 +1,17 @@
-/* Two claims. First, that the CLI shipped inside both packages emits what Style Dictionary
+/* Three claims. First, that the CLI shipped inside both packages emits what Style Dictionary
  * emits: a second emitter exists, so something has to hold the two together, and without
  * this the sentence "the package emits what Arena emits" is only a sentence. Second, when
  * dist/ has been assembled, that each package is registry-standard: the version comes from
  * plugin.json, every exports target resolves to a file that is there and every wildcard one
  * matches at least one, the entry declaration is advertised at the root as well, and no peer leaked
- * into dependencies. dist/ is git-ignored, so the second half is skipped on a fresh clone
- * and says so; the first half runs anywhere. */
+ * into dependencies. Third, that the stylesheets resolve: an exports target is opened and
+ * followed, because a sheet that is there and imports 43 files that are not passes the second
+ * claim and fails in the consumer's bundler. dist/ is git-ignored, so the last two are skipped
+ * on a fresh clone and say so; the first runs anywhere. */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { join, dirname, sep } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
@@ -27,7 +29,7 @@ export const distDir = (layer, base = root) => join(base, 'frameworks', layer, '
 const isColour = (name) => name.startsWith('color-');
 
 export function stripAtStatements(css) {
-  return css.replace(/^\s*@[a-z-]+[^;{}]*;\s*$/gim, '');
+  return css.replace(/^[ \t]*@[a-z-]+[^{}\n]*;[ \t]*$/gim, '');
 }
 
 export function paletteEquivalenceProblems(generatedCss, cliCss) {
@@ -138,6 +140,40 @@ export function exportProblems(pkg, manifest, dir) {
   return problems;
 }
 
+const RELATIVE_IMPORT = /@import\s+(?:url\(\s*)?['"](\.[^'"]*)['"]/g;
+
+export function importsIn(css) {
+  return [...css.matchAll(RELATIVE_IMPORT)].map((match) => match[1]);
+}
+
+export function styleProblems(pkg, dir) {
+  const problems = [];
+  const seen = new Set();
+  const queue = ['arena.css'];
+  let components = 0;
+
+  while (queue.length) {
+    const from = queue.shift();
+    if (seen.has(from)) continue;
+    seen.add(from);
+    if (from.startsWith('css/components/')) components += 1;
+
+    const full = join(dir, from);
+    if (!existsSync(full)) continue;
+    for (const specifier of importsIn(readFileSync(full, 'utf8'))) {
+      const target = join(dirname(from), specifier).split(sep).join('/');
+      if (existsSync(join(dir, target))) queue.push(target);
+      else problems.push(`${pkg.name}: ${from} imports ${specifier}, which was never emitted`);
+    }
+  }
+
+  if (components === 0) {
+    problems.push(`${pkg.name}: arena.css reaches no component stylesheet, so every component it ships `
+      + 'renders unstyled; a walk that found nothing is a failure, not a clean pass');
+  }
+  return { problems, walked: seen.size };
+}
+
 export function collect(base = root) {
   const version = JSON.parse(readFileSync(join(base, '.claude-plugin/plugin.json'), 'utf8')).version;
   const problems = [];
@@ -156,6 +192,7 @@ export function collect(base = root) {
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
     problems.push(...manifestProblems(pkg, manifest, version));
     problems.push(...exportProblems(pkg, manifest, dir));
+    problems.push(...styleProblems(pkg, dir).problems);
   }
 
   return { problems, compared: equivalence.compared, assembled, version };

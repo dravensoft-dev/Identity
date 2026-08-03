@@ -25,7 +25,7 @@ export class Breadcrumbs {
   /** Names this navigation landmark. Required, and guarded at runtime: nothing can derive it, and the constant "Breadcrumb" it used to hardcode made two trails on one page indistinguishable as landmarks while satisfying the requirement mechanically. Say which hierarchy this is a trail through: "Project navigation", never "Breadcrumb". */
   readonly ariaLabel = input.required<string>();
   /** The trail, root first. The last entry is the current location and is never a link. */
-  readonly items = input.required<Crumb[]>();
+  readonly items = input.required<readonly Crumb[]>();
   /** Drawn between crumbs, never before the first. Arena draws it, in its own aria-hidden span. */
   readonly separator = input('/');
   /** A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, because a platform's own event type never travels in a payload; what the listener needs from it, the chance to route instead of navigating, arrives as behaviour rather than as data. Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate. It fires for a primary click with no modifier and for Enter; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working trail of real links. */

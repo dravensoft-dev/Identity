@@ -19,7 +19,7 @@ export interface TableProps {
   label: string;
 
   /** The columns, in order. A column heads and sets its cells; it never says what goes in them. */
-  columns: TableColumn[];
+  columns: readonly TableColumn[];
 
   /** The rows. One TableRow per row. Where a row sits, the columns its cells are set against and how the keyboard reaches them are Table's to decide and no row's to declare; how that reaches a row is each layer's own idiom. */
   children?: React.ReactNode;

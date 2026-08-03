@@ -16,7 +16,7 @@ export interface BulkActionBarProps {
   noun?: string;
 
   /** The actions offered for the current selection. */
-  actions: BulkAction[];
+  actions: readonly BulkAction[];
 
   /** An action was activated, carrying which one. */
   onRun?: (action: BulkAction) => void;

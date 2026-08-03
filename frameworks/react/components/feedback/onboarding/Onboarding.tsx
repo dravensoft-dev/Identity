@@ -16,7 +16,7 @@ export interface OnboardingProps {
   open: boolean;
 
   /** The tour, in order. An empty tour renders nothing. */
-  steps: OnboardingStep[];
+  steps: readonly OnboardingStep[];
 
   /** Which step is current. The host owns it and answers next/back. */
   index?: number;
