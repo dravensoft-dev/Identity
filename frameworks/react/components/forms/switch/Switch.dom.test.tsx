@@ -59,9 +59,16 @@ test('a plain click fires onFuncOn when off and onFuncOff when on', () => {
   assert.deepEqual(seenOn, ['off']);
 });
 
-test('the knob carries the class its reduced-motion answer hangs on', () => {
+test('the knob carries its reduced-motion answer as a class, not as an inline transition', () => {
   const root = mount(<Switch state label="Dark theme" />);
-  const knob = root.querySelector<HTMLElement>('.arena-switch-knob');
-  assert.ok(knob, 'the knob must carry arena-switch-knob, or the injected transition and its motion-reduce clause reach nothing');
-  assert.equal(knob.style.transition, '', 'the transition belongs to the injected rule, not to the inline style, or the media query cannot override it');
+  const knob = root.querySelector<HTMLElement>('[role="switch"] > span');
+  assert.ok(knob, 'no knob was drawn inside the track');
+  const drawn = knob.getAttribute('class') ?? '';
+  assert.match(drawn, /transition-\[transform\]/);
+  assert.match(drawn, /motion-reduce:transition-none/,
+    'a switch reports a setting rather than progress, so its travel stops outright under reduced motion');
+  assert.equal(knob.style.transition, '',
+    'the transition belongs to the class, not to an inline style, or the media query cannot override it');
+  assert.equal(document.querySelector('style[data-arena-switch]'), null,
+    'nothing injects a stylesheet for it any more');
 });

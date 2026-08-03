@@ -17,7 +17,6 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const PENDING = new Map([
 
-  ['Switch', 'group C: a native control\'s own chrome, part of it in an injected <style>'],
 
   ['Skeleton', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
   ['Spinner', 'group D: keyframes and the reduced-motion answer, still injected and inline'],
