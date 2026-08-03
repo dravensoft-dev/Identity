@@ -14,10 +14,13 @@ from its own suites (`bun run test:scripts` / `test:react` / `test:react-dom` /
 
 Those four run in **two `bun test` processes**, not one, preceded by a build the Angular suites
 need before either process can see them. **The preload must never reach the DOM-free invocation
-and is mandatory for the DOM one**, and getting that wrong costs an `onChange` handler every
-event it should have received, silently.
-[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full,
-including the two alternatives that are measured not to work.
+and is mandatory for the DOM one**: without a DOM already installed, `react-dom` latches its
+`input`-event support false at module evaluation and falls back to a legacy change-detection
+polyfill, under which a dispatched `input` or `change` reaches an `onChange` handler **zero**
+times, silently. Registering happy-dom from a module body is too late, because ES imports
+evaluate first, and so is registering it from a module imported ahead of `react-dom/client`:
+both alternatives are measured and neither works, so do not retry them.
+[`frameworks/react/README.md`](./frameworks/react/README.md) carries the mechanism in full.
 **The single authority for that command is `testStep()` in
 `scripts/check/arena/check-all.mjs`**, and its `.test.mjs` sibling asserts the args array by
 literal value. Read it there rather than reconstructing one; a narrowed invocation matching
@@ -104,7 +107,11 @@ maps the rest of the repository.
 ## Documentation rules
 
 - **Every `.md` file stays under 60,000 characters.** `SIZE_EXEMPT` in `check-docs.mjs` names
-  what is exempt by charter and says why each one is. Measure the way the gate does, with
+  what is exempt by charter and says why each one is, and `SIZE_ALLOWANCE` beside it names what
+  holds to a **higher** limit instead, with its reason. An allowance is not an exemption: the
+  document is still measured, and one that falls back inside the shared limit **fails as a stale
+  allowance**, so the pressure to decompose it returns rather than ending. This file is the one
+  entry, because it is the only document with nowhere above it to push a rule to. Measure the way the gate does, with
   `node -e "console.log(require('fs').readFileSync('X','utf8').length)"`, and never with
   `wc -m`, which counts bytes: a file of multi-byte characters reads hundreds over a limit it
   is comfortably under. `check:docs` fails hard rather than warning, so an overrun surfaces at

@@ -28,6 +28,24 @@ export const PROSE_EXEMPT = {
     'a spec or a plan is deleted once executed, so its prose never becomes documentation',
 };
 
+export const CONTRIBUTOR_ROOT = 'CLAUDE.md';
+
+export const SIZE_ALLOWANCE = new Map([
+  [CONTRIBUTOR_ROOT, {
+    limit: 65_000,
+    reason:
+      'the root of the contributor branch carries the rules that bind more than one layer, and it '
+      + 'is the one document with nowhere above it to push a rule to. At the shared limit it had '
+      + 'run to a margin measured in tens of characters, so a true fact could only be added by '
+      + 'removing another, which is a worse failure than a long document. An allowance rather than '
+      + 'an exemption, because the pressure to decompose it should return rather than end.',
+  }],
+]);
+
+export function limitFor(rel) {
+  return SIZE_ALLOWANCE.get(rel)?.limit ?? MAX_DOCUMENT_CHARS;
+}
+
 export const BANNED_PUNCTUATION = [['—', 'an em dash']];
 
 const SOURCE_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js'];
@@ -152,18 +170,43 @@ export function punctuationProblems(root = ROOT) {
   return { problems, scanned: scanned.length };
 }
 
-export function documentSizeProblems(root = ROOT) {
+export function documentSizeProblems(root = ROOT, allowance = SIZE_ALLOWANCE) {
   const scanned = documents(root);
   const problems = [];
+  const sizes = new Map();
   for (const path of scanned) {
     const rel = relative(root, path);
     if (exempt(SIZE_EXEMPT, rel)) continue;
     const size = readFileSync(path, 'utf8').length;
-    if (size > MAX_DOCUMENT_CHARS) {
-      problems.push(`${rel}: ${size} characters, over the ${MAX_DOCUMENT_CHARS} limit`);
+    sizes.set(rel, size);
+    const limit = allowance.get(rel)?.limit ?? MAX_DOCUMENT_CHARS;
+    if (size > limit) {
+      problems.push(`${rel}: ${size} characters, over the ${limit} limit`);
     }
   }
+  problems.push(...staleAllowanceProblems(sizes, allowance));
   return { problems, scanned: scanned.length };
+}
+
+export function staleAllowanceProblems(sizes, allowance = SIZE_ALLOWANCE) {
+  const problems = [];
+  for (const [rel, { limit, reason }] of allowance) {
+    if (!sizes.has(rel)) {
+      problems.push(
+        `SIZE_ALLOWANCE raises ${rel} to ${limit}, and no document is there. An allowance for a `
+        + `file that has moved or gone raises the limit for nothing: ${reason}`,
+      );
+      continue;
+    }
+    if (sizes.get(rel) <= MAX_DOCUMENT_CHARS) {
+      problems.push(
+        `SIZE_ALLOWANCE raises ${rel} to ${limit}, and it is ${sizes.get(rel)} characters, inside `
+        + `the ${MAX_DOCUMENT_CHARS} everything else holds to. The allowance has outlived what it `
+        + `was written for, so delete it and let the shared limit apply: ${reason}`,
+      );
+    }
+  }
+  return problems;
 }
 
 export function commentRuleProblems(root = ROOT) {
@@ -260,7 +303,8 @@ function main() {
     process.exit(1);
   }
   console.log(
-    `check-docs: ${sizes.scanned} document(s) under ${MAX_DOCUMENT_CHARS} characters and clear of `
+    `check-docs: ${sizes.scanned} document(s) inside their limit, ${MAX_DOCUMENT_CHARS} characters `
+    + `bar ${SIZE_ALLOWANCE.size} on the record, and clear of `
     + `banned punctuation; ${comments.scanned} hand-written source(s) hold to the comment rule; `
     + `${branch.scanned} consumer document(s) cite no contributor path`,
   );

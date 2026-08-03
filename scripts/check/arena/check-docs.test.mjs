@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
+  SIZE_ALLOWANCE, CONTRIBUTOR_ROOT, limitFor, staleAllowanceProblems,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
   consumerBranchProblems, CONSUMER_LAST_STOP, CONSUMER_INDEX, CONTRIBUTOR_PATHS,
@@ -24,9 +25,11 @@ function tree(files) {
   return root;
 }
 
+const NO_ALLOWANCE = new Map();
+
 test('a document over the limit is reported with its size', () => {
   const root = tree({ 'README.md': 'x'.repeat(MAX_DOCUMENT_CHARS + 1) });
-  const { problems } = documentSizeProblems(root);
+  const { problems } = documentSizeProblems(root, NO_ALLOWANCE);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /README\.md: 60001 characters/);
   rmSync(root, { recursive: true });
@@ -34,7 +37,7 @@ test('a document over the limit is reported with its size', () => {
 
 test('a document exactly at the limit passes', () => {
   const root = tree({ 'README.md': 'x'.repeat(MAX_DOCUMENT_CHARS) });
-  assert.deepEqual(documentSizeProblems(root).problems, []);
+  assert.deepEqual(documentSizeProblems(root, NO_ALLOWANCE).problems, []);
   rmSync(root, { recursive: true });
 });
 
@@ -46,15 +49,50 @@ test('a dist tree is assembled output and is read by nothing', () => {
   });
   assert.deepEqual(punctuationProblems(root).problems, []);
   assert.deepEqual(commentRuleProblems(root).problems, []);
-  assert.equal(documentSizeProblems(root).scanned, 1);
+  assert.equal(documentSizeProblems(root, NO_ALLOWANCE).scanned, 1);
   rmSync(root, { recursive: true });
 });
 
 test('both document rules report how many documents they actually read', () => {
   const root = tree({ 'README.md': 'a', 'docs/a.md': 'b', 'x/y/Z.md': 'c', 'notes.txt': 'd' });
-  assert.equal(documentSizeProblems(root).scanned, 3);
+  assert.equal(documentSizeProblems(root, NO_ALLOWANCE).scanned, 3);
   assert.equal(punctuationProblems(root).scanned, 3);
   rmSync(root, { recursive: true });
+});
+
+test('SIZE_ALLOWANCE raises the contributor root and nothing else, and says why', () => {
+  assert.deepEqual([...SIZE_ALLOWANCE.keys()], [CONTRIBUTOR_ROOT]);
+  assert.equal(SIZE_ALLOWANCE.get(CONTRIBUTOR_ROOT).limit, 65_000);
+  assert.ok(SIZE_ALLOWANCE.get(CONTRIBUTOR_ROOT).reason.length > 80, 'an entry states its reason');
+  assert.equal(limitFor(CONTRIBUTOR_ROOT), 65_000);
+  assert.equal(limitFor('scripts/README.md'), MAX_DOCUMENT_CHARS);
+});
+
+test('an allowance raises the limit rather than removing it, so the document is still measured', () => {
+  const allowance = new Map([['CLAUDE.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const inside = tree({ 'CLAUDE.md': 'x'.repeat(64_000) });
+  assert.deepEqual(documentSizeProblems(inside, allowance).problems, []);
+  rmSync(inside, { recursive: true });
+
+  const over = tree({ 'CLAUDE.md': 'x'.repeat(65_001) });
+  const problems = documentSizeProblems(over, allowance).problems;
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /CLAUDE\.md: 65001 characters, over the 65000 limit/);
+  rmSync(over, { recursive: true });
+});
+
+test('a document that falls back inside the shared limit fails as a stale allowance', () => {
+  const allowance = new Map([['CLAUDE.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const root = tree({ 'CLAUDE.md': 'x'.repeat(MAX_DOCUMENT_CHARS) });
+  const problems = documentSizeProblems(root, allowance).problems;
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /has outlived what it was written for, so delete it/);
+  rmSync(root, { recursive: true });
+});
+
+test('an allowance for a document that has moved or gone fails too', () => {
+  const allowance = new Map([['CLAUDE.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  assert.match(staleAllowanceProblems(new Map(), allowance)[0], /and no document is there/);
 });
 
 test('DOUBTS.md and docs/ are exempt from the size limit, and nothing else is', () => {
@@ -64,7 +102,7 @@ test('DOUBTS.md and docs/ are exempt from the size limit, and nothing else is', 
     'docs/superpowers/specs/a.md': over,
     'README.md': over,
   });
-  assert.deepEqual(documentSizeProblems(root).problems.map((p) => p.split(':')[0]), ['README.md']);
+  assert.deepEqual(documentSizeProblems(root, NO_ALLOWANCE).problems.map((p) => p.split(':')[0]), ['README.md']);
   assert.deepEqual(SIZE_EXEMPT, ['DOUBTS.md', join('docs', '')]);
   rmSync(root, { recursive: true });
 });
@@ -223,7 +261,7 @@ test('a document under .github is governed, and one under any other dotted direc
 
 test('a document under .github is held to the size limit too', () => {
   const root = tree({ '.github/workflows/README.md': 'x'.repeat(MAX_DOCUMENT_CHARS + 1) });
-  const { problems } = documentSizeProblems(root);
+  const { problems } = documentSizeProblems(root, NO_ALLOWANCE);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /\.github\/workflows\/README\.md: 60001 characters/);
   rmSync(root, { recursive: true });
