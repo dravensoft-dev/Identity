@@ -1,4 +1,6 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useId, useRef } from 'react';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './Dialog.manifest.generated.ts';
 import { useDialogModal } from '../../../UseDialogModal.ts';
 
 export interface DialogProps {
@@ -26,49 +28,31 @@ export interface DialogProps {
 }
 
 
-let injected = false;
-function usePopKeyframes() {
-  useEffect(() => {
-    if (injected || typeof document === 'undefined') return;
-    injected = true;
-    const s = document.createElement('style');
-    s.setAttribute('data-arena-dialog', '');
-    s.textContent =
-      '@keyframes arena-pop{from{opacity:0;transform:translateY(var(--sp-2)) scale(.98)}to{opacity:1;transform:none}}' +
-      '@media (prefers-reduced-motion:reduce){@keyframes arena-pop{from{opacity:0}to{opacity:1}}}';
-    document.head.appendChild(s);
-  }, []);
-}
+const dialogStyles = tv(manifest);
 
-export function Dialog({ open, onClose, title, eyebrow, children, footer, width = 'calc(var(--sp-1) * 120)' }: DialogProps) {
+export function Dialog({ open, onClose, title, eyebrow, children, footer, width }: DialogProps) {
 
   if (!title) throw new Error('Dialog: `title` is required');
 
   if (open == null) throw new Error('Dialog: `open` is required');
-  usePopKeyframes();
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const onKeyDown = useDialogModal({ open, panelRef, onDismiss: onClose });
 
   const titleId = useId();
   if (!open) return null;
+  const styles = dialogStyles({ open: true });
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--scrim)', backdropFilter: 'blur(var(--scrim-blur))', WebkitBackdropFilter: 'blur(var(--scrim-blur))' }}>
+    <div onClick={onClose} className={styles.scrim()}>
       <div onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true"
         ref={panelRef} tabIndex={-1} onKeyDown={onKeyDown} aria-labelledby={titleId}
-        style={{ width, maxWidth: '92vw', background: 'var(--surface-card)', border: 'var(--bw) solid var(--line-strong)',
-          borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-3)', overflow: 'hidden',
-          animation: 'arena-pop var(--dur-mid) var(--ease-emphatic)' }}>
-        <div style={{ padding: 'calc(var(--sp-1) * 5.5) calc(var(--sp-1) * 6) 0' }}>
-          {eyebrow && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)', letterSpacing: 'var(--ls-label)', textTransform: 'uppercase', color: 'var(--crimson)', marginBottom: 'calc(var(--sp-1) * 2)' }}>{eyebrow}</div>}
-          {
-
-}
-          <div id={titleId} style={{ fontFamily: 'var(--font-display)', fontWeight: 'var(--fw-extrabold)', fontSize: 'var(--fs-h3)', color: 'var(--bone)', letterSpacing: 'var(--ls-tight)' }}>{title}</div>
+        className={styles.panel()} style={{ width }}>
+        <div className={styles.head()}>
+          {eyebrow && <div className={styles.eyebrow()}>{eyebrow}</div>}
+          <div id={titleId} className={styles.title()}>{title}</div>
         </div>
-        <div style={{ padding: 'calc(var(--sp-1) * 4) calc(var(--sp-1) * 6)', color: 'var(--bone-dim)', fontFamily: 'var(--font-body)', fontSize: 'var(--fs-md)', lineHeight: 'var(--lh-body)' }}>{children}</div>
-        {footer && <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 'calc(var(--sp-1) * 2.5)', padding: '0 calc(var(--sp-1) * 6) calc(var(--sp-1) * 5.5)' }}>{footer}</div>}
+        <div className={styles.body()}>{children}</div>
+        {footer && <div className={styles.foot()}>{footer}</div>}
       </div>
     </div>
   );

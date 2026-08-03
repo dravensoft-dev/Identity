@@ -24,8 +24,8 @@ test('an absent footer renders no action row at all', () => {
     <Dialog open onClose={() => {}} title={TITLE}><p>b</p></Dialog>,
   );
 
-  assert.equal((withFooter.match(/justify-content:flex-end/g) || []).length, 1);
-  assert.equal((without.match(/justify-content:flex-end/g) || []).length, 0,
+  assert.equal((withFooter.match(/\bjustify-end\b/g) || []).length, 1);
+  assert.equal((without.match(/\bjustify-end\b/g) || []).length, 0,
     'an empty action row shipped with no footer passed');
 });
 
@@ -61,11 +61,13 @@ test('width takes a CSS string and reaches the panel verbatim', () => {
   assert.match(html, /width:calc\(var\(--sp-1\) \* 200\)/);
 });
 
-test('an omitted width falls back to a CSS string, never a number', () => {
+test('an omitted width falls back to the panel\'s own default, and sets no inline width at all', () => {
   const html = renderToStaticMarkup(
     <Dialog open onClose={() => {}} title={TITLE}><p>b</p></Dialog>,
   );
-  assert.match(html, /width:calc\(var\(--sp-1\) \* 120\)/);
+  assert.match(html, /\bw-120\b/,
+    'the default is 480px, and the contract lets each layer reach it in its own idiom');
+  assert.doesNotMatch(html, /style="width/, 'an omitted width must leave the class to answer');
 });
 
 test('open governs whether anything renders at all', () => {
@@ -121,8 +123,14 @@ test('the footer wraps, because the slot takes one control per element', () => {
       <p>b</p>
     </Dialog>,
   );
-  assert.match(html, /flex-wrap:\s*wrap/,
+  assert.match(html, /\bflex-wrap\b/,
     'three buttons at 390px overflow the panel without it, and the row is what has to wrap '
     + 'because the consumer passes siblings rather than a wrapper of their own; PageHead and '
     + 'ChartCard already do this, and a third action row behaving differently is worse than none');
+});
+
+test('the panel pops with the shared utility, so nothing injects keyframes for it', () => {
+  const html = renderToStaticMarkup(<Dialog open onClose={() => {}} title={TITLE}><p>b</p></Dialog>);
+  assert.match(html, /\barena-pop\b/,
+    'an entrance keeps its fade and drops its travel under reduced motion, and the utility is where that is said');
 });
