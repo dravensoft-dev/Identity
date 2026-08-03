@@ -36,7 +36,7 @@ test('Checkbox change hands the consumer a boolean, not the DOM event', () => {
 test('Input change hands the consumer the string value, not the DOM event', () => {
   const seen: unknown[] = [];
   const root = mount(<Input label="Email" value="" onChange={(v) => seen.push(v)} />);
-  typeInto(root!.querySelector<HTMLInputElement>('input.arena-input')!, 'ana@dravensoft.dev');
+  typeInto(root!.querySelector<HTMLInputElement>('input')!, 'ana@dravensoft.dev');
   assert.equal(seen.length, 1, 'the change handler did not fire');
   assert.equal(typeof seen[0], 'string', 'the payload is not a string -- a DOM event is travelling');
   assert.equal(seen[0], 'ana@dravensoft.dev', 'the payload is not the edited value');
@@ -48,7 +48,7 @@ test('Input blur hands the consumer the value, and validate runs on it', () => {
     <Input label="Email" value="nope" validate={(v) => (v.includes('@') ? '' : 'Bad email')}
       onBlur={(v) => seen.push(v)} />,
   );
-  const field = root.querySelector<HTMLInputElement>('input.arena-input');
+  const field = root.querySelector<HTMLInputElement>('input');
   act(() => { field!.focus(); });
   act(() => { field!.blur(); });
   assert.equal(seen.length, 1, 'the blur handler did not fire');
