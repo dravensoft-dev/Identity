@@ -79,12 +79,9 @@ compares the two copies and never reads either for meaning. Verify with
 whole npm channel follows from: the palettes and the fonts arrive as an `arena.config.json`
 the consuming project writes, and the `arena-theme` command each package ships turns it into
 the one stylesheet a package cannot carry. **Two couplings are part of the adoption contract
-and are stated as such**: Phosphor for iconography, a peer dependency in both packages and
-never a bundled asset, and Tailwind, whose compiled sheet **both** packages carry inside
-`arena.css` for the same reason: the recipe's class string, which both layers render, resolves
-against it, so `tailwind-variants` and `tailwind-merge` are runtime dependencies of both. It
-also carries the `@layer base` a form control needs, **which is not optional and whose absence
-was silent**. What it saves an adopter is the BUILD, not the coupling. **`dist/` is git-ignored and six gates skip a directory of that name**, because
+and are stated as such**, in `PACKAGING.md` and not here: Phosphor for iconography, and
+Tailwind, whose compiled sheet both packages carry inside
+`arena.css`. **`dist/` is git-ignored and six gates skip a directory of that name**, because
 it puts a copy of each layer inside the tree they walk; the exclusion is asserted in each
 gate's own suite. Both packages are **live on npm**, **published by a workflow** over OIDC, one
 per layer that changed, so the two sit at different versions whenever a release left one alone;

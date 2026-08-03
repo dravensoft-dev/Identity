@@ -86,7 +86,10 @@ that wants none of that wants a different design system.
 out: `css/base.css` is Tailwind's preflight and nothing of Arena's, `css/utilities.css` is the
 theme and the utilities. A project that already runs Tailwind ships an equivalent preflight, so
 importing the one bundled file gave it a second copy of every rule in that one, with the same
-selectors and possibly different values; it can now take the utilities alone. **Both halves
+selectors and possibly different values; it can now take the utilities alone. **What that half
+carries is not optional and its absence was silent**: the `@layer base` is where the
+`font: inherit` a form control needs lives, so a package that shipped the utilities and not
+the preflight renders every control at the browser's own size and reports nothing. **Both halves
 repeat the layer declarations**, because `@layer properties;` is declared before the four-name
 order and a half that dropped it would sort Tailwind's own property fallbacks above everything.
 The halves are verbatim slices rather than a re-serialisation, which the paired suite asserts
