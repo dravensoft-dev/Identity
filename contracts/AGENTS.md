@@ -22,6 +22,75 @@ another: `design/` answers *what is this value*, `behaviour/` answers *what must
 component do*, and `api/` answers *what does a consumer write*. A component can satisfy
 any one of them while failing the other two.
 
+## Which level does a fact belong to
+
+**The question is what kind of thing it is, never which component prompted it.**
+
+- **Is it a value?** A colour, a spacing step, a duration, a delay before a tooltip opens. That
+  is `design/`, as DTCG JSON. **Behaviour has values and they are tokens like any other**:
+  `design/behaviour.json` holds `delay`, `dismiss` and `limit`. Two rules govern what belongs
+  there. A behaviour value is **a decision the system makes, not a mechanism**: how long a
+  tooltip waits is a design decision, a debounce interval on a synchronous in-memory filter is
+  not. And **a value is not a contract**.
+- **Is it something a kind of component must DO?** Which keys it answers, where focus lands,
+  what dismisses it, which role it carries. That is `behaviour/`, one file per pattern. DTCG
+  models colours, dimensions and durations, and does not model "Escape closes this", so putting
+  a pattern under `design/` would mean relaxing `check:dtcg`, one of the cleanest gates here.
+- **Is it a member a consumer writes?** That is `api/`, one file per component, stated once and
+  neutrally, and every layer implements exactly those members.
+
+**A fact that is none of the three is not a contract.** How a compound family coordinates, which
+element a layer renders, what an idiom forces: all of that belongs beside the source, in the
+layer's own document or the component's `.prompt.md`.
+
+## The three levels are firm in one direction
+
+`design/` and `behaviour/` are settled and **not reopened by `api/`**, which is orthogonal and
+additive: bringing a component under an API contract may not weaken, remove or contradict its
+behaviour binding or the tokens it renders from.
+
+**When an API reshape appears to require dropping something a behaviour binding depends on, the
+reshape is what is wrong.** `ConfirmDialog` is the worked example: its `cancel` event is how the
+dialog reports an Escape-key dismissal, which `dialog-modal` requires, so a contract that
+omitted it to look tidier would leave the Escape handler with nothing to emit and silently void
+that requirement.
+
+## Emission, and why it is per layer
+
+`design/` emits CSS into `design-generated/`, which ships to a browser directly, which is why it
+is the one level with a generated sibling directory. `api/` and `design/` both also emit
+**per framework layer**, `Api.generated.*` and `Tokens.generated.*`, so that a component's
+import never crosses the `contracts/` ↔ `frameworks/` boundary. `behaviour/` emits nothing.
+
+**A token whose consumer is JavaScript emits twice.** One flagged
+`$extensions["com.dravensoft.arena"].script: true` gets the custom property it always would have
+**and** a bare number in each layer's `Tokens.generated.*`. Flag one only when JS arithmetic must
+consume it to produce a position: an SVG `y` from a data value, a clamp against
+`window.innerWidth`. **The price is not negotiable**: a value bound at import time cannot
+re-theme and cannot re-densify.
+
+**One type ties the API level back to the design one, and it is deliberately one case rather
+than a mechanism.** `api/types/cat-slot.json` declares `CatSlot` as a literal set whose bound is
+not authored there: it is the count of `--color-cat-*` slots in `design/palette.dark.json`,
+reaching the layers as the derived `catSlots` constant. `check:script-tokens` asserts the set is
+exactly `1..catSlots` **in order**, so a further colour in the ramp fails the build until the
+contract type follows. **A second such type would need its own tie before it may be an enum at
+all**, and `api/AGENTS.md` states that rule in full.
+
+## What holds each level, and what nothing holds
+
+`check:dtcg`, `check:tokens`, `check:api`, `check:behaviour` and `check:script-tokens` each fail
+on an **empty directory** rather than reporting zero violations over a tree they never opened;
+`zeroContractProblems`, `zeroPatternProblems`, `zeroGeneratedCssProblems` and their siblings are
+the guards, by name. `check:contracts` holds the shape this page describes: a stray file in a
+level, a level missing its normative document, an undeclared inner directory, or a fourth
+directory beside the three.
+
+**None of them is a claim that a component is correct.** `check:behaviour`'s green run is a
+coverage claim and never an accessibility one, and `check:api` says nothing about what any
+component *does*. What proves a component behaves as it declares is a render suite, and that
+record is `check:compliance`'s `COVERED`, partial by design.
+
 ## Audience and scope
 - **Audience of the language: general public.** Arena is meant to give identity to **every kind of Dravensoft software**, regardless of who the end user is, from consumer apps to internal tools. Its foundations (color, typography, spacing, accessibility, voice) are general-purpose and don't assume a technical profile.
 - **The example application is `frameworks/react/ui-kits/console/`**, not the language itself. It illustrates Arena applied to the **Delivery Console, a product aimed at developers/technical teams**. That's why it includes data density, domain terminology (build, deploy, p95) and keyboard accelerators specific to that audience. `intro/Arena - Overview.html` is the opposite: the framework-agnostic token language, and it deliberately shows no components.
@@ -68,22 +137,17 @@ the DTCG sources apart from Style Dictionary's output, is done at the top level 
 So an inner directory is earned, never assumed. Add one only when it separates two
 vocabularies a gate reads as two sets.
 
-## What checks each level
+## The zero-result guards, by name
 
-`bun run check:api`, `bun run check:behaviour` and `bun run check:script-tokens` each fail
-on an empty directory rather than reporting zero violations over a tree they never opened.
-`zeroContractProblems` in `check-api.mjs`, `zeroPatternProblems` in `check-behaviour.mjs`
-and `zeroGeneratedCssProblems` in `check-script-tokens.mjs` are the guards, by name.
-`design/` carries the same guard under a different name: `bun run check:dtcg` walks
-`contracts/design/` itself and fails the same way on zero token files. `check:tokens` alone
-walks no directory. It compares the committed generated CSS against what `contracts/design/`
-builds from `build-tokens.mjs`'s hardcoded file list, so there is no result set discovery
-could find empty, but a source file gone missing still fails it, just not silently: the
-build it depends on has nothing to read and stops rather than reporting a clean pass.
+`zeroContractProblems` in `check-api.mjs`, `zeroPatternProblems` in `check-behaviour.mjs` and
+`zeroGeneratedCssProblems` in `check-script-tokens.mjs`. `design/` carries the same guard under
+a different name: `check:dtcg` walks `contracts/design/` itself and fails the same way on zero
+token files.
 
-None of the five is a claim that a component is correct: `check:behaviour`'s green run is
-a coverage claim and never an accessibility one, and `check:api` says nothing about what
-any component *does*.
+**`check:tokens` alone walks no directory**, so it has no result set discovery could find empty.
+It compares the committed generated CSS against what `build-tokens.mjs`'s hardcoded file list
+builds, and a source file gone missing still fails it, just not silently: the build it depends
+on has nothing to read and stops rather than reporting a clean pass.
 
 ## Where everything lives
 

@@ -63,7 +63,7 @@ false. An entry can be wrong for as long as nobody reads it, and having been cor
 evidence of being correct, because nothing checks the correction either.
 
 **It is not a substitute for reading.** An entry is a claim, and a claim about a file you have
-not read is how any record goes quietly false. `CLAUDE.md` carries that rule, the three shapes it
+not read is how any record goes quietly false. `AGENTS.md` carries that rule, the three shapes it
 takes, and the change-time greps that find them.
 
 ## If you must file one here

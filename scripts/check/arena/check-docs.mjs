@@ -1,8 +1,11 @@
 /* Holds the four documentation norms nothing else checks: every .md under
- * MAX_DOCUMENT_CHARS, no banned punctuation in a document's prose, the
- * comment rule, which lets scripts and tests carry one header of at most
- * HEADER_MAX_LINES and every other hand-written source none, and the branch
- * boundary, which keeps a contributor path out of a consumer's last stop.
+ * MAX_DOCUMENT_CHARS unless SIZE_ALLOWANCE raises it, no banned punctuation in
+ * a document's prose, the comment rule, which lets scripts and tests carry one
+ * header of at most HEADER_MAX_LINES and every other hand-written source none,
+ * and the branch boundary, which keeps a contributor path out of a consumer's
+ * last stop. SIZE_ALLOWANCE is empty, and that emptiness is the claim: every
+ * document holds to the shared limit, and one that falls back inside it after
+ * being raised fails, so a ceiling cannot quietly become permanent.
  * A file a script generates is outside the comment rule and is never read. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -28,19 +31,7 @@ export const PROSE_EXEMPT = {
     'a spec or a plan is deleted once executed, so its prose never becomes documentation',
 };
 
-export const CONTRIBUTOR_ROOT = 'CLAUDE.md';
-
-export const SIZE_ALLOWANCE = new Map([
-  [CONTRIBUTOR_ROOT, {
-    limit: 65_000,
-    reason:
-      'the root of the contributor branch carries the rules that bind more than one layer, and it '
-      + 'is the one document with nowhere above it to push a rule to. At the shared limit it had '
-      + 'run to a margin measured in tens of characters, so a true fact could only be added by '
-      + 'removing another, which is a worse failure than a long document. An allowance rather than '
-      + 'an exemption, because the pressure to decompose it should return rather than end.',
-  }],
-]);
+export const SIZE_ALLOWANCE = new Map([]);
 
 export function limitFor(rel) {
   return SIZE_ALLOWANCE.get(rel)?.limit ?? MAX_DOCUMENT_CHARS;

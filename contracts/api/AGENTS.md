@@ -572,7 +572,7 @@ already waiting for it.
 
 A `description` on a type or on one of its fields is carried into the generated modules
 as a doc comment, and `build-api-types.mjs` reads `contracts/api/types/` only. Group-level prose is
-lost in `contracts/design/`'s generator and that is recorded as debt in `CLAUDE.md`; this generator
+lost in `contracts/design/`'s generator and that is recorded as debt in `AGENTS.md`; this generator
 carries descriptions on every node it emits from `contracts/api/types/`, including type-level ones,
 so that hole is not reopened here.
 
@@ -588,7 +588,7 @@ member is discoverable only by whoever reads this repository.
 `check:api` then holds every block equal to its contract, in both directions: a contracted member
 with no doc fails, a doc whose text has drifted fails, and a `/** … */` on something no contract
 names fails too. So the copy cannot rot, which is what earns it the one carve-out in the comment
-rule `CLAUDE.md` states. **Two shapes cannot carry one and are exempt rather than missing:** a
+rule `AGENTS.md` states. **Two shapes cannot carry one and are exempt rather than missing:** a
 member the contract leaves undescribed, and an Angular slot, which is an `<ng-content>` in a
 template with no declaration for a doc to sit above. **The component's `.prompt.md` is still a
 third statement and is still held by nobody**: it is prose about how to use a component rather

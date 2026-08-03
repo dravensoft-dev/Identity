@@ -88,9 +88,48 @@ writes under `frameworks/` is ignored. `check:generated` holds both halves, and 
 two generated outputs that can carry neither the infix nor a header: the font binaries under
 `assets/fonts/` and `intro/support.js`.
 
+**The consumer index tree is not a hole in that naming rule.** The pattern reaches a
+`.generated.` name, `SKILL.md` is not one, and so the three are tracked by default under the
+first reason above. `check:generated` scans no `.md` at all, and `check:skills` holds their
+freshness and their tracking instead.
+
+So **a fresh clone runs `bun run build` first**, and until it has, part of the tree does not
+exist. [`build/AGENTS.md`](./build/AGENTS.md) is the first-compile document and names what
+notices each missing piece.
+
 ## Adding a gate
 
 Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.mjs` with its domain
-in the path, give it an npm script, and add a row to that domain's README table.
+in the path, give it an npm script, and add a row to that domain's table.
 `check-all.test.mjs` asserts every gate names one of the five domains, so a gate landing
 outside the grid fails rather than running unnoticed.
+
+**A gate has two existences, the file and every place that invokes it, and only the second is
+worth anything.** Citing a gate as evidence means confirming it is in `GATES` first.
+[`check/AGENTS.md`](./check/AGENTS.md) carries the shape of a gate, the four ways one passes
+over a tree it never opened, and the SKIP protocol.
+
+## Running them
+
+`bun run check` runs every gate plus the test suite, without stopping at the first failure, so
+one sweep reports every problem rather than the first.
+
+**When it is expected: once, when a plan's implementation is finished, and not before every
+commit.** The individual gates are cheap and stay available per commit, `check:dimensions` after
+touching a framework layer, `check:tokens` after a rebuild, and a task that widens a gate should
+still watch that gate fail and then pass. But the full sweep is a **completion** gate, not a
+per-commit toll. Stating that is what lets a gate be expensive enough to be worth having: the
+`@dsCard` viewport check needs a browser and a real render, which no repository can afford once
+per commit.
+
+**Some gates are not runtime-portable**, needing a headless browser, `Bun.build` or
+`Bun.Transpiler`. Where the dependency is missing the gate exits 2 and is reported `SKIP`,
+**except that the repository declares itself strict**, so it fails instead. Count them and read
+each one's dependency in [`check/AGENTS.md`](./check/AGENTS.md), which also has the table of
+every environment variable the scripts read; all of them are declared in
+`lib/arena/arena-scripts-vars.mjs`, and a real one wins over the declared value.
+
+**CI narrows that run by domain, never by gate name.** `check-all.mjs` takes `--domain=` and
+`--no-tests`, four jobs partition `GATES`, and `check-all.test.mjs` asserts the partition, so a
+gate cannot join `GATES` and then run in no job.
+[`../.github/workflows/AGENTS.md`](../.github/workflows/AGENTS.md) has the four workflows.

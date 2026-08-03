@@ -80,7 +80,7 @@ is several renders, and no single flat exception list is correct for all of them
 
 **Name no component here as a present-tense example of carrying cases.** A component
 name written into another file's prose is a claim no gate reads, so it rots while every
-gate stays green, and `CLAUDE.md` carries the hazard and the change-time grep that finds
+gate stays green, and `AGENTS.md` carries the hazard and the change-time grep that finds
 it. `Alert` is the one present-tense name this page keeps, because the
 paragraph on `when` below reasons from its `danger` case, so removing it would cost a
 worked example and buy nothing. For the live set, run the command at the end of this

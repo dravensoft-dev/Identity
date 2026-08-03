@@ -71,7 +71,7 @@ children have none either, because they import the parent's**: each `SideNav*` c
 `frameworks/tailwind/AGENTS.md` states for manifests, that a manifest mirrors a *surface* and a
 family draws one. The category is the one
 `frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
-`CLAUDE.md` states: directories kebab-case, file names capital-initial. Each component's
+`frameworks/AGENTS.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
 **A compound family pushes nothing, so its recursive case costs no helper.** `SideNav` nests to

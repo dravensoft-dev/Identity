@@ -57,7 +57,7 @@ component's `.prompt.md` is how to use that one, and
 [`frameworks/react/PACKAGE.md`](./frameworks/react/PACKAGE.md) or
 [`frameworks/angular/PACKAGE.md`](./frameworks/angular/PACKAGE.md) is how to install it.
 
-**Working on Arena itself.** [`CLAUDE.md`](./CLAUDE.md) is the root of that branch, and
+**Working on Arena itself.** [`AGENTS.md`](./AGENTS.md) is the root of that branch, and
 everything below is reached through it.
 
 - [`scripts/build/AGENTS.md`](./scripts/build/AGENTS.md): **compile Arena for the first

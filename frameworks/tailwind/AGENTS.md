@@ -104,7 +104,7 @@ Three shapes are legal, and nothing else. A `var()` into a token
 (`border-[length:var(--bw)]`). A **derivation** of tokens, meaning a `calc()`, `min()`,
 `max()` or `clamp()` whose operands are tokens, zeros and multipliers
 (`text-[length:calc(var(--avatar-md)*0.4)]`), which is the same rule
-`CLAUDE.md` states for a dimension anywhere in a framework layer: a token *or a
+`frameworks/AGENTS.md` states for a dimension anywhere in a framework layer: a token *or a
 derivation of tokens*. And a single value in a unit the token layer does not model,
 such as `max-w-[42ch]`, `max-w-[92vw]`, `w-[62%]` or `rotate-[120deg]`, because DTCG
 admits only `px` and `rem` in a dimension, so there is no token to reference and
@@ -205,7 +205,7 @@ is editorial judgement and no gate has it. **All three framework layers share th
 so the gate reads every layer unconditionally; `LAYERS` in `scripts/check/arena/check-structure.mjs` is
 the exhaustive enumeration, deliberately not a walk of `frameworks/`, so a layer renamed or
 removed wholesale becomes loud rather than quietly leaving the gate's scope. The root
-`CLAUDE.md` carries the naming rule and its mechanical exceptions in full; count them there
+`frameworks/AGENTS.md` carries the naming rule and its mechanical exceptions in full; count them there
 rather than here.
 
 A specimen sits three directories below the layer root, so every reference it makes to the layer

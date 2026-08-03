@@ -27,9 +27,6 @@ export const EXEMPT = new Map([
    'the file records a component one layer lacks, and every component exists in both layers, so '
    + 'it correctly does not exist. The prose that names it says so, and check:behaviour reads it '
    + 'only when present, which is what keeps the next absence loud.'],
-  ['frameworks/demos/X.demo.json',
-   'X is the metavariable a component name stands in for, in the sentence that says a component '
-   + 'is a trio. Spelling a real component there would be an exemplar, which rots.'],
 ]);
 
 const EXTENSION = /\.[A-Za-z0-9]{1,6}$/;

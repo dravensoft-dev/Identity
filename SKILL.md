@@ -18,7 +18,7 @@ text, crimson as the voice and gold as distinction, sharp geometry, no gradients
 here, and follow the table below.
 
 **Changing Arena itself** (adding a component, moving a token, editing a contract or a gate):
-read [`CLAUDE.md`](./CLAUDE.md) instead. It is the root of that branch and this file is not.
+read [`AGENTS.md`](./AGENTS.md) instead. It is the root of that branch and this file is not.
 
 ## Start here, in this order
 

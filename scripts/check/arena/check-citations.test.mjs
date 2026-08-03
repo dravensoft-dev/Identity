@@ -25,10 +25,7 @@ function tree(files) {
 const NONE = new Map();
 
 test('EXEMPT names what is absent on purpose, and nothing else', () => {
-  assert.deepEqual([...EXEMPT.keys()], [
-    'frameworks/angular/BehaviourDelegated.json',
-    'frameworks/demos/X.demo.json',
-  ]);
+  assert.deepEqual([...EXEMPT.keys()], ['frameworks/angular/BehaviourDelegated.json']);
   for (const reason of EXEMPT.values()) assert.ok(reason.length > 40, 'an entry states its reason');
 });
 

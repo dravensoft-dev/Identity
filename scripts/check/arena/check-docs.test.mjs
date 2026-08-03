@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   MAX_DOCUMENT_CHARS, HEADER_MAX_LINES, SIZE_EXEMPT, PROSE_EXEMPT, BANNED_PUNCTUATION,
-  SIZE_ALLOWANCE, CONTRIBUTOR_ROOT, limitFor, staleAllowanceProblems,
+  SIZE_ALLOWANCE, limitFor, staleAllowanceProblems,
   documentSizeProblems, commentRuleProblems, punctuationProblems, zeroScanProblems,
   isGenerated, allowsHeader, MEMBER_DOC_TREE, SCANNED_TREES, READ_DESPITE_THE_DOT,
   consumerBranchProblems, CONSUMER_LAST_STOP, CONSUMER_INDEX, CONTRIBUTOR_PATHS,
@@ -60,30 +60,28 @@ test('both document rules report how many documents they actually read', () => {
   rmSync(root, { recursive: true });
 });
 
-test('SIZE_ALLOWANCE raises the contributor root and nothing else, and says why', () => {
-  assert.deepEqual([...SIZE_ALLOWANCE.keys()], [CONTRIBUTOR_ROOT]);
-  assert.equal(SIZE_ALLOWANCE.get(CONTRIBUTOR_ROOT).limit, 65_000);
-  assert.ok(SIZE_ALLOWANCE.get(CONTRIBUTOR_ROOT).reason.length > 80, 'an entry states its reason');
-  assert.equal(limitFor(CONTRIBUTOR_ROOT), 65_000);
-  assert.equal(limitFor('scripts/README.md'), MAX_DOCUMENT_CHARS);
+test('SIZE_ALLOWANCE is empty, and that emptiness is the claim', () => {
+  assert.deepEqual([...SIZE_ALLOWANCE.keys()], []);
+  assert.equal(limitFor('AGENTS.md'), MAX_DOCUMENT_CHARS);
+  assert.equal(limitFor('scripts/AGENTS.md'), MAX_DOCUMENT_CHARS);
 });
 
 test('an allowance raises the limit rather than removing it, so the document is still measured', () => {
-  const allowance = new Map([['CLAUDE.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
-  const inside = tree({ 'CLAUDE.md': 'x'.repeat(64_000) });
+  const allowance = new Map([['AGENTS.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const inside = tree({ 'AGENTS.md': 'x'.repeat(64_000) });
   assert.deepEqual(documentSizeProblems(inside, allowance).problems, []);
   rmSync(inside, { recursive: true });
 
-  const over = tree({ 'CLAUDE.md': 'x'.repeat(65_001) });
+  const over = tree({ 'AGENTS.md': 'x'.repeat(65_001) });
   const problems = documentSizeProblems(over, allowance).problems;
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /CLAUDE\.md: 65001 characters, over the 65000 limit/);
+  assert.match(problems[0], /AGENTS\.md: 65001 characters, over the 65000 limit/);
   rmSync(over, { recursive: true });
 });
 
 test('a document that falls back inside the shared limit fails as a stale allowance', () => {
-  const allowance = new Map([['CLAUDE.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
-  const root = tree({ 'CLAUDE.md': 'x'.repeat(MAX_DOCUMENT_CHARS) });
+  const allowance = new Map([['AGENTS.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const root = tree({ 'AGENTS.md': 'x'.repeat(MAX_DOCUMENT_CHARS) });
   const problems = documentSizeProblems(root, allowance).problems;
   assert.equal(problems.length, 1);
   assert.match(problems[0], /has outlived what it was written for, so delete it/);
@@ -91,7 +89,7 @@ test('a document that falls back inside the shared limit fails as a stale allowa
 });
 
 test('an allowance for a document that has moved or gone fails too', () => {
-  const allowance = new Map([['CLAUDE.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
+  const allowance = new Map([['AGENTS.md', { limit: 65_000, reason: 'the root of the branch, with nowhere above it' }]]);
   assert.match(staleAllowanceProblems(new Map(), allowance)[0], /and no document is there/);
 });
 
