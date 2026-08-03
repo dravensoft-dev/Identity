@@ -16,8 +16,9 @@ import { tscBin } from '../../check/react/check-react-types.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
-  collectFiles, reset, write, copy, writeCssChain, copyCli, baseManifest, report,
+  collectFiles, reset, write, copy, writeCssChain, sheetHalves, copyCli, baseManifest, report,
 } from '../../lib/arena/package-assembly.mjs';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
@@ -161,9 +162,9 @@ export async function buildReactPackage(root = repoRoot) {
   const sources = { length: compiled.length };
   const carried = declarations;
 
-  for (const to of writeCssChain(dir, NAME, [
-    { from: 'frameworks/tailwind/Utilities.generated.css', to: 'css/utilities.css' },
-  ], root)) written.push(join(dir, to));
+  const sheet = readFileSync(join(root, 'frameworks/tailwind/Utilities.generated.css'), 'utf8');
+  for (const to of writeCssChain(dir, NAME, sheetHalves(sheet, splitCompiledSheet), root))
+    written.push(join(dir, to));
   written.push(join(dir, 'arena.css'));
 
   for (const rel of copyCli(dir, root)) written.push(join(dir, rel));

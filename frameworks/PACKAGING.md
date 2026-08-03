@@ -75,12 +75,22 @@ because an adopter budgets for a dependency they were told about and resents one
   the React layer itself, so a component's import crosses no boundary and the layer compiles
   with no `rootDir` outside it.
 
-**What the compiled `Utilities.generated.css` saves is the BUILD, not the coupling.** It
-ships as `css/utilities.css`, so an adopter who does not run Tailwind never compiles
-anything and still gets the right rules; an adopter who does run Tailwind v4 imports the
-`@theme` preset beside it and compiles their own, which is smaller. Either way the class
-strings on the elements are Tailwind's, and a project that wants none of that wants a
-different design system.
+**What the compiled `Utilities.generated.css` saves is the BUILD, not the coupling.** An
+adopter who does not run Tailwind never compiles anything and still gets the right rules; an
+adopter who does run Tailwind v4 imports the `@theme` preset beside it and compiles their own,
+which is smaller. Either way the class strings on the elements are Tailwind's, and a project
+that wants none of that wants a different design system.
+
+**It ships as two files, and the cut is where an adopter's own Tailwind would collide.**
+`splitCompiledSheet()` in `scripts/lib/tailwind/sheet-split.mjs` lifts the `@layer base` block
+out: `css/base.css` is Tailwind's preflight and nothing of Arena's, `css/utilities.css` is the
+theme and the utilities. A project that already runs Tailwind ships an equivalent preflight, so
+importing the one bundled file gave it a second copy of every rule in that one, with the same
+selectors and possibly different values; it can now take the utilities alone. **Both halves
+repeat the layer declarations**, because `@layer properties;` is declared before the four-name
+order and a half that dropped it would sort Tailwind's own property fallbacks above everything.
+The halves are verbatim slices rather than a re-serialisation, which the paired suite asserts
+by reassembling them against the one file.
 
 **The Tailwind layer is still not a third package.** It is data travelling one way into
 Angular, the single edge `check:layer-independence` declares `ALLOWED`, and no consumer of

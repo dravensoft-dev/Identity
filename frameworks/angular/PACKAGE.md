@@ -161,9 +161,31 @@ win. Add `css/arena-cdk.css` when you first use `arena-tooltip` or `arena-menu`:
 the CDK overlay onto Arena's `--z-*` scale, without which a menu opened inside a dialog paints
 behind it.
 
-If your app runs Tailwind v4 and you would rather compile the utilities yourself, import
+### If your app already runs Tailwind
+
+There are two ways out of importing a second copy of what you already have, and they cost
+different things.
+
+The bundled sheet is two files, so you can take one without the other. `css/base.css` is
+Tailwind's preflight and nothing of Arena's; `css/utilities.css` is Arena's theme and the
+utilities every component's class string resolves against. Your project already ships a
+preflight, so import the utilities alone:
+
+```css
+@import '@dravensoft/arena-angular/css/utilities.css';
+@import './arena.generated.css';
+@import '@dravensoft/arena-angular/css/arena-cdk.css';
+```
+
+Or compile the utilities yourself: import
 `@dravensoft/arena-angular/css/theme-preset.css` instead of the bundled sheet, and point a
 `@source` at the package.
+
+Two things become yours either way. **Order**, because nothing composes it for you: the
+utilities have to come before your own rules if you want yours to win. And **the preflight
+itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
+a control falls back to the browser's 13.33px Arial and every control in the library is 20%
+off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
 
 ## Use it
 

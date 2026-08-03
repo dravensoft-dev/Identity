@@ -87,10 +87,36 @@ export function copyTree(from, dir, rel, keep) {
 
 export function writeCssChain(dir, name, extra = [], root = repoRoot) {
   const chain = [...CSS_CHAIN, ...extra];
-  for (const { from, to } of chain) copy(join(root, from), dir, to);
+  for (const entry of chain) {
+    if (entry.content !== undefined) write(dir, entry.to, entry.content);
+    else copy(join(root, entry.from), dir, entry.to);
+  }
   const imports = chain.map(({ to }) => `@import './${to.split(sep).join('/')}';`);
   write(dir, 'arena.css', `${arenaCssHeader(name)}\n${imports.join('\n')}\n`);
   return chain.map((c) => c.to);
+}
+
+export const SHEET_BANNERS = {
+  base: [
+    '/* Tailwind\'s preflight, and nothing of Arena\'s own.',
+    '   Arena needs it: a form control that inherits nothing falls back to 13.33px Arial, and a',
+    '   <button> styled that way is 20% off in every measurement that matters.',
+    '   If your project already runs Tailwind, its preflight does the same job and you may import',
+    "   './css/utilities.css' alone instead of './arena.css' to avoid a second copy. Doing that",
+    '   makes the order yours to get right: this half must come before Arena\'s components. */',
+  ].join('\n'),
+  utilities: [
+    '/* Arena\'s theme and the utilities every component\'s class string resolves against.',
+    '   This half is never optional: without it a component renders unstyled, silently. */',
+  ].join('\n'),
+};
+
+export function sheetHalves(css, split) {
+  const { base, utilities } = split(css);
+  return [
+    { to: join('css', 'base.css'), content: `${SHEET_BANNERS.base}\n${base}` },
+    { to: join('css', 'utilities.css'), content: `${SHEET_BANNERS.utilities}\n${utilities}` },
+  ];
 }
 
 export function copyCli(dir, root = repoRoot) {

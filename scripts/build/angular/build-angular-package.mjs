@@ -12,8 +12,9 @@ import { join, relative, sep, posix } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
-  collectFiles, reset, write, copy, writeCssChain, copyCli, baseManifest, report,
+  collectFiles, reset, write, copy, writeCssChain, sheetHalves, copyCli, baseManifest, report,
 } from '../../lib/arena/package-assembly.mjs';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 
 export const NAME = '@dravensoft/arena-angular';
 export const LAYER = 'frameworks/angular';
@@ -129,8 +130,9 @@ export function buildAngularPackage(root = repoRoot) {
   }
 
   const written = [];
+  const sheet = readFileSync(join(root, 'frameworks/tailwind/Utilities.generated.css'), 'utf8');
   for (const to of writeCssChain(dist, NAME, [
-    { from: 'frameworks/tailwind/Utilities.generated.css', to: 'css/utilities.css' },
+    ...sheetHalves(sheet, splitCompiledSheet),
     { from: 'frameworks/angular/theme/arena-cdk.css', to: 'css/arena-cdk.css' },
   ], root)) written.push(join(dist, to));
   written.push(join(dist, 'arena.css'));

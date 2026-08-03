@@ -165,6 +165,28 @@ import '@dravensoft/arena-react/arena.css';
 import './arena.generated.css';
 ```
 
+### If your project already ships a browser reset of its own
+
+`arena.css` carries two halves of the compiled sheet, and they are separate files so you can
+take one without the other. `css/base.css` is the stock browser reset and nothing of Arena's:
+`box-sizing`, the margin and padding zeroing, `font: inherit` on form controls. `css/utilities.css`
+is Arena's theme and the utilities every component's class string resolves against.
+
+If your own build already emits that reset, importing `arena.css` gives you a second copy of
+every rule in it, with the same selectors and possibly different values, and the cascade order
+decides which wins. Import the halves instead and skip the one you already have:
+
+```js
+import '@dravensoft/arena-react/css/utilities.css';
+import './arena.generated.css';
+```
+
+Two things become yours when you do that. **Order**, because nothing composes it for you: the
+utilities have to come before your own rules if you want yours to win. And **the preflight
+itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
+a control falls back to the browser's 13.33px Arial and every control in the library is 20%
+off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
+
 ## Use it
 
 ```tsx
