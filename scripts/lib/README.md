@@ -34,13 +34,21 @@ toolchains expect.
 
 ## The five domains
 
-| domain | modules | |
-| --- | --- | --- |
-| [`arena/`](./arena/README.md) | 15 | belongs to no one layer: parsers, the browser harness, the tree's own facts |
-| [`core/`](./core/README.md) | 7 | speaks `contracts/`: DTCG, behaviour requirements, colour science |
-| [`tailwind/`](./tailwind/README.md) | 1 | compiles the Tailwind layer, for the four gates that read it |
-| [`react/`](./react/README.md) | 1 | emits that layer's half of a playground, in that layer's idiom |
-| [`angular/`](./angular/README.md) | 1 | the same, for the other layer |
+| domain | what a module there speaks |
+| --- | --- |
+| [`arena/`](./arena/README.md) | belongs to no one layer: parsers, the browser harness, the tree's own facts |
+| [`core/`](./core/README.md) | speaks `contracts/`: DTCG, behaviour requirements, colour science |
+| [`tailwind/`](./tailwind/README.md) | compiles the Tailwind layer, for the gates that read it |
+| [`react/`](./react/README.md) | emits that layer's half of a playground, in that layer's idiom |
+| [`angular/`](./angular/README.md) | the same, for the other layer |
+
+**Count them rather than reading a figure here**, which rots the first time a module lands:
+
+```bash
+for d in angular arena core react tailwind; do
+  printf '%-9s %s\n' "$d" "$(find scripts/lib/$d -name '*.mjs' ! -name '*.test.mjs' | wc -l)"
+done
+```
 
 `repo-root.mjs` is the one module whose own move needs care: it is the single place that counts
 `..` segments to find the repository root, so that no other script's depth is part of what it

@@ -409,8 +409,8 @@ need its own tie before it may be an enum at all.**
 The set is React's alone, so **count it rather than trusting a figure**: every component
 **directory** under
 `frameworks/react/components/<category>/` with no matching directory under
-`frameworks/angular/components/<category>/`. **It is empty today**, with the layers at 50/50, and
-it refills whenever React lands a component first, which is the point of the arrangement: such
+`frameworks/angular/components/<category>/`. **It is empty today**, both layers holding the same
+set, and it refills whenever React lands a component first, which is the point of the arrangement: such
 an API is settled and normative *before* Angular has an implementation to defend.
 
 **The single-icon convention reaches `Button` and `IconButton`**: a component's icon is a

@@ -64,13 +64,22 @@ ordering rather than by a gate.
 
 A script's domain is decided by what it **touches**, never by what it is about.
 
-| domain | scripts | |
-| --- | --- | --- |
-| [`angular/`](./angular/README.md) | 3 | the AOT emits: demo bundles, the package and the test surface |
-| [`react/`](./react/README.md) | 4 | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
-| [`tailwind/`](./tailwind/README.md) | 1 | the utility layer and the manifest modules |
-| `core/` | none | empty; `.gitkeep` marks the combination as unoccupied |
-| `arena/` | none | empty; no build touches two layers at once |
+| domain | what a build there compiles |
+| --- | --- |
+| [`angular/`](./angular/README.md) | the AOT emits: demo bundles, the package and the test surface |
+| [`react/`](./react/README.md) | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
+| [`tailwind/`](./tailwind/README.md) | the utility layer and the manifest modules |
+| `core/` | empty; `.gitkeep` marks the combination as unoccupied |
+| `arena/` | empty; no build touches two layers at once |
+
+**Count them rather than reading a figure here.** The two empty domains are the claim, so an
+answer other than zero for either is a domain that gained an occupant without gaining a reason:
+
+```bash
+for d in angular arena core react tailwind; do
+  printf '%-9s %s\n' "$d" "$(find scripts/build/$d -name '*.mjs' ! -name '*.test.mjs' | wc -l)"
+done
+```
 
 `core` and `arena` exist even while empty so the grid stays legible rather than implied. See
 [`../README.md`](../README.md) for what each domain is allowed to read and write.

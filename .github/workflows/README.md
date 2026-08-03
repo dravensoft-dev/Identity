@@ -19,10 +19,10 @@ changes            which layers this diff reaches
    |
 build              bun run build, then build:packages, then one cache entry
    |
-   +-- test-core       always            26 gates + the suites under scripts/
-   +-- test-react      if react           4 gates + the two React invocations
-   +-- test-angular    if angular         4 gates + the suites off the ngc emit
-   +-- test-tailwind   if tailwind        8 gates
+   +-- test-core       always            the core and arena gates + the suites under scripts/
+   +-- test-react      if react          the react gates + the two React invocations
+   +-- test-angular    if angular        the angular gates + the suites off the ngc emit
+   +-- test-tailwind   if tailwind       the tailwind gates
    |
 pr-gate            the only required check
 ```
