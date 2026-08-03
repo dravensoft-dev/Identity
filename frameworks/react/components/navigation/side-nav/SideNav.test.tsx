@@ -29,9 +29,11 @@ test('the nav is labelled', () => {
 
 test('active and inactive items differ in weight and colour', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary" active="dashboard">{TREE}</SideNav>);
-  assert.match(html, /var\(--crimson-soft\)/);
-  assert.match(html, /var\(--fw-semibold\)/);
-  assert.match(html, /var\(--fw-medium\)/);
+  assert.match(html, /\bbg-primary\/14\b/);
+  assert.match(html, /\btext-primary\b/);
+  assert.match(html, /\bfont-semibold\b/);
+  assert.match(html, /\bfont-medium\b/);
+  assert.match(html, /\bbg-transparent\b/);
 });
 
 test('onNav carries the activated id alone, and no DOM event reaches the handler', () => {
@@ -74,7 +76,8 @@ test('the anchor keeps its native navigation: nothing in the click path suppress
 
 test('an icon is a class name Arena draws, never markup the caller passes', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary">{TREE}</SideNav>);
-  assert.match(html, /<i class="ph-bold ph-squares-four"[^>]*aria-hidden="true"/);
+  assert.match(html, /<i class="ph-bold ph-squares-four [^"]*"[^>]*aria-hidden="true"/,
+    "the Phosphor class the consumer named leads, and the manifest's icon slot sizes it");
   assert.doesNotMatch(html, />ph-bold ph-squares-four</, 'the class name was drawn as text');
 });
 
@@ -116,7 +119,8 @@ test('a SideNav with no children renders an empty landmark rather than throwing'
 
 test('the item text re-densifies with the control scale', () => {
   const html = renderToStaticMarkup(<SideNav ariaLabel="Primary">{TREE}</SideNav>);
-  assert.match(html, /var\(--dz-text\)/);
+  assert.match(html, /\btext-ctl\b/,
+    'the control text step is what .arena-compact re-densifies, and the row reads it as a utility');
 });
 
 test('indentFor returns token arithmetic at every depth, never a bare length', () => {

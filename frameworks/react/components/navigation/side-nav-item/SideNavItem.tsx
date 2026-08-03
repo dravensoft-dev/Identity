@@ -1,7 +1,10 @@
 import React from 'react';
 import { isPrimaryActivation } from '../../../AnchorActivation.ts';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
-import { rowStyle, rowGlyph, rowBadge } from '../side-nav/SideNavInject.tsx';
+import { indentFor } from '../side-nav/SideNavInject.tsx';
+import { activeWeight, badgeCount } from '../NavRow.ts';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from '../side-nav/SideNav.manifest.generated.ts';
 
 export interface SideNavItemProps {
 
@@ -25,6 +28,8 @@ export interface SideNavItemProps {
 }
 
 
+const sideNavStyles = tv(manifest);
+
 export function SideNavItem({
   id, label, icon, badge, href, disabled = false,
   depth = 0, activeId, indentStep = 3, onActivate,
@@ -33,6 +38,7 @@ export function SideNavItem({
   if (!id) throw new Error('SideNavItem: `id` is required');
   if (!label) throw new Error('SideNavItem: `label` is required');
   const on = id === activeId;
+  const styles = sideNavStyles({ active: on });
 
   const shared = {
     'aria-current': on ? 'page' as const : undefined,
@@ -45,20 +51,15 @@ export function SideNavItem({
       }
       if (onActivate) onActivate(id);
     },
-    style: rowStyle({
-      indentStep, depth,
-      background: on ? 'var(--crimson-soft)' : 'transparent',
-      color: on ? 'var(--crimson)' : 'var(--mute)',
-      opacity: disabled ? 0.5 : 1,
-      cursor: disabled ? 'not-allowed' : 'pointer',
-
-      textDecoration: 'none',
-      fontWeight: on ? 'var(--fw-semibold)' : 'var(--fw-medium)',
-    }),
+    className: styles.item(),
+    style: { paddingInlineStart: indentFor(indentStep, depth) },
   };
 
-  const glyph = rowGlyph(icon, on);
-  const tally = rowBadge(badge, on);
+  const glyph = icon
+    ? <i className={`${on ? activeWeight(icon) : icon} ${styles.icon()}`} aria-hidden="true" />
+    : null;
+  const count = badgeCount(badge);
+  const tally = count === null ? null : <span className={styles.badge()}>{count}</span>;
   return href
     ? <a href={href} {...shared}>{glyph}{label}{tally}</a>
     : <button type="button" {...shared}>{glyph}{label}{tally}</button>;

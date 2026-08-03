@@ -25,20 +25,18 @@ const one = (props: OneProps = {}, kids = <SideNavItem id="prod" label="Producti
   </SideNav>
 );
 
-test('clicking the trigger expands it: aria-expanded, hidden and display all move together', () => {
+test('clicking the trigger expands it: aria-expanded and hidden move together', () => {
   const root = mount(one());
   const t = trigger(root, 'deploys');
   const r = region(root, 'deploys');
   assert.equal(t.getAttribute('aria-expanded'), 'false');
   assert.equal(r.hasAttribute('hidden'), true);
 
-  assert.equal(r.style.display, 'none');
-
   press(root, 'deploys');
 
   assert.equal(t.getAttribute('aria-expanded'), 'true');
-  assert.equal(r.hasAttribute('hidden'), false);
-  assert.equal(r.style.display, 'flex');
+  assert.equal(r.hasAttribute('hidden'), false,
+    'the attribute is what takes the region out of the flow, and it moves with aria-expanded');
 });
 
 test('clicking again collapses it, and toggle reported one boolean per press', () => {
@@ -50,7 +48,6 @@ test('clicking again collapses it, and toggle reported one boolean per press', (
   assert.deepEqual(seen, [true, false], 'toggle did not report exactly one boolean per press');
   assert.equal(trigger(root, 'deploys').getAttribute('aria-expanded'), 'false');
   assert.equal(region(root, 'deploys').hasAttribute('hidden'), true);
-  assert.equal(region(root, 'deploys').style.display, 'none');
 });
 
 test('the auto-expand around the active destination is not reported through toggle', () => {

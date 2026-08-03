@@ -1,5 +1,7 @@
 import React from 'react';
-import { injectInto, COLUMN } from './SideNavInject.tsx';
+import { injectInto } from './SideNavInject.tsx';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from './SideNav.manifest.generated.ts';
 
 export interface SideNavProps {
 
@@ -20,11 +22,13 @@ export interface SideNavProps {
 }
 
 
+const sideNavStyles = tv(manifest);
+
 export function SideNav({ children, active, ariaLabel, indentStep = 3, onNav }: SideNavProps) {
 
   if (!ariaLabel?.trim()) throw new Error('SideNav: `ariaLabel` is required');
   return (
-    <nav aria-label={ariaLabel} style={COLUMN}>
+    <nav aria-label={ariaLabel} className={sideNavStyles().root()}>
       {injectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav })}
     </nav>
   );

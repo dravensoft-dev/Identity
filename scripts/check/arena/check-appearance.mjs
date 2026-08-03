@@ -20,10 +20,6 @@ export const PENDING = new Map([
 
 
 
-  ['SideNav', 'group G: the family parent, whose appearance sits in a shared inject helper'],
-  ['SideNavItem', 'group G: reads SideNav\'s manifest through that helper'],
-  ['SideNavSection', 'group G: reads SideNav\'s manifest through that helper'],
-  ['SideNavCollapsible', 'group G: reads SideNav\'s manifest through that helper'],
 
   ['Table', 'renders its manifest and still draws the roving grid focus ring as an inline '
     + 'boxShadow, which is a state the manifest holds for every other grid slot'],

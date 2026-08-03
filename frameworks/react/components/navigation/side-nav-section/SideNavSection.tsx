@@ -1,6 +1,8 @@
 import React, { useId } from 'react';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
-import { injectInto, indentFor, COLUMN } from '../side-nav/SideNavInject.tsx';
+import { indentFor, injectInto } from '../side-nav/SideNavInject.tsx';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from '../side-nav/SideNav.manifest.generated.ts';
 
 export interface SideNavSectionProps {
 
@@ -11,6 +13,8 @@ export interface SideNavSectionProps {
   children: React.ReactNode;
 }
 
+
+const sideNavStyles = tv(manifest);
 
 export function SideNavSection({
   label, children,
@@ -23,15 +27,11 @@ export function SideNavSection({
     throw new Error('SideNavSection: a section with no children is not a legal shape');
   }
   const labelId = useId();
+  const styles = sideNavStyles();
   return (
-    <div role="group" aria-labelledby={labelId} style={COLUMN}>
-      <div id={labelId} style={{
-        paddingInlineStart: indentFor(indentStep, depth),
-        paddingBlock: 'calc(var(--sp-1) * 1.5)',
-        fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-xs)',
-        letterSpacing: 'var(--ls-badge)', textTransform: 'uppercase',
-        color: 'var(--mute)',
-      }}>{label}</div>
+    <div role="group" aria-labelledby={labelId} className={styles.section()}>
+      <div id={labelId} className={styles.sectionLabel()}
+        style={{ paddingInlineStart: indentFor(indentStep, depth) }}>{label}</div>
       {injectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
     </div>
   );

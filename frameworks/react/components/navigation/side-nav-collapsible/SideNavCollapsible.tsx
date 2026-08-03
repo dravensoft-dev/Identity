@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { SideNavInjected } from '../side-nav/SideNavInject.tsx';
-import { injectInto, COLUMN, rowStyle, rowGlyph } from '../side-nav/SideNavInject.tsx';
+import { indentFor, injectInto } from '../side-nav/SideNavInject.tsx';
+import { tv } from '../../../Tv.generated.ts';
+import manifest from '../side-nav/SideNav.manifest.generated.ts';
 import { SideNavItem } from '../side-nav-item/SideNavItem.tsx';
 
 export interface SideNavCollapsibleProps {
@@ -24,6 +26,8 @@ export interface SideNavCollapsibleProps {
   onToggle?: (expanded: boolean) => void;
 }
 
+
+const sideNavStyles = tv(manifest);
 
 export function subtreeHasItem(children: React.ReactNode, id: string | undefined): boolean {
   if (!id) return false;
@@ -58,28 +62,27 @@ export function SideNavCollapsible({
     if (onToggle) onToggle(next);
   };
 
-  const glyph = rowGlyph(icon);
+  const styles = sideNavStyles();
+  const glyph = icon ? <i className={`${icon} ${styles.icon()}`} aria-hidden="true" /> : null;
 
   return (
-    <div style={COLUMN}>
+    <div className={styles.section()}>
       {
 
 }
       <button id={triggerId} type="button" aria-expanded={expanded} aria-controls={regionId}
         onClick={press}
-        style={rowStyle({
-          indentStep, depth,
-          background: 'transparent', color: 'var(--mute)', fontWeight: 'var(--fw-medium)',
-        })}>
+        className={styles.trigger()}
+        style={{ paddingInlineStart: indentFor(indentStep, depth) }}>
         {glyph}
-        <span style={{ flex: 1 }}>{label}</span>
-        <i className={expanded ? 'ph-bold ph-caret-down' : 'ph-bold ph-caret-right'}
-          aria-hidden="true" style={{ fontSize: 'var(--icon-md)', display: 'inline-flex' }} />
+        <span className={styles.triggerLabel()}>{label}</span>
+        <i className={`${expanded ? 'ph-bold ph-caret-down' : 'ph-bold ph-caret-right'} ${styles.caret()}`}
+          aria-hidden="true" />
       </button>
       {
 }
       <div id={regionId} role="group" aria-labelledby={triggerId} hidden={!expanded}
-        style={{ ...COLUMN, display: expanded ? 'flex' : 'none' }}>
+        className={styles.region()}>
         {injectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
       </div>
     </div>
