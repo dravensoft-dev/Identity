@@ -2,12 +2,12 @@
  * emits: a second emitter exists, so something has to hold the two together, and without
  * this the sentence "the package emits what Arena emits" is only a sentence. Second, when
  * dist/ has been assembled, that each package is registry-standard: the version comes from
- * plugin.json, every exports target resolves to a file that is there, the entry declaration
- * is advertised at the root as well, and no peer leaked
+ * plugin.json, every exports target resolves to a file that is there and every wildcard one
+ * matches at least one, the entry declaration is advertised at the root as well, and no peer leaked
  * into dependencies. dist/ is git-ignored, so the second half is skipped on a fresh clone
  * and says so; the first half runs anywhere. */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -96,12 +96,34 @@ function exportTargets(exports) {
   return out;
 }
 
+export function globMatches(target, dir) {
+  const rel = target.replace(/^\.\//, '');
+  const pattern = new RegExp(`^${rel.split('*').map((p) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
+  const found = [];
+  const walk = (at, prefix) => {
+    if (!existsSync(at)) return;
+    for (const entry of readdirSync(at, { withFileTypes: true })) {
+      const path = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) walk(join(at, entry.name), path);
+      else if (pattern.test(path)) found.push(path);
+    }
+  };
+  walk(dir, '');
+  return found;
+}
+
 export function exportProblems(pkg, manifest, dir) {
   const problems = [];
   const targets = exportTargets(manifest.exports ?? {});
   if (targets.length === 0) problems.push(`${pkg.name}: no exports target resolves to a file, so the package exposes nothing`);
   for (const target of targets.filter((t) => !t.includes('*'))) {
     if (!existsSync(join(dir, target))) problems.push(`${pkg.name}: exports ${target}, which was never emitted`);
+  }
+  for (const target of targets.filter((t) => t.includes('*'))) {
+    if (globMatches(target, dir).length === 0) {
+      problems.push(`${pkg.name}: exports ${target}, which matches nothing that was emitted, so the subpath `
+        + 'resolves to a module error for every consumer who imports it');
+    }
   }
   const types = manifest.types ?? manifest.typings;
   if (!types) {
