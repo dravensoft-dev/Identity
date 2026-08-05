@@ -7,6 +7,7 @@
  * rather than listed here, so a new one joins without an edit. */
 
 import { playgroundPage, sheetLinks } from '../arena/playground-page.mjs';
+import { kebab } from '../arena/layers.mjs';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
@@ -34,7 +35,7 @@ export function markerNames(source) {
 }
 
 export function selector(name) {
-  return `arena-${name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}`;
+  return `arena-${kebab(name)}`;
 }
 
 export function typeExpr(knob) {

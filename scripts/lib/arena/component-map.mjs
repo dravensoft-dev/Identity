@@ -30,9 +30,10 @@ export function componentFiles(layer, extension, root = repoRoot) {
   const base = join(root, 'frameworks', layer, 'components');
   const found = [];
   if (!existsSync(base)) return found;
-  for (const category of readdirSync(base, { withFileTypes: true })) {
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  for (const category of readdirSync(base, { withFileTypes: true }).sort(byName)) {
     if (!category.isDirectory()) continue;
-    for (const directory of readdirSync(join(base, category.name), { withFileTypes: true })) {
+    for (const directory of readdirSync(join(base, category.name), { withFileTypes: true }).sort(byName)) {
       if (!directory.isDirectory()) continue;
       const at = join(base, category.name, directory.name);
       for (const name of readdirSync(at).sort()) {

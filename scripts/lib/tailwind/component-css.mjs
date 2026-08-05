@@ -1,27 +1,25 @@
 /* Turns a manifest into the CSS a component renders, so no Tailwind class name and no
- * Tailwind custom property leaves a package. The class prefix comes from the MANIFEST and
- * never from the component, because a manifest mirrors a surface: Table, TableRow and
- * TableCell share one. The strip is the load-bearing half. `@apply` emits Tailwind's own
+ * Tailwind custom property leaves a package. Every class name is spelt by ManifestClasses.js
+ * rather than here: the specimen harness runs that file in a browser and this generator writes
+ * the sheet, so a second copy of the template would let a page render classes no sheet defines
+ * and no gate would see it. The strip is the load-bearing half. `@apply` emits Tailwind's own
  * namespace with the Arena token only as a fallback, `var(--spacing, var(--sp-1))`, and an
  * adopter who runs Tailwind declares `--spacing` on their unlayered `:root`, wins, and
  * rescales every component silently. Stripping to `var(--sp-1)` also repairs `.arena-compact`,
  * which is inert while the density tokens resolve once on `:root` and inherit already
- * resolved. An indirection whose pair `Theme.css` does not confirm is an error, never a
- * pass-through, because a silent skip is the failure this exists to prevent. */
+ * resolved. An indirection whose pair `Theme.css` does not confirm is an error. */
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.mjs';
-import { kebab } from '../arena/layers.mjs';
+import {
+  CLASS_PREFIX, classBase, classesManifest, compoundClass, slotClass, variantClass,
+} from '../../../frameworks/tailwind/ManifestClasses.js';
 
-export const CLASS_PREFIX = 'arena';
+export { CLASS_PREFIX, classBase, classesManifest, compoundClass, slotClass, variantClass };
+
 export const INDIRECTION = /var\(\s*--([a-z0-9-]+)\s*,\s*var\(\s*--([a-z0-9-]+)\s*\)\s*\)/g;
 export const isThemeKey = (name) => !name.startsWith('tw-');
-
-export const slotClass = (manifest, slot) => `${CLASS_PREFIX}-${kebab(manifest)}__${kebab(slot)}`;
-export const variantClass = (manifest, slot, group, value) =>
-  `${slotClass(manifest, slot)}--${kebab(group)}-${kebab(String(value))}`;
-export const compoundClass = (manifest, slot, index) => `${slotClass(manifest, slot)}--cv${index + 1}`;
 
 export function applyRules(manifest) {
   const rules = [];
@@ -49,35 +47,6 @@ export function applyRules(manifest) {
 
 export function classNames(manifest) {
   return applyRules(manifest).map((rule) => rule.selector);
-}
-
-export function classesManifest(manifest) {
-  const named = (map, name) => Object.fromEntries(
-    Object.keys(map ?? {}).filter((slot) => String(map[slot] ?? '').trim()).map((slot) => [slot, name(slot)]),
-  );
-  const everySlot = Object.fromEntries(
-    Object.keys(manifest.slots ?? {}).map((slot) => [slot, slotClass(manifest.component, slot)]),
-  );
-
-  const out = { component: manifest.component, slots: everySlot };
-
-  if (manifest.variants) {
-    out.variants = Object.fromEntries(Object.entries(manifest.variants).map(([group, values]) => [
-      group,
-      Object.fromEntries(Object.entries(values).map(([value, slots]) => [
-        value,
-        named(slots, (slot) => variantClass(manifest.component, slot, group, value)),
-      ])),
-    ]));
-  }
-  if (manifest.defaultVariants) out.defaultVariants = manifest.defaultVariants;
-  if (manifest.compoundVariants) {
-    out.compoundVariants = manifest.compoundVariants.map(({ class: applied, ...conditions }, index) => ({
-      ...conditions,
-      class: named(applied, (slot) => compoundClass(manifest.component, slot, index)),
-    }));
-  }
-  return out;
 }
 
 export function entryStylesheet(presetPath, manifests) {

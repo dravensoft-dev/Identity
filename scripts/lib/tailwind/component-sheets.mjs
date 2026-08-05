@@ -1,16 +1,17 @@
 /* Cuts one compiled sheet into the per-component files a package ships, plus the prelude
- * they all depend on. Splitting is by the `arena-<manifest>__` prefix a selector carries,
- * and an at-rule has to be split rather than assigned: Tailwind merges every
- * `motion-reduce:` variant in the library into ONE `@media` block, which today holds rules
- * from 26 manifests. The prelude is not a recommendation. Without the `@property --tw-*`
- * registrations `border-style: var(--tw-border-style)` is invalid at computed-value time,
- * so every border disappears, and the `box-shadow` chain goes with the focus ring. Each
- * component file therefore imports it rather than documenting it, because a stylesheet that
- * renders nothing and reports nothing is the failure this layer keeps having. */
+ * they all depend on. An owner is the class base a selector carries, matched against the set
+ * the caller already holds rather than parsed out of a known prefix, so the split and the
+ * manifest it writes beside cannot disagree about what a name means. An at-rule has to be
+ * split rather than assigned: Tailwind merges every `motion-reduce:` variant in the library
+ * into ONE `@media` block. The prelude is not a recommendation. Without the `@property --tw-*`
+ * registrations `border-style: var(--tw-border-style)` is invalid at computed-value time, so
+ * every border disappears, and the `box-shadow` chain goes with the focus ring. Each component
+ * file imports it, because a stylesheet that renders nothing and reports nothing is the
+ * failure this layer keeps having. */
 
 const LAYER_UTILITIES = '@layer utilities {';
 export const LAYER_ORDER = '@layer properties;\n@layer theme, base, components, utilities;\n';
-export const SELECTOR_PREFIX = /\.arena-([a-z0-9-]+?)__/g;
+export const SLOT_CLASS = /\.([a-z0-9-]+?)__/g;
 
 export function matchingBrace(css, open) {
   let depth = 0;
@@ -45,11 +46,17 @@ export function topLevelChildren(body) {
   return children;
 }
 
-export function ownersOf(text) {
-  return new Set([...text.matchAll(SELECTOR_PREFIX)].map((m) => m[1]));
+export function ownersOf(text, bases) {
+  const found = new Set([...text.matchAll(SLOT_CLASS)].map((m) => m[1]));
+  const stray = [...found].filter((base) => !bases.has(base));
+  if (stray.length > 0) {
+    throw new Error(`component-sheets: no manifest is named by ${stray.map((b) => `.${b}__`).join(', ')}, `
+      + 'so those rules would ship nowhere');
+  }
+  return found;
 }
 
-export function splitUtilities(css) {
+export function splitUtilities(css, bases) {
   const at = css.indexOf(LAYER_UTILITIES);
   if (at === -1) {
     throw new Error('component-sheets: the compiled sheet carries no `@layer utilities` block, '
@@ -67,7 +74,7 @@ export function splitUtilities(css) {
   };
 
   for (const child of topLevelChildren(body)) {
-    const owners = ownersOf(child.text);
+    const owners = ownersOf(child.text, bases);
     if (owners.size === 0) {
       throw new Error(`component-sheets: a rule belongs to no manifest, so it would ship nowhere:\n${child.text.slice(0, 200)}`);
     }
@@ -80,7 +87,7 @@ export function splitUtilities(css) {
     }
     for (const owner of owners) {
       const kept = topLevelChildren(child.inner)
-        .filter((grand) => ownersOf(grand.text).has(owner))
+        .filter((grand) => ownersOf(grand.text, bases).has(owner))
         .map((grand) => grand.text.replace(/^/gm, '  '))
         .join('\n');
       add(owner, `${child.head} {\n${kept}\n}`);

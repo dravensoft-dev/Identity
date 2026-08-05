@@ -27,6 +27,8 @@ const compiled = `/*! tailwindcss */
 }
 `;
 
+const BASES = new Set(['arena-badge', 'arena-button']);
+
 test('braces are matched past a string and a comment, so a selector holding one cannot mis-cut', () => {
   const css = '.a { content: "}"; /* } */ color: red; }';
   assert.equal(matchingBrace(css, css.indexOf('{')), css.length - 1);
@@ -39,16 +41,24 @@ test('a top-level child is found per rule and per at-rule block', () => {
   assert.equal(children[1].head, '@media print');
 });
 
-test('an owner is the manifest prefix, and a longer name is not a prefix of a shorter one', () => {
-  assert.deepEqual([...ownersOf('.arena-toast__root {}')], ['toast']);
-  assert.deepEqual([...ownersOf('.arena-toast-host__root {}')], ['toast-host']);
+test('an owner is the class base, and a longer name is not a prefix of a shorter one', () => {
+  const bases = new Set(['arena-toast', 'arena-toast-host']);
+  assert.deepEqual([...ownersOf('.arena-toast__root {}', bases)], ['arena-toast']);
+  assert.deepEqual([...ownersOf('.arena-toast-host__root {}', bases)], ['arena-toast-host']);
+});
+
+test('a class base no manifest declares is refused rather than guessed into an owner', () => {
+  assert.throws(
+    () => ownersOf('.arena-toast-host__root {}', new Set(['arena-toast'])),
+    /no manifest is named by \.arena-toast-host__/,
+  );
 });
 
 test('a shared at-rule is split per manifest rather than assigned to one of them', () => {
-  const { components } = splitUtilities(compiled);
-  assert.deepEqual([...components.keys()].sort(), ['badge', 'button']);
+  const { components } = splitUtilities(compiled, BASES);
+  assert.deepEqual([...components.keys()].sort(), ['arena-badge', 'arena-button']);
 
-  const badge = components.get('badge').join('\n');
+  const badge = components.get('arena-badge').join('\n');
   assert.match(badge, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(badge, /animation: none/);
   assert.ok(!badge.includes('transition-property'),
@@ -57,18 +67,18 @@ test('a shared at-rule is split per manifest rather than assigned to one of them
 });
 
 test('everything outside @layer utilities is shared, because every component sheet needs it', () => {
-  const { shared } = splitUtilities(compiled);
+  const { shared } = splitUtilities(compiled, BASES);
   assert.match(shared, /@property --tw-border-style/);
   assert.ok(!shared.includes('.arena-badge__root'));
 });
 
 test('a sheet with no @layer utilities block is refused rather than yielding nothing', () => {
-  assert.throws(() => splitUtilities('.arena-badge__root { color: red }'), /carries no `@layer utilities` block/);
+  assert.throws(() => splitUtilities('.arena-badge__root { color: red }', BASES), /carries no `@layer utilities` block/);
 });
 
 test('a rule belonging to no manifest is refused, because it would ship nowhere', () => {
   assert.throws(
-    () => splitUtilities('@layer utilities {\n  .stray { color: red }\n}\n'),
+    () => splitUtilities('@layer utilities {\n  .stray { color: red }\n}\n', BASES),
     /belongs to no manifest/,
   );
 });

@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { classesFor } from '../../../frameworks/tailwind/ManifestClasses.js';
+import { kebab } from '../../lib/arena/layers.mjs';
+import { classBase, classesFor, arenaClassesFor } from '../../../frameworks/tailwind/ManifestClasses.js';
+import { slotClass } from '../../lib/tailwind/component-css.mjs';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 
 const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/display/tag/Tag.manifest.json'), 'utf8'));
 
@@ -49,4 +52,20 @@ test('a compoundVariant is appended after the single-variant slots', () => {
   const withCompound = { ...tag, compoundVariants: [{ tone: 'danger', class: { root: 'ring-2' } }] };
   const { root } = classesFor(withCompound, { tone: 'danger' });
   assert.ok(root.indexOf('border-error') < root.indexOf('ring-2'), 'the compound class follows the variant class');
+});
+
+test('the harness spells a class the way the generator does, for every manifest that ships', () => {
+  const manifests = [...layerManifests(repoRoot).values()];
+  assert.ok(manifests.length > 0, 'no manifest was read, so this asserts nothing');
+  for (const manifest of manifests) {
+    const base = classBase(manifest.component);
+    assert.equal(base, `arena-${kebab(manifest.component)}`, `${manifest.component}: the harness and layers.mjs disagree on kebab`);
+    for (const [slot, classes] of Object.entries(arenaClassesFor(manifest))) {
+      for (const one of classes.split(/\s+/).filter(Boolean)) {
+        assert.ok(one.startsWith(`${base}__`),
+          `${manifest.component}: the specimen would render "${one}" on slot "${slot}", which no sheet `
+          + `defines, because the generator writes "${slotClass(manifest.component, slot)}"`);
+      }
+    }
+  }
 });
