@@ -47,20 +47,11 @@ your package manager brings down whichever of them the project does not already 
 `"ph-bold ph-bell"`, and the component renders it. The stylesheet that turns those classes into
 glyphs is not the one Phosphor ships: it is the subset `arena-to-prod` writes for you, below.
 
-## Upgrading from 5.x
+## One name everywhere
 
-This major carries two breaking changes. Neither touches your templates.
-
-**Your templates do not change.** `<arena-button>` is byte for byte what it was, and so is every
-other element. The prefix now comes from the component's own name rather than from a constant,
-which is why the selector stayed still while the class did. Do not run a find and replace over
-your templates: there is nothing there to change, and a compiler cannot catch it if you do.
-
-**Nothing in the DOM changed either.** Class names are byte for byte what they were, so a rule
-you wrote against `.arena-button__root` keeps working.
-
-**The exported classes carry the `Arena` prefix.** What moves is where you name the class rather
-than the element, which is the `imports` array of a standalone component:
+Every element carries the `arena-` prefix and every exported class carries `Arena`, which are
+the same name in two spellings: `<arena-button>` is the element, `ArenaButton` is the class you
+put in an `imports` array, and `kebab('ArenaButton')` is what turns one into the other.
 
 ```ts
 import { ArenaButton, ArenaCard } from '@dravensoft/arena-angular';
@@ -68,20 +59,14 @@ import { ArenaButton, ArenaCard } from '@dravensoft/arena-angular';
 @Component({ imports: [ArenaButton, ArenaCard], template: `<arena-button>Save</arena-button>` })
 ```
 
-Every contracted type moves with them: `Tone` is `ArenaTone`, `ButtonVariant` is
-`ArenaButtonVariant`. The projection markers already carried the prefix and do not double it:
-`ArenaAction`, `ArenaActions`, `ArenaBrand`, `ArenaFooter` and `ArenaSecondaryAction` are
-unchanged, and so is `provideArenaThemes`.
+Every type carries it as well, so a tone is an `ArenaTone`, and the projection markers carry it
+already: `ArenaAction`, `ArenaActions`, `ArenaBrand`, `ArenaFooter` and `ArenaSecondaryAction`.
 
-**Sheet names carry the prefix too.** In `arena.config.json`, a hand written components list
-gains it entry by entry, so `button` is now `arena-button` and `table` is `arena-table`, and a deep import
-of `@dravensoft/arena-angular/css/components/button.css` becomes `.../arena-button.css`. A name
-the package does not ship fails the command and lists the ones it does, so a stale list stops the
-build rather than rendering a screen with no borders. `"components": "auto"` needs no change.
-
-**One command replaces two.** `arena-theme` and `arena-icons` are gone. `arena-to-prod` reads the
-same `arena.config.json` and writes both stylesheets in one run, so a `prebuild` that chained the
-two becomes a single command.
+**The class names carry it too, and they carry it once.** A component renders
+`.arena-button__root`, spelt from the component's own name, so a rule of yours written against
+that class is a rule about this component and nothing else. Every sheet is named the same way,
+which is why `css/components/arena-button.css` is the file and `arena-button` is what you write
+in a `stylesheet` list.
 
 ## Declare your skin
 
@@ -238,7 +223,7 @@ sources, so ignore them in version control the way you ignore the rest of your b
 ## Switch palettes
 
 ```ts
-import { provideArenaThemes, ThemeService } from '@dravensoft/arena-angular';
+import { provideArenaThemes, ArenaThemeService } from '@dravensoft/arena-angular';
 
 bootstrapApplication(App, {
   providers: [
@@ -253,7 +238,7 @@ bootstrapApplication(App, {
 });
 ```
 
-Pass the same palettes your config declares. Then inject `ThemeService` and call `set('light')`,
+Pass the same palettes your config declares. Then inject `ArenaThemeService` and call `set('light')`,
 or `toggle()` to walk them in order. `theme` is a signal, so a template reads it directly. With
 no providers the service answers `dark` and `light`.
 
@@ -288,11 +273,11 @@ un-imported marker from an unfilled slot, so nothing can warn you.
 
 | export | what it is |
 | --- | --- |
-| `provideArenaThemes`, `ThemeService`, `themeClass`, `ArenaPalette`, `ArenaThemeConfig` | the theme surface above |
-| `containerWidth(ref?)` | `Signal<number \| null>` over the host's own box, or the `ElementRef` you pass. For a component or a panel that has to fit the room it was given. **The width is `null` until the first measurement**, so render the wide branch while it is: a panel that flashes into its phone shape on every mount is worse than one that settles into it |
-| `viewportBelow(name)` | `Signal<boolean>` over `not all and (min-width: N)`, where `name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components branch on. For a page's own layout, and **never for a component**: that is wrong the first time somebody puts it in a narrow column. Call `forgetBreakpoints()` if your app swaps its stylesheet at runtime |
-| `catColor(slot)`, `catSurface(slot)`, `catSlotFor(key)`, `CAT_SLOTS` | the chart ramp, for a legend or a chip you draw yourself. The ramp's order is its identity, so a slot means the same thing in every chart on the screen |
-| `isPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
+| `provideArenaThemes`, `ArenaThemeService`, `arenaThemeClass`, `ArenaPalette`, `ArenaThemeConfig` | the theme surface above |
+| `arenaContainerWidth(ref?)` | `Signal<number \| null>` over the host's own box, or the `ElementRef` you pass. For a component or a panel that has to fit the room it was given. **The width is `null` until the first measurement**, so render the wide branch while it is: a panel that flashes into its phone shape on every mount is worse than one that settles into it |
+| `arenaViewportBelow(name)` | `Signal<boolean>` over `not all and (min-width: N)`, where `name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components branch on. For a page's own layout, and **never for a component**: that is wrong the first time somebody puts it in a narrow column. Call `forgetArenaBreakpoints()` if your app swaps its stylesheet at runtime |
+| `arenaCatColor(slot)`, `arenaCatSurface(slot)`, `arenaCatSlotFor(key)`, `ARENA_CAT_SLOTS` | the chart ramp, for a legend or a chip you draw yourself. The ramp's order is its identity, so a slot means the same thing in every chart on the screen |
+| `isArenaPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
 | `ARENA_ICONS` | the role-to-Phosphor map Arena's own components draw from, as `{ role, phosphor, weight }`. Read it when you want your icon for a role to match Arena's |
 
 Call either measurement from an injection context, a field initializer or the constructor:

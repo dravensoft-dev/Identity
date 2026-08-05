@@ -1,9 +1,9 @@
-/* The other half of the breakpoint question: containerWidth answers "how wide is this box",
+/* The other half of the breakpoint question: arenaContainerWidth answers "how wide is this box",
  * which is what a component needs, and this answers "which side of the threshold is the
  * viewport on", which is what a consumer's own page layout needs and could not get from CSS,
  * since a media query condition holds no var(). The query is `not all and (min-width: N)`
  * rather than a max-width one short of N, so it is the exact complement of the `md:` variant
- * with no epsilon to get wrong. One probe per name because viewportBelow takes its name at
+ * with no epsilon to get wrong. One probe per name because arenaViewportBelow takes its name at
  * construction, in an injection context, where an input signal has nothing in it yet.
  * The harness installs no stylesheet, so the thresholds are bridged from the generated CSS
  * rather than typed in here and left to drift. */
@@ -18,13 +18,13 @@ import { join } from 'node:path';
 import { ChangeDetectionStrategy, Component, Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { REPO } from './Compliance';
-import { forgetBreakpoints, viewportBelow } from '../ContainerSize';
+import { forgetArenaBreakpoints, arenaViewportBelow } from '../ContainerSize';
 
 const spacing = readFileSync(join(REPO, 'contracts', 'design-generated', 'spacing.generated.css'), 'utf8');
 const installed: string[] = [];
 
 before(() => {
-  forgetBreakpoints();
+  forgetArenaBreakpoints();
   for (const [, name, value] of spacing.matchAll(/(--bp-[a-z]+)\s*:\s*([^;]+);/g)) {
     document.documentElement.style.setProperty(name, value.trim());
     installed.push(name);
@@ -33,7 +33,7 @@ before(() => {
 
 after(() => {
   for (const name of installed) document.documentElement.style.removeProperty(name);
-  forgetBreakpoints();
+  forgetArenaBreakpoints();
 });
 
 interface Resizable { happyDOM: { setViewport(size: { width: number }): void } }
@@ -44,7 +44,7 @@ interface Resizable { happyDOM: { setViewport(size: { width: number }): void } }
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<span [attr.data-below]="below()"></span>',
 })
-class SmallProbe { readonly below = viewportBelow('sm'); }
+class SmallProbe { readonly below = arenaViewportBelow('sm'); }
 
 @Component({
   selector: 'arena-probe-md',
@@ -52,7 +52,7 @@ class SmallProbe { readonly below = viewportBelow('sm'); }
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<span [attr.data-below]="below()"></span>',
 })
-class MediumProbe { readonly below = viewportBelow('md'); }
+class MediumProbe { readonly below = arenaViewportBelow('md'); }
 
 @Component({
   selector: 'arena-probe-lg',
@@ -60,7 +60,7 @@ class MediumProbe { readonly below = viewportBelow('md'); }
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<span [attr.data-below]="below()"></span>',
 })
-class LargeProbe { readonly below = viewportBelow('lg'); }
+class LargeProbe { readonly below = arenaViewportBelow('lg'); }
 
 async function probe(type: Type<unknown>, width: number) {
   const fixture = TestBed.createComponent(type);

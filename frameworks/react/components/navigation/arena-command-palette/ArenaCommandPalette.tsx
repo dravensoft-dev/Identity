@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
 import { trapTabKey } from '../../../UseDialogModal.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaCommandPalette.classes.generated.ts';
@@ -127,7 +127,7 @@ export function ArenaCommandPalette({ open, commands, placeholder = 'Search for 
                   onMouseEnter: () => setI(idx),
                   onClick: (e: React.MouseEvent) => {
                     if (c.route !== undefined) {
-                      if (!isPrimaryActivation(e)) return;
+                      if (!isArenaPrimaryActivation(e)) return;
                       e.preventDefault();
                     }
                     run(c);

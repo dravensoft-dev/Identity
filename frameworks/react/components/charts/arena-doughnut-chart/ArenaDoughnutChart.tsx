@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useContainerWidth } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import { resolveColors, arcPath, srOnly, valueWriter, CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
@@ -43,7 +43,7 @@ export function ArenaDoughnutChart({
   if (!seriesLabel) throw new Error('ArenaDoughnutChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaDoughnutChart: `labels` is required');
   if (!values) throw new Error('ArenaDoughnutChart: `values` is required');
-  const [ref, measured] = useContainerWidth();
+  const [ref, measured] = useArenaContainerWidth();
   const [hover, setHover] = useState<number | null>(null);
 
   const width = measured ?? 600;

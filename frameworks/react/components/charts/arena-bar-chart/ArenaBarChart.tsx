@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useContainerWidth } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
   resolveColors, niceMax, ticks, barPath, srOnly, plotWidth, railStyle, valueWriter,
   PAD, CHART_HEIGHT,
@@ -54,7 +54,7 @@ export function ArenaBarChart({
   if (!seriesLabel) throw new Error('ArenaBarChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaBarChart: `labels` is required');
   if (!values) throw new Error('ArenaBarChart: `values` is required');
-  const [ref, measured] = useContainerWidth();
+  const [ref, measured] = useArenaContainerWidth();
   const rail = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, contentChild, input } from '@angular/core';
-import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { arenaContainerWidth, readBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { arenaPageHeadStyles } from './ArenaPageHead.variants';
 import type { ArenaPageHeadAlign } from '../../../Api.generated';
@@ -34,7 +34,7 @@ export class ArenaPageHead {
 
   protected readonly actions = contentChild(ArenaActions);
 
-  private readonly width = containerWidth();
+  private readonly width = arenaContainerWidth();
   private readonly small = readBreakpoint('sm');
 
   protected readonly styles = computed(() => {

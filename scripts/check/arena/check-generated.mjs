@@ -51,7 +51,7 @@ export const UNTRACKED = {
   'frameworks/react/Theme.generated.js': 'the same, for the theme helper.',
   'frameworks/react/WarnOnce.generated.js': 'the same, for the once-per-message console warning '
     + 'the charts and ArenaTable share.',
-  'frameworks/react/UseContainerWidth.generated.js': 'the same, for the container-width hook.',
+  'frameworks/react/UseArenaContainerWidth.generated.js': 'the same, for the container-width hook.',
   'frameworks/react/UseDialogModal.generated.js': 'the same, for the modal focus helper.',
   'frameworks/react/components/**/*.manifest.generated.ts':
     'the shared recipe for one component, emitted into the layer that renders it. The manifest is '

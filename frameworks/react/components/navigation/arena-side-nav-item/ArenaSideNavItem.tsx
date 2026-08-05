@@ -1,5 +1,5 @@
 import React from 'react';
-import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
 import type { SideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
 import { indentFor } from '../arena-side-nav/SideNavInject.tsx';
 import { activeWeight, badgeCount } from '../NavRow.ts';
@@ -46,7 +46,7 @@ export function ArenaSideNavItem({
     onClick: (e: React.MouseEvent) => {
       if (disabled) { e.preventDefault(); return; }
       if (href !== undefined) {
-        if (!isPrimaryActivation(e)) return;
+        if (!isArenaPrimaryActivation(e)) return;
         e.preventDefault();
       }
       if (onActivate) onActivate(id);

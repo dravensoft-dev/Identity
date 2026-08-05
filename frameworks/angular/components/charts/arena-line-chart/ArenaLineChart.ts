@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, booleanAttribute, computed,
   input, signal, viewChild,
 } from '@angular/core';
-import { containerWidth } from '../../../ContainerSize';
+import { arenaContainerWidth } from '../../../ContainerSize';
 import {
   CHART_HEIGHT, PAD, RAIL_STYLE, SR_ONLY, areaFill, niceMax, plotWidth, resolveColors, ticks,
   valueWriter,
@@ -191,7 +191,7 @@ export class ArenaLineChart {
     prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
   }));
 
-  private readonly measured = containerWidth();
+  private readonly measured = arenaContainerWidth();
 
   private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
 

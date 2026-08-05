@@ -43,37 +43,25 @@ so your package manager brings down whichever of them the project does not alrea
 `"ph-bold ph-bell"`, and the component renders it. The stylesheet that turns those classes into
 glyphs is not the one Phosphor ships: it is the subset `arena-to-prod` writes for you, below.
 
-## Upgrading from 5.x
+## One name everywhere
 
-This major carries two breaking changes. Neither touches what a browser renders.
-
-**Every export carries the `Arena` prefix.** `Button` is `ArenaButton`, `ButtonProps` is
-`ArenaButtonProps`, and every contracted type moves with them: `Tone` is `ArenaTone`,
-`ButtonVariant` is `ArenaButtonVariant`. One name now reaches the JSON contract, the class, the
-export, the file and the element a consumer writes, which is also what lets `"components":
-"auto"` tell an Arena tag from one of your own.
+Every export carries the `Arena` prefix, and so does every type: the component is
+`ArenaButton`, its props are `ArenaButtonProps`, and a tone is an `ArenaTone`.
 
 ```tsx
 import { ArenaButton, ArenaCard } from '@dravensoft/arena-react';
 import type { ArenaTone } from '@dravensoft/arena-react';
 ```
 
-Rename by whole word, never by prefix. `ButtonHTMLAttributes` is React's own and does not move,
-and a `ThemeButton` of yours is yours.
+The prefix is the name rather than a decoration on it, which is what lets `"components":
+"auto"` tell a component of Arena's from one of yours: a `<Card>` in your own source belongs to
+whoever wrote it, and an `<ArenaCard>` belongs here.
 
-**Nothing in the DOM changed.** Class names are byte for byte what they were, so a rule you wrote
-against `.arena-button__root` keeps working and needs no edit. The prefix now comes from the
-component's own name rather than from a constant, which is why the output did not move.
-
-**Sheet names carry the prefix too.** In `arena.config.json`, a hand written components list
-gains it entry by entry, so `button` is now `arena-button` and `table` is `arena-table`, and a deep import
-of `@dravensoft/arena-react/css/components/button.css` becomes `.../arena-button.css`. A name the
-package does not ship fails the command and lists the ones it does, so a stale list stops the
-build rather than rendering a screen with no borders. `"components": "auto"` needs no change.
-
-**One command replaces two.** `arena-theme` and `arena-icons` are gone. `arena-to-prod` reads the
-same `arena.config.json` and writes both stylesheets in one run, so a `prebuild` that chained the
-two becomes a single command.
+**The class names carry it too, and they carry it once.** A component renders
+`.arena-button__root`, spelt from the component's own name, so a rule of yours written against
+that class is a rule about this component and nothing else. Every sheet is named the same way,
+which is why `css/components/arena-button.css` is the file and `arena-button` is what you write
+in a `stylesheet` list.
 
 ## Declare your skin
 
@@ -270,10 +258,10 @@ answering a question a consumer cannot answer from outside.
 | export | what it is |
 | --- | --- |
 | `initArenaTheme`, `useArenaTheme`, `getArenaTheme`, `setArenaTheme`, `toggleArenaTheme`, `arenaPalettes`, `ArenaPalette`, `ArenaThemeConfig` | the theme surface above |
-| `useContainerWidth(ref?)` | `[ref, width]`: attach the ref to the box and read the width a `ResizeObserver` reports. For a component or a panel that has to fit the room it was given. **`width` is `null` until the first measurement**, so render the wide branch while it is: a panel that flashes into its phone shape on every mount is worse than one that settles into it |
-| `useViewportBelow(name)` | a boolean over `not all and (min-width: N)`, where `name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components branch on. For a page's own layout, and **never for a component**: that is wrong the first time somebody puts it in a narrow column. Call `forgetBreakpoints()` if your app swaps its stylesheet at runtime |
-| `catColor(slot)`, `catSurface(slot)`, `catSlotFor(key)`, `CAT_SLOTS` | the chart ramp, for a legend or a chip you draw yourself. The ramp's order is its identity, so a slot means the same thing in every chart on the screen |
-| `isPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
+| `useArenaContainerWidth(ref?)` | `[ref, width]`: attach the ref to the box and read the width a `ResizeObserver` reports. For a component or a panel that has to fit the room it was given. **`width` is `null` until the first measurement**, so render the wide branch while it is: a panel that flashes into its phone shape on every mount is worse than one that settles into it |
+| `useArenaViewportBelow(name)` | a boolean over `not all and (min-width: N)`, where `name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components branch on. For a page's own layout, and **never for a component**: that is wrong the first time somebody puts it in a narrow column. Call `forgetArenaBreakpoints()` if your app swaps its stylesheet at runtime |
+| `arenaCatColor(slot)`, `arenaCatSurface(slot)`, `arenaCatSlotFor(key)`, `ARENA_CAT_SLOTS` | the chart ramp, for a legend or a chip you draw yourself. The ramp's order is its identity, so a slot means the same thing in every chart on the screen |
+| `isArenaPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
 
 Every other symbol reaching the root is an internal of this layer, exported because the barrel
 is generated wholesale rather than curated, and **carries no compatibility promise**. What this

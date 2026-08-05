@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth, readBreakpoint } from '../../../UseArenaContainerWidth.ts';
 
 import type { ArenaBulkAction, ArenaBulkActionBarLayout } from '../../../Api.generated';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
@@ -39,7 +39,7 @@ export function ArenaBulkActionBar({ count, noun = 'items', actions, layout = 'a
   if (actions == null) throw new Error('ArenaBulkActionBar: `actions` is required');
   if (!count) return null;
 
-  const [barRef, width] = useContainerWidth<HTMLDivElement>();
+  const [barRef, width] = useArenaContainerWidth<HTMLDivElement>();
   const narrow = layout === 'auto' && width !== null && width < readBreakpoint('sm');
   const [cursor, setCursor] = useState(0);
   const stops = clearable ? actions.length + 1 : actions.length;

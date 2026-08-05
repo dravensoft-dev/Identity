@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PALETTE_KEYS, OPTIONAL_KEYS, CAT_SLOTS, FONT_ROLES, catKeys, requiredKeys } from './palette-keys.mjs';
+import { PALETTE_KEYS, OPTIONAL_KEYS, ARENA_CAT_SLOTS, FONT_ROLES, catKeys, requiredKeys } from './palette-keys.mjs';
 import { repoRoot as root } from '../../../lib/arena/repo-root.mjs';
 
 const skin = (theme) => JSON.parse(readFileSync(join(root, `contracts/design/palette.${theme}.json`), 'utf8'));
@@ -17,7 +17,7 @@ test('both themes declare the same keys, which is what makes one list right for 
 });
 
 test('the ramp is the catSlots the API contract pins, and every slot is required', () => {
-  assert.equal(catKeys().length, CAT_SLOTS);
+  assert.equal(catKeys().length, ARENA_CAT_SLOTS);
   assert.deepEqual(catKeys().filter((k) => OPTIONAL_KEYS.has(k)), []);
 });
 

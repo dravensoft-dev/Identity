@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { isPrimaryActivation } from '../../../AnchorActivation';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation';
 import type { ArenaCrumb } from '../../../Api.generated';
 import { arenaBreadcrumbsStyles } from './ArenaBreadcrumbs.variants';
 
@@ -42,7 +42,7 @@ export class ArenaBreadcrumbs {
   protected readonly styles = computed(() => arenaBreadcrumbsStyles());
 
   protected onCrumbClick(crumb: ArenaCrumb, event: MouseEvent): void {
-    if (!isPrimaryActivation(event)) return;
+    if (!isArenaPrimaryActivation(event)) return;
     event.preventDefault();
     this.navigate.emit(crumb);
   }

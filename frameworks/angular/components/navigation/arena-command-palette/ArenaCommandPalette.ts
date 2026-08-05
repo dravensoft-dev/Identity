@@ -15,7 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { arenaCommandPaletteStyles } from './ArenaCommandPalette.variants';
-import { isPrimaryActivation } from '../../../AnchorActivation';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
 import type { ArenaCommand } from '../../../Api.generated';
 
@@ -236,7 +236,7 @@ export class ArenaCommandPalette {
   }
 
   protected onRouteClick(command: ArenaCommand, event: MouseEvent): void {
-    if (!isPrimaryActivation(event)) return;
+    if (!isArenaPrimaryActivation(event)) return;
     event.preventDefault();
     this.onRun(command);
   }

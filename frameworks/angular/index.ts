@@ -7,5 +7,5 @@ export * from './DataVisuals';
 export * from './FocusTrap';
 export * from './ProjectionMarkers';
 export * from './WarnOnce';
-export * from './theme/ThemeService';
+export * from './theme/ArenaThemeService';
 export * from './icons/IconManifest';

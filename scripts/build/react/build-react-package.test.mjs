@@ -27,7 +27,7 @@ test('a bare specifier is untouched, so react stays react', () => {
 });
 
 test('a .js specifier is already right and is left alone', () => {
-  const source = "import { catColor } from '../../../DataVisuals.js';";
+  const source = "import { arenaCatColor } from '../../../DataVisuals.js';";
   assert.equal(rewriteSourceSpecifiers(source), source);
 });
 

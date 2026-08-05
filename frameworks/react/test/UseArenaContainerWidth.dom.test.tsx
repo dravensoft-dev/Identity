@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React, { useRef } from 'react';
 import { mount, cleanup } from './Harness.tsx';
-import { forgetBreakpoints, readBreakpoint, useContainerWidth } from '../UseContainerWidth.ts';
+import { forgetArenaBreakpoints, readBreakpoint, useArenaContainerWidth } from '../UseArenaContainerWidth.ts';
 
 function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
   const messages: string[] = [];
@@ -18,7 +18,7 @@ function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
 const root = () => document.documentElement.style;
 
 test('an unresolved breakpoint says so once, rather than returning a silent NaN', () => {
-  forgetBreakpoints();
+  forgetArenaBreakpoints();
   root().removeProperty('--bp-lg');
 
   const first = captureWarn(() => readBreakpoint('lg'));
@@ -41,11 +41,11 @@ test('a resolved breakpoint is read once per name -- a later document value does
   assert.equal(readBreakpoint('lg'), 1024, 'the cached value must win; breakpoints are constants for the life of the document');
 });
 
-test('useContainerWidth measures the element it is handed, not one of its own', () => {
+test('useArenaContainerWidth measures the element it is handed, not one of its own', () => {
   let handed: React.RefObject<HTMLDivElement> | null = null;
   function Probe() {
     const outer = useRef<HTMLDivElement>(null);
-    const [ref] = useContainerWidth<HTMLDivElement>(outer);
+    const [ref] = useArenaContainerWidth<HTMLDivElement>(outer);
     handed = ref;
     return <div ref={outer} data-role="outer"><div data-role="inner" /></div>;
   }
@@ -58,10 +58,10 @@ test('useContainerWidth measures the element it is handed, not one of its own', 
   cleanup();
 });
 
-test('useContainerWidth still owns a ref when it is handed none', () => {
+test('useArenaContainerWidth still owns a ref when it is handed none', () => {
   let own: React.RefObject<HTMLDivElement> | null = null;
   function Probe() {
-    const [ref] = useContainerWidth<HTMLDivElement>();
+    const [ref] = useArenaContainerWidth<HTMLDivElement>();
     own = ref;
     return <div ref={ref} data-role="own" />;
   }

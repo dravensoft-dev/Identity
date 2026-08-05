@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { containerWidth } from '../../../ContainerSize';
+import { arenaContainerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors, valueWriter } from '../../../DataVisuals';
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
@@ -188,7 +188,7 @@ export class ArenaDoughnutChart {
     prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
   }));
 
-  private readonly measured = containerWidth();
+  private readonly measured = arenaContainerWidth();
 
   private readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
 

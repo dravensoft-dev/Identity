@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFAULT_THEMES, themeClass, initArenaTheme, getArenaTheme, setArenaTheme,
+  DEFAULT_THEMES, arenaThemeClass, initArenaTheme, getArenaTheme, setArenaTheme,
   toggleArenaTheme, arenaPalettes,
 } from '../Theme.ts';
 import type { ArenaThemeConfig } from '../Theme.ts';
@@ -43,11 +43,11 @@ test('any other palette wears arena-<name>, and only one at a time', () => {
   initArenaTheme(THREE);
 
   setArenaTheme('high-contrast');
-  assert.ok(document.documentElement.classList.contains(themeClass('high-contrast')));
+  assert.ok(document.documentElement.classList.contains(arenaThemeClass('high-contrast')));
 
   setArenaTheme('light');
-  assert.ok(document.documentElement.classList.contains(themeClass('light')));
-  assert.equal(document.documentElement.classList.contains(themeClass('high-contrast')), false,
+  assert.ok(document.documentElement.classList.contains(arenaThemeClass('light')));
+  assert.equal(document.documentElement.classList.contains(arenaThemeClass('high-contrast')), false,
     'the previous palette is removed, or two skins fight over the same custom property');
   clean();
 });

@@ -82,7 +82,7 @@ Every one of these is enforced somewhere, so breaking one is a defect rather tha
 | What exactly does this member take? | the members table in that same prompt |
 | Why does this member exist at all? | `contracts/api/components/<Name>.json` |
 | What else does the package export, besides components? | the layer's `PACKAGE.md`: the theme surface, the two measurements, the chart ramp helpers, and Angular's projection markers |
-| How do I size a page layout, or fit a panel to its own box? | the same section: `useViewportBelow` / `viewportBelow` for a page, `useContainerWidth` / `containerWidth` for a box |
+| How do I size a page layout, or fit a panel to its own box? | the same section: `useArenaViewportBelow` / `arenaViewportBelow` for a page, `useArenaContainerWidth` / `arenaContainerWidth` for a box |
 | What is the value of a token? | the DTCG JSON for its group in `contracts/design/` (`ls contracts/design/*.json`), which is the machine-readable form and is cheaper than the specification below. Two files hold what DTCG cannot: `contracts/design/colors.css` (the aliases such as `--crimson`, and the muted text levels) and `contracts/design/environment.css` (`--pad-safe-*`, the device's own insets composed with the spacing scale, for a shell you draw around Arena) |
 | What does a value mean, and why is it that? | [`contracts/design/AGENTS.md`](./contracts/design/AGENTS.md), the normative design specification |
 | What must this kind of component do to be accessible? | `contracts/behaviour/<pattern>.json`, and the component's own `<Name>.behaviour.json` |

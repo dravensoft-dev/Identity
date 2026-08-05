@@ -4,7 +4,7 @@ import {
   numberAttribute, output, signal, viewChild,
 } from '@angular/core';
 import type { ArenaCalendarView } from '../../../Api.generated';
-import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { arenaContainerWidth, readBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { ArenaCalendarEvent } from '../arena-calendar-event/ArenaCalendarEvent';
 import { CalendarState, type ChipPlacement, type HourSlot } from './CalendarState';
@@ -122,7 +122,7 @@ export class ArenaCalendar {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly frame = viewChild.required<ElementRef<HTMLElement>>('frame');
-  private readonly measured = containerWidth(() => this.frame().nativeElement);
+  private readonly measured = arenaContainerWidth(() => this.frame().nativeElement);
   private readonly medium = readBreakpoint('md');
   private readonly tick = signal(0);
 

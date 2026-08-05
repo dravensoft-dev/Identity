@@ -1,5 +1,5 @@
 import React from 'react';
-import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
 import { activeWeight, badgeCount } from '../NavRow.ts';
 import type { BottomNavInjected } from '../arena-bottom-nav/BottomNavInject.tsx';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
@@ -46,7 +46,7 @@ export function ArenaBottomNavItem({
     onClick: (e: React.MouseEvent) => {
       if (disabled) { e.preventDefault(); return; }
       if (href !== undefined) {
-        if (!isPrimaryActivation(e)) return;
+        if (!isArenaPrimaryActivation(e)) return;
         e.preventDefault();
       }
       if (onActivate) onActivate(id);

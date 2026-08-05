@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, inject, input } from '@angular/core';
-import { isPrimaryActivation } from '../../../AnchorActivation';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation';
 import { BottomNavState } from '../arena-bottom-nav/BottomNavState';
 import { arenaBottomNavStyles } from '../arena-bottom-nav/ArenaBottomNav.variants';
 import { activeWeight, badgeCount } from '../../../NavRow';
@@ -85,7 +85,7 @@ export class ArenaBottomNavItem {
 
   protected activateAnchor(event: MouseEvent): void {
     if (this.disabled()) { event.preventDefault(); return; }
-    if (!isPrimaryActivation(event)) return;
+    if (!isArenaPrimaryActivation(event)) return;
     event.preventDefault();
     this.nav.activate(this.key());
   }

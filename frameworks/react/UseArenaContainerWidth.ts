@@ -1,7 +1,7 @@
 import type * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 
-export function useContainerWidth<T extends Element = HTMLDivElement>(target?: React.RefObject<T | null>):
+export function useArenaContainerWidth<T extends Element = HTMLDivElement>(target?: React.RefObject<T | null>):
 [React.RefObject<T>, number | null] {
   const own = useRef<T>(null);
   const ref = (target ?? own) as React.RefObject<T>;
@@ -34,12 +34,12 @@ function warnUnresolved(name: string): void {
     + " Arena's stylesheet is missing, or it loads after this ran.");
 }
 
-export function forgetBreakpoints(): void {
+export function forgetArenaBreakpoints(): void {
   cache.clear();
   warned.clear();
 }
 
-export function useViewportBelow(name: BreakpointName): boolean {
+export function useArenaViewportBelow(name: BreakpointName): boolean {
   const [below, setBelow] = useState(false);
   const width = readBreakpoint(name);
 

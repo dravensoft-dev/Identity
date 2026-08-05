@@ -6,7 +6,7 @@ export interface ActivationModifiers {
   altKey: boolean;
 }
 
-export function isPrimaryActivation(event: ActivationModifiers): boolean {
+export function isArenaPrimaryActivation(event: ActivationModifiers): boolean {
   return event.button === 0
     && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }

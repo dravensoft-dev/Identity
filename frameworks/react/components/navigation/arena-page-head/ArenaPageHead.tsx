@@ -1,7 +1,7 @@
 import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaPageHead.classes.generated.ts';
-import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth, readBreakpoint } from '../../../UseArenaContainerWidth.ts';
 
 import type { ArenaPageHeadAlign } from '../../../Api.generated';
 
@@ -25,7 +25,7 @@ const arenaPageHeadStyles = arenaStyles(manifest);
 
 export function ArenaPageHead({ title, subtitle, actions, align = 'start' }: ArenaPageHeadProps) {
   if (!title) throw new Error('ArenaPageHead: `title` is required');
-  const [ref, width] = useContainerWidth();
+  const [ref, width] = useArenaContainerWidth();
   const narrow = width !== null && width < readBreakpoint('sm');
   const styles = arenaPageHeadStyles({ narrow, align });
 

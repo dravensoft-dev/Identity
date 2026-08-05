@@ -17,7 +17,7 @@ export const DEFAULT_THEMES: ArenaThemeConfig = {
   default: 'dark',
 };
 
-export const themeClass = (name: string): string => `arena-${name}`;
+export const arenaThemeClass = (name: string): string => `arena-${name}`;
 
 const STORAGE_KEY = 'arena-theme';
 
@@ -58,7 +58,7 @@ function apply(name: string): void {
   const element = root();
   if (!element) return;
   for (const palette of config.palettes) {
-    element.classList.toggle(themeClass(palette.name), palette.name === name && name !== fallback());
+    element.classList.toggle(arenaThemeClass(palette.name), palette.name === name && name !== fallback());
   }
 }
 

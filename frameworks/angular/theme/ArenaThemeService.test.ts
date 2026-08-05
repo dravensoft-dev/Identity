@@ -7,7 +7,7 @@ useTestEnvironment();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';
-import { ThemeService, provideArenaThemes, themeClass, DEFAULT_THEMES, ArenaThemeConfig } from './ThemeService';
+import { ArenaThemeService, provideArenaThemes, arenaThemeClass, DEFAULT_THEMES, ArenaThemeConfig } from './ArenaThemeService';
 
 const THREE: ArenaThemeConfig = {
   palettes: [
@@ -18,10 +18,10 @@ const THREE: ArenaThemeConfig = {
   default: 'dark',
 };
 
-function service(config?: ArenaThemeConfig): ThemeService {
+function service(config?: ArenaThemeConfig): ArenaThemeService {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({ providers: config ? [provideArenaThemes(config)] : [] });
-  return TestBed.inject(ThemeService);
+  return TestBed.inject(ArenaThemeService);
 }
 
 function clean(): void {
@@ -52,13 +52,13 @@ test('any other palette wears arena-<name>, and only one at a time', () => {
 
   theme.set('high-contrast');
   TestBed.tick();
-  assert.ok(document.documentElement.classList.contains(themeClass('high-contrast')));
-  assert.equal(document.documentElement.classList.contains(themeClass('light')), false);
+  assert.ok(document.documentElement.classList.contains(arenaThemeClass('high-contrast')));
+  assert.equal(document.documentElement.classList.contains(arenaThemeClass('light')), false);
 
   theme.set('light');
   TestBed.tick();
-  assert.ok(document.documentElement.classList.contains(themeClass('light')));
-  assert.equal(document.documentElement.classList.contains(themeClass('high-contrast')), false,
+  assert.ok(document.documentElement.classList.contains(arenaThemeClass('light')));
+  assert.equal(document.documentElement.classList.contains(arenaThemeClass('high-contrast')), false,
     'the previous palette is removed, or two skins fight over the same custom property');
   clean();
 });

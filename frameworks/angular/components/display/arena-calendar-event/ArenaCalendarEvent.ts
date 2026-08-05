@@ -3,7 +3,7 @@ import {
   computed, inject, input, output, signal, viewChild,
 } from '@angular/core';
 import type { ArenaCatSlot } from '../../../Api.generated';
-import { catColor } from '../../../DataVisuals';
+import { arenaCatColor } from '../../../DataVisuals';
 import { ArenaIconButton } from '../../forms/arena-icon-button/ArenaIconButton';
 import { CalendarState } from '../arena-calendar/CalendarState';
 import { formatDate, formatHM, showsTime, stacksActions } from '../arena-calendar/CalendarInternals';
@@ -142,7 +142,7 @@ export class ArenaCalendarEvent {
     return at !== null && stacksActions(this.heightPx(), this.state.slotWidth(at.cols));
   });
 
-  protected readonly ink = computed(() => catColor(this.colorId() ?? 1));
+  protected readonly ink = computed(() => arenaCatColor(this.colorId() ?? 1));
 
   protected readonly tint = computed(
     () => `color-mix(in oklab, ${this.ink()} 16%, var(--surface-card))`,

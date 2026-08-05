@@ -6,7 +6,7 @@ const breakpoints = new Map<string, number>();
 
 export type WidthTarget = ElementRef<HTMLElement> | (() => HTMLElement | null | undefined);
 
-export function containerWidth(target?: WidthTarget): Signal<number | null> {
+export function arenaContainerWidth(target?: WidthTarget): Signal<number | null> {
   const fallback = target === undefined ? inject<ElementRef<HTMLElement>>(ElementRef) : null;
   const destroyRef = inject(DestroyRef);
   const width = signal<number | null>(null);
@@ -37,12 +37,12 @@ function warnUnresolved(name: string): void {
     + " Arena's stylesheet is missing, or it loads after this ran.");
 }
 
-export function forgetBreakpoints(): void {
+export function forgetArenaBreakpoints(): void {
   breakpoints.clear();
   warned.clear();
 }
 
-export function viewportBelow(name: BreakpointName): Signal<boolean> {
+export function arenaViewportBelow(name: BreakpointName): Signal<boolean> {
   const doc = inject(DOCUMENT);
   const destroyRef = inject(DestroyRef);
   const width = readBreakpoint(name);

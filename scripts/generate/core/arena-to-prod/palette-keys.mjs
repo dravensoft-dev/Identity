@@ -17,7 +17,7 @@ export const PALETTE_KEYS = [
 
 export const OPTIONAL_KEYS = new Set(['error-fill']);
 
-export const CAT_SLOTS = 8;
+export const ARENA_CAT_SLOTS = 8;
 
 export const POLARITIES = ['dark', 'light'];
 

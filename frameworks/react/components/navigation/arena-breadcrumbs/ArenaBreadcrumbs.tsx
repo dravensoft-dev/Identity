@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaBreadcrumbs.classes.generated.ts';
 import type { ArenaCrumb } from '../../../Api.generated';
@@ -39,7 +39,7 @@ export function ArenaBreadcrumbs({ items, ariaLabel, separator = '/', onNavigate
             ) : (
               <a href={it.href || '#'}
                 onClick={(e) => {
-                  if (!isPrimaryActivation(e)) return;
+                  if (!isArenaPrimaryActivation(e)) return;
                   e.preventDefault();
                   onNavigate?.(it);
                 }}

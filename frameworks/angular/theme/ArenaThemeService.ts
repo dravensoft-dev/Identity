@@ -26,12 +26,12 @@ export function provideArenaThemes(config: ArenaThemeConfig): Provider {
   return { provide: ARENA_THEMES, useValue: config };
 }
 
-export const themeClass = (name: string): string => `arena-${name}`;
+export const arenaThemeClass = (name: string): string => `arena-${name}`;
 
 const STORAGE_KEY = 'arena-theme';
 
 @Injectable({ providedIn: 'root' })
-export class ThemeService {
+export class ArenaThemeService {
   private readonly doc = inject(DOCUMENT);
   private readonly config = inject(ARENA_THEMES);
 
@@ -44,7 +44,7 @@ export class ThemeService {
       const current = this.theme();
       const classes = this.doc.documentElement.classList;
       for (const palette of this.palettes) {
-        classes.toggle(themeClass(palette.name), palette.name === current && current !== this.fallback);
+        classes.toggle(arenaThemeClass(palette.name), palette.name === current && current !== this.fallback);
       }
       this.doc.defaultView?.localStorage?.setItem(STORAGE_KEY, current);
     });
@@ -52,7 +52,7 @@ export class ThemeService {
 
   set(theme: ArenaTheme): void {
     if (!this.declares(theme)) {
-      throw new Error(`ThemeService: no palette named "${theme}"; the declared palettes are ${this.names().join(', ')}`);
+      throw new Error(`ArenaThemeService: no palette named "${theme}"; the declared palettes are ${this.names().join(', ')}`);
     }
     this.theme.set(theme);
   }

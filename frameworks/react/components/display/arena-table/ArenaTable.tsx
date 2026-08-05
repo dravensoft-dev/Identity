@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { warnOnce } from '../../../WarnOnce.ts';
-import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth, readBreakpoint } from '../../../UseArenaContainerWidth.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaTable.classes.generated.ts';
 
@@ -66,7 +66,7 @@ export function ArenaTable({
 }: ArenaTableProps) {
   if (!label?.trim()) throw new Error('ArenaTable: `label` is required');
   if (columns == null) throw new Error('ArenaTable: `columns` is required');
-  const [ref, width] = useContainerWidth();
+  const [ref, width] = useArenaContainerWidth();
 
   const narrow = responsive && width !== null && width < readBreakpoint('md');
 

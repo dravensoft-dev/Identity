@@ -2,7 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy, Component, booleanAttribute, computed, contentChild, input, output,
 } from '@angular/core';
-import { isPrimaryActivation } from '../../../AnchorActivation';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation';
 import { ArenaAction } from '../../../ProjectionMarkers';
 import { arenaCardStyles } from './ArenaCard.variants';
 
@@ -84,7 +84,7 @@ export class ArenaCard {
   protected onAnchorClick(event: MouseEvent): void {
     event.stopPropagation();
     if (this.disabled()) { event.preventDefault(); return; }
-    if (!isPrimaryActivation(event)) return;
+    if (!isArenaPrimaryActivation(event)) return;
     event.preventDefault();
     this.click.emit();
   }

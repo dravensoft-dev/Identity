@@ -1,4 +1,4 @@
-/* containerWidth observes ONE element, and which one is the whole question: a component whose
+/* arenaContainerWidth observes ONE element, and which one is the whole question: a component whose
  * host is `display: contents` has no box, so observing the host reports 0 for ever and every
  * width-derived branch silently takes its narrow arm. ArenaCalendar was measured that way, and its
  * chips dropped the time label on every screen while the grid drew correctly, because the
@@ -12,7 +12,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ChangeDetectionStrategy, Component, ElementRef, Type, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { containerWidth } from '../ContainerSize';
+import { arenaContainerWidth } from '../ContainerSize';
 import { assertSameNode } from './NodeAssert';
 
 const observed: Element[] = [];
@@ -31,7 +31,7 @@ class RecordingResizeObserver {
 })
 class Probe {
   readonly frame = viewChild.required<ElementRef<HTMLElement>>('frame');
-  readonly width = containerWidth(() => this.frame().nativeElement);
+  readonly width = arenaContainerWidth(() => this.frame().nativeElement);
 }
 
 @Component({
@@ -41,7 +41,7 @@ class Probe {
   template: '<section></section>',
 })
 class ProbeDefault {
-  readonly width = containerWidth();
+  readonly width = arenaContainerWidth();
 }
 
 function mount<T>(type: Type<T>) {
@@ -61,7 +61,7 @@ function mount<T>(type: Type<T>) {
 test('a function target is observed, so a boxless host measures the element that has the box', () => {
   const fixture = mount(Probe);
   try {
-    assert.equal(observed.length, 1, 'containerWidth observed something other than one element');
+    assert.equal(observed.length, 1, 'arenaContainerWidth observed something other than one element');
     assert.equal((observed[0] as HTMLElement).getAttribute('data-role'), 'frame',
       'the observer was pointed at the display:contents host, whose contentRect is 0 for ever');
   } finally {

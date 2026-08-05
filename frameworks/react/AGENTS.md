@@ -127,18 +127,18 @@ cannot prove is that the browser honours the URL write-back**: happy-dom's
 `history.replaceState` is a no-op, so the suite asserts the call and the real write is the
 smoke pass's.
 
-**`UseContainerWidth.ts`'s `readBreakpoint` warns once per name when a breakpoint token does not
+**`UseArenaContainerWidth.ts`'s `readBreakpoint` warns once per name when a breakpoint token does not
 resolve, and never caches the failure.** Every comparison against `NaN` is false, so a silent one
 leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on their wide branch on a phone with nothing reported,
-and a cached one pins that for the life of the process. `test/UseContainerWidth.dom.test.tsx`
-holds both halves. `forgetBreakpoints()` drops what was cached, for the two callers that need
+and a cached one pins that for the life of the process. `test/UseArenaContainerWidth.dom.test.tsx`
+holds both halves. `forgetArenaBreakpoints()` drops what was cached, for the two callers that need
 it: a document that swapped its stylesheet at runtime, and a suite whose subject is the cache,
 which would otherwise depend on which file the runner reached first.
 
-**`useViewportBelow(name)` answers the other question, and it is a different one.**
-`useContainerWidth` measures a box, which is what a component needs, because a component may be
+**`useArenaViewportBelow(name)` answers the other question, and it is a different one.**
+`useArenaContainerWidth` measures a box, which is what a component needs, because a component may be
 rendered anywhere and the viewport says nothing about how much room it was given.
-`useViewportBelow` measures the viewport, which is what a page layout needs and what a consumer
+`useArenaViewportBelow` measures the viewport, which is what a page layout needs and what a consumer
 writing their own stylesheet cannot get any other way: a media query condition
 holds no `var()`, so the threshold cannot be named from CSS at all. The query is
 `not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
@@ -334,7 +334,7 @@ the token layer does not model. A handful of sites are exempt by name with a rea
 read `EXEMPT` in `scripts/check/arena/check-dimension-literals.mjs` for the current set.
 
 Responsive branches are JS rather than media queries, and they measure the **container** via
-`useContainerWidth`: a media query can only ask about the viewport, and the box that decides
+`useArenaContainerWidth`: a media query can only ask about the viewport, and the box that decides
 whether a component narrows is the one containing it. The hook owns a
 ref and returns it, and takes one when the caller already holds the box to measure, so an
 inner panel does not have to become a component to be measured. It reports `null` until it

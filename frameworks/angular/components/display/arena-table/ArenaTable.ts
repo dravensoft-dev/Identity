@@ -5,7 +5,7 @@ import {
 import type {
   ArenaSelectOption, ArenaTableColumn, ArenaTablePage, ArenaTableSort, ArenaTableSortControl,
 } from '../../../Api.generated';
-import { containerWidth, readBreakpoint } from '../../../ContainerSize';
+import { arenaContainerWidth, readBreakpoint } from '../../../ContainerSize';
 import { warnOnce } from '../../../WarnOnce';
 import { ArenaPagination } from '../../navigation/arena-pagination/ArenaPagination';
 import { ArenaSelect } from '../../forms/arena-select/ArenaSelect';
@@ -87,7 +87,7 @@ export class ArenaTable {
   protected readonly state = inject(TableState);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly measured = containerWidth();
+  private readonly measured = arenaContainerWidth();
   private readonly medium = readBreakpoint('md');
 
   protected readonly rows = contentChildren(ArenaTableRow);

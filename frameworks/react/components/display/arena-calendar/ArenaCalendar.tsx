@@ -1,9 +1,9 @@
 import type { ArenaCalendarEventProps, CalendarEventInjected } from '../arena-calendar-event/ArenaCalendarEvent.tsx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth, readBreakpoint } from '../../../UseArenaContainerWidth.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaCalendar.classes.generated.ts';
-import { catColor } from '../../../DataVisuals.ts';
+import { arenaCatColor } from '../../../DataVisuals.ts';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 
 import type { ArenaCalendarView, ArenaCatSlot } from '../../../Api.generated';
@@ -65,7 +65,7 @@ export function ArenaCalendar({
 }: ArenaCalendarProps) {
 
   const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const [ref, width] = useContainerWidth<HTMLElement>();
+  const [ref, width] = useArenaContainerWidth<HTMLElement>();
   const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
 
   useEffect(() => { if (anchorDate) setAnchor(anchorDate); }, [anchorDate]);
@@ -303,7 +303,7 @@ export function ArenaCalendar({
                 box: { top, height: `max(calc(var(--sp-1) * 6.5), ${rawH}px)`,
                   left: `${leftShare}%`,
                   right: `${100 - leftShare - widthShare}%` },
-                color: catColor(p.ev.colorId ?? 1),
+                color: arenaCatColor(p.ev.colorId ?? 1),
                 timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
                 dateLabel: formatDate(days[di] ?? '', { weekday: 'long', day: 'numeric', month: 'long' }),
                 showTime: showsTime(rawH, slotFor(p.cols)),

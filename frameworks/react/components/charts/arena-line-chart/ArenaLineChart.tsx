@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useContainerWidth } from '../../../UseContainerWidth.ts';
+import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
-  resolveColors, catColor, niceMax, ticks, srOnly, areaFill, plotWidth, railStyle, valueWriter,
+  resolveColors, arenaCatColor, niceMax, ticks, srOnly, areaFill, plotWidth, railStyle, valueWriter,
   PAD, CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
@@ -54,7 +54,7 @@ export function ArenaLineChart({
   if (!seriesLabel) throw new Error('ArenaLineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaLineChart: `labels` is required');
   if (!values) throw new Error('ArenaLineChart: `values` is required');
-  const [ref, measured] = useContainerWidth();
+  const [ref, measured] = useArenaContainerWidth();
   const rail = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
 
@@ -70,7 +70,7 @@ export function ArenaLineChart({
     box.scrollLeft = box.scrollWidth - box.clientWidth;
   }, [scrolls, width]);
 
-  const [color = catColor(1)] = resolveColors({ slot, tone, count: 1 });
+  const [color = arenaCatColor(1)] = resolveColors({ slot, tone, count: 1 });
 
   const max = niceMax(Math.max(0, ...values));
   const iw = Math.max(1, width - PAD.l - PAD.r);

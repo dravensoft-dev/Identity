@@ -36,10 +36,10 @@ are. `bun run check:layer-independence` holds it, and `ALLOWED` is empty.
 each is an `@import` in the host app's `styles.css`, so renaming one breaks every app that has
 adopted Arena. **`no-fouc.html` is not a third instance of that**: the adopter pastes the
 `<script>`'s contents and never names the file, so renaming it breaks a documentation line
-rather than an app. **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are
+rather than an app. **Not exempt:** `theme/ArenaThemeService.ts` and `icons/IconManifest.ts` are
 reached through `frameworks/angular/index.ts`, which no adopter writes.
 
-- `theme/ThemeService.ts` and `theme/no-fouc.html`: the signal theme service and the
+- `theme/ArenaThemeService.ts` and `theme/no-fouc.html`: the signal theme service and the
   pre-paint snippet. It switches between **any number of named palettes**, because a
   consumer's `arena.config.json` declares as many as they like: the default palette sits on
   `:root` and wears no class, and every other one wears `.arena-<name>`. Declare them with
@@ -103,9 +103,9 @@ are where they are:
 `ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
 once per name when a breakpoint token does not resolve and never caches the failure**: every
 comparison against `NaN` is false, so a silent one leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on
-their wide branch on a phone with nothing reported, plus `forgetBreakpoints`, which drops what
+their wide branch on a phone with nothing reported, plus `forgetArenaBreakpoints`, which drops what
 was cached for the two callers that need it, a document that swapped its stylesheet at runtime
-and a suite whose subject is the cache, and `viewportBelow`, below),
+and a suite whose subject is the cache, and `arenaViewportBelow`, below),
 `AnchorActivation.ts` (the predicate behind the anchor convention: an anchor Arena draws cancels
 a primary click with no modifier and reports through its own navigation event, and everything
 else is the browser's, which `ArenaCard`, `ArenaBreadcrumbs`, `ArenaSideNavItem` and `ArenaCommandPalette` all read
@@ -119,7 +119,7 @@ name, per `contracts/api/AGENTS.md`'s binding table) all have consumers in more 
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
 sits at the layer root beside them, and the rule puts it there in both layers now: its
-consumers are the three charts **and** `arena-calendar-event`, which reads `catColor` for a
+consumers are the three charts **and** `arena-calendar-event`, which reads `arenaCatColor` for a
 chip's identity colour. The name matches the placement: a module a schedule grid consumes is
 not "chart internals".
 
@@ -141,10 +141,10 @@ see it. `check:playgrounds` holds each copy to the source and to the other copy.
 `Playground.test.ts` asserts the codec again here rather than trusting the other layer's suite,
 because this copy is what this layer compiles.
 
-**`viewportBelow(name)` answers the other half of the breakpoint question, and it is a
-different question.** `containerWidth` measures a box, which is what a component needs, because
+**`arenaViewportBelow(name)` answers the other half of the breakpoint question, and it is a
+different question.** `arenaContainerWidth` measures a box, which is what a component needs, because
 a component may be rendered anywhere and the viewport says nothing about how much room it was
-given. `viewportBelow` measures the viewport, which is what a page layout needs and what an app
+given. `arenaViewportBelow` measures the viewport, which is what a page layout needs and what an app
 writing CSS in a `styles:` block cannot get any other way: a media query condition holds no
 `var()`, so the threshold cannot be named from a stylesheet at all. It returns a signal over
 `not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
@@ -519,7 +519,7 @@ branches carry only interpolated inputs.
 
 Adopt it in the order the layer is built. Import `theme/arena-tailwind.css` once from the
 app's global stylesheet for the tokens and the `@theme` preset; add `theme/arena-cdk.css`
-when you first use a primitive that positions an overlay. Wire `ThemeService`, declaring
+when you first use a primitive that positions an overlay. Wire `ArenaThemeService`, declaring
 your palettes with `provideArenaThemes` if there are more than two, and paste
 `theme/no-fouc.html`'s script contents into `index.html`, setting its two names to match. Then replace the app's own
 controls with `arena-*` primitives as you touch the files that use them, incrementally and

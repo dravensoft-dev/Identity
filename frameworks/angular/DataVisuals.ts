@@ -5,7 +5,7 @@ import {
 import type { ArenaNumberFormat, ArenaSeriesTone, ArenaTone } from './Api.generated';
 import { warnOnce } from './WarnOnce';
 
-export const CAT_SLOTS = catSlots;
+export const ARENA_CAT_SLOTS = catSlots;
 
 export const CHART_HEIGHT = chartHeight;
 
@@ -18,15 +18,15 @@ export const SR_ONLY = {
   overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: '0',
 } as const satisfies Readonly<Record<string, string>>;
 
-export function catColor(slot: number): string {
-  const n = Math.min(CAT_SLOTS, Math.max(1, Math.round(slot) || 1));
+export function arenaCatColor(slot: number): string {
+  const n = Math.min(ARENA_CAT_SLOTS, Math.max(1, Math.round(slot) || 1));
   return `var(--color-cat-${n})`;
 }
 
-export function catSlotFor(key: string): number {
+export function arenaCatSlotFor(key: string): number {
   let hash = 0;
   for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return (hash % CAT_SLOTS) + 1;
+  return (hash % ARENA_CAT_SLOTS) + 1;
 }
 
 export interface CatSurface {
@@ -34,8 +34,8 @@ export interface CatSurface {
   border: string;
 }
 
-export function catSurface(slot: number): CatSurface {
-  const colour = catColor(slot);
+export function arenaCatSurface(slot: number): CatSurface {
+  const colour = arenaCatColor(slot);
   return {
     fill: `color-mix(in oklab, ${colour} ${tintSoft}%, var(--color-base-100))`,
     border: `color-mix(in oklab, ${colour} ${tintEdge}%, transparent)`,
@@ -71,11 +71,11 @@ export function resolveColors(options: {
     warnOnce('chart: `tone` and `slot`/`slots` are mutually exclusive — a chart carries identity or meaning, never both. `tone` wins; remove the other.');
   }
   if (tone) {
-    const colour = toneColor(tone) || catColor(1);
+    const colour = toneColor(tone) || arenaCatColor(1);
     return Array.from({ length: count }, () => colour);
   }
-  if (slots) return Array.from({ length: count }, (_, i) => catColor(slots[i] ?? i + 1));
-  return Array.from({ length: count }, () => catColor(slot ?? 1));
+  if (slots) return Array.from({ length: count }, (_, i) => arenaCatColor(slots[i] ?? i + 1));
+  return Array.from({ length: count }, () => arenaCatColor(slot ?? 1));
 }
 
 export interface ValueWriterOptions {

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, forwardRef, inject, input } from '@angular/core';
-import { isPrimaryActivation } from '../../../AnchorActivation';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation';
 import { SideNavChild, SideNavState, indentFor } from '../arena-side-nav/SideNavState';
 import { activeWeight, badgeCount } from '../../../NavRow';
 import { arenaSideNavStyles } from '../arena-side-nav/ArenaSideNav.variants';
@@ -94,7 +94,7 @@ export class ArenaSideNavItem {
 
   protected activateAnchor(event: MouseEvent): void {
     if (this.disabled()) { event.preventDefault(); return; }
-    if (!isPrimaryActivation(event)) return;
+    if (!isArenaPrimaryActivation(event)) return;
     event.preventDefault();
     this.nav.activate(this.id());
   }

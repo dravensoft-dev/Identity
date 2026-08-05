@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CAT_SLOTS, catColor, catSlotFor, catSurface, areaFill, toneColor,
+  ARENA_CAT_SLOTS, arenaCatColor, arenaCatSlotFor, arenaCatSurface, areaFill, toneColor,
 } from './DataVisuals.ts';
 import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
 
@@ -16,20 +16,20 @@ test('every ArenaSeriesTone is an ArenaTone, so a chart keeps reaching the same 
   for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as ArenaTone));
 });
 
-test('catSlotFor lands inside the ramp for every key, including an empty one', () => {
+test('arenaCatSlotFor lands inside the ramp for every key, including an empty one', () => {
   for (const key of ['', 'a', 'arena', 'SKU-1042', 'ñ', '日本', 'x'.repeat(500)]) {
-    const slot = catSlotFor(key);
-    assert.ok(Number.isInteger(slot) && slot >= 1 && slot <= CAT_SLOTS, `catSlotFor(${key}) = ${slot}`);
+    const slot = arenaCatSlotFor(key);
+    assert.ok(Number.isInteger(slot) && slot >= 1 && slot <= ARENA_CAT_SLOTS, `arenaCatSlotFor(${key}) = ${slot}`);
   }
 });
 
-test('catSlotFor gives the same key the same slot every time', () => {
-  assert.equal(catSlotFor('SKU-1042'), catSlotFor('SKU-1042'));
+test('arenaCatSlotFor gives the same key the same slot every time', () => {
+  assert.equal(arenaCatSlotFor('SKU-1042'), arenaCatSlotFor('SKU-1042'));
 });
 
-test('catSlotFor spreads over the ramp by these pinned vectors', () => {
+test('arenaCatSlotFor spreads over the ramp by these pinned vectors', () => {
   assert.deepEqual(
-    ['a', 'arena', 'SKU-1042', 'SKU-1043', 'cliente-7'].map(catSlotFor),
+    ['a', 'arena', 'SKU-1042', 'SKU-1043', 'cliente-7'].map(arenaCatSlotFor),
     [2, 8, 6, 7, 5],
     'the numbers are pinned rather than derived because the point of the function is that one key '
     + 'always draws the same colour: a ninth slot in the --color-cat-* ramp moves every one of them, '
@@ -37,10 +37,10 @@ test('catSlotFor spreads over the ramp by these pinned vectors', () => {
   );
 });
 
-test('catSurface tints from the slot colour, and the edge is the stronger of the two', () => {
-  const surface = catSurface(3);
-  assert.equal(surface.fill, `color-mix(in oklab, ${catColor(3)} 12%, var(--color-base-100))`);
-  assert.equal(surface.border, `color-mix(in oklab, ${catColor(3)} 26%, transparent)`);
+test('arenaCatSurface tints from the slot colour, and the edge is the stronger of the two', () => {
+  const surface = arenaCatSurface(3);
+  assert.equal(surface.fill, `color-mix(in oklab, ${arenaCatColor(3)} 12%, var(--color-base-100))`);
+  assert.equal(surface.border, `color-mix(in oklab, ${arenaCatColor(3)} 26%, transparent)`);
 });
 
 test('areaFill is the tint ArenaLineChart draws under its series', () => {

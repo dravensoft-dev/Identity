@@ -4,9 +4,9 @@ Week or day schedule on a time grid: a toolbar, one column per day, events posit
 
 `timeZone` is optional and defaults to the reader's own resolved zone, which is right whenever the schedule belongs to whoever is looking at it. **Pass it when the calendar has a zone of its own**: a class at 09:00 in Madrid must stay at 09:00 for a student loading the page from Lima, and only an explicit `timeZone="Europe/Madrid"` says so. Events carry ISO datetimes and are read in that zone.
 
-Two things this default is not. It is not a `'UTC'` fallback, which would be arbitrary, wrong for almost every reader, and would produce silently the very defect the member exists to prevent. And it is **not safe under server rendering**: on a server it resolves to the *server's* zone and then to the client's on hydration, so a server-rendered calendar must pass `timeZone` explicitly. Same shape as `useContainerWidth` reporting `null` before it has measured.
+Two things this default is not. It is not a `'UTC'` fallback, which would be arbitrary, wrong for almost every reader, and would produce silently the very defect the member exists to prevent. And it is **not safe under server rendering**: on a server it resolves to the *server's* zone and then to the client's on hydration, so a server-rendered calendar must pass `timeZone` explicitly. Same shape as `useArenaContainerWidth` reporting `null` before it has measured.
 
-`ArenaCalendar` reads the categorical ramp through the same `catColor` the charts use, and measures its container to pick the view, so both travel with it: importing from `@dravensoft/arena-react` brings them, and both are exported for a legend or a responsive panel of your own.
+`ArenaCalendar` reads the categorical ramp through the same `arenaCatColor` the charts use, and measures its container to pick the view, so both travel with it: importing from `@dravensoft/arena-react` brings them, and both are exported for a legend or a responsive panel of your own.
 
 ```tsx
 <ArenaCalendar

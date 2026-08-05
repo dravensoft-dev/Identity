@@ -36,13 +36,13 @@ actions wrapper never renders, and the buttons silently disappear. `ArenaActions
 shared: every primitive with a plural, toolbar-shaped projected slot imports the same
 directive rather than declaring its own.
 
-The measurement helper is public too. `containerWidth()` is exported from
+The measurement helper is public too. `arenaContainerWidth()` is exported from
 `@dravensoft/arena-angular` for a consumer building their own responsive component: call it
 from an injection context (a field initializer or the constructor), render the wide layout
 while the width is still `null`, and compare against the breakpoint token rather than writing
 a media query.
 
-`containerWidth()` measures the caller's own host by default and takes an `ElementRef` when
+`arenaContainerWidth()` measures the caller's own host by default and takes an `ElementRef` when
 the box to measure is a different one, so a component whose responsive question is about an
 inner panel does not have to make that panel a component of its own. The injection context is
 required either way, and not because of the element: `DestroyRef` disconnects the observer and

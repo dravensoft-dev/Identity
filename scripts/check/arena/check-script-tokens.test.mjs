@@ -51,7 +51,7 @@ test('importedNames spans a multi-line import', () => {
 });
 
 test('importedNames ignores an import from anything else', () => {
-  const src = "import { catColor } from './chart-internals.js';";
+  const src = "import { arenaCatColor } from './chart-internals.js';";
   assert.deepEqual([...importedNames(src)], []);
 });
 

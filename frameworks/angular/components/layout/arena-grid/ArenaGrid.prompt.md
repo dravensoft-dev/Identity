@@ -41,7 +41,7 @@ is the page's own reading width.
 - **Do** give it real children. Every child is one cell exactly as written; nothing is wrapped, so
   an `arena-card`, a chart and a definition list all land the same way.
 - **Do** reach for it for a page's own layout. A component that has to fit the room it was given
-  measures its container with `containerWidth`, which is a different question.
+  measures its container with `arenaContainerWidth`, which is a different question.
 - **Don't** use it for a row of two or three controls. That is a flex row, and a grid there gives
   every control the same width whether or not that helps.
 - **Don't** put a `min` on it that no card ever reaches. The count only drops when the room runs

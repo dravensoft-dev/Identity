@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DOCUMENT, ElementRef, Injector, runInInjectionContext } from '@angular/core';
-import { containerWidth, forgetBreakpoints, readBreakpoint } from '../../../ContainerSize';
+import { arenaContainerWidth, forgetArenaBreakpoints, readBreakpoint } from '../../../ContainerSize';
 import { arenaPageHeadStyles } from './ArenaPageHead.variants';
 
 function injectorWith(properties: Record<string, string>): Injector {
@@ -26,7 +26,7 @@ function captureWarn<T>(fn: () => T): { result: T; messages: string[] } {
 }
 
 test('readBreakpoint reads --bp-<name> off the document root and returns it as a number of px', () => {
-  forgetBreakpoints();
+  forgetArenaBreakpoints();
   const value = runInInjectionContext(injectorWith({ '--bp-md': ' 768px ' }), () => readBreakpoint('md'));
   assert.equal(value, 768);
 });
@@ -64,12 +64,12 @@ test('the injection-context contract holds on a cache hit too, not only on the f
   );
 });
 
-test('containerWidth requires an injection context whether or not it is handed an element to measure', () => {
+test('arenaContainerWidth requires an injection context whether or not it is handed an element to measure', () => {
 
-  assert.throws(() => containerWidth(), /NG0203|injection context/i);
+  assert.throws(() => arenaContainerWidth(), /NG0203|injection context/i);
   const elsewhere = new ElementRef(null as unknown as HTMLElement);
   assert.throws(
-    () => containerWidth(elsewhere),
+    () => arenaContainerWidth(elsewhere),
     /NG0203|injection context/i,
     'the element is optional and the context is not: DestroyRef disconnects the observer and '
     + 'afterNextRender decides when there is a box to measure, and neither is reachable outside one',

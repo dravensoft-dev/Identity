@@ -1,5 +1,5 @@
 import React from 'react';
-import { isPrimaryActivation } from '../../../AnchorActivation.ts';
+import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaCard.classes.generated.ts';
 
@@ -77,7 +77,7 @@ export function ArenaCard({
       <a href={href} {...shared}
         onClick={(event) => {
           if (disabled) { event.preventDefault(); return; }
-          if (!isPrimaryActivation(event)) return;
+          if (!isArenaPrimaryActivation(event)) return;
           event.preventDefault();
           activate();
         }}>

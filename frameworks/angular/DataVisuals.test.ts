@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
-  catColor, catSlotFor, catSurface, areaFill, toneColor, resolveColors, niceMax, ticks,
+  ARENA_CAT_SLOTS, CHART_HEIGHT, PAD, SR_ONLY,
+  arenaCatColor, arenaCatSlotFor, arenaCatSurface, areaFill, toneColor, resolveColors, niceMax, ticks,
   barPath, arcPath,
 } from './DataVisuals';
 import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
@@ -51,26 +51,26 @@ test('ticks spans 0 to max inclusive and yields count + 1 values', () => {
   assert.equal(ticks(7, 7).length, 8);
 });
 
-test('catColor reads the ramp token for an in-range slot', () => {
-  for (let n = 1; n <= CAT_SLOTS; n++) assert.equal(catColor(n), `var(--color-cat-${n})`);
+test('arenaCatColor reads the ramp token for an in-range slot', () => {
+  for (let n = 1; n <= ARENA_CAT_SLOTS; n++) assert.equal(arenaCatColor(n), `var(--color-cat-${n})`);
 });
 
-test('catColor NEVER cycles past the ramp -- a 9th series clamps, it does not wrap', () => {
+test('arenaCatColor NEVER cycles past the ramp -- a 9th series clamps, it does not wrap', () => {
 
-  for (const over of [CAT_SLOTS + 1, 9, 12, 100, 1e6])
-    assert.equal(catColor(over), `var(--color-cat-${CAT_SLOTS})`, `slot ${over}`);
-  assert.notEqual(catColor(CAT_SLOTS + 1), catColor(1));
+  for (const over of [ARENA_CAT_SLOTS + 1, 9, 12, 100, 1e6])
+    assert.equal(arenaCatColor(over), `var(--color-cat-${ARENA_CAT_SLOTS})`, `slot ${over}`);
+  assert.notEqual(arenaCatColor(ARENA_CAT_SLOTS + 1), arenaCatColor(1));
 });
 
-test('catColor clamps at the low end, including the falsy slots', () => {
+test('arenaCatColor clamps at the low end, including the falsy slots', () => {
 
-  for (const under of [1, 0, -3, Number.NaN]) assert.equal(catColor(under), 'var(--color-cat-1)');
+  for (const under of [1, 0, -3, Number.NaN]) assert.equal(arenaCatColor(under), 'var(--color-cat-1)');
 });
 
-test('catColor rounds a fractional slot rather than truncating it', () => {
-  assert.equal(catColor(2.4), 'var(--color-cat-2)');
-  assert.equal(catColor(2.5), 'var(--color-cat-3)');
-  assert.equal(catColor(2.6), 'var(--color-cat-3)');
+test('arenaCatColor rounds a fractional slot rather than truncating it', () => {
+  assert.equal(arenaCatColor(2.4), 'var(--color-cat-2)');
+  assert.equal(arenaCatColor(2.5), 'var(--color-cat-3)');
+  assert.equal(arenaCatColor(2.6), 'var(--color-cat-3)');
 });
 
 test('every tone in the union resolves to a token reference', () => {
@@ -84,21 +84,21 @@ test('every ArenaSeriesTone is an ArenaTone, so a chart keeps reaching the same 
   for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as ArenaTone));
 });
 
-test('catSlotFor lands inside the ramp for every key, including an empty one', () => {
+test('arenaCatSlotFor lands inside the ramp for every key, including an empty one', () => {
   for (const key of ['', 'a', 'arena', 'SKU-1042', 'ñ', '日本', 'x'.repeat(500)]) {
-    const slot = catSlotFor(key);
-    assert.ok(Number.isInteger(slot) && slot >= 1 && slot <= CAT_SLOTS, `catSlotFor(${key}) = ${slot}`);
+    const slot = arenaCatSlotFor(key);
+    assert.ok(Number.isInteger(slot) && slot >= 1 && slot <= ARENA_CAT_SLOTS, `arenaCatSlotFor(${key}) = ${slot}`);
   }
 });
 
-test('catSlotFor gives the same key the same slot every time', () => {
-  assert.equal(catSlotFor('SKU-1042'), catSlotFor('SKU-1042'));
+test('arenaCatSlotFor gives the same key the same slot every time', () => {
+  assert.equal(arenaCatSlotFor('SKU-1042'), arenaCatSlotFor('SKU-1042'));
 });
 
-test('catSlotFor spreads over the ramp by these pinned vectors', () => {
+test('arenaCatSlotFor spreads over the ramp by these pinned vectors', () => {
 
   assert.deepEqual(
-    ['a', 'arena', 'SKU-1042', 'SKU-1043', 'cliente-7'].map(catSlotFor),
+    ['a', 'arena', 'SKU-1042', 'SKU-1043', 'cliente-7'].map(arenaCatSlotFor),
     [2, 8, 6, 7, 5],
     'the numbers are pinned rather than derived because the point of the function is that one key '
     + 'always draws the same colour: a ninth slot in the --color-cat-* ramp moves every one of them, '
@@ -106,8 +106,8 @@ test('catSlotFor spreads over the ramp by these pinned vectors', () => {
   );
 });
 
-test('catSurface tints from the slot colour, and the edge is the stronger of the two', () => {
-  const surface = catSurface(3);
+test('arenaCatSurface tints from the slot colour, and the edge is the stronger of the two', () => {
+  const surface = arenaCatSurface(3);
   assert.match(surface.fill, /^color-mix\(in oklab, var\(--color-cat-3\) 12%, var\(--color-base-100\)\)$/);
   assert.match(surface.border, /^color-mix\(in oklab, var\(--color-cat-3\) 26%, transparent\)$/);
 });
@@ -150,8 +150,8 @@ test('`slots` maps per index, falling back to the index itself where it runs sho
 
 test('`slots` shorter than `count` still never cycles past the ramp', () => {
   const colours = resolveColors({ count: 12, slots: [] });
-  assert.equal(colours[11], `var(--color-cat-${CAT_SLOTS})`);
-  assert.equal(new Set(colours).size, CAT_SLOTS, 'the ramp clamps rather than wrapping');
+  assert.equal(colours[11], `var(--color-cat-${ARENA_CAT_SLOTS})`);
+  assert.equal(new Set(colours).size, ARENA_CAT_SLOTS, 'the ramp clamps rather than wrapping');
 });
 
 test('`tone` paints every series the semantic colour', () => {
@@ -277,7 +277,7 @@ test('arcPath places its corners on the two radii at the two angles', () => {
 });
 
 test('the layout constants carry the values the chart family shares', () => {
-  assert.equal(CAT_SLOTS, 8);
+  assert.equal(ARENA_CAT_SLOTS, 8);
   assert.equal(CHART_HEIGHT, 280);
   assert.deepEqual({ ...PAD }, { t: 8, r: 8, b: 28, l: 44 });
 });

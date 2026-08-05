@@ -124,10 +124,23 @@ two copies and never reads either for meaning. Verify with
   semicolon or a second sentence. An en dash between two numbers is a range and stays. The rule
   reaches prose only, so a fence and a code span keep what the code they quote contains.
 - **Documentation is written in the present tense** and describes what Arena is, never what it
-  was, when a part of it arrived, or which part is newest. A retired token, a fixed defect, a
-  former directory layout and a batch number belong in the commit log, which is where the history
-  already is, and is dated. The reason a rule exists is not history and stays: state it as a
-  property of the thing, not as an incident.
+  was, when a part of it arrived, or which part is newest. **No released version other than this
+  one exists on the page.** Nothing says what a name used to be, what a command replaced, what an
+  upgrade costs or which release moved it: a reader on this tree cannot act on any of it, and a
+  reader arriving from an older one is served by the version number and by the commit log, which
+  is dated and is where the history already is. A retired token, a fixed defect, a former
+  directory layout and a batch number belong in that log. The reason a rule exists is not history
+  and stays: state it as a property of the thing, not as an incident.
+- **A debt is written in the present tense as well, and it goes to [`DOUBTS.md`](./DOUBTS.md).**
+  Anything tracked, ambiguous, or implemented only in part is stated there as what the tree
+  currently is, never as what went wrong or what is left over. That page says what counts as one
+  and which records beat a paragraph, and every one of those records is a present-tense claim
+  that fails the day it stops being true.
+- **A document cites code as `path/to/file:member(parameters)` and never by line number.** A line
+  moves under the next edit and takes every citation with it in silence, while a member carries
+  its own address: `scripts/lib/arena/layers.mjs:kebab(name)` still resolves after the file is
+  reordered around it. `check:citations` holds the path half of that citation to a file that is
+  there, which is the half a rename breaks.
 - **The best comment is the one not written.** A method carries its own context through its name.
   The only exception is `scripts/` and test files, which may carry **one** comment, inline or
   block, as a file header, **at most 10 lines**. Files a script generates are outside the rule
