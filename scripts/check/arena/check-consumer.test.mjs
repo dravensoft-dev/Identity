@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  importedSheets, staleNameProblems, listProblems, assembled, SOURCES, STALE,
+  importedSheets, staleNameProblems, listProblems, assembled, documented, SOURCES, STALE,
 } from './check-consumer.mjs';
 
 const ok = { status: 0, stderr: '', theme: null, icons: null };
@@ -38,7 +38,7 @@ test('the documented sheet list must pass and a pre-rename one must fail, naming
 
   const refusedTheDocumented = listProblems('react', { ...ok, status: 1, stderr: 'nope' }, shipped);
   assert.equal(refusedTheDocumented.length, 1);
-  assert.match(refusedTheDocumented[0], /PACKAGE\.md documents/);
+  assert.match(refusedTheDocumented[0], /its own README documents/);
 
   const acceptedTheStale = listProblems('react', ok, ok);
   assert.equal(acceptedTheStale.length, 1);
@@ -59,4 +59,11 @@ test('the React fixture names the package, because the symbol scan reads the imp
   assert.match(STALE.react['src/App.tsx'], /\{ Button \}/, 'the negative fixture must spell the old name exactly');
   assert.match(SOURCES.angular['src/app.html'], /<arena-button/,
     'the Angular element is unchanged by the rename, and this fixture is what holds that');
+});
+
+test('the documented list is read from the shipped README, and a second one shadows rather than adds', () => {
+  assert.deepEqual(documented('"components": ["arena-button", "arena-table"]').names, ['arena-button', 'arena-table']);
+  assert.equal(documented('no list here').names, null);
+  assert.equal(documented('"components": ["button"] then "components": ["arena-button"]').names, null,
+    'two lists mean the gate would run whichever came first, which is how a stale example hides behind a fresh one');
 });

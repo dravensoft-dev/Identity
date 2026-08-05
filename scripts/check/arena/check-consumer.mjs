@@ -4,7 +4,9 @@
  * root by walking up from bin/, so the assembled dist/ IS the installed package, and the
  * config is the example the package itself ships. Assembly is a prerequisite rather than a
  * step: a dist/ already there is left alone, and only a missing one is built, because
- * build:packages costs minutes and this gate costs seconds. */
+ * build:packages costs minutes and this gate costs seconds. The named sheet list is read from
+ * the README the package ships, which is that layer's PACKAGE.md, so the example a migrating
+ * consumer copies is the one this gate runs rather than a second copy of it here. */
 
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
@@ -123,10 +125,10 @@ export function staleNameProblems(layer, result) {
   return [];
 }
 
-export function listProblems(layer, named, unknown) {
+export function listProblems(layer, named, unknown, list = []) {
   const problems = [];
   if (named.status !== 0) {
-    problems.push(`${layer}: the sheet list PACKAGE.md documents was refused:\n    ${named.stderr.trim()}`);
+    problems.push(`${layer}: the sheet list its own README documents, [${list.join(', ')}], was refused:\n    ${named.stderr.trim()}`);
   }
   if (unknown.status === 0) {
     problems.push(`${layer}: a stylesheet.components naming "button" was accepted, so a consumer's stale list `
@@ -139,7 +141,15 @@ export function listProblems(layer, named, unknown) {
 }
 
 const AUTO = { components: 'auto', preflight: false };
-const DOCUMENTED = { components: ['arena-button', 'arena-page-head', 'arena-side-nav', 'arena-stat-card', 'arena-table'] };
+
+export const DOCUMENTED_LIST = /"components":\s*\[([^\]]*)\]/g;
+
+export function documented(page) {
+  const lists = [...page.matchAll(DOCUMENTED_LIST)];
+  if (lists.length !== 1) return { lists: lists.length, names: null };
+  const names = lists[0][1].split(',').map((one) => one.trim().replace(/^"|"$/g, '')).filter(Boolean);
+  return { lists: 1, names };
+}
 
 export function collect(base = root) {
   const problems = [];
@@ -149,7 +159,13 @@ export function collect(base = root) {
     for (const { layer } of PACKAGES) {
       const auto = fixture(layer, SOURCES[layer], AUTO, base);
       const stale = fixture(layer, STALE[layer], AUTO, base);
-      const named = fixture(layer, SOURCES[layer], DOCUMENTED, base);
+      const { lists, names: list } = documented(readFileSync(join(distDir(layer, base), 'README.md'), 'utf8'));
+      if (!list) {
+        problems.push(`${layer}: the shipped README spells ${lists} stylesheet.components lists rather than one, `
+          + 'so the example a consumer copies is either absent or shadowed by another');
+        continue;
+      }
+      const named = fixture(layer, SOURCES[layer], { components: list }, base);
       const unknown = fixture(layer, SOURCES[layer], { components: ['button'] }, base);
       dirs.push(auto, stale, named, unknown);
 
@@ -157,7 +173,7 @@ export function collect(base = root) {
       problems.push(...mergeProblems(layer, result, base));
       problems.push(...renameProblems(layer, result, ['arena-button', 'arena-table'], base));
       problems.push(...staleNameProblems(layer, runCli(layer, stale, base)));
-      problems.push(...listProblems(layer, runCli(layer, named, base), runCli(layer, unknown, base)));
+      problems.push(...listProblems(layer, runCli(layer, named, base), runCli(layer, unknown, base), list));
     }
   } finally {
     for (const dir of dirs) rmSync(dir, { recursive: true, force: true });

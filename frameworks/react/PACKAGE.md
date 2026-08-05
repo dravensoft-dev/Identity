@@ -43,6 +43,38 @@ so your package manager brings down whichever of them the project does not alrea
 `"ph-bold ph-bell"`, and the component renders it. The stylesheet that turns those classes into
 glyphs is not the one Phosphor ships: it is the subset `arena-to-prod` writes for you, below.
 
+## Upgrading from 5.x
+
+This major carries two breaking changes. Neither touches what a browser renders.
+
+**Every export carries the `Arena` prefix.** `Button` is `ArenaButton`, `ButtonProps` is
+`ArenaButtonProps`, and every contracted type moves with them: `Tone` is `ArenaTone`,
+`ButtonVariant` is `ArenaButtonVariant`. One name now reaches the JSON contract, the class, the
+export, the file and the element a consumer writes, which is also what lets `"components":
+"auto"` tell an Arena tag from one of your own.
+
+```tsx
+import { ArenaButton, ArenaCard } from '@dravensoft/arena-react';
+import type { ArenaTone } from '@dravensoft/arena-react';
+```
+
+Rename by whole word, never by prefix. `ButtonHTMLAttributes` is React's own and does not move,
+and a `ThemeButton` of yours is yours.
+
+**Nothing in the DOM changed.** Class names are byte for byte what they were, so a rule you wrote
+against `.arena-button__root` keeps working and needs no edit. The prefix now comes from the
+component's own name rather than from a constant, which is why the output did not move.
+
+**Sheet names carry the prefix too.** In `arena.config.json`, a hand written components list
+gains it entry by entry, so `button` is now `arena-button` and `table` is `arena-table`, and a deep import
+of `@dravensoft/arena-react/css/components/button.css` becomes `.../arena-button.css`. A name the
+package does not ship fails the command and lists the ones it does, so a stale list stops the
+build rather than rendering a screen with no borders. `"components": "auto"` needs no change.
+
+**One command replaces two.** `arena-theme` and `arena-icons` are gone. `arena-to-prod` reads the
+same `arena.config.json` and writes both stylesheets in one run, so a `prebuild` that chained the
+two becomes a single command.
+
 ## Declare your skin
 
 Write `arena.config.json` in your project root. This is the whole file, with one palette and
@@ -170,7 +202,7 @@ no colour, with nothing to tell you. Naming the sheets yourself is still there, 
 choice for a project that renders through indirection:
 
 ```json
-{ "stylesheet": { "components": ["button", "page-head", "side-nav", "stat-card", "table"] } }
+{ "stylesheet": { "components": ["arena-button", "arena-page-head", "arena-side-nav", "arena-stat-card", "arena-table"] } }
 ```
 
 A name this package does not ship fails the command and lists the ones it does, so a typo stops
@@ -254,7 +286,7 @@ zero-friction path:
 | --- | --- |
 | `css/base.css` | the browser reset and nothing of Arena's. Arena needs one: without `button, input, select, textarea { font: inherit }` a control falls back to the browser's 13.33px Arial and every control in the library is 20% off, with nothing to tell you. Keep yours or keep this one, but keep one |
 | `css/components.css` | every component Arena draws |
-| `css/components/<name>.css` | one component. Each imports the prelude it needs itself, so importing one alone is safe |
+| `css/components/<name>.css` | one component, named for its sheet as `arena-button.css` or `arena-stat-card.css`. Each imports the prelude it needs itself, so importing one alone is safe |
 | `css/numerals.css` | `.arena-num`, the mono face and `tabular-nums` and no colour. Put it on a figure you draw yourself and a column of them aligns by digit the way a table's does |
 
 Importing the halves rather than `arena.css` makes **order** yours: Arena's components have to
