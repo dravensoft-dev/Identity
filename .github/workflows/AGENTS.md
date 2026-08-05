@@ -1,9 +1,11 @@
 # .github/workflows/
 
-Four workflows: one guards a pull request, one guards `main`, and two publish a package.
+Five workflows: one guards a pull request, one guards `main`, one guards `develop`, and two
+publish a package.
 
 ```
 pull_request -> main          Arena PR
+push to develop               Arena develop
 push to main                  Arena main
    |
    +-- on success             Publish arena-react
@@ -65,6 +67,29 @@ test invocation is written down, and the run summary carries a table of passes p
 A domain that owns suites and reported no case fails the run, as does a tree that
 contributed nothing and a case belonging to no domain. A reporter that quietly dropped a
 suite would otherwise print a confident table of zeros.
+
+## Arena develop
+
+The same single job as `Arena main`, running the same five steps in the same order, and the
+only workflow that is a copy of another. It exists because work lands on `develop` before it
+lands on `main`, and a merge into `develop` would otherwise be verified by nothing but whichever
+pull request preceded it: `Arena PR` is scoped to pull requests targeting `main`.
+
+It is a separate file rather than a second branch on `Arena main`'s trigger, and the reason is
+the name. Both publish workflows fire on `workflow_run` of the workflow named `Arena main`, so a
+`develop` push carrying that name would raise the publish question about a branch that is not
+`main`. Their `branches: [main]` filter refuses it, but the refusal is one file away from the
+event; a name of its own puts the answer in the workflow that asks.
+
+**It caches nothing**, so `bun install` is cold on every run. `Arena PR` caches because a pull
+request is pushed to repeatedly and its four test jobs each need the one build; `develop` is one
+job that runs once per merge, where the cache saves a fraction of a run it would also have to be
+kept honest across.
+
+**`build:packages` stays.** Dropping it would not skip package work: `check:packages` reads no
+manifest and passes while saying so, which is a quieter green rather than a faster one, and
+`check:consumer` assembles a missing `dist/` itself. Assembling nothing is not publishing
+nothing, and nothing here publishes.
 
 ## Publish arena-react, Publish arena-angular
 
