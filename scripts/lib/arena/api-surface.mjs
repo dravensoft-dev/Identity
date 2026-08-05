@@ -79,7 +79,7 @@ export function classify(raw) {
       if (retType.form === 'slot') {
         throw new UnrecognisedShape(
           `a function returning a node is a per-item renderer, and a per-item renderer is not a member: `
-          + `the convention that removed ActivityFeed.renderItem removes it too (contracts/api/AGENTS.md). `
+          + `the convention that removed ArenaActivityFeed.renderItem removes it too (contracts/api/AGENTS.md). `
           + `It IS a parameterised slot and R3 permits it -- Angular is what does not, because per-item `
           + `projection needs ngTemplateOutlet, which no binding-table row covers and no reader function reads: ${ts}`,
         );
@@ -283,11 +283,11 @@ function interfaceMembers(body) {
 }
 
 export const IMPERATIVE_HANDLES = new Map([
-  ['Input.focus', 'None of the nine contract forms is imperative, and returning focus to a field '
+  ['ArenaInput.focus', 'None of the nine contract forms is imperative, and returning focus to a field '
     + 'after the transaction it belongs to is settled is a gesture no declarative member expresses: '
     + 'autoFocus fires once at mount, and the caller needs it again on every completion. It is a '
     + 'method on the class rather than a member, in both layers, and each layer README says so.'],
-  ['Input.select', 'The same handle, for the case that follows it: focusing a field holding a value '
+  ['ArenaInput.select', 'The same handle, for the case that follows it: focusing a field holding a value '
     + 'the caller expects to be replaced is one keystroke short of useful without it.'],
 ]);
 

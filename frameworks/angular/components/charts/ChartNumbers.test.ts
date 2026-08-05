@@ -12,16 +12,16 @@ import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ArenaNumberFormat } from '../../Api.generated';
-import { LineChart } from './line-chart/LineChart';
-import { BarChart } from './bar-chart/BarChart';
-import { DoughnutChart } from './doughnut-chart/DoughnutChart';
+import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
+import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart';
+import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart';
 
 const FORMAT: ArenaNumberFormat = { locale: 'es-BO', fractionDigits: 2 };
 const WRITTEN = 'Bs. 1.234,50';
 
 @Component({
   standalone: true,
-  imports: [LineChart, BarChart, DoughnutChart],
+  imports: [ArenaLineChart, ArenaBarChart, ArenaDoughnutChart],
   template: `
     <arena-line-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
                       [valuePrefix]="prefix" [valueSuffix]="suffix" [valueFormat]="format" />

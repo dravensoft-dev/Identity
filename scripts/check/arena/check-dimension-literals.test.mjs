@@ -80,7 +80,7 @@ test('a property Arena does not govern is ignored', () => {
 
 test('a .d.ts-shaped declaration yields nothing', () => {
 
-  assert.deepEqual(scanText('export interface ButtonProps { fontSize?: number; padding?: string; }'), []);
+  assert.deepEqual(scanText('export interface ArenaButtonProps { fontSize?: number; padding?: string; }'), []);
 });
 
 test('scanText reports the 1-based line of each site', () => {
@@ -93,7 +93,7 @@ test('a percent in unquoted CSS text is captured whole, not truncated to a bare 
   assert.deepEqual(scanText('width:40%'), []);
 });
 
-test('regression: ProgressBar.jsx keyframe text no longer reads as three violations', () => {
+test('regression: ArenaProgressBar.jsx keyframe text no longer reads as three violations', () => {
 
   const keyframes =
     '@keyframes arena-prog{0%{left:-40%}100%{left:100%}}' +
@@ -172,7 +172,7 @@ test('a token in a logical side is not a violation', () => {
 });
 
 test('a default parameter whose name is itself a governed CSS property is a violation', () => {
-  const src = "function Dialog({ open, title, width = 480 }) {\n  return null;\n}";
+  const src = "function ArenaDialog({ open, title, width = 480 }) {\n  return null;\n}";
   const found = scanDefaultsAndCallSites(src);
   assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
     { prop: 'width', raw: '480' },
@@ -181,7 +181,7 @@ test('a default parameter whose name is itself a governed CSS property is a viol
 
 test('a default parameter on a named passthrough component resolves through the alias', () => {
 
-  const src = "function AppLogo({ mark, size = 18, dim = 'soft' }) {\n  return null;\n}";
+  const src = "function ArenaAppLogo({ mark, size = 18, dim = 'soft' }) {\n  return null;\n}";
   const found = scanDefaultsAndCallSites(src);
   assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
     { prop: 'width', raw: '18' },
@@ -189,8 +189,8 @@ test('a default parameter on a named passthrough component resolves through the 
 });
 
 test('a typed parameter list is read like an untyped one, in both the named and the inline form', () => {
-  const named = "function Dialog({ open, width = 480 }: DialogProps) {\n  return null;\n}";
-  const inline = "function Dialog({ open, width = 480 }: { width?: number }) {\n  return null;\n}";
+  const named = "function ArenaDialog({ open, width = 480 }: ArenaDialogProps) {\n  return null;\n}";
+  const inline = "function ArenaDialog({ open, width = 480 }: { width?: number }) {\n  return null;\n}";
   for (const src of [named, inline])
     assert.deepEqual(scanDefaultsAndCallSites(src).map((f) => ({ prop: f.prop, raw: f.raw })), [
       { prop: 'width', raw: '480' },
@@ -198,7 +198,7 @@ test('a typed parameter list is read like an untyped one, in both the named and 
 });
 
 test('matching no parameter list at all fails the gate, because every default then reads as clean', () => {
-  assert.equal(componentParamCount("function Dialog({ width = 480 }: DialogProps) {\n}"), 1);
+  assert.equal(componentParamCount("function ArenaDialog({ width = 480 }: ArenaDialogProps) {\n}"), 1);
   assert.equal(componentParamCount('const x = 1;'), 0);
   assert.equal(zeroComponentParamProblems(0).length, 1);
   assert.match(zeroComponentParamProblems(0)[0], /every default value in the tree reports clean/);
@@ -206,7 +206,7 @@ test('matching no parameter list at all fails the gate, because every default th
 });
 
 test('a default parameter whose name is neither a governed prop nor a registered passthrough is ignored', () => {
-  const src = "function Toast({ title, tone = 'neutral', persist = false }) {\n  return null;\n}";
+  const src = "function ArenaToast({ title, tone = 'neutral', persist = false }) {\n  return null;\n}";
   assert.deepEqual(scanDefaultsAndCallSites(src), []);
 });
 
@@ -222,7 +222,7 @@ test('a plain variable assignment outside a parameter list is never in scope', (
 });
 
 test('a JSX call site overriding a registered passthrough prop with a bare number is a violation', () => {
-  const found = scanDefaultsAndCallSites('<AppLogo name="Draven" size={16} />');
+  const found = scanDefaultsAndCallSites('<ArenaAppLogo name="Draven" size={16} />');
   assert.deepEqual(found.map((f) => ({ prop: f.prop, raw: f.raw })), [
     { prop: 'width', raw: '16' },
   ]);
@@ -234,7 +234,7 @@ test('a JSX call site passing a token through a registered passthrough prop is l
 
 test('a JSX prop on a component NOT in the passthrough registry is never scanned, by design', () => {
 
-  assert.deepEqual(scanDefaultsAndCallSites('<Textarea rows={3} />'), []);
+  assert.deepEqual(scanDefaultsAndCallSites('<ArenaTextarea rows={3} />'), []);
   assert.deepEqual(scanDefaultsAndCallSites('<input maxLength={20} />'), []);
 });
 
@@ -293,11 +293,11 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
 });
 
 test('EXEMPT records the data-to-pixel projections, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/charts/bar-chart/BarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/charts/line-chart/LineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/display/calendar/Calendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/avatar/Avatar.tsx:fontSize:d * 0.4'));
-  assert.ok(!EXEMPT.has('frameworks/react/components/display/calendar/Calendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`'),
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/arena-line-chart/ArenaLineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/arena-avatar/ArenaAvatar.tsx:fontSize:d * 0.4'));
+  assert.ok(!EXEMPT.has('frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`'),
     'the hour label offset is the manifest\'s -mt-1 now, so the projection it exempted is gone');
 });
 
@@ -373,7 +373,7 @@ test('a nested ternary whose leaves are all tokens stays legal', () => {
 
 test('a literal reached through an intermediate variable is a violation, attributed to the declaration line', () => {
   const src = [
-    "function ProgressBar({ size }) {",
+    "function ArenaProgressBar({ size }) {",
     "  const h = size === 'sm' ? 4 : size === 'lg' ? 10 : 6;",
     "  return React.createElement('div', { style: { height: h } });",
     "}",
@@ -388,7 +388,7 @@ test('a literal reached through an intermediate variable is a violation, attribu
 
 test('an OR-fallback reached through an intermediate variable is a violation', () => {
   const src = [
-    "function Skeleton({ height, width }) {",
+    "function ArenaSkeleton({ height, width }) {",
     "  const d = height || width || 40;",
     "  return React.createElement('div', { style: { width: d, height: d } });",
     "}",
@@ -410,7 +410,7 @@ test('a declaration whose identifier never reaches a governed colon is left alon
 
 test('a declaration whose value has no literal at all is left alone even when its identifier is used bare', () => {
   const src = [
-    "function Avatar({ size }) {",
+    "function ArenaAvatar({ size }) {",
     "  const SIZES = { sm: 32, md: 40 };",
     "  const d = SIZES[size] || SIZES.md;",
     "  return React.createElement('span', { style: { width: d, height: d } });",
@@ -422,7 +422,7 @@ test('a declaration whose value has no literal at all is left alone even when it
 test('a value already resolved to a token through the variable is legal, not re-flagged', () => {
 
   const src = [
-    "function ProgressBar({ size }) {",
+    "function ArenaProgressBar({ size }) {",
     "  const h = size === 'sm' ? 'var(--sp-1)' : 'calc(var(--sp-1) * 2.5)';",
     "  return React.createElement('div', { style: { height: h } });",
     "}",
@@ -448,7 +448,7 @@ test('the same shallow non-dimension call is still traced through a variable, si
   assert.deepEqual(found.map((f) => f.raw), ['100']);
 });
 
-test('the real boundary: a nested call behind a variable is not caught, the exact shape ProgressBar\'s own percent clamp has', () => {
+test('the real boundary: a nested call behind a variable is not caught, the exact shape ArenaProgressBar\'s own percent clamp has', () => {
 
   const src = [
     "function Thing({ value }) {",
@@ -460,15 +460,15 @@ test('the real boundary: a nested call behind a variable is not caught, the exac
 });
 
 test('a PASSTHROUGH entry with a match is not stale', () => {
-  assert.deepEqual(stalePassthrough(new Set(['AppLogo'])), []);
+  assert.deepEqual(stalePassthrough(new Set(['ArenaAppLogo'])), []);
 });
 
 test('a PASSTHROUGH entry matching nothing in the tree fails as stale', () => {
-  assert.deepEqual(stalePassthrough(new Set()), ['AppLogo']);
+  assert.deepEqual(stalePassthrough(new Set()), ['ArenaAppLogo']);
 });
 
 test('a component the map does not name is not reported', () => {
-  assert.deepEqual(stalePassthrough(new Set(['AppLogo', 'Button', 'Tag'])), []);
+  assert.deepEqual(stalePassthrough(new Set(['ArenaAppLogo', 'ArenaButton', 'ArenaTag'])), []);
 });
 
 test('a line comment shaped like a colon-value is never read as one', () => {

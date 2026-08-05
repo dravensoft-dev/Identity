@@ -8,7 +8,7 @@
     "roles.tabpanel": "tabpanel",
     "roles.controls": "each tab has aria-controls referencing its tabpanel",
     "states.selected": "aria-selected set to true on the active tab, false on the rest",
-    "focus.roving": "one tab stop into the tablist; only the active tab is in the page Tab sequence",
+    "focus.roving": "one tab stop into the tablist; only the active tab is in the page ArenaTab sequence",
     "keyboard.ArrowLeft": "moves focus to the previous tab, wrapping to the last",
     "keyboard.ArrowRight": "moves focus to the next tab, wrapping to the first"
   }

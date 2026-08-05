@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { plotWidth, PAD } from '../../DataVisuals';
-import { LineChart } from './line-chart/LineChart';
+import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
 
 test('with no minPointSpacing the plot is exactly the width it was given', () => {
   assert.equal(plotWidth(390, 30, undefined), 390);
@@ -33,7 +33,7 @@ test('one point cannot be too close to anything, so nothing overflows', () => {
 
 @Component({
   standalone: true,
-  imports: [LineChart],
+  imports: [ArenaLineChart],
   template: `<arena-line-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
                                [minPointSpacing]="spacing" />`,
 })

@@ -44,11 +44,11 @@ const widget = {
 };
 
 const badge = {
-  component: 'Badge',
+  component: 'ArenaBadge',
   api: { content: { form: 'slot', description: 'The label.' }, tone: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The tone.' } },
 };
 
-const contracts = new Map([['Widget', widget], ['Badge', badge]]);
+const contracts = new Map([['Widget', widget], ['ArenaBadge', badge]]);
 
 const ok = {
   component: 'Widget',
@@ -129,8 +129,8 @@ test('a slot node naming an uncontracted component fails', () => {
 });
 
 test('a slot node setting a member the named component does not declare fails', () => {
-  const problems = slotProblems('Widget', widget, { slots: { mark: [{ component: 'Badge', members: { size: 'lg' } }] } }, contracts, types);
-  assert.match(problems[0], /Badge declares no such member/);
+  const problems = slotProblems('Widget', widget, { slots: { mark: [{ component: 'ArenaBadge', members: { size: 'lg' } }] } }, contracts, types);
+  assert.match(problems[0], /ArenaBadge declares no such member/);
 });
 
 test('the subject placeholder is refused outside a host, where it would mark nothing', () => {
@@ -141,15 +141,15 @@ test('the subject placeholder is refused outside a host, where it would mark not
 });
 
 test('a host holding no placeholder fails, and one holding two fails', () => {
-  const none = fixtureProblems('Widget', widget, { ...ok, host: { component: 'Badge', slots: { content: [] } } }, contracts, types);
+  const none = fixtureProblems('Widget', widget, { ...ok, host: { component: 'ArenaBadge', slots: { content: [] } } }, contracts, types);
   assert.match(none[0], /holding 0 "\$subject" placeholders/);
-  const two = fixtureProblems('Widget', widget, { ...ok, host: { component: 'Badge', slots: { content: ['$subject', '$subject'] } } }, contracts, types);
+  const two = fixtureProblems('Widget', widget, { ...ok, host: { component: 'ArenaBadge', slots: { content: ['$subject', '$subject'] } } }, contracts, types);
   assert.match(two[0], /holding 2 "\$subject" placeholders/);
 });
 
 test('a host node is checked like any other node', () => {
   assert.match(
-    hostProblems('Widget', { host: { component: 'Badge', members: { tone: 'gold' }, slots: { content: ['$subject'] } } }, contracts, types)[0],
+    hostProblems('Widget', { host: { component: 'ArenaBadge', members: { tone: 'gold' }, slots: { content: ['$subject'] } } }, contracts, types)[0],
     /is not one of ArenaTone's/,
   );
 });
@@ -247,9 +247,9 @@ test('a page that mounts but draws no panel or no component fails, since compili
 
 test('anything the console reports is a problem, because a component can render and still throw', () => {
   const problems = smokeProblems('X.html', {
-    mounted: true, knobs: 3, staged: true, errors: ['threw: NG0950: Input "id" is required'],
+    mounted: true, knobs: 3, staged: true, errors: ['threw: NG0950: ArenaInput "id" is required'],
   });
-  assert.deepEqual(problems, ['X.html: threw: NG0950: Input "id" is required']);
+  assert.deepEqual(problems, ['X.html: threw: NG0950: ArenaInput "id" is required']);
 });
 
 test('a page that mounts, draws and says nothing is clean', () => {

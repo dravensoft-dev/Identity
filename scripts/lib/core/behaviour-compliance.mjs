@@ -143,7 +143,7 @@ export const IDREF_ATTRIBUTES = new Map([
   }],
   ['aria-describedby', {
     match: 'some',
-    reason: "the one exception: Tooltip merges the consumer's own description with Arena's bubble id, and the consumer's may name an element outside the component's rendered tree, so demanding that every id resolve would fail a correct component.",
+    reason: "the one exception: ArenaTooltip merges the consumer's own description with Arena's bubble id, and the consumer's may name an element outside the component's rendered tree, so demanding that every id resolve would fail a correct component.",
   }],
 ]);
 

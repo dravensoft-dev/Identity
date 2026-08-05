@@ -91,24 +91,24 @@ test('EXEMPT is empty, and that is a claim: every literal left standing is a com
 });
 
 test('adoption reads the manifest a component has to render, its own or its parent\'s', () => {
-  assert.deepEqual(adoptionProblems('Tag'), [], 'Tag renders its own manifest in both layers');
-  assert.deepEqual(adoptionProblems('TableCell'), [], 'TableCell renders Table\'s');
+  assert.deepEqual(adoptionProblems('ArenaTag'), [], 'ArenaTag renders its own manifest in both layers');
+  assert.deepEqual(adoptionProblems('ArenaTableCell'), [], 'ArenaTableCell renders ArenaTable\'s');
 });
 
 test('a source that renders no manifest is what the adoption half reads for', () => {
-  const drawn = "import { tv } from '../../../Tv.generated.ts';\nimport m from './Badge.manifest.generated.ts';";
-  assert.equal(reactRendersManifest(drawn, 'Badge'), true);
-  assert.equal(reactRendersManifest(drawn, 'Card'), false, 'it has to be THIS component\'s manifest');
-  assert.equal(reactRendersManifest("const S = { background: 'var(--crimson)' };", 'Badge'), false);
+  const drawn = "import { tv } from '../../../Tv.generated.ts';\nimport m from './ArenaBadge.manifest.generated.ts';";
+  assert.equal(reactRendersManifest(drawn, 'ArenaBadge'), true);
+  assert.equal(reactRendersManifest(drawn, 'ArenaCard'), false, 'it has to be THIS component\'s manifest');
+  assert.equal(reactRendersManifest("const S = { background: 'var(--crimson)' };", 'ArenaBadge'), false);
 
-  assert.equal(angularRendersManifest("import { badgeStyles } from './Badge.variants';"), true);
+  assert.equal(angularRendersManifest("import { arenaBadgeStyles } from './ArenaBadge.variants';"), true);
   assert.equal(angularRendersManifest("import { Component } from '@angular/core';"), false);
 });
 
 test('a component that draws by hand has no manifest to render, and is named for that instead', () => {
-  const problems = adoptionProblems('BarChart');
+  const problems = adoptionProblems('ArenaBarChart');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /BarChart/);
+  assert.match(problems[0], /ArenaBarChart/);
   assert.match(problems[0], /HAND_DRAWN/);
 });
 

@@ -74,14 +74,14 @@ agree or the difference is written down.
 ### Flat bindings and cased bindings
 
 A binding describes a component; a render suite judges one render of it. A
-component that renders differently depending on its own props, as `Alert` does by
+component that renders differently depending on its own props, as `ArenaAlert` does by
 rendering `role="alert"` for a `danger` tone and `role="status"` for any other,
 is several renders, and no single flat exception list is correct for all of them.
 
 **Name no component here as a present-tense example of carrying cases.** A component
 name written into another file's prose is a claim no gate reads, so it rots while every
 gate stays green, and `AGENTS.md` carries the hazard and the change-time grep that finds
-it. `Alert` is the one present-tense name this page keeps, because the
+it. `ArenaAlert` is the one present-tense name this page keeps, because the
 paragraph on `when` below reasons from its `danger` case, so removing it would cost a
 worked example and buy nothing. For the live set, run the command at the end of this
 section rather than reading any name from this page.
@@ -105,7 +105,7 @@ component with one render worth judging. A cased binding replaces both with a
 `when` is prose, and prose is all that is possible: nothing can verify that a
 render suite actually rendered the configuration a case names. A DOM
 discriminator would be circular in every motivating case anyway: what marks
-`Alert`'s `danger` case is `role="alert"`, which is the very attribute the
+`ArenaAlert`'s `danger` case is `role="alert"`, which is the very attribute the
 requirement under examination is about.
 
 `bindingCases()` in `scripts/lib/arena/behaviour-contracts.mjs` is the one place the
@@ -227,12 +227,12 @@ documented way to reach it, which is not merely "no explicit prop", since a gene
 element without the component ever having designed for it. The test is whether
 the component's own design acknowledges the capability: is it destructured, does
 it drive any of the component's own logic or styling, is it named in the
-`*.prompt.md`? `Input`'s `min`/`max` pass through `...rest` too, but
-`Input.prompt.md` calls them out by name as a supported feature, and that
+`*.prompt.md`? `ArenaInput`'s `min`/`max` pass through `...rest` too, but
+`ArenaInput.prompt.md` calls them out by name as a supported feature, and that
 authorship is what makes them "met", not the passthrough alone. `readOnly`
 reaching the native `<input>`/`<textarea>` the same way, with no default, no
 effect on any rendered state, and no mention in the prompt, is not a designed
-capability, so it is exactly the gap `Tag.behaviour.json` already records for
+capability, so it is exactly the gap `ArenaTag.behaviour.json` already records for
 its remove button's missing `disabled` concept: the component offers no
 supported way to make the state true, whether or not a determined consumer
 could force it through.

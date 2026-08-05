@@ -1,0 +1,8 @@
+{
+  "component": "ArenaIconButton",
+  "seed": {
+    "icon": "ph-bold ph-dots-three-vertical",
+    "label": "More actions"
+  },
+  "note": "The label is the accessible name and never renders unless showLabel is on."
+}

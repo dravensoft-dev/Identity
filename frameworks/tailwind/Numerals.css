@@ -9,7 +9,7 @@
    cart line. It is hand-authored rather than a manifest slot because it belongs to no
    component: a manifest mirrors a surface, and this is a treatment.
 
-   `tabular-nums` is here and in Table's own mono slots, so a column of figures aligns
+   `tabular-nums` is here and in ArenaTable's own mono slots, so a column of figures aligns
    by digit in both places. Every value is a var() into a token. */
 
 .arena-num {

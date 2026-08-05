@@ -31,7 +31,7 @@ notices.
 
 ```jsonc
 {
-  "component": "Card",
+  "component": "ArenaCard",
 
   // Values the contract cannot invent. Every member that is required and carries no
   // default MUST appear. Any other inbound member MAY, and a member that appears is
@@ -43,7 +43,7 @@ notices.
   // appears. The value is a list of nodes.
   "slots": {
     "content": [{ "text": "Last published 2 h ago, build #4821." }],
-    "action": [{ "component": "Badge", "members": { "tone": "success" },
+    "action": [{ "component": "ArenaBadge", "members": { "tone": "success" },
                  "slots": { "content": [{ "text": "Live" }] } }]
   },
 
@@ -71,7 +71,7 @@ Three shapes, and the recursion is what lets one rule cover both slot content an
 | --- | --- |
 | `"$subject"` | where the component under test goes. Legal inside `host` and nowhere else, exactly once. |
 | `{ "text": "…", "element": "span", "attrs": {} }` | literal content. `element` and `attrs` are optional; with neither, the text is projected bare. |
-| `{ "component": "Badge", "members": {}, "slots": {} }` | a real Arena component, its members literal and its own slots recursive. |
+| `{ "component": "ArenaBadge", "members": {}, "slots": {} }` | a real Arena component, its members literal and its own slots recursive. |
 
 A slot holding exactly one text node becomes an **editable** knob, so the page can change the
 words. A slot holding anything else becomes a **presence** knob: the tree is fixed and only
@@ -89,9 +89,9 @@ to rewrite it.
 | `"next": { "index": { "$delta": 1 } }` | step a number knob. The only directive, and it is refused on anything but a number. |
 
 **Bind is authored, never inferred.** A rule like "an event named `<x>Change` writes `<x>`" is
-right most of the time and wrong exactly where a component is interesting: `Switch` reports
+right most of the time and wrong exactly where a component is interesting: `ArenaSwitch` reports
 through two events rather than one payload so a confirm flow can refuse the change, and
-`SideNavCollapsible` owns its own expansion and only reports it.
+`ArenaSideNavCollapsible` owns its own expansion and only reports it.
 
 ## Adding one
 

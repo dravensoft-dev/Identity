@@ -37,14 +37,14 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
   assert.equal(merge('shadow-1 shadow-2'), 'shadow-2');
 });
 
-test("Button.manifest.json through tv(): text-ctl* and the variant's text color both survive", async () => {
-  const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/button/Button.manifest.json', { with: { type: 'json' } });
-  const buttonStyles = tv(manifest);
+test("ArenaButton.manifest.json through tv(): text-ctl* and the variant's text color both survive", async () => {
+  const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
+  const arenaButtonStyles = tv(manifest);
   const expectSize = { sm: 'text-ctl-md', md: 'text-ctl', lg: 'text-ctl' };
   const expectColor = { primary: 'text-primary-content', danger: 'text-error' };
   for (const variant of ['primary', 'danger']) {
     for (const size of ['sm', 'md', 'lg']) {
-      const root = classes(buttonStyles({ variant, size }).root());
+      const root = classes(arenaButtonStyles({ variant, size }).root());
       assert.ok(root.includes(expectSize[size]), `${variant}/${size}: ${expectSize[size]} missing from "${root.join(' ')}"`);
       assert.ok(root.includes(expectColor[variant]), `${variant}/${size}: ${expectColor[variant]} missing from "${root.join(' ')}"`);
     }
@@ -190,12 +190,12 @@ test('the exact cases the coordinator\'s review found broken now behave correctl
   assert.ok(root.includes('w-ctl-h'), `h-ctl-h w-ctl-h -> "${root.join(' ')}" (width was wrongly eaten)`);
 });
 
-test('Button.manifest.json\'s three ctl-h heights now dedupe against each other through tv()', async () => {
-  const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/button/Button.manifest.json', { with: { type: 'json' } });
-  const buttonStyles = tv(manifest);
+test('ArenaButton.manifest.json\'s three ctl-h heights now dedupe against each other through tv()', async () => {
+  const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
+  const arenaButtonStyles = tv(manifest);
   const heights = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
   for (const size of ['sm', 'md', 'lg']) {
-    const root = classes(buttonStyles({ variant: 'primary', size }).root());
+    const root = classes(arenaButtonStyles({ variant: 'primary', size }).root());
     const heightClasses = root.filter((c) => c.startsWith('h-ctl-h'));
     assert.deepEqual(heightClasses, [heights[size]], `size ${size}: expected exactly one height class, got "${heightClasses.join(', ')}"`);
   }

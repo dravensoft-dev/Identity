@@ -1,0 +1,28 @@
+{
+  "component": "ArenaRadio",
+  "seed": {
+    "value": "canary",
+    "label": "Canary",
+    "hint": "One region first, then the rest."
+  },
+  "host": {
+    "component": "ArenaRadioGroup",
+    "members": {
+      "ariaLabel": "Rollout strategy",
+      "value": "canary"
+    },
+    "slots": {
+      "content": [
+        "$subject",
+        {
+          "component": "ArenaRadio",
+          "members": {
+            "value": "all",
+            "label": "Everywhere at once"
+          }
+        }
+      ]
+    }
+  },
+  "note": "A radio only means anything inside a group, so the host draws one."
+}

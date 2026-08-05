@@ -13,60 +13,60 @@ import { kebab } from '../arena/layers.mjs';
 import { repoRoot } from '../arena/repo-root.mjs';
 
 export const MANIFEST_COVERS = new Map([
-  ['Table', {
-    covers: ['Table', 'TableRow', 'TableCell'],
-    reason: 'One manifest draws the whole grid: the header and the empty state are Table\'s, the '
-      + 'interactive row is TableRow\'s and the cells are TableCell\'s.',
+  ['ArenaTable', {
+    covers: ['ArenaTable', 'ArenaTableRow', 'ArenaTableCell'],
+    reason: 'One manifest draws the whole grid: the header and the empty state are ArenaTable\'s, the '
+      + 'interactive row is ArenaTableRow\'s and the cells are ArenaTableCell\'s.',
   }],
-  ['Tabs', {
-    covers: ['Tabs', 'Tab'],
-    reason: 'The tablist and its tab buttons are Tabs\'; the panel is Tab\'s. The roving stop that '
-      + 'carries the focus ring sits on a tab, which is the member Tab contracts.',
+  ['ArenaTabs', {
+    covers: ['ArenaTabs', 'ArenaTab'],
+    reason: 'The tablist and its tab buttons are ArenaTabs\'; the panel is ArenaTab\'s. The roving stop that '
+      + 'carries the focus ring sits on a tab, which is the member ArenaTab contracts.',
   }],
-  ['BottomNav', {
-    covers: ['BottomNav', 'BottomNavItem'],
-    reason: 'One manifest draws the whole bar -- the fixed row is BottomNav\'s and the equal '
-      + 'column, its glyph, its label and its badge are BottomNavItem\'s. The item carries no '
+  ['ArenaBottomNav', {
+    covers: ['ArenaBottomNav', 'ArenaBottomNavItem'],
+    reason: 'One manifest draws the whole bar -- the fixed row is ArenaBottomNav\'s and the equal '
+      + 'column, its glyph, its label and its badge are ArenaBottomNavItem\'s. The item carries no '
       + 'manifest of its own because it has no surface of its own: it IS a column of the bar.',
   }],
-  ['SideNav', {
-    covers: ['SideNav', 'SideNavItem', 'SideNavSection', 'SideNavCollapsible'],
+  ['ArenaSideNav', {
+    covers: ['ArenaSideNav', 'ArenaSideNavItem', 'ArenaSideNavSection', 'ArenaSideNavCollapsible'],
     reason: 'The family nests to any depth and one manifest holds every level of it -- the rail, a '
       + 'destination row, a labelled group and a disclosure.',
   }],
-  ['Calendar', {
-    covers: ['Calendar', 'CalendarEvent'],
+  ['ArenaCalendar', {
+    covers: ['ArenaCalendar', 'ArenaCalendarEvent'],
     reason: 'The grid and its chips are one surface: a chip is positioned as a share of the grid, '
       + 'so its slots cannot live in a manifest of their own.',
   }],
-  ['Radio', {
-    covers: ['Radio', 'RadioGroup'],
+  ['ArenaRadio', {
+    covers: ['ArenaRadio', 'ArenaRadioGroup'],
     reason: 'One manifest draws the whole group -- the fieldset and the legend naming it are '
-      + 'RadioGroup\'s and every control in it is Radio\'s. The group carries no manifest of its '
+      + 'ArenaRadioGroup\'s and every control in it is ArenaRadio\'s. The group carries no manifest of its '
       + 'own because it has no surface of its own: it IS the frame around a set of radios.',
   }],
-  ['ConfirmDialog', {
-    covers: ['ConfirmDialog', 'Button'],
+  ['ArenaConfirmDialog', {
+    covers: ['ArenaConfirmDialog', 'ArenaButton'],
     reason: 'The dialog draws the confirm action itself, because that action carries Arena\'s one '
-      + 'filled danger surface and a Button forwards no style. The cancel action is still an Arena '
-      + 'Button, and a manifest has no composition, so it types that button out as its own slot and '
-      + 'needs Button\'s affordance.',
+      + 'filled danger surface and an ArenaButton forwards no style. The cancel action is still an Arena '
+      + 'ArenaButton, and a manifest has no composition, so it types that button out as its own slot and '
+      + 'needs ArenaButton\'s affordance.',
   }],
-  ['ErrorState', {
-    covers: ['ErrorState', 'Button'],
-    reason: 'The retry action is an Arena Button, typed out as a slot for the same reason '
-      + 'ConfirmDialog\'s is.',
+  ['ArenaErrorState', {
+    covers: ['ArenaErrorState', 'ArenaButton'],
+    reason: 'The retry action is an ArenaButton, typed out as a slot for the same reason '
+      + 'ArenaConfirmDialog\'s is.',
   }],
 ]);
 
 export const HAND_DRAWN = new Map([
-  ['BarChart', 'draws geometry rather than a surface: bar rectangles positioned from the data\'s '
+  ['ArenaBarChart', 'draws geometry rather than a surface: bar rectangles positioned from the data\'s '
     + 'own range against a measured inner height. A class string cannot describe a shape whose '
     + 'coordinates ARE the data, so it carries no manifest, writes its own appearance, and is '
     + 'what the react half of check-manifest-states reads.'],
-  ['DoughnutChart', 'the same, for arc paths swept from each slice\'s share of the total, and for '
+  ['ArenaDoughnutChart', 'the same, for arc paths swept from each slice\'s share of the total, and for '
     + 'a legend laid out against the ring it annotates.'],
-  ['LineChart', 'the same, for a polyline whose points are the series projected onto the measured '
+  ['ArenaLineChart', 'the same, for a polyline whose points are the series projected onto the measured '
     + 'plot area.'],
 ]);
 

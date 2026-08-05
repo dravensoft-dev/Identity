@@ -110,7 +110,7 @@ export function validateBinding(component, layer, binding, patterns) {
   }
 
   if (layer === 'angular' && !binding.component) {
-    problems.push(`${where}: an angular binding must declare "component", naming its React counterpart (e.g. "StatCard" for stat-card)`);
+    problems.push(`${where}: an angular binding must declare "component", naming its React counterpart (e.g. "ArenaStatCard" for stat-card)`);
   }
   return problems;
 }

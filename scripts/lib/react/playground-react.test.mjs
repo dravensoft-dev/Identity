@@ -6,9 +6,9 @@ import {
 } from './playground-react.mjs';
 
 const places = new Map([
-  ['Card', { name: 'Card', category: 'display', dir: 'card', self: true }],
-  ['Badge', { name: 'Badge', category: 'display', dir: 'badge' }],
-  ['Table', { name: 'Table', category: 'display', dir: 'table' }],
+  ['ArenaCard', { name: 'ArenaCard', category: 'display', dir: 'arena-card', self: true }],
+  ['ArenaBadge', { name: 'ArenaBadge', category: 'display', dir: 'arena-badge' }],
+  ['ArenaTable', { name: 'ArenaTable', category: 'display', dir: 'arena-table' }],
 ]);
 
 const knob = (over) => ({
@@ -17,7 +17,7 @@ const knob = (over) => ({
 });
 
 const model = {
-  component: 'Card',
+  component: 'ArenaCard',
   description: 'A surface.',
   note: 'A note.',
   affordances: [],
@@ -27,7 +27,7 @@ const model = {
     knob({ member: 'content', form: 'slot', type: null, control: 'slotText', initial: 'Body.', nodes: [{ text: 'Body.' }] }),
     knob({
       member: 'action', form: 'slot', type: null, control: 'slotPresence', codec: 'flag', initial: true,
-      nodes: [{ component: 'Badge', members: { tone: 'success' }, slots: { content: [{ text: 'Live' }] } }],
+      nodes: [{ component: 'ArenaBadge', members: { tone: 'success' }, slots: { content: [{ text: 'Live' }] } }],
     }),
   ],
   events: [
@@ -35,7 +35,7 @@ const model = {
     { name: 'sortChange', payload: 'ArenaTableSort', bind: 'sort', doc: 'Sorted.' },
   ],
   host: null,
-  uses: ['Badge'],
+  uses: ['ArenaBadge'],
 };
 
 test('a type expression follows the form, and a slot is what its control can hold', () => {
@@ -52,13 +52,13 @@ test('only a declared type is imported, never a primitive', () => {
 });
 
 test('a component is reached through its category, and itself through the directory it sits in', () => {
-  assert.equal(importPath(places.get('Badge')), '../../display/badge/Badge.tsx');
-  assert.match(reactEntry(model, places, ''), /import \{ Card \} from '\.\/Card\.tsx';/);
-  assert.match(reactEntry(model, places, ''), /import \{ Badge \} from '\.\.\/\.\.\/display\/badge\/Badge\.tsx';/);
+  assert.equal(importPath(places.get('ArenaBadge')), '../../display/arena-badge/ArenaBadge.tsx');
+  assert.match(reactEntry(model, places, ''), /import \{ ArenaCard \} from '\.\/ArenaCard\.tsx';/);
+  assert.match(reactEntry(model, places, ''), /import \{ ArenaBadge \} from '\.\.\/\.\.\/display\/arena-badge\/ArenaBadge\.tsx';/);
 });
 
 test('a literal reaches JSX through one escaping rule rather than one per type', () => {
-  const node = { component: 'Badge', members: { tone: 'a"b', dot: true, n: 3, list: [1, 2] }, slots: {} };
+  const node = { component: 'ArenaBadge', members: { tone: 'a"b', dot: true, n: 3, list: [1, 2] }, slots: {} };
   const out = renderNode(node, places, 0);
   assert.match(out, /tone=\{"a\\"b"\}/);
   assert.match(out, /dot=\{true\}/);
@@ -93,7 +93,7 @@ test('a text slot renders its knob and a presence slot renders its fixed tree be
   const out = renderSubject(model, places, 0);
   assert.match(out, /\{k\.content\}/);
   assert.match(out, /action=\{k\.action \? \(/);
-  assert.match(out, /<Badge/);
+  assert.match(out, /<ArenaBadge/);
   assert.match(out, /\) : undefined\}/);
 });
 
@@ -103,12 +103,12 @@ test('an unfilled slot resolves to undefined rather than to empty content', () =
 });
 
 test('a host wraps the subject where the placeholder marks, and nowhere else', () => {
-  const hosted = { ...model, host: { component: 'Table', members: { label: 'L' }, slots: { content: ['$subject'] } } };
+  const hosted = { ...model, host: { component: 'ArenaTable', members: { label: 'L' }, slots: { content: ['$subject'] } } };
   const out = renderTree(hosted, places, 0);
-  assert.match(out, /^<Table/);
+  assert.match(out, /^<ArenaTable/);
   assert.match(out, /label=\{"L"\}/);
-  assert.match(out, /<Card/);
-  assert.match(out, /<\/Table>$/);
+  assert.match(out, /<ArenaCard/);
+  assert.match(out, /<\/ArenaTable>$/);
 });
 
 test('the validator table appears only for a contract that declares a function input', () => {
@@ -126,11 +126,11 @@ test('the entry mounts once and carries the model as a literal', () => {
 test('the page mounts into the root the entry looks for and declares no card', () => {
   const page = reactPage(model, '<!-- banner -->\n');
   assert.match(page, /<div id="root"><\/div>/);
-  assert.match(page, /Card\.demo\.entry\.generated\.js/);
+  assert.match(page, /ArenaCard\.demo\.entry\.generated\.js/);
   assert.doesNotMatch(page, /@dsCard/);
   assert.match(page, /importmap/);
   assert.match(page, /frameworks\/tailwind\/consume\/Preflight\.generated\.css/);
-  assert.match(page, /consume\/components\/display\/card\/Card\.styles\.generated\.css/,
+  assert.match(page, /consume\/components\/display\/arena-card\/ArenaCard\.styles\.generated\.css/,
     'a page links the compiled CSS from the one place it exists, and only for what it draws');
 });
 
@@ -140,7 +140,7 @@ test('a slot with several nodes becomes a keyed array, never a fragment', () => 
     knobs: [{
       member: 'content', form: 'slot', type: null, bind: 'optional', bound: true,
       control: 'slotPresence', codec: 'flag', initial: true, doc: '',
-      nodes: [{ component: 'Badge', slots: {} }, { component: 'Badge', slots: {} }],
+      nodes: [{ component: 'ArenaBadge', slots: {} }, { component: 'ArenaBadge', slots: {} }],
     }],
     events: [],
   };
@@ -149,24 +149,24 @@ test('a slot with several nodes becomes a keyed array, never a fragment', () => 
   assert.match(out, /key=\{0\}/);
   assert.match(out, /key=\{1\}/);
   assert.doesNotMatch(out, /React\.Fragment/,
-    'Tabs, Table and RadioGroup read direct children through Children.toArray, which a fragment hides');
+    'ArenaTabs, ArenaTable and ArenaRadioGroup read direct children through Children.toArray, which a fragment hides');
 });
 
 test('a host recurses only down the branch the subject sits in', () => {
   const hosted = {
     ...model,
     host: {
-      component: 'Table',
-      slots: { content: ['$subject', { component: 'Badge', slots: { content: [{ text: 'other' }] } }] },
+      component: 'ArenaTable',
+      slots: { content: ['$subject', { component: 'ArenaBadge', slots: { content: [{ text: 'other' }] } }] },
     },
   };
   const out = renderTree(hosted, places, 0);
-  assert.match(out, /<Card/);
+  assert.match(out, /<ArenaCard/);
   assert.match(out, /\{"other"\}/, 'a sibling that holds no subject is still rendered');
 });
 
 test('a component reached twice is imported once', () => {
-  const twice = { ...model, uses: ['Badge', 'Card'] };
+  const twice = { ...model, uses: ['ArenaBadge', 'ArenaCard'] };
   const out = reactEntry(twice, places, '');
-  assert.equal(out.match(/import \{ Card \}/g).length, 1);
+  assert.equal(out.match(/import \{ ArenaCard \}/g).length, 1);
 });

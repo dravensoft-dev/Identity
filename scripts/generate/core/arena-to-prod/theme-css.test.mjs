@@ -193,7 +193,7 @@ test('a .css path is a stylesheet however it is hosted', () => {
 
 const shipped = {
   layers: ['css/reset.css', 'css/base.css', 'css/prelude.css', 'css/components.css', 'css/arena-cdk.css'],
-  components: ['button', 'side-nav', 'table'],
+  components: ['arena-button', 'arena-side-nav', 'arena-table'],
 };
 
 test('with no stylesheet key the barrel is imported, so an existing project is unmoved', () => {
@@ -202,21 +202,21 @@ test('with no stylesheet key the barrel is imported, so an existing project is u
 });
 
 test('a named component list replaces the barrel and keeps the order the barrel had', () => {
-  const c = config({ stylesheet: { components: ['table', 'button'] } });
+  const c = config({ stylesheet: { components: ['arena-table', 'arena-button'] } });
   assert.deepEqual(configProblems(c, shipped), []);
   assert.deepEqual(scopedImports('@dravensoft/arena-angular', c.stylesheet, shipped), [
     "@import '@dravensoft/arena-angular/css/reset.css';",
     "@import '@dravensoft/arena-angular/css/base.css';",
     "@import '@dravensoft/arena-angular/css/prelude.css';",
-    "@import '@dravensoft/arena-angular/css/components/table.css';",
-    "@import '@dravensoft/arena-angular/css/components/button.css';",
+    "@import '@dravensoft/arena-angular/css/components/arena-table.css';",
+    "@import '@dravensoft/arena-angular/css/components/arena-button.css';",
     "@import '@dravensoft/arena-angular/css/arena-cdk.css';",
   ]);
   assert.doesNotMatch(themeCss(c, { sheets: shipped }), /arena\.css/);
 });
 
 test('preflight false drops the one layer that is Tailwind\'s and not Arena\'s', () => {
-  const c = config({ stylesheet: { components: ['button'], preflight: false } });
+  const c = config({ stylesheet: { components: ['arena-button'], preflight: false } });
   assert.deepEqual(configProblems(c, shipped), []);
   assert.ok(!scopedImports('p', c.stylesheet, shipped).some((line) => line.includes('css/base.css')));
   assert.ok(scopedImports('p', c.stylesheet, shipped).some((line) => line.includes('css/prelude.css')));
@@ -224,7 +224,7 @@ test('preflight false drops the one layer that is Tailwind\'s and not Arena\'s',
 
 test('a component the package does not ship is fatal and the message lists what it does ship', () => {
   const [problem] = configProblems(config({ stylesheet: { components: ['buton'] } }), shipped);
-  assert.match(problem, /"buton" is not a sheet this package ships, which are button, side-nav, table/);
+  assert.match(problem, /"buton" is not a sheet this package ships, which are arena-button, arena-side-nav, arena-table/);
 });
 
 test('an empty list is a problem, because it reads as a project that renders nothing', () => {
@@ -233,18 +233,18 @@ test('an empty list is a problem, because it reads as a project that renders not
 });
 
 test('a name repeated in the list is reported rather than imported twice', () => {
-  const problems = configProblems(config({ stylesheet: { components: ['button', 'button'] } }), shipped);
-  assert.deepEqual(problems, ['stylesheet.components: button is named twice']);
+  const problems = configProblems(config({ stylesheet: { components: ['arena-button', 'arena-button'] } }), shipped);
+  assert.deepEqual(problems, ['stylesheet.components: arena-button is named twice']);
 });
 
 test('a stylesheet key Arena does not have is a problem, and preflight takes a boolean', () => {
-  assert.deepEqual(configProblems(config({ stylesheet: { components: ['button'], minify: true } }), shipped),
+  assert.deepEqual(configProblems(config({ stylesheet: { components: ['arena-button'], minify: true } }), shipped),
     ['stylesheet.minify: not an Arena stylesheet key']);
-  assert.deepEqual(configProblems(config({ stylesheet: { components: ['button'], preflight: 'no' } }), shipped),
+  assert.deepEqual(configProblems(config({ stylesheet: { components: ['arena-button'], preflight: 'no' } }), shipped),
     ['stylesheet.preflight: "no" is not true or false']);
 });
 
 test('without the shipped sheets a name can be held to nothing, so the run stops', () => {
-  const [problem] = configProblems(config({ stylesheet: { components: ['button'] } }), null);
+  const [problem] = configProblems(config({ stylesheet: { components: ['arena-button'] } }), null);
   assert.match(problem, /^stylesheet: the sheets this package ships cannot be read/);
 });

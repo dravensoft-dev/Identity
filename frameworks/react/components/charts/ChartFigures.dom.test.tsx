@@ -11,9 +11,9 @@ import { join } from 'node:path';
 import React from 'react';
 import { mount, cleanup } from '../../test/Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
-import { BarChart } from './bar-chart/BarChart.tsx';
-import { DoughnutChart } from './doughnut-chart/DoughnutChart.tsx';
-import { LineChart } from './line-chart/LineChart.tsx';
+import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart.tsx';
+import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart.tsx';
+import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
 
 afterEach(cleanup);
 
@@ -23,9 +23,9 @@ const SERIES = 'Deliveries';
 
 type ChartComponent = React.ComponentType<{ labels: string[]; values: number[]; seriesLabel?: string }>;
 const CHARTS: [string, ChartComponent, string][] = [
-  ['BarChart', BarChart as unknown as ChartComponent, 'charts/bar-chart/BarChart.behaviour.json'],
-  ['DoughnutChart', DoughnutChart as unknown as ChartComponent, 'charts/doughnut-chart/DoughnutChart.behaviour.json'],
-  ['LineChart', LineChart as unknown as ChartComponent, 'charts/line-chart/LineChart.behaviour.json'],
+  ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json'],
+  ['ArenaDoughnutChart', ArenaDoughnutChart as unknown as ChartComponent, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json'],
+  ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent, 'charts/arena-line-chart/ArenaLineChart.behaviour.json'],
 ];
 
 for (const [name, Chart, tail] of CHARTS) {

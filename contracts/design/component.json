@@ -1,7 +1,7 @@
 {
   "calendar": {
     "$type": "dimension",
-    "$description": "Calendar time grid.",
+    "$description": "ArenaCalendar time grid.",
     "hour-h": {
       "$value": { "value": 44, "unit": "px" },
       "$description": "The pixel height of one hour. Script-readable because\ny = ((min - startMin) / 60) * hour-h is arithmetic, and no CSS expression\ncomputes a position from a minute-of-day. An orphan before this: --sp-10 is 40\nand --sp-12 is 48, so nothing in the spacing scale was 44.",
@@ -19,7 +19,7 @@
     },
     "time-min-w": {
       "$value": { "value": 100, "unit": "px" },
-      "$description": "The narrowest column share a chip may occupy and still draw its time\nlabel. Measured: the label is 78.02px at --dz-text-2xs, and a chip's content box\nis its share less 18px -- 4px of gutter to its neighbour, 12px of its own\npadding, 2px of its left border -- so 96.02px, rounded up to the 4px scale. The\nthreshold is on the share rather than on the chip so that Calendar never has to\nknow CalendarEvent's padding.",
+      "$description": "The narrowest column share a chip may occupy and still draw its time\nlabel. Measured: the label is 78.02px at --dz-text-2xs, and a chip's content box\nis its share less 18px -- 4px of gutter to its neighbour, 12px of its own\npadding, 2px of its left border -- so 96.02px, rounded up to the 4px scale. The\nthreshold is on the share rather than on the chip so that ArenaCalendar never has to\nknow ArenaCalendarEvent's padding.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "actions-below-min-h": {
@@ -30,7 +30,7 @@
   },
   "onboarding": {
     "$type": "dimension",
-    "$description": "Onboarding coachmark.",
+    "$description": "ArenaOnboarding coachmark.",
     "width": {
       "$value": { "value": 320, "unit": "px" },
       "$description": "The popover's width. Script-readable because Math.min/Math.max compare it\nagainst window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the\ncomponent rendered: the value existed twice in two idioms, held in step by a\ncomment. One token now, read both ways.",

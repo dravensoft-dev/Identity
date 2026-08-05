@@ -43,9 +43,9 @@ test('the compiled CSS is the one reference authorised, and the layer around it 
   assert.equal(ALLOWED_SPECIFIERS.size, 1);
   for (const reason of ALLOWED_SPECIFIERS.values()) assert.ok(reason.trim().length > 0, 'a reason is the whole entry');
   assert.equal(isAllowedSpecifier('frameworks/tailwind/consume/Components.generated.css'), true);
-  assert.equal(isAllowedSpecifier('frameworks/tailwind/components/display/tag/Tag.manifest.generated'), false);
+  assert.equal(isAllowedSpecifier('frameworks/tailwind/components/display/arena-tag/ArenaTag.manifest.generated'), false);
   assert.equal(isAllowedSpecifier('frameworks/tailwind/Tv'), false);
-  assert.equal(isAllowedSpecifier('frameworks/react/components/forms/button/Button.jsx'), false);
+  assert.equal(isAllowedSpecifier('frameworks/react/components/forms/arena-button/ArenaButton.jsx'), false);
 });
 
 test('a stylesheet link is judged by where it lands, so a relative path cannot slip past the tokens', () => {
@@ -74,7 +74,7 @@ test('a citation of another layer is a hit, and a script name of any layer is no
   const tokens = foreignTokens('angular');
   assert.deepEqual(textualHits('bun run check:angular && bun run test:react', tokens), []);
   assert.equal(textualHits('matching React exactly', tokens).length, 1);
-  assert.equal(textualHits('the same values Checkbox.tsx reads', tokens)[0].token, '.tsx');
+  assert.equal(textualHits('the same values ArenaCheckbox.tsx reads', tokens)[0].token, '.tsx');
 });
 
 test('tailwind may name neither sibling, and react may name neither either', () => {

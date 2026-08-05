@@ -13,10 +13,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.mjs';
 import {
-  CLASS_PREFIX, classBase, classesManifest, compoundClass, slotClass, variantClass,
+  classBase, classesManifest, compoundClass, slotClass, variantClass,
 } from '../../../frameworks/tailwind/ManifestClasses.js';
 
-export { CLASS_PREFIX, classBase, classesManifest, compoundClass, slotClass, variantClass };
+export { classBase, classesManifest, compoundClass, slotClass, variantClass };
 
 export const INDIRECTION = /var\(\s*--([a-z0-9-]+)\s*,\s*var\(\s*--([a-z0-9-]+)\s*\)\s*\)/g;
 export const isThemeKey = (name) => !name.startsWith('tw-');

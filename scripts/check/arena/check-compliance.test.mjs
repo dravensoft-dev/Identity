@@ -8,18 +8,18 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'dialog-modal.test.tsx' },
-    suites: { 'dialog-modal.test.tsx': { source: "assertPattern for join(R, 'feedback/dialog/Dialog.behaviour.json')", layer: 'react' } },
+    bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' }],
+    covered: { 'ArenaDialog:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: "assertPattern for join(R, 'feedback/arena-dialog/ArenaDialog.behaviour.json')", layer: 'react' } },
   });
   assert.deepEqual(problems, []);
 });
 
 test('validateCoverage fails a COVERED entry naming a binding that no longer exists', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'dialog-modal.test.tsx', 'Ghost:react': 'dialog-modal.test.tsx' },
-    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' }],
+    covered: { 'ArenaDialog:react': 'dialog-modal.test.tsx', 'Ghost:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Ghost/);
@@ -28,19 +28,19 @@ test('validateCoverage fails a COVERED entry naming a binding that no longer exi
 
 test('validateCoverage fails a COVERED entry whose suite never mentions the component', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'dialog-modal.test.tsx' },
-    suites: { 'dialog-modal.test.tsx': { source: 'assertPattern for Menu.behaviour.json', layer: 'react' } },
+    bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' }],
+    covered: { 'ArenaDialog:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'assertPattern for ArenaMenu.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Dialog/);
+  assert.match(problems[0], /ArenaDialog/);
   assert.match(problems[0], /never names/i);
 });
 
 test('validateCoverage fails a COVERED entry naming a suite file that does not exist', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:react': 'gone.test.tsx' },
+    bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' }],
+    covered: { 'ArenaDialog:react': 'gone.test.tsx' },
     suites: {},
   });
   assert.equal(problems.length, 1);
@@ -51,70 +51,70 @@ test('validateCoverage says nothing about an uncovered binding', () => {
 
   const problems = validateCoverage({
     bindings: [
-      { name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' },
-      { name: 'Table', patterns: ['grid'], layer: 'react', tail: 'display/table/Table.behaviour.json' },
+      { name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' },
+      { name: 'ArenaTable', patterns: ['grid'], layer: 'react', tail: 'display/arena-table/ArenaTable.behaviour.json' },
     ],
-    covered: { 'Dialog:react': 'dialog-modal.test.tsx' },
-    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    covered: { 'ArenaDialog:react': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.deepEqual(problems, []);
 });
 
 test('suiteMentions matches a binding path tail in a suite body', () => {
-  assert.equal(suiteMentions("join(X, 'feedback/dialog/Dialog.behaviour.json')", 'feedback/dialog/Dialog.behaviour.json'), true);
-  assert.equal(suiteMentions("join(X, 'feedback/dialog/Dialog.behaviour.json')", 'navigation/menu/Menu.behaviour.json'), false);
+  assert.equal(suiteMentions("join(X, 'feedback/arena-dialog/ArenaDialog.behaviour.json')", 'feedback/arena-dialog/ArenaDialog.behaviour.json'), true);
+  assert.equal(suiteMentions("join(X, 'feedback/arena-dialog/ArenaDialog.behaviour.json')", 'navigation/arena-menu/ArenaMenu.behaviour.json'), false);
 
-  assert.equal(suiteMentions("join(X, 'Dialog.behaviour.json')", 'feedback/dialog/Dialog.behaviour.json'), false);
+  assert.equal(suiteMentions("join(X, 'ArenaDialog.behaviour.json')", 'feedback/arena-dialog/ArenaDialog.behaviour.json'), false);
 });
 
 test('suiteMentions accepts a tail spelled as join() arguments', () => {
-  assert.equal(suiteMentions("join(R, 'navigation', 'tabs', 'Tabs.behaviour.json')", 'navigation/tabs/Tabs.behaviour.json'), true);
-  assert.equal(suiteMentions('join(R, "navigation", "tabs", "Tabs.behaviour.json")', 'navigation/tabs/Tabs.behaviour.json'), true);
+  assert.equal(suiteMentions("join(R, 'navigation', 'arena-tabs', 'ArenaTabs.behaviour.json')", 'navigation/arena-tabs/ArenaTabs.behaviour.json'), true);
+  assert.equal(suiteMentions('join(R, "navigation", "arena-tabs", "ArenaTabs.behaviour.json")', 'navigation/arena-tabs/ArenaTabs.behaviour.json'), true);
 
-  assert.equal(suiteMentions("join(R, 'navigation', 'sub', 'tabs', 'Tabs.behaviour.json')", 'navigation/tabs/Tabs.behaviour.json'), false);
+  assert.equal(suiteMentions("join(R, 'navigation', 'sub', 'arena-tabs', 'ArenaTabs.behaviour.json')", 'navigation/arena-tabs/ArenaTabs.behaviour.json'), false);
 });
 
 test('a suite from the sibling layer cannot satisfy a coverage claim', () => {
   const bindings = [
-    { name: 'Alert', patterns: ['status'], layer: 'react', tail: 'feedback/alert/Alert.behaviour.json' },
-    { name: 'Alert', patterns: ['status'], layer: 'angular', tail: 'feedback/alert/Alert.behaviour.json' },
+    { name: 'ArenaAlert', patterns: ['status'], layer: 'react', tail: 'feedback/arena-alert/ArenaAlert.behaviour.json' },
+    { name: 'ArenaAlert', patterns: ['status'], layer: 'angular', tail: 'feedback/arena-alert/ArenaAlert.behaviour.json' },
   ];
 
   assert.deepEqual(
-    validateCoverage({ bindings, covered: { 'Alert:react': 'AlertTones.dom.test.tsx' },
-      suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } }),
+    validateCoverage({ bindings, covered: { 'ArenaAlert:react': 'AlertTones.dom.test.tsx' },
+      suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/arena-alert/ArenaAlert.behaviour.json')", layer: 'react' } } }),
     [],
   );
 
-  const stale = validateCoverage({ bindings, covered: { 'Alert:angular': 'AlertTones.dom.test.tsx' },
-    suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/alert/Alert.behaviour.json')", layer: 'react' } } });
+  const stale = validateCoverage({ bindings, covered: { 'ArenaAlert:angular': 'AlertTones.dom.test.tsx' },
+    suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/arena-alert/ArenaAlert.behaviour.json')", layer: 'react' } } });
   assert.equal(stale.length, 1);
   assert.match(stale[0], /react layer/);
 
   assert.deepEqual(
-    validateCoverage({ bindings, covered: { 'Alert:angular': 'Alert.roleTones.test.ts' },
-      suites: { 'Alert.roleTones.test.ts': { source: "join(A, 'feedback/alert/Alert.behaviour.json')", layer: 'angular' } } }),
+    validateCoverage({ bindings, covered: { 'ArenaAlert:angular': 'ArenaAlert.roleTones.test.ts' },
+      suites: { 'ArenaAlert.roleTones.test.ts': { source: "join(A, 'feedback/arena-alert/ArenaAlert.behaviour.json')", layer: 'angular' } } }),
     [],
   );
 });
 
 test('a suite from the wrong layer cannot satisfy a claim when the tails collide', () => {
   const bindings = [
-    { name: 'Tag', patterns: ['none'], layer: 'react', tail: 'display/tag/Tag.behaviour.json' },
-    { name: 'Tag', patterns: ['none'], layer: 'angular', tail: 'display/tag/Tag.behaviour.json' },
+    { name: 'ArenaTag', patterns: ['none'], layer: 'react', tail: 'display/arena-tag/ArenaTag.behaviour.json' },
+    { name: 'ArenaTag', patterns: ['none'], layer: 'angular', tail: 'display/arena-tag/ArenaTag.behaviour.json' },
   ];
   const suites = {
     'TagAndChipCases.dom.test.tsx': {
-      source: "join(R, 'display/tag/Tag.behaviour.json')", layer: 'react',
+      source: "join(R, 'display/arena-tag/ArenaTag.behaviour.json')", layer: 'react',
     },
   };
 
   assert.deepEqual(validateCoverage({
-    bindings, covered: { 'Tag:react': 'TagAndChipCases.dom.test.tsx' }, suites,
+    bindings, covered: { 'ArenaTag:react': 'TagAndChipCases.dom.test.tsx' }, suites,
   }), []);
 
   const problems = validateCoverage({
-    bindings, covered: { 'Tag:angular': 'TagAndChipCases.dom.test.tsx' }, suites,
+    bindings, covered: { 'ArenaTag:angular': 'TagAndChipCases.dom.test.tsx' }, suites,
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /react layer/);
@@ -135,30 +135,30 @@ test('collectSuites tags each suite with the layer of the directory it came from
 
 test('a composite key naming a layer the component is not bound in fails', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { 'Dialog:angular': 'dialog-modal.test.tsx' },
-    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' }],
+    covered: { 'ArenaDialog:angular': 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Dialog/);
+  assert.match(problems[0], /ArenaDialog/);
   assert.match(problems[0], /angular/);
 });
 
 test('a COVERED key without a :layer suffix is rejected -- the shape is mandatory', () => {
   const problems = validateCoverage({
-    bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/dialog/Dialog.behaviour.json' }],
-    covered: { Dialog: 'dialog-modal.test.tsx' },
-    suites: { 'dialog-modal.test.tsx': { source: 'feedback/dialog/Dialog.behaviour.json', layer: 'react' } },
+    bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react', tail: 'feedback/arena-dialog/ArenaDialog.behaviour.json' }],
+    covered: { ArenaDialog: 'dialog-modal.test.tsx' },
+    suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Dialog/);
+  assert.match(problems[0], /ArenaDialog/);
   assert.match(problems[0], /:layer|composite|<component>:<layer>/i);
 });
 
 test('a cased binding contributes exactly one inventory row', () => {
   const rows = inventoryFrom({
-    'Alert:react': {
-      tail: 'feedback/alert/Alert.behaviour.json',
+    'ArenaAlert:react': {
+      tail: 'feedback/arena-alert/ArenaAlert.behaviour.json',
       cases: [
         { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
         { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
@@ -171,19 +171,19 @@ test('a cased binding contributes exactly one inventory row', () => {
 
 test('inventoryFrom throws on a binding with no tail', () => {
   assert.throws(
-    () => inventoryFrom({ 'Alert:react': { pattern: 'status', exceptions: [] } }),
-    /Alert:react.*no tail/s,
+    () => inventoryFrom({ 'ArenaAlert:react': { pattern: 'status', exceptions: [] } }),
+    /ArenaAlert:react.*no tail/s,
   );
 });
 
 test('validateCoverage throws on a binding with no tail', () => {
   assert.throws(
     () => validateCoverage({
-      bindings: [{ name: 'Dialog', patterns: ['dialog-modal'], layer: 'react' }],
+      bindings: [{ name: 'ArenaDialog', patterns: ['dialog-modal'], layer: 'react' }],
       covered: {},
       suites: {},
     }),
-    /Dialog:react.*no tail/s,
+    /ArenaDialog:react.*no tail/s,
   );
 });
 

@@ -15,8 +15,8 @@ export const PAIRED = [
   'AnchorActivation.ts',
   'WarnOnce.ts',
   'DataVisuals.ts',
-  'components/display/calendar/CalendarInternals.ts',
-  'components/navigation/pagination/PaginationWindow.ts',
+  'components/display/arena-calendar/CalendarInternals.ts',
+  'components/navigation/arena-pagination/PaginationWindow.ts',
 ];
 
 export const DIVERGENT = new Map([
@@ -27,24 +27,24 @@ export const DIVERGENT = new Map([
    'the same precedence, tone over slots over slot, with the same warning when a chart is given '
    + 'both. One destructures its options in the signature and the other declares the object inline, '
    + 'because one layer\'s callers hold an interface the other has no reason to export.'],
-  ['components/display/calendar/CalendarInternals.ts:addDays',
+  ['components/display/arena-calendar/CalendarInternals.ts:addDays',
    'the same UTC day step; one hands isoDateOf a date and the other the full parts shape its own '
    + 'isoDateOf takes, which is why the zero hour and minute appear on one side only.'],
-  ['components/display/calendar/CalendarInternals.ts:placeEvents',
+  ['components/display/arena-calendar/CalendarInternals.ts:placeEvents',
    'the same walk over the same two parsed instants, differing only in the type it accepts: one '
    + 'layer takes the chip\'s own props and the other a readonly EventTimes, because each layer\'s '
    + 'caller holds a different object. The parse and the day-boundary clamp, which is what decides '
    + 'a placement, are identical.'],
-  ['components/display/calendar/CalendarInternals.ts:layoutDay',
+  ['components/display/arena-calendar/CalendarInternals.ts:layoutDay',
    'identical lane assignment; one signature is generic over the event and the other over the '
    + 'placement, which is the same difference one line up.'],
-  ['components/display/calendar/CalendarInternals.ts:zonedParts',
+  ['components/display/arena-calendar/CalendarInternals.ts:zonedParts',
    'the same parse; one accepts null in addition to undefined, because its caller can hold one.'],
-  ['components/display/calendar/CalendarInternals.ts:rangeTitle',
+  ['components/display/arena-calendar/CalendarInternals.ts:rangeTitle',
    'the same title over the same formatter; one takes a readonly array.'],
-  ['components/display/calendar/CalendarInternals.ts:parseHM',
+  ['components/display/arena-calendar/CalendarInternals.ts:parseHM',
    'the same parse, over a local pad helper the two layers name differently.'],
-  ['components/navigation/pagination/PaginationWindow.ts:pageWindow',
+  ['components/navigation/arena-pagination/PaginationWindow.ts:pageWindow',
    'the same window: first, last, a run around the current page and an ellipsis where a gap is '
    + 'skipped. One writes the ellipsis as a literal and the other as a named constant of its own '
    + 'PageSlot type, so what differs is how the gap is spelt, not where one falls.'],

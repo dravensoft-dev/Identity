@@ -10,72 +10,72 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './TestbedEnv';
 import { ANGULAR_COMPONENTS, LIB, TAILWIND_COMPONENTS } from './Compliance';
-import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed';
-import { activityFeedStyles } from '../components/display/activity-feed/ActivityFeed.variants';
-import { AppLogo } from '../components/brand/app-logo/AppLogo';
-import { appLogoStyles } from '../components/brand/app-logo/AppLogo.variants';
-import { Avatar } from '../components/display/avatar/Avatar';
-import { avatarStyles } from '../components/display/avatar/Avatar.variants';
-import { BarChart } from '../components/charts/bar-chart/BarChart';
-import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs';
+import { ArenaActivityFeed } from '../components/display/arena-activity-feed/ArenaActivityFeed';
+import { arenaActivityFeedStyles } from '../components/display/arena-activity-feed/ArenaActivityFeed.variants';
+import { ArenaAppLogo } from '../components/brand/arena-app-logo/ArenaAppLogo';
+import { arenaAppLogoStyles } from '../components/brand/arena-app-logo/ArenaAppLogo.variants';
+import { ArenaAvatar } from '../components/display/arena-avatar/ArenaAvatar';
+import { arenaAvatarStyles } from '../components/display/arena-avatar/ArenaAvatar.variants';
+import { ArenaBarChart } from '../components/charts/arena-bar-chart/ArenaBarChart';
+import { ArenaBreadcrumbs } from '../components/navigation/arena-breadcrumbs/ArenaBreadcrumbs';
 import type { ArenaCrumb } from '../Api.generated';
-import { breadcrumbsStyles } from '../components/navigation/breadcrumbs/Breadcrumbs.variants';
-import { BulkActionBar } from '../components/navigation/bulk-action-bar/BulkActionBar';
+import { arenaBreadcrumbsStyles } from '../components/navigation/arena-breadcrumbs/ArenaBreadcrumbs.variants';
+import { ArenaBulkActionBar } from '../components/navigation/arena-bulk-action-bar/ArenaBulkActionBar';
 import type { ArenaBulkAction } from '../Api.generated';
-import { bulkActionBarStyles } from '../components/navigation/bulk-action-bar/BulkActionBar.variants';
-import { ChartCard } from '../components/charts/chart-card/ChartCard';
-import { chartCardStyles } from '../components/charts/chart-card/ChartCard.variants';
-import { DoughnutChart } from '../components/charts/doughnut-chart/DoughnutChart';
-import { EmptyState } from '../components/feedback/empty-state/EmptyState';
-import { emptyStateStyles } from '../components/feedback/empty-state/EmptyState.variants';
-import { ErrorState } from '../components/feedback/error-state/ErrorState';
-import { errorStateStyles } from '../components/feedback/error-state/ErrorState.variants';
-import { LineChart } from '../components/charts/line-chart/LineChart';
-import { PageHead } from '../components/navigation/page-head/PageHead';
-import { pageHeadStyles } from '../components/navigation/page-head/PageHead.variants';
-import { Skeleton } from '../components/display/skeleton/Skeleton';
-import { skeletonStyles } from '../components/display/skeleton/Skeleton.variants';
-import { StatCard } from '../components/display/stat-card/StatCard';
-import { statCardStyles } from '../components/display/stat-card/StatCard.variants';
+import { arenaBulkActionBarStyles } from '../components/navigation/arena-bulk-action-bar/ArenaBulkActionBar.variants';
+import { ArenaChartCard } from '../components/charts/arena-chart-card/ArenaChartCard';
+import { arenaChartCardStyles } from '../components/charts/arena-chart-card/ArenaChartCard.variants';
+import { ArenaDoughnutChart } from '../components/charts/arena-doughnut-chart/ArenaDoughnutChart';
+import { ArenaEmptyState } from '../components/feedback/arena-empty-state/ArenaEmptyState';
+import { arenaEmptyStateStyles } from '../components/feedback/arena-empty-state/ArenaEmptyState.variants';
+import { ArenaErrorState } from '../components/feedback/arena-error-state/ArenaErrorState';
+import { arenaErrorStateStyles } from '../components/feedback/arena-error-state/ArenaErrorState.variants';
+import { ArenaLineChart } from '../components/charts/arena-line-chart/ArenaLineChart';
+import { ArenaPageHead } from '../components/navigation/arena-page-head/ArenaPageHead';
+import { arenaPageHeadStyles } from '../components/navigation/arena-page-head/ArenaPageHead.variants';
+import { ArenaSkeleton } from '../components/display/arena-skeleton/ArenaSkeleton';
+import { arenaSkeletonStyles } from '../components/display/arena-skeleton/ArenaSkeleton.variants';
+import { ArenaStatCard } from '../components/display/arena-stat-card/ArenaStatCard';
+import { arenaStatCardStyles } from '../components/display/arena-stat-card/ArenaStatCard.variants';
 import type { ArenaStatDelta } from '../Api.generated';
-import { Tag } from '../components/display/tag/Tag';
-import { tagStyles } from '../components/display/tag/Tag.variants';
-import { UnauthCard } from '../components/display/unauth-card/UnauthCard';
-import { unauthCardStyles } from '../components/display/unauth-card/UnauthCard.variants';
+import { ArenaTag } from '../components/display/arena-tag/ArenaTag';
+import { arenaTagStyles } from '../components/display/arena-tag/ArenaTag.variants';
+import { ArenaUnauthCard } from '../components/display/arena-unauth-card/ArenaUnauthCard';
+import { arenaUnauthCardStyles } from '../components/display/arena-unauth-card/ArenaUnauthCard.variants';
 
 useTestEnvironment();
 
 @Component({
   standalone: true,
-  imports: [AppLogo],
+  imports: [ArenaAppLogo],
   template: `<arena-app-logo name="Draven" class="consumer-class"><span mark>mark</span></arena-app-logo>`,
 })
 class AppLogoStaticAttributeHost {}
 
 @Component({
   standalone: true,
-  imports: [Avatar],
+  imports: [ArenaAvatar],
   template: `<arena-avatar class="consumer-class" name="Juan Carlos" />`,
 })
 class AvatarHost {}
 
 @Component({
   standalone: true,
-  imports: [Tag],
+  imports: [ArenaTag],
   template: `<arena-tag class="consumer-class">Blocked</arena-tag>`,
 })
 class TagHost {}
 
 @Component({
   standalone: true,
-  imports: [Skeleton],
+  imports: [ArenaSkeleton],
   template: `<arena-skeleton class="consumer-class" />`,
 })
 class SkeletonHost {}
 
 @Component({
   standalone: true,
-  imports: [Breadcrumbs],
+  imports: [ArenaBreadcrumbs],
   host: { 'data-host': 'breadcrumbs' },
   template: `<arena-breadcrumbs class="consumer-class" ariaLabel="Project navigation" [items]="items" />`,
 })
@@ -91,13 +91,13 @@ function createBreadcrumbsHost(items: ArenaCrumb[] = []) {
 
 @Component({
   standalone: true,
-  imports: [StatCard],
+  imports: [ArenaStatCard],
   template: `<arena-stat-card class="consumer-class" label="Revenue" value="$48.2k" />`,
 })
 class StatCardHost {}
 
 function renderStatCard(label: string, value: string, delta?: ArenaStatDelta, icon?: string) {
-  const fixture = TestBed.createComponent(StatCard);
+  const fixture = TestBed.createComponent(ArenaStatCard);
   fixture.componentRef.setInput('label', label);
   fixture.componentRef.setInput('value', value);
   if (delta !== undefined) fixture.componentRef.setInput('delta', delta);
@@ -112,8 +112,8 @@ test('arena-stat-card: a static "label"/"value" attribute satisfies the required
   assert.equal(host.getAttribute('label'), 'Revenue', 'the literal attribute should still land on the host element itself');
   assert.equal(host.getAttribute('value'), '$48.2k', 'sanity: the second literal attribute lands the same way');
   assert.ok(host.classList.contains('consumer-class'), `sanity: the static class attribute survives the host [class] binding: "${host.className}"`);
-  const labelClass = statCardStyles().label().split(/\s+/)[0];
-  const valueClass = statCardStyles().value().split(/\s+/)[0];
+  const labelClass = arenaStatCardStyles().label().split(/\s+/)[0];
+  const valueClass = arenaStatCardStyles().value().split(/\s+/)[0];
   assert.equal(host.querySelector(`.${labelClass}`)?.textContent, 'Revenue', 'the attribute must reach the label input, not only the DOM');
   assert.equal(host.querySelector(`.${valueClass}`)?.textContent, '$48.2k', 'the attribute must reach the value input, not only the DOM');
   fixture.destroy();
@@ -121,7 +121,7 @@ test('arena-stat-card: a static "label"/"value" attribute satisfies the required
 
 @Component({
   standalone: true,
-  imports: [BulkActionBar],
+  imports: [ArenaBulkActionBar],
   host: { 'data-host': 'bulk-action-bar' },
   template: `<arena-bulk-action-bar class="consumer-class" [count]="count" [actions]="actions" />`,
 })
@@ -136,7 +136,7 @@ function createBulkActionBarHost() {
 
 @Component({
   standalone: true,
-  imports: [ChartCard],
+  imports: [ArenaChartCard],
   host: { 'data-host': 'chart-card' },
   template: `<arena-chart-card class="consumer-class" />`,
 })
@@ -144,7 +144,7 @@ class ChartCardHost {}
 
 @Component({
   standalone: true,
-  imports: [ErrorState],
+  imports: [ArenaErrorState],
   template: `<arena-error-state class="consumer-class" title="Something went wrong" [retryLabel]="retryLabel" />`,
 })
 class ErrorStateWithoutActionHost {
@@ -153,7 +153,7 @@ class ErrorStateWithoutActionHost {
 
 @Component({
   standalone: true,
-  imports: [PageHead],
+  imports: [ArenaPageHead],
   host: { 'data-host': 'page-head' },
   template: `<arena-page-head class="consumer-class" [title]="title" />`,
 })
@@ -169,7 +169,7 @@ function createPageHeadWithoutActionsFixture() {
 
 @Component({
   standalone: true,
-  imports: [UnauthCard],
+  imports: [ArenaUnauthCard],
   host: { 'data-host': 'unauth-card' },
   template: `<arena-unauth-card class="consumer-class" />`,
 })
@@ -177,7 +177,7 @@ class UnauthCardWithoutProjectionHost {}
 
 @Component({
   standalone: true,
-  imports: [BarChart],
+  imports: [ArenaBarChart],
   host: { 'data-host': 'bar-chart' },
   template: `<arena-bar-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
 })
@@ -195,7 +195,7 @@ function createBarChartHost() {
 
 @Component({
   standalone: true,
-  imports: [LineChart],
+  imports: [ArenaLineChart],
   host: { 'data-host': 'line-chart' },
   template: `<arena-line-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
 })
@@ -213,7 +213,7 @@ function createLineChartHost() {
 
 @Component({
   standalone: true,
-  imports: [DoughnutChart],
+  imports: [ArenaDoughnutChart],
   host: { 'data-host': 'doughnut-chart' },
   template: `<arena-doughnut-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
 })
@@ -230,7 +230,7 @@ function createDoughnutChartHost() {
 }
 
 function renderAppLogo(name: string, dim?: string) {
-  const fixture = TestBed.createComponent(AppLogo);
+  const fixture = TestBed.createComponent(ArenaAppLogo);
   fixture.componentRef.setInput('name', name);
   if (dim !== undefined) fixture.componentRef.setInput('dim', dim);
   return fixture;
@@ -240,7 +240,7 @@ test('arena-app-logo: the root recipe classes land on the host element itself', 
   const fixture = renderAppLogo('Draven');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  for (const cls of appLogoStyles().root().split(/\s+/))
+  for (const cls of arenaAppLogoStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   fixture.destroy();
 });
@@ -252,7 +252,7 @@ test('arena-app-logo: a class already on the host before the first detectChanges
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the pre-existing class: "${host.className}"`);
-  for (const cls of appLogoStyles().root().split(/\s+/))
+  for (const cls of arenaAppLogoStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   fixture.destroy();
 });
@@ -261,7 +261,7 @@ test('arena-app-logo: the two-ink wordmark renders as one word with no space -- 
   const fixture = renderAppLogo('DRAVEN', 'SOFT');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  const nameClass = appLogoStyles().name().split(/\s+/)[0];
+  const nameClass = arenaAppLogoStyles().name().split(/\s+/)[0];
   const nameEl = host.querySelector(`.${nameClass}`) as HTMLElement;
   assert.ok(nameEl, 'the name slot did not render');
   assert.equal(
@@ -277,7 +277,7 @@ test('arena-app-logo: the two-ink wordmark renders as one word with no space -- 
   const dimEl = significant[1] as HTMLElement;
   assert.equal(dimEl.nodeType, Node.ELEMENT_NODE);
   assert.equal(dimEl.textContent, 'SOFT');
-  const dimClass = appLogoStyles().dim().split(/\s+/)[0];
+  const dimClass = arenaAppLogoStyles().dim().split(/\s+/)[0];
   assert.ok(dimEl.classList.contains(dimClass), `the dim span is missing its recipe class "${dimClass}"`);
   fixture.destroy();
 });
@@ -286,7 +286,7 @@ test('arena-app-logo: with no dim, the wordmark renders the name alone and no di
   const fixture = renderAppLogo('Draven');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  const nameClass = appLogoStyles().name().split(/\s+/)[0];
+  const nameClass = arenaAppLogoStyles().name().split(/\s+/)[0];
   const nameEl = host.querySelector(`.${nameClass}`) as HTMLElement;
   assert.equal(nameEl.textContent, 'Draven');
 
@@ -306,7 +306,7 @@ test('arena-app-logo: a static "name" attribute satisfies the required input and
     + "also matches an input, which is what '[attr.name]': 'null' in the host block exists to undo — a stray "
     + 'global attribute the consumer never meant to set, and for `title` a browser tooltip over the whole component.');
   assert.ok(host.classList.contains('consumer-class'), `sanity: the static class attribute survives the host [class] binding: "${host.className}"`);
-  const nameClass = appLogoStyles().name().split(/\s+/)[0];
+  const nameClass = arenaAppLogoStyles().name().split(/\s+/)[0];
   assert.equal(
     (host.querySelector(`.${nameClass}`) as HTMLElement | null)?.textContent,
     'Draven',
@@ -319,7 +319,7 @@ test('arena-app-logo: content selected for [mark] projects into the mark slot', 
   const fixture = TestBed.createComponent(AppLogoStaticAttributeHost);
   fixture.detectChanges();
   const host = fixture.nativeElement.querySelector('arena-app-logo') as HTMLElement;
-  const markClass = appLogoStyles().mark().split(/\s+/)[0];
+  const markClass = arenaAppLogoStyles().mark().split(/\s+/)[0];
   const markSlot = host.querySelector(`.${markClass}`);
   assert.ok(markSlot, 'the mark slot element itself is missing');
   assert.equal(markSlot?.querySelector('span')?.textContent, 'mark', 'the projected <span mark> should render inside the mark slot');
@@ -327,7 +327,7 @@ test('arena-app-logo: content selected for [mark] projects into the mark slot', 
 });
 
 function renderActivityFeed(items: unknown[]) {
-  const fixture = TestBed.createComponent(ActivityFeed);
+  const fixture = TestBed.createComponent(ArenaActivityFeed);
   fixture.componentRef.setInput('label', 'Deployment activity');
   fixture.componentRef.setInput('items', items);
   return fixture;
@@ -340,7 +340,7 @@ test('arena-activity-feed: the host stays bare and unstyled -- the recipe classe
   assert.equal(host.className, '', 'the host must carry no recipe classes of its own -- root is not host-bound here');
   const ul = host.querySelector('ul') as HTMLElement;
   assert.ok(ul, 'the root must be a real <ul>');
-  for (const cls of activityFeedStyles().root().split(/\s+/))
+  for (const cls of arenaActivityFeedStyles().root().split(/\s+/))
     assert.ok(ul.classList.contains(cls), `the <ul> is missing root class "${cls}"`);
   fixture.destroy();
 });
@@ -394,7 +394,7 @@ test('arena-avatar: the root recipe classes land on the host element itself', as
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-avatar') as HTMLElement;
-  for (const cls of avatarStyles().root().split(/\s+/))
+  for (const cls of arenaAvatarStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
 });
 
@@ -411,7 +411,7 @@ test('arena-tag: the root recipe classes land on the host element itself', async
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-tag') as HTMLElement;
-  for (const cls of tagStyles().root().split(/\s+/))
+  for (const cls of arenaTagStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
 });
 
@@ -428,7 +428,7 @@ test('arena-skeleton: the default variant\'s root recipe classes land on the hos
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-skeleton') as HTMLElement;
-  for (const cls of skeletonStyles().root().split(/\s+/))
+  for (const cls of arenaSkeletonStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
 });
 
@@ -457,7 +457,7 @@ test('arena-breadcrumbs: the root recipe classes land on the <nav>, which is the
   const host = fixture.nativeElement.querySelector('arena-breadcrumbs') as HTMLElement;
   const nav = host.querySelector('nav') as HTMLElement;
   assert.ok(nav, 'the trail must render a real <nav>');
-  for (const cls of breadcrumbsStyles().root().split(/\s+/))
+  for (const cls of arenaBreadcrumbsStyles().root().split(/\s+/))
     assert.ok(nav.classList.contains(cls), `the nav is missing root class "${cls}"`);
   fixture.destroy();
 });
@@ -493,7 +493,7 @@ test('arena-breadcrumbs: a crumb click emits the clicked ArenaCrumb alone throug
   const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
-  const breadcrumbs = fixture.debugElement.query(By.directive(Breadcrumbs)).componentInstance as Breadcrumbs;
+  const breadcrumbs = fixture.debugElement.query(By.directive(ArenaBreadcrumbs)).componentInstance as ArenaBreadcrumbs;
 
   let received: ArenaCrumb | undefined;
   breadcrumbs.navigate.subscribe((payload) => {
@@ -516,7 +516,7 @@ test('arena-stat-card: the root recipe classes land on the host element itself',
   const fixture = renderStatCard('Revenue', '$48.2k');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  for (const cls of statCardStyles().root().split(/\s+/))
+  for (const cls of arenaStatCardStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   fixture.destroy();
 });
@@ -527,7 +527,7 @@ test('arena-stat-card: a class already on the host before the first detectChange
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
   assert.ok(host.classList.contains('consumer-class'), `host lost the pre-existing class: "${host.className}"`);
-  for (const cls of statCardStyles().root().split(/\s+/))
+  for (const cls of arenaStatCardStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   fixture.destroy();
 });
@@ -535,7 +535,7 @@ test('arena-stat-card: a class already on the host before the first detectChange
 test('arena-stat-card: a delta with a value renders the pill; a delta with a tone but no value renders nothing', () => {
   const withValue = renderStatCard('Deploys', '128', { value: '+12%', direction: 'up', tone: 'positive' });
   withValue.detectChanges();
-  const deltaClass = statCardStyles().delta().split(/\s+/)[0];
+  const deltaClass = arenaStatCardStyles().delta().split(/\s+/)[0];
   assert.ok((withValue.nativeElement as HTMLElement).querySelector(`.${deltaClass}`), 'a delta with a value must render the pill');
   withValue.destroy();
 
@@ -552,7 +552,7 @@ test('arena-stat-card: an icon class name renders the <i> inside the aria-hidden
   const fixture = renderStatCard('Deploys', '128', undefined, 'ph-bold ph-rocket');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  const iconClass = statCardStyles().icon().split(/\s+/)[0];
+  const iconClass = arenaStatCardStyles().icon().split(/\s+/)[0];
   const iconSlot = host.querySelector(`.${iconClass}`);
   assert.ok(iconSlot, 'the icon wrapper element itself is missing');
   assert.equal(iconSlot?.getAttribute('aria-hidden'), 'true', 'the wrapper must stay aria-hidden');
@@ -564,7 +564,7 @@ test('arena-stat-card: no icon renders no wrapper at all -- not an empty one', (
   const fixture = renderStatCard('Deploys', '128');
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
-  const iconClass = statCardStyles().icon().split(/\s+/)[0];
+  const iconClass = arenaStatCardStyles().icon().split(/\s+/)[0];
   assertNoNode(host.querySelector(`.${iconClass}`), 'no icon means no icon wrapper at all');
   fixture.destroy();
 });
@@ -574,7 +574,7 @@ test('arena-bulk-action-bar: the root recipe classes land on the host element it
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-bulk-action-bar') as HTMLElement;
-  for (const cls of bulkActionBarStyles().root().split(/\s+/))
+  for (const cls of arenaBulkActionBarStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   assert.ok(host.classList.contains('arena-bulk-action-bar__root--open-false'),
     'a bar with no selection (count 0) must render hidden');
@@ -601,7 +601,7 @@ test('arena-chart-card: the root recipe classes land on the host element itself'
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
-  for (const cls of chartCardStyles().root().split(/\s+/))
+  for (const cls of arenaChartCardStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
 });
 
@@ -618,7 +618,7 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-chart-card') as HTMLElement;
-  const headClass = chartCardStyles().head().split(/\s+/)[0];
+  const headClass = arenaChartCardStyles().head().split(/\s+/)[0];
   assertNoNode(
     host.querySelector(`.${headClass}`),
     'an empty chart card (no title, no actions) must not render the head row at all',
@@ -627,7 +627,7 @@ test('arena-chart-card: the head row is entirely absent when there is neither a 
 });
 
 function renderEmptyState(title: string) {
-  const fixture = TestBed.createComponent(EmptyState);
+  const fixture = TestBed.createComponent(ArenaEmptyState);
   fixture.componentRef.setInput('title', title);
   return fixture;
 }
@@ -637,7 +637,7 @@ test('arena-empty-state: the action wrapper is absent from the DOM when no [acti
   fixture.detectChanges();
   const host = fixture.nativeElement as HTMLElement;
   assertNoNode(host.querySelector('button'), 'no action was projected, so no action markup should exist at all');
-  const actionClass = emptyStateStyles().action().split(/\s+/)[0];
+  const actionClass = arenaEmptyStateStyles().action().split(/\s+/)[0];
   assertNoNode(
     host.querySelector(`:scope > .${actionClass}`),
     'the action wrapper div must not render when the action slot is empty',
@@ -650,7 +650,7 @@ test('arena-error-state: the root recipe classes land on the host element itself
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
-  for (const cls of errorStateStyles().root().split(/\s+/))
+  for (const cls of arenaErrorStateStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   assert.equal(host.getAttribute('role'), 'alert');
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
@@ -662,7 +662,7 @@ test('arena-error-state: the actions wrapper is absent from the DOM when neither
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-error-state') as HTMLElement;
   assertNoNode(host.querySelector('button'), 'neither retryLabel nor a secondary action was supplied, so no action markup should exist at all');
-  const actionsClass = errorStateStyles().actions().split(/\s+/)[0];
+  const actionsClass = arenaErrorStateStyles().actions().split(/\s+/)[0];
   assertNoNode(
     host.querySelector(`:scope > .${actionsClass}`),
     'the actions wrapper div must not render when both retryLabel and secondaryAction are absent',
@@ -683,7 +683,7 @@ test('arena-error-state: retryLabel draws a real retry button carrying the manif
   const button = host.querySelector('button');
   assert.notEqual(button, null, 'retryLabel was supplied, so a retry button must render');
   assert.equal(button!.textContent, 'Retry');
-  const retryClass = errorStateStyles().retry().split(/\s+/)[0];
+  const retryClass = arenaErrorStateStyles().retry().split(/\s+/)[0];
   assert.ok(button!.classList.contains(retryClass), `retry button is missing recipe class "${retryClass}"`);
   fixture.destroy();
 });
@@ -697,7 +697,7 @@ test('arena-page-head: the root recipe classes land on the host element itself',
     fixture.detectChanges();
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
-    for (const cls of pageHeadStyles().root().split(/\s+/))
+    for (const cls of arenaPageHeadStyles().root().split(/\s+/))
       assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
     assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
   } finally {
@@ -731,7 +731,7 @@ test('arena-page-head: the actions wrapper is absent from the DOM when no [actio
     await fixture.whenStable();
     const host = fixture.nativeElement.querySelector('arena-page-head') as HTMLElement;
     assertNoNode(host.querySelector('button'), 'no actions were projected, so no action markup should exist at all');
-    const actionsClass = pageHeadStyles().actions().split(/\s+/)[0];
+    const actionsClass = arenaPageHeadStyles().actions().split(/\s+/)[0];
     assertNoNode(
       host.querySelector(`:scope > .${actionsClass}`),
       'the actions wrapper div must not render when the actions slot is empty',
@@ -774,20 +774,20 @@ function findManifestFile(componentsDir: string, filename: string): string | und
   return paths.find((p) => basename(p) === filename);
 }
 
-const NO_MANIFEST = new Set(['bar-chart', 'line-chart', 'doughnut-chart']);
+const NO_MANIFEST = new Set(['arena-bar-chart', 'arena-line-chart', 'arena-doughnut-chart']);
 
 const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
-  'bottom-nav-item': { manifest: 'BottomNav.manifest.json', slot: 'item' },
-  'calendar-event': { manifest: 'Calendar.manifest.json', slot: 'chip' },
-  dialog: { slot: 'scrim' },
-  'radio-group': { manifest: 'Radio.manifest.json', slot: 'group' },
-  'side-nav-collapsible': { manifest: 'SideNav.manifest.json', slot: 'section' },
-  'side-nav-item': { manifest: 'SideNav.manifest.json', slot: 'item' },
-  'side-nav-section': { manifest: 'SideNav.manifest.json', slot: 'section' },
-  'segmented-control': { slot: 'track' },
-  tab: { manifest: 'Tabs.manifest.json', slot: 'panel' },
-  'table-cell': { manifest: 'Table.manifest.json', slot: 'td' },
-  'table-row': { manifest: 'Table.manifest.json', slot: 'row' },
+  'arena-bottom-nav-item': { manifest: 'ArenaBottomNav.manifest.json', slot: 'item' },
+  'arena-calendar-event': { manifest: 'ArenaCalendar.manifest.json', slot: 'chip' },
+  'arena-dialog': { slot: 'scrim' },
+  'arena-radio-group': { manifest: 'ArenaRadio.manifest.json', slot: 'group' },
+  'arena-side-nav-collapsible': { manifest: 'ArenaSideNav.manifest.json', slot: 'section' },
+  'arena-side-nav-item': { manifest: 'ArenaSideNav.manifest.json', slot: 'item' },
+  'arena-side-nav-section': { manifest: 'ArenaSideNav.manifest.json', slot: 'section' },
+  'arena-segmented-control': { slot: 'track' },
+  'arena-tab': { manifest: 'ArenaTabs.manifest.json', slot: 'panel' },
+  'arena-table-cell': { manifest: 'ArenaTable.manifest.json', slot: 'td' },
+  'arena-table-row': { manifest: 'ArenaTable.manifest.json', slot: 'row' },
 };
 
 test('every Angular primitive host-binds a slot that carries a display utility, so the host never collapses to the UA-default inline box', () => {
@@ -949,7 +949,7 @@ test('a primitive whose input is named after a global HTML attribute clears that
 
 @Component({
   standalone: true,
-  imports: [PageHead, Avatar],
+  imports: [ArenaPageHead, ArenaAvatar],
   template: `
     <arena-page-head title="Projects" />
     <arena-page-head [title]="bound" />
@@ -1150,7 +1150,7 @@ test('arena-unauth-card: the root recipe classes land on the host element itself
   fixture.detectChanges();
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-unauth-card') as HTMLElement;
-  for (const cls of unauthCardStyles().root().split(/\s+/))
+  for (const cls of arenaUnauthCardStyles().root().split(/\s+/))
     assert.ok(host.classList.contains(cls), `host is missing root class "${cls}"`);
   assert.ok(host.classList.contains('consumer-class'), `host lost the consumer's static class: "${host.className}"`);
 });
@@ -1161,19 +1161,19 @@ test('arena-unauth-card: the brand and footer wrappers are both absent from the 
   await fixture.whenStable();
   const host = fixture.nativeElement.querySelector('arena-unauth-card') as HTMLElement;
 
-  const brandClass = unauthCardStyles().brand().split(/\s+/)[0];
+  const brandClass = arenaUnauthCardStyles().brand().split(/\s+/)[0];
   assertNoNode(
     host.querySelector(`.${brandClass}`),
     'the brand wrapper div must not render when the [brand] slot is empty',
   );
-  const footerClass = unauthCardStyles().footer().split(/\s+/)[0];
+  const footerClass = arenaUnauthCardStyles().footer().split(/\s+/)[0];
   assertNoNode(
     host.querySelector(`.${footerClass}`),
     'the footer wrapper div must not render when the [footer] slot is empty',
   );
 
-  const panelClass = unauthCardStyles().panel().split(/\s+/)[0];
-  const bodyClass = unauthCardStyles().body().split(/\s+/)[0];
+  const panelClass = arenaUnauthCardStyles().panel().split(/\s+/)[0];
+  const bodyClass = arenaUnauthCardStyles().body().split(/\s+/)[0];
   assert.ok(host.querySelector(`.${panelClass}`), 'the panel must always render -- it is not gated');
   assert.ok(host.querySelector(`.${bodyClass}`), 'the body wrapper must always render -- it is not gated');
   assert.equal(host.children.length, 1, 'the host renders only the panel div, unconditionally');

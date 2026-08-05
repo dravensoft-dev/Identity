@@ -17,7 +17,7 @@ const EXEMPT = new Map([
    'Not a design value and so not a token: it stands in for window.innerHeight where there is no '
    + 'window, which is a rendering assumption rather than a decision anybody made. Both layers need '
    + 'the same stand-in for the same reason, and authoring it in contracts/design/ would put a '
-   + 'number nobody chose into the Overview beside values that were chosen. Onboarding is the one '
+   + 'number nobody chose into the Overview beside values that were chosen. ArenaOnboarding is the one '
    + 'component that compares against viewport HEIGHT; the reserve it subtracts IS a token '
    + '(--onboarding-height-reserve).'],
   ['NARROW_WIDTH',

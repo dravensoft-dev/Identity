@@ -2,10 +2,10 @@
 :root{
   /* 4px base grid */
   --sp-0:0px;
-  --sp-1:4px; /* Script-readable: Menu's gap from its trigger is one and a half of this, and that gap is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
-  --sp-2:8px; /* Script-readable: Tooltip's gap from its trigger is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
-  --sp-3:12px; /* Script-readable: Onboarding's gap below its anchor is arithmetic on a DOMRect. */
-  --sp-4:16px; /* Script-readable: Onboarding's minimum gutter from either viewport edge, compared against window.innerWidth. */
+  --sp-1:4px; /* Script-readable: ArenaMenu's gap from its trigger is one and a half of this, and that gap is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
+  --sp-2:8px; /* Script-readable: ArenaTooltip's gap from its trigger is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it. */
+  --sp-3:12px; /* Script-readable: ArenaOnboarding's gap below its anchor is arithmetic on a DOMRect. */
+  --sp-4:16px; /* Script-readable: ArenaOnboarding's minimum gutter from either viewport edge, compared against window.innerWidth. */
   --sp-5:20px;
   --sp-6:24px;
   --sp-8:32px;
@@ -68,9 +68,9 @@
   --dz-lh:1; /* glyph-tight line height: the control reset. Unlike every other dz member this is unitless, so it carries its own $type override: a line height is a number, not a dimension, the same distinction that puts lh in typography.json to begin with. Used wherever a box must be exactly its glyph (an icon inside a button, a standalone icon, an icon-only close/remove control), so the line box never throws the surrounding control out of alignment. */
 
   /*
-     Avatar diameters. The first family named after a component rather
+     ArenaAvatar diameters. The first family named after a component rather
      than a role, and worth stating rather than glossing: dz and icon are named for
-     roles. It earns its place because Avatar derives two values from its own
+     roles. It earns its place because ArenaAvatar derives two values from its own
      diameter (the initials at 0.4 and the presence dot at 0.28), and a derivation
      needs something to derive from. If a second component ever wants the same
      ladder, rename this for the role instead of duplicating it.
@@ -82,7 +82,7 @@
 
   /*
      Brand lock-up scale: the mark's slot and the wordmark's size, in
-     four steps. These are tokens rather than an exemption for one reason: AppLogo
+     four steps. These are tokens rather than an exemption for one reason: ArenaAppLogo
      takes the mark and the name from its consumer, so once they are the consumer's
      brand these numbers stop being Dravensoft's identity and become the system's
      answer to 'how big is a small logo'. A scale is a scale, and Arena's scales are
@@ -117,10 +117,10 @@
   --icon-sm:14px;
   --icon-md:16px;
   --icon-lg:18px;
-  --icon-xl:34px; /* Illustration-scale icon (EmptyState, ErrorState): a distinct role from the 14/16/18 inline-control cluster. */
+  --icon-xl:34px; /* Illustration-scale icon (ArenaEmptyState, ArenaErrorState): a distinct role from the 14/16/18 inline-control cluster. */
 }
 :root{
-  /* Calendar time grid. */
+  /* ArenaCalendar time grid. */
   /*
      The pixel height of one hour. Script-readable because
      y = ((min - startMin) / 60) * hour-h is arithmetic, and no CSS expression
@@ -148,8 +148,8 @@
      label. Measured: the label is 78.02px at --dz-text-2xs, and a chip's content box
      is its share less 18px -- 4px of gutter to its neighbour, 12px of its own
      padding, 2px of its left border -- so 96.02px, rounded up to the 4px scale. The
-     threshold is on the share rather than on the chip so that Calendar never has to
-     know CalendarEvent's padding.
+     threshold is on the share rather than on the chip so that ArenaCalendar never has to
+     know ArenaCalendarEvent's padding.
    */
   --calendar-time-min-w:100px;
   /*
@@ -161,7 +161,7 @@
    */
   --calendar-actions-below-min-h:56px;
 
-  /* Onboarding coachmark. */
+  /* ArenaOnboarding coachmark. */
   /*
      The popover's width. Script-readable because Math.min/Math.max compare it
      against window.innerWidth. This ALSO replaces the calc(var(--sp-1) * 80) the

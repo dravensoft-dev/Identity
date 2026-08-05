@@ -1,0 +1,6 @@
+{
+  "component": "ArenaSheet",
+  "pattern": "disclosure",
+  "reason": "The fold control is a native <button type=\"button\"> carrying aria-expanded and an aria-controls naming the body it shows and hides; the body is always rendered while the panel is open, so aria-controls never points at nothing, and it is hidden by the `hidden` attribute alone. WHAT IS DELIBERATELY NOT CLAIMED IS DIALOG: this panel is not modal, so it declares no dialog role, traps no focus and darkens nothing behind it, and every one of those absences is the point rather than an omission -- a reader keeps working on the page while the panel stays open beside it. Escape is answered anyway, and answering it costs no member: it reports through `close`, the same channel the close control uses. It reaches the panel only while focus is inside it, which is the correct reach for something that took no focus in the first place.",
+  "exceptions": []
+}

@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { plotWidth, PAD } from '../../DataVisuals.ts';
-import { LineChart } from './line-chart/LineChart.tsx';
+import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
 
 test('with no minPointSpacing the plot is exactly the width it was given', () => {
   assert.equal(plotWidth(390, 30, undefined), 390);
@@ -32,7 +32,7 @@ const labels = Array.from({ length: 30 }, (_, i) => `d${i}`);
 const values = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const rail = (minPointSpacing?: number) => renderToStaticMarkup(
-  <LineChart labels={labels} values={values} seriesLabel="Revenue" minPointSpacing={minPointSpacing} />,
+  <ArenaLineChart labels={labels} values={values} seriesLabel="Revenue" minPointSpacing={minPointSpacing} />,
 );
 
 test('a rail that does not overflow is not a scroll region, and takes no tab stop', () => {

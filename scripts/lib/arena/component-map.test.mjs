@@ -37,7 +37,7 @@ for (const [layer, match] of [['angular', 'selector'], ['react', 'symbol']]) {
 
   test(`${layer} closes what Arena draws for the consumer, and a table is the case that proves it`, () => {
     const { needs } = componentMap(layer, repoRoot);
-    assert.deepEqual(needs.table, ['pagination', 'select'],
+    assert.deepEqual(needs['arena-table'], ['arena-pagination', 'arena-select'],
       'a table renders both, and a subset naming table alone is a paginated table with no pagination');
     for (const [sheet, pulled] of Object.entries(needs)) {
       assert.ok(!pulled.includes(sheet), `${sheet} needs itself, so the closure did not drop the self edge`);
@@ -49,24 +49,24 @@ test('a component with no manifest of its own resolves to no sheet, which is wha
   const angular = componentMap('angular', repoRoot);
   const react = componentMap('react', repoRoot);
   assert.equal(angular.draws['arena-bar-chart'], null);
-  assert.equal(react.draws.BarChart, null);
+  assert.equal(react.draws.ArenaBarChart, null);
   assert.ok('arena-bar-chart' in angular.draws, 'it is placed and costs nothing, which is not the same as unplaced');
 });
 
 test('a component wears its parent\'s sheet, because 43 sheets dress 55 components', () => {
   const angular = componentMap('angular', repoRoot);
   const react = componentMap('react', repoRoot);
-  assert.equal(angular.draws['arena-side-nav-item'], 'side-nav');
-  assert.equal(angular.draws['arena-table-row'], 'table');
-  assert.equal(react.draws.SideNavItem, 'side-nav');
-  assert.equal(react.draws.TableRow, 'table');
+  assert.equal(angular.draws['arena-side-nav-item'], 'arena-side-nav');
+  assert.equal(angular.draws['arena-table-row'], 'arena-table');
+  assert.equal(react.draws.ArenaSideNavItem, 'arena-side-nav');
+  assert.equal(react.draws.ArenaTableRow, 'arena-table');
 });
 
 test('the two layers differ in fact rather than in spelling, which is why each carries its own map', () => {
   const angular = componentMap('angular', repoRoot);
   const react = componentMap('react', repoRoot);
-  assert.deepEqual(react.needs['confirm-dialog'], ['button'], 'React renders a Button inside it');
-  assert.equal(angular.needs['confirm-dialog'], undefined, 'Angular draws its own, out of its own manifest');
+  assert.deepEqual(react.needs['arena-confirm-dialog'], ['arena-button'], 'React renders an ArenaButton inside it');
+  assert.equal(angular.needs['arena-confirm-dialog'], undefined, 'Angular draws its own, out of its own manifest');
 });
 
 test('a layer nothing assembles is refused rather than answered with an empty map', () => {
@@ -75,12 +75,12 @@ test('a layer nothing assembles is refused rather than answered with an empty ma
 
 test('the manifest a source reads is followed across directories, not only beside it', () => {
   const root = mkdtempSync(join(tmpdir(), 'arena-map-'));
-  mkdirSync(join(root, 'side-nav-item'));
-  mkdirSync(join(root, 'side-nav'));
-  writeFileSync(join(root, 'side-nav', 'SideNav.variants.ts'),
-    "import manifest from './SideNav.classes.generated';\nexport const sideNavStyles = arenaStyles(manifest);\n");
-  const file = join(root, 'side-nav-item', 'SideNavItem.ts');
-  assert.equal(sheetOf(file, "import { sideNavStyles } from '../side-nav/SideNav.variants';"), 'side-nav');
+  mkdirSync(join(root, 'arena-side-nav-item'));
+  mkdirSync(join(root, 'arena-side-nav'));
+  writeFileSync(join(root, 'arena-side-nav', 'ArenaSideNav.variants.ts'),
+    "import manifest from './ArenaSideNav.classes.generated';\nexport const arenaSideNavStyles = arenaStyles(manifest);\n");
+  const file = join(root, 'arena-side-nav-item', 'ArenaSideNavItem.ts');
+  assert.equal(sheetOf(file, "import { arenaSideNavStyles } from '../arena-side-nav/ArenaSideNav.variants';"), 'arena-side-nav');
   assert.equal(sheetOf(file, 'import { Component } from "@angular/core";'), null);
   rmSync(root, { recursive: true });
 });

@@ -1,0 +1,41 @@
+import React from 'react';
+import { arenaStyles } from '../../../ArenaStyles.generated.ts';
+import manifest from './ArenaPageHead.classes.generated.ts';
+import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
+
+import type { ArenaPageHeadAlign } from '../../../Api.generated';
+
+export interface ArenaPageHeadProps {
+
+  /** The page title. Required: a page head with no title is a bug, not a state. */
+  title: string;
+
+  /** A muted line under the title. */
+  subtitle?: string;
+
+  /** Page-level controls, right-aligned in the head. */
+  actions?: React.ReactNode;
+
+  /** Cross-axis alignment of the actions block against the title, wide layout only. */
+  align?: ArenaPageHeadAlign;
+}
+
+
+const arenaPageHeadStyles = arenaStyles(manifest);
+
+export function ArenaPageHead({ title, subtitle, actions, align = 'start' }: ArenaPageHeadProps) {
+  if (!title) throw new Error('ArenaPageHead: `title` is required');
+  const [ref, width] = useContainerWidth();
+  const narrow = width !== null && width < readBreakpoint('sm');
+  const styles = arenaPageHeadStyles({ narrow, align });
+
+  return (
+    <div ref={ref} className={styles.root()}>
+      <div className={styles.titles()}>
+        <h1 className={styles.title()}>{title}</h1>
+        {subtitle && <p className={styles.subtitle()}>{subtitle}</p>}
+      </div>
+      {actions && <div className={styles.actions()}>{actions}</div>}
+    </div>
+  );
+}

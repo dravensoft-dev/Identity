@@ -73,15 +73,15 @@ test('reactSurface reads every member of a props interface, with its optionality
   const src = `
     import * as React from 'react';
     /** doc */
-    export interface AppLogoProps {
+    export interface ArenaAppLogoProps {
       /** Both halves at once. */
       size?: 'sm' | 'md';
       mark: React.ReactNode;
       name: string;
     }
-    export function AppLogo(props: AppLogoProps): JSX.Element | null;
+    export function ArenaAppLogo(props: ArenaAppLogoProps): JSX.Element | null;
   `;
-  const { heritage, members } = reactSurface(src, 'AppLogoProps');
+  const { heritage, members } = reactSurface(src, 'ArenaAppLogoProps');
   assert.deepEqual(heritage, []);
   assert.equal(members.length, 3);
   assert.deepEqual(members.map((m) => [m.name, m.form, m.required]), [
@@ -95,8 +95,8 @@ test('reactSurface surfaces heritage -- the {...rest} escape is a member surface
 });
 
 test('reactSurface splits heritage only at depth zero -- a generic\'s own comma is not a heritage separator', () => {
-  const src = `export interface LineChartProps extends Omit<BarChartProps, 'slots'> { a: string; }`;
-  assert.deepEqual(reactSurface(src, 'LineChartProps').heritage, ["Omit<BarChartProps, 'slots'>"]);
+  const src = `export interface ArenaLineChartProps extends Omit<ArenaBarChartProps, 'slots'> { a: string; }`;
+  assert.deepEqual(reactSurface(src, 'ArenaLineChartProps').heritage, ["Omit<ArenaBarChartProps, 'slots'>"]);
 });
 
 test('reactSurface throws when the interface it was asked for is not there', () => {
@@ -175,7 +175,7 @@ test('an ng-content selector that is not an attribute selector throws -- the bin
   assert.throws(() => templateSlots('<ng-content select="img" />'), UnrecognisedShape);
 });
 
-test('reactSurface keeps a member whole across an internal ; inside its own annotation -- Onboarding.d.ts\'s anchorRect: DOMRect | { left: number; bottom: number }', () => {
+test('reactSurface keeps a member whole across an internal ; inside its own annotation -- ArenaOnboarding.d.ts\'s anchorRect: DOMRect | { left: number; bottom: number }', () => {
   const src = `
     export interface XProps {
       open: boolean;
@@ -194,7 +194,7 @@ test('reactSurface keeps a member whole across an internal ; inside its own anno
   });
 });
 
-test('a bare inline object-type annotation classifies as platform, reported rather than thrown -- Alert.d.ts\'s action: { label: string; onClick: () => void }', () => {
+test('a bare inline object-type annotation classifies as platform, reported rather than thrown -- ArenaAlert.d.ts\'s action: { label: string; onClick: () => void }', () => {
   const src = `
     export interface XProps {
       title?: string;
@@ -212,7 +212,7 @@ test('a bare inline object-type annotation classifies as platform, reported rath
   });
 });
 
-test('a union between a platform type and an inline object-type literal stays a union at the top level -- Onboarding.d.ts\'s anchorRect: DOMRect | { left: number; bottom: number }', () => {
+test('a union between a platform type and an inline object-type literal stays a union at the top level -- ArenaOnboarding.d.ts\'s anchorRect: DOMRect | { left: number; bottom: number }', () => {
 
   const out = classify('DOMRect | { left: number; bottom: number }');
   assert.deepEqual(out, { form: 'union', parts: ['DOMRect', '{ left: number; bottom: number }'] });
@@ -249,7 +249,7 @@ test('angularSurface skips a constructor block, the same way protected and priva
   assert.deepEqual(members.map((m) => m.name), ['a', 'b']);
 });
 
-test('angularSurface does not cut a member at a template-literal interpolation\'s own } -- CommandPalette.ts\'s `arena-command-palette-${nextId++}` field', () => {
+test('angularSurface does not cut a member at a template-literal interpolation\'s own } -- ArenaCommandPalette.ts\'s `arena-command-palette-${nextId++}` field', () => {
   const src = `
     export class X {
       readonly open = input(false, { transform: booleanAttribute });
@@ -471,8 +471,8 @@ test('a union of two parenthesised arms is not mistaken for one wrapped annotati
 });
 
 test('reactImplementation reads a plain exported component and its destructuring defaults', () => {
-  const src = "export function Tag({ children, tone = 'neutral', removable = false, onRemove }) {\n  return null;\n}\n";
-  const impl = reactImplementation(src, 'Tag');
+  const src = "export function ArenaTag({ children, tone = 'neutral', removable = false, onRemove }) {\n  return null;\n}\n";
+  const impl = reactImplementation(src, 'ArenaTag');
   assert.equal(impl.destructures, true);
   assert.equal(impl.rest, null);
   assert.equal(impl.defaults.get('tone'), "'neutral'");
@@ -487,8 +487,8 @@ test('reactImplementation reaches a forwardRef component, which is not an "expor
 });
 
 test('reactImplementation reports a surviving rest spread, which is the escape the .d.ts cannot show', () => {
-  const src = 'export function Card({ children, ...rest }) { return null; }\n';
-  assert.equal(reactImplementation(src, 'Card').rest, 'rest');
+  const src = 'export function ArenaCard({ children, ...rest }) { return null; }\n';
+  assert.equal(reactImplementation(src, 'ArenaCard').rest, 'rest');
 });
 
 test('a component taking no object pattern is readable and simply has nothing to compare', () => {
@@ -507,26 +507,26 @@ test('literalValue reads the literals a default can be, and refuses an expressio
 });
 
 test('a default the contract and the implementation both state must match', () => {
-  assert.deepEqual(defaultProblems('react/Skeleton', 'lines', 3, '3'), []);
-  assert.match(defaultProblems('react/Skeleton', 'lines', 3, '4')[0], /declares default 3, the implementation uses 4/);
+  assert.deepEqual(defaultProblems('react/ArenaSkeleton', 'lines', 3, '3'), []);
+  assert.match(defaultProblems('react/ArenaSkeleton', 'lines', 3, '4')[0], /declares default 3, the implementation uses 4/);
 });
 
 test('an implementation default the contract does not name is undocumented API', () => {
-  const problems = defaultProblems('react/Dialog', 'width', undefined, "'480px'");
+  const problems = defaultProblems('react/ArenaDialog', 'width', undefined, "'480px'");
   assert.equal(problems.length, 1);
   assert.match(problems[0], /defaults to "480px" and the contract declares no default/);
 });
 
 test('a contract default with no destructuring default is NOT reported, because the default may be applied downstream', () => {
-  assert.deepEqual(defaultProblems('react/BarChart', 'slot', 1, null), []);
+  assert.deepEqual(defaultProblems('react/ArenaBarChart', 'slot', 1, null), []);
 });
 
 test('a non-literal default is not compared, because the gate reads source and does not evaluate it', () => {
-  assert.deepEqual(defaultProblems('react/Dialog', 'width', 'calc(var(--sp-1) * 120)', 'calc(var(--sp-1) * 120)'), []);
+  assert.deepEqual(defaultProblems('react/ArenaDialog', 'width', 'calc(var(--sp-1) * 120)', 'calc(var(--sp-1) * 120)'), []);
 });
 
 test('IMPERATIVE_HANDLES names each allowed method by literal value, with a reason', () => {
-  assert.deepEqual([...IMPERATIVE_HANDLES.keys()].sort(), ['Input.focus', 'Input.select'],
+  assert.deepEqual([...IMPERATIVE_HANDLES.keys()].sort(), ['ArenaInput.focus', 'ArenaInput.select'],
     'a public method on a component class is an undeclared surface unless it is one of these, '
     + 'and widening the set is a decision rather than an oversight');
   for (const [name, reason] of IMPERATIVE_HANDLES) {
@@ -535,13 +535,13 @@ test('IMPERATIVE_HANDLES names each allowed method by literal value, with a reas
 });
 
 test('an allowed handle is skipped, and any other public method still fails', () => {
-  const allowed = 'export class Input {\n  readonly a = input<string>();\n  focus(): void { this.x(); }\n}';
-  assert.deepEqual(angularSurface(allowed, 'Input').members.map((m) => m.name), ['a']);
+  const allowed = 'export class ArenaInput {\n  readonly a = input<string>();\n  focus(): void { this.x(); }\n}';
+  assert.deepEqual(angularSurface(allowed, 'ArenaInput').members.map((m) => m.name), ['a']);
 
-  const stray = 'export class Input {\n  readonly a = input<string>();\n  reset(): void { this.x(); }\n}';
-  assert.throws(() => angularSurface(stray, 'Input'), UnrecognisedShape);
+  const stray = 'export class ArenaInput {\n  readonly a = input<string>();\n  reset(): void { this.x(); }\n}';
+  assert.throws(() => angularSurface(stray, 'ArenaInput'), UnrecognisedShape);
 
-  const wrongClass = 'export class Select {\n  readonly a = input<string>();\n  focus(): void { this.x(); }\n}';
-  assert.throws(() => angularSurface(wrongClass, 'Select'), UnrecognisedShape,
+  const wrongClass = 'export class ArenaSelect {\n  readonly a = input<string>();\n  focus(): void { this.x(); }\n}';
+  assert.throws(() => angularSurface(wrongClass, 'ArenaSelect'), UnrecognisedShape,
     'the allowance is keyed by component and method, so it does not leak to a sibling');
 });

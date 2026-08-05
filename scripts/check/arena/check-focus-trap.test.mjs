@@ -1,6 +1,6 @@
 /* The gate drives a real browser; these drive its verdict function with the walks a real trap and
- * a real defect produce. The CommandPalette case is the one that shipped: a modal panel with no
- * Tab handling at all, which every DOM-free suite passed because happy-dom has no sequential
+ * a real defect produce. The ArenaCommandPalette case is the one that shipped: a modal panel with no
+ * ArenaTab handling at all, which every DOM-free suite passed because happy-dom has no sequential
  * focus navigation to leave the panel with. */
 
 import { test } from 'node:test';
@@ -49,12 +49,12 @@ test('a walk that stayed inside, reached everything and wrapped both ways is cle
 });
 
 test('focus leaving the panel is reported with the presses it left on', () => {
-  const problems = walkProblems('CommandPalette:react', {
+  const problems = walkProblems('ArenaCommandPalette:react', {
     panel: true, focusables: 1, startsInside: true,
     forward: [{ press: 1, inside: false }, { press: 2, inside: false }],
     visited: 0, wrapsForward: false, wrapsBackward: false,
   });
-  assert.match(problems[0], /focus left the panel on Tab 1, 2 -- the interior is not trapped/);
+  assert.match(problems[0], /focus left the panel on ArenaTab 1, 2 -- the interior is not trapped/);
 });
 
 test('a single-stop trap is valid and is not asked to wrap between elements', () => {
@@ -64,8 +64,8 @@ test('a single-stop trap is valid and is not asked to wrap between elements', ()
   }), []);
 });
 
-test('a panel with no Tab stop at all fails, and a missing panel fails before anything is walked', () => {
-  assert.match(walkProblems('X', { panel: true, focusables: 0 })[0], /no Tab stop at all/);
+test('a panel with no ArenaTab stop at all fails, and a missing panel fails before anything is walked', () => {
+  assert.match(walkProblems('X', { panel: true, focusables: 0 })[0], /no ArenaTab stop at all/);
   assert.match(walkProblems('X', { panel: false })[0], /nothing was walked/);
 });
 

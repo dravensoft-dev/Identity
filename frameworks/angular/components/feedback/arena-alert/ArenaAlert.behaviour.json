@@ -1,0 +1,13 @@
+{
+  "component": "ArenaAlert",
+  "cases": [
+    { "name": "danger",
+      "when": "tone is \"danger\" -- the only tone that renders role=\"alert\"",
+      "pattern": "alert",
+      "exceptions": [] },
+    { "name": "advisory",
+      "when": "any other tone -- info, success, warning, neutral, including the default",
+      "pattern": "status",
+      "exceptions": [] }
+  ]
+}

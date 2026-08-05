@@ -1,0 +1,31 @@
+{
+  "component": "ArenaBulkActionBar",
+  "seed": {
+    "count": 3,
+    "noun": "services",
+    "actions": [
+      {
+        "id": "promote",
+        "label": "Promote",
+        "icon": "ph-bold ph-rocket-launch"
+      },
+      {
+        "id": "archive",
+        "label": "Archive",
+        "icon": "ph-bold ph-archive"
+      },
+      {
+        "id": "delete",
+        "label": "Delete",
+        "icon": "ph-bold ph-trash",
+        "destructive": true
+      }
+    ]
+  },
+  "bind": {
+    "clear": {
+      "count": 0
+    }
+  },
+  "note": "Clearable is a member rather than a bound listener, because R6 forbids the other reading."
+}

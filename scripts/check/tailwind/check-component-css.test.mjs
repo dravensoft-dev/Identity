@@ -13,14 +13,14 @@ test('the gate runs green over the tree as it stands', () => {
 });
 
 test('a specimen\'s fetches are read whatever path they take, since the sheet it needs is the component\'s', () => {
-  const html = "await fetch('./UnauthCard.manifest.json'); await fetch( \"../../brand/app-logo/AppLogo.manifest.json\" )";
-  assert.deepEqual([...html.matchAll(MANIFEST_FETCH)].map((m) => m[2]), ['UnauthCard', 'AppLogo']);
+  const html = "await fetch('./ArenaUnauthCard.manifest.json'); await fetch( \"../../brand/arena-app-logo/ArenaAppLogo.manifest.json\" )";
+  assert.deepEqual([...html.matchAll(MANIFEST_FETCH)].map((m) => m[2]), ['ArenaUnauthCard', 'ArenaAppLogo']);
 });
 
 test('a stylesheet lands under consume/, at the manifest\'s own category and directory', () => {
   assert.equal(
-    sheetPath('frameworks/tailwind/components/display/badge/Badge.manifest.json'),
-    'frameworks/tailwind/consume/components/display/badge/Badge.styles.generated.css',
+    sheetPath('frameworks/tailwind/components/display/arena-badge/ArenaBadge.manifest.json'),
+    'frameworks/tailwind/consume/components/display/arena-badge/ArenaBadge.styles.generated.css',
   );
 });
 

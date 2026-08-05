@@ -7,6 +7,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
+import { PREFIX } from './check-structure.mjs';
 import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
   bindingName,
@@ -78,6 +79,10 @@ export function validateTypes(types) {
   }
   for (const type of types) {
     if (!type.name) { problems.push('contracts/api/types: a type has no name'); continue; }
+    if (!type.name.startsWith(PREFIX)) {
+      problems.push(`${type.name}: does not start with ${PREFIX}. Every type reaches a consumer through the `
+        + 'package root, where an unprefixed name collides with whatever that project already calls it');
+    }
     if (seen.has(type.name)) problems.push(`${type.name}: declared twice`);
     seen.add(type.name);
     if (type.kind === 'enum') {

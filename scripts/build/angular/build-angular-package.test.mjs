@@ -66,9 +66,9 @@ test('the staging tree is the layer\'s own build/, git-ignored and excluded by a
 });
 
 test('a style factory is marked pure where it is declared, so a bundler may drop the one nothing renders', () => {
-  const source = "import manifest from './Tag.classes.generated';\n\nexport const tagStyles = arenaStyles(manifest);\n";
+  const source = "import manifest from './ArenaTag.classes.generated';\n\nexport const arenaTagStyles = arenaStyles(manifest);\n";
   assert.equal(annotatePure(source),
-    "import manifest from './Tag.classes.generated';\n\nexport const tagStyles = /*@__PURE__*/arenaStyles(manifest);\n");
+    "import manifest from './ArenaTag.classes.generated';\n\nexport const arenaTagStyles = /*@__PURE__*/arenaStyles(manifest);\n");
 });
 
 test('nothing else in a variants file is touched, and the suffix is the one the staging matches on', () => {

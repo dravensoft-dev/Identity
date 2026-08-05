@@ -143,8 +143,8 @@ this refuses, and it is **nothing at all** rather than a member of the component
 convention leaves such an object no per-item render function, which is the only route by which
 a consumer's own record could come back out, and the other mechanical guard on the eighth form
 is that a consumer-data member must have a consumer. With no route out it is dead API, so
-`CalendarEvent` declares `id`, `title`, `start`, `end` and `colorId` and nothing else. What a
-consumer cannot express through those is recorded in `Calendar.prompt.md`, not hidden.
+`ArenaCalendarEvent` declares `id`, `title`, `start`, `end` and `colorId` and nothing else. What a
+consumer cannot express through those is recorded in `ArenaCalendar.prompt.md`, not hidden.
 
 **R2. Who draws decides data versus slot.** If Arena draws the content, knowing its
 fields and owning its markup, it is an object or an array of objects. If the consumer draws
@@ -175,9 +175,9 @@ list is private in at least one of them, and projected content is not inspectabl
 one of them. A component that asks it anyway is correct in the layer that can and silently
 different in the layer that cannot.
 
-So the answer is a **member**, and it is declared and gated on explicitly. `Alert.dismissible`,
-`Toast.dismissible`, `Tag.removable`, `BulkActionBar.clearable`, `TableRow.interactive`,
-`CalendarEvent.interactive`, `CalendarEvent.actionsEnabled` and `Calendar.dayInteractive` are the
+So the answer is a **member**, and it is declared and gated on explicitly. `ArenaAlert.dismissible`,
+`ArenaToast.dismissible`, `ArenaTag.removable`, `ArenaBulkActionBar.clearable`, `ArenaTableRow.interactive`,
+`ArenaCalendarEvent.interactive`, `ArenaCalendarEvent.actionsEnabled` and `ArenaCalendar.dayInteractive` are the
 eight that exist for this reason, and each one's description says so. The cost is stated rather than hidden: a consumer who binds the event and
 forgets the boolean gets no control, in every layer alike, which is the point, since the
 alternative is *one* layer quietly doing something else.
@@ -213,7 +213,7 @@ draws the `<i class="…">`; the consumer names the glyph. This keeps the glyph 
 reason, lets each layer gate the wrapper on the value's presence. Angular cannot
 detect a filled slot without a `contentChild` query on a marker directive, so an icon *slot*
 either ships an unconditional zero-area wrapper or costs a directive a consumer must remember
-to import. `Alert` renders it this way in both layers.
+to import. `ArenaAlert` renders it this way in both layers.
 
 **A field inside a predefined object is never a node, and inside an *array* of predefined
 objects it can only be a primitive.** R1 offers two remedies for a node-valued field, making it
@@ -229,14 +229,14 @@ shape. What has no answer is Angular: per-item projection needs a
 structural directive and `ngTemplateOutlet`, a binding no row of the table above covers and no
 reader function reads, and that machinery for one member is the wrong trade.
 
-**The convention holds across the library, and `Table` is where it charges the most.** The two
-commonest things anyone puts in a table cell are a `Badge` in a status column and a `Button` in
+**The convention holds across the library, and `ArenaTable` is where it charges the most.** The two
+commonest things anyone puts in a table cell are an `ArenaBadge` in a status column and an `ArenaButton` in
 an actions column, and Arena's own Delivery Console wants both. So the consequence stated above
 for a feed row, *a consumer cannot place their own markup inside one row Arena renders*, reads
 mildly there and sharply here: **a status column needs a member Arena draws from, and an actions
 column has no expression in the contract at all.** That is a real capability loss with a real
 user, recorded rather than discovered, and it is the price of one convention holding across the
-library instead of `Table` becoming the exception that reintroduces per-item projection for
+library instead of `ArenaTable` becoming the exception that reintroduces per-item projection for
 everyone.
 
 **Flattening a platform heritage clause enumerates the element, not the platform.** R4 removes
@@ -269,11 +269,11 @@ what separates them from every other one.
 `id` is a member only where the component generates one. A component that *derives* an id from
 another member and wires its own `<label for>` to it has taken that attribute out of the
 consumer's hands, and taken with it the only path to an external `<label>`, an
-`aria-describedby`, or a form library that needs to address the field by name. `Input` and
-`Textarea` declare it; the generated value stays the fallback, so the member is `id?: string` and
+`aria-describedby`, or a form library that needs to address the field by name. `ArenaInput` and
+`ArenaTextarea` declare it; the generated value stays the fallback, so the member is `id?: string` and
 never required. A component that generates no id has no such gap and adds no such member.
 
-`tabStop` is a member on `Button` and `IconButton` because the rule's own justification, that a
+`tabStop` is a member on `ArenaButton` and `ArenaIconButton` because the rule's own justification, that a
 consumer writes it on the host directly, does not reach either. Neither has a host a consumer
 writes on: both render their own `<button>` inside a host that is `display: contents`, in both
 layers, so a `tabindex` written on `<arena-button>` reaches a node that lays nothing out and
@@ -310,7 +310,7 @@ the address, and answering with an in-app route would be the defect the conventi
 avoid. So a handler that routes fires for exactly the activation it should answer, and the keyboard
 agrees with the mouse, because Enter on such a row takes the same path a primary click does. This is
 the rule `RouterLink` applies, and it is here for the same reason. Four members carry it:
-`Card.href`, `ArenaCommand.route`, `ArenaCrumb.href` and `SideNavItem.href`.
+`ArenaCard.href`, `ArenaCommand.route`, `ArenaCrumb.href` and `ArenaSideNavItem.href`.
 
 **Leaving it to the router instead is not available, and the reason is mechanical rather than
 doctrinal.** `RouterLink` decides whether it sits on an anchor by `tagName` and by
@@ -334,7 +334,7 @@ object form, and that is the price.
 
 ```json
 {
-  "component": "Breadcrumbs",
+  "component": "ArenaBreadcrumbs",
   "description": "A trail of ancestor locations ending at the current one.",
   "api": {
     "items":     { "form": "array",     "of": "ArenaCrumb",  "required": true,
@@ -363,7 +363,7 @@ A `functionInput` declares its whole signature, and the contract carrying it dec
 `"kind": "input"` at top level, or the gate rejects the member:
 
 ```json
-{ "component": "Input", "kind": "input",
+{ "component": "ArenaInput", "kind": "input",
   "api": { "validate": { "form": "functionInput", "params": { "value": "string" }, "returns": "string" } } }
 ```
 
@@ -373,7 +373,7 @@ for a single record, `"params": { "row": "consumerData" }` for a slot parameter 
 `"payload": "consumerData"` for an event. **Nothing is declared in `contracts/api/types/` for it**:
 a type there states its fields, and this form's whole content is that its fields are the
 consumer's. That is what keeps the directory from filling with fieldless types, and it is why
-the `cell` example above names no `TableRow`. A `TableRow` cannot be declared, so a
+the `cell` example above names no `ArenaTableRow`. A `ArenaTableRow` cannot be declared, so a
 contract naming one is rejected by the very gate this document specifies.
 
 An **optional** member is still a declared member. `required: false` governs whether a

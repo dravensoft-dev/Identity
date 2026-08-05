@@ -22,15 +22,15 @@ function tree(files) {
 }
 
 test('a test never ships, whichever extension it takes', () => {
-  for (const name of ['Tag.test.ts', 'Tag.test.tsx', 'Button.test.jsx', 'Button.dom.test.jsx', 'theme-css.test.mjs']) {
+  for (const name of ['ArenaTag.test.ts', 'ArenaTag.test.tsx', 'ArenaButton.test.jsx', 'ArenaButton.dom.test.jsx', 'theme-css.test.mjs']) {
     assert.equal(excluded(name), true, name);
   }
 });
 
 test('a demo, a specimen, a binding and a prompt never ship either', () => {
-  for (const name of ['Tag.card.html', 'Tag.card.entry.ts', 'Button.card.entry.jsx',
-    'Tag.demo.generated.html', 'Tag.demo.entry.generated.tsx', 'Tag.demo.entry.generated.ts',
-    'Tag.behaviour.json', 'Tag.prompt.md', 'Button.generated.js', 'BehaviourDelegated.json',
+  for (const name of ['ArenaTag.card.html', 'ArenaTag.card.entry.ts', 'ArenaButton.card.entry.jsx',
+    'ArenaTag.demo.generated.html', 'ArenaTag.demo.entry.generated.tsx', 'ArenaTag.demo.entry.generated.ts',
+    'ArenaTag.behaviour.json', 'ArenaTag.prompt.md', 'ArenaButton.generated.js', 'BehaviourDelegated.json',
     'tsconfig.test.json', 'tsconfig.check.json']) {
     assert.equal(excluded(name), true, name);
   }
@@ -42,8 +42,8 @@ test('a whole directory of somebody else\'s output never ships', () => {
 });
 
 test('a real source is not swept up by any of those patterns', () => {
-  for (const name of ['Tag.ts', 'Tag.variants.ts', 'Button.jsx', 'Button.d.ts', 'index.ts',
-    'Tokens.generated.ts', 'Tag.manifest.generated.ts', 'CalendarInternals.js']) {
+  for (const name of ['ArenaTag.ts', 'ArenaTag.variants.ts', 'ArenaButton.jsx', 'ArenaButton.d.ts', 'index.ts',
+    'Tokens.generated.ts', 'ArenaTag.manifest.generated.ts', 'CalendarInternals.js']) {
     assert.equal(excluded(name), false, name);
   }
   assert.ok(EXCLUDED_PATTERNS.length > 0);
@@ -51,16 +51,16 @@ test('a real source is not swept up by any of those patterns', () => {
 
 test('the walk honours the exclusion list at every depth', () => {
   const root = tree({
-    'components/display/tag/Tag.ts': '',
-    'components/display/tag/Tag.test.ts': '',
-    'components/display/tag/Tag.card.html': '',
+    'components/display/arena-tag/ArenaTag.ts': '',
+    'components/display/arena-tag/ArenaTag.test.ts': '',
+    'components/display/arena-tag/ArenaTag.card.html': '',
     'test/Harness.ts': '',
     'dist/Old.ts': '',
     'node_modules/x/index.ts': '',
   });
   assert.deepEqual(
     collectFiles(root).map((p) => p.slice(root.length + 1)),
-    [join('components', 'display', 'tag', 'Tag.ts')],
+    [join('components', 'display', 'arena-tag', 'ArenaTag.ts')],
   );
   rmSync(root, { recursive: true });
 });

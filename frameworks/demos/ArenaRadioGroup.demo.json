@@ -1,0 +1,31 @@
+{
+  "component": "ArenaRadioGroup",
+  "seed": {
+    "ariaLabel": "Rollout strategy",
+    "value": "canary",
+    "name": "rollout"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaRadio",
+        "members": {
+          "value": "canary",
+          "label": "Canary",
+          "hint": "One region first, then the rest."
+        }
+      },
+      {
+        "component": "ArenaRadio",
+        "members": {
+          "value": "all",
+          "label": "Everywhere at once"
+        }
+      }
+    ]
+  },
+  "bind": {
+    "change": "value"
+  },
+  "note": "The group owns the selection; each radio owns what it looks like."
+}

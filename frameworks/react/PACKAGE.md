@@ -159,7 +159,7 @@ naming the key.
 ```
 
 It counts a component as drawn when you import it from this package or open its tag, and it adds
-what Arena draws on your behalf, because a `Table` renders a `Pagination` and a `Select` you
+what Arena draws on your behalf, because an `ArenaTable` renders an `ArenaPagination` and an `ArenaSelect` you
 never wrote. It tells you both counts on stderr, and names anything it saw and could not place.
 `preflight: false` is separate: set it when your project already ships an equivalent browser
 reset.
@@ -206,7 +206,7 @@ initArenaTheme({
 
 function ThemeButton() {
   const [theme, setTheme] = useArenaTheme();
-  return <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme}</Button>;
+  return <ArenaButton onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme}</ArenaButton>;
 }
 ```
 

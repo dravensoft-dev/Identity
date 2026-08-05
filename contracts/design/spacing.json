@@ -5,22 +5,22 @@
     "0": { "$value": { "value": 0, "unit": "px" } },
     "1": {
       "$value": { "value": 4, "unit": "px" },
-      "$description": "Script-readable: Menu's gap from its trigger is one and a half of this, and that gap is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it.",
+      "$description": "Script-readable: ArenaMenu's gap from its trigger is one and a half of this, and that gap is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "2": {
       "$value": { "value": 8, "unit": "px" },
-      "$description": "Script-readable: Tooltip's gap from its trigger is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it.",
+      "$description": "Script-readable: ArenaTooltip's gap from its trigger is the offset a CDK overlay position strategy computes in JS, so no stylesheet can hold it.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "3": {
       "$value": { "value": 12, "unit": "px" },
-      "$description": "Script-readable: Onboarding's gap below its anchor is arithmetic on a DOMRect.",
+      "$description": "Script-readable: ArenaOnboarding's gap below its anchor is arithmetic on a DOMRect.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "4": {
       "$value": { "value": 16, "unit": "px" },
-      "$description": "Script-readable: Onboarding's minimum gutter from either viewport edge, compared against window.innerWidth.",
+      "$description": "Script-readable: ArenaOnboarding's minimum gutter from either viewport edge, compared against window.innerWidth.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "5": { "$value": { "value": 20, "unit": "px" } },
@@ -69,7 +69,7 @@
   },
   "avatar": {
     "$type": "dimension",
-    "$description": "Avatar diameters. The first family named after a component rather\nthan a role, and worth stating rather than glossing: dz and icon are named for\nroles. It earns its place because Avatar derives two values from its own\ndiameter (the initials at 0.4 and the presence dot at 0.28), and a derivation\nneeds something to derive from. If a second component ever wants the same\nladder, rename this for the role instead of duplicating it.",
+    "$description": "ArenaAvatar diameters. The first family named after a component rather\nthan a role, and worth stating rather than glossing: dz and icon are named for\nroles. It earns its place because ArenaAvatar derives two values from its own\ndiameter (the initials at 0.4 and the presence dot at 0.28), and a derivation\nneeds something to derive from. If a second component ever wants the same\nladder, rename this for the role instead of duplicating it.",
     "xs": { "$value": { "value": 24, "unit": "px" } },
     "sm": { "$value": { "value": 32, "unit": "px" } },
     "md": { "$value": { "value": 40, "unit": "px" } },
@@ -77,7 +77,7 @@
   },
   "logo": {
     "$type": "dimension",
-    "$description": "Brand lock-up scale: the mark's slot and the wordmark's size, in\nfour steps. These are tokens rather than an exemption for one reason: AppLogo\ntakes the mark and the name from its consumer, so once they are the consumer's\nbrand these numbers stop being Dravensoft's identity and become the system's\nanswer to 'how big is a small logo'. A scale is a scale, and Arena's scales are\ntokens.\n\nA fixed repertoire rather than one mark-to-text ratio, because no single ratio\nis right at every step: a small lock-up needs proportionally larger text to stay\nlegible, and one constant across the scale would either shrink the small\nwordmark below reading size or inflate the large one. The eight numbers are\ndeclared and the proportions that fall out (0.57, 0.60, 0.63, 0.63) are a\nconsequence rather than a rule.\n\nNo number here was invented. sm and md are exactly what the console's Shell and\nLoginScreen rendered before they migrated; lg and xl are the approved brand\nmanual's Primary · horizontal and its large specimen.",
+    "$description": "Brand lock-up scale: the mark's slot and the wordmark's size, in\nfour steps. These are tokens rather than an exemption for one reason: ArenaAppLogo\ntakes the mark and the name from its consumer, so once they are the consumer's\nbrand these numbers stop being Dravensoft's identity and become the system's\nanswer to 'how big is a small logo'. A scale is a scale, and Arena's scales are\ntokens.\n\nA fixed repertoire rather than one mark-to-text ratio, because no single ratio\nis right at every step: a small lock-up needs proportionally larger text to stay\nlegible, and one constant across the scale would either shrink the small\nwordmark below reading size or inflate the large one. The eight numbers are\ndeclared and the proportions that fall out (0.57, 0.60, 0.63, 0.63) are a\nconsequence rather than a rule.\n\nNo number here was invented. sm and md are exactly what the console's Shell and\nLoginScreen rendered before they migrated; lg and xl are the approved brand\nmanual's Primary · horizontal and its large specimen.",
     "mark-sm": { "$value": { "value": 30, "unit": "px" }, "$description": "beside a product name in an application frame" },
     "mark-md": { "$value": { "value": 40, "unit": "px" }, "$description": "a signed-out panel's lock-up" },
     "mark-lg": { "$value": { "value": 54, "unit": "px" }, "$description": "the manual's Primary · horizontal" },

@@ -1,0 +1,42 @@
+<!-- @dsCard group="Tailwind" viewport="700x538" name="ArenaChartCard" subtitle="The tile a chart sits on, rendered from ArenaChartCard.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../../intro/styles.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/charts/arena-chart-card/ArenaChartCard.styles.generated.css">
+<link rel="stylesheet" href="../../../Specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
+
+const manifest = await (await fetch('./ArenaChartCard.manifest.json')).json();
+const c = arenaClassesFor(manifest);
+
+/* The chart itself is not rendered here — it has no manifest, by design. The
+   placeholder stands where one goes, so the tile's padding and gap are what the
+   page is actually showing. The head row is omitted entirely when there is
+   neither a title nor an action, matching the primitive's own gate — an empty
+   head would otherwise ship a dead flex row above the placeholder. */
+function tile({ title, withAction }) {
+  const children = [];
+  if (title || withAction) {
+    const head = el('div', { class: c.head });
+    if (title) head.append(el('span', { class: c.title, text: title }));
+    if (withAction) {
+      const actions = el('div', { class: c.actions });
+      actions.append(el('span', { class: 'font-body text-ctl-md text-base-content/62', text: '[ Export ]' }));
+      head.append(actions);
+    }
+    children.push(head);
+  }
+  const slot = el('div', { class: 'w-full bg-base-300 rounded-sm' });
+  slot.style.height = '140px';
+  const root = el('div', { class: c.root }, ...children, slot);
+  root.style.width = '300px';
+  return root;
+}
+
+mountSpecimen({ sections: [
+  section('With a title and an action', [tile({ title: 'Deployments per week', withAction: true })]),
+  section('Title only, and bare', [tile({ title: 'Error rate' }), tile({})], { align: 'start' }),
+]});
+</script></body></html>

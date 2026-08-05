@@ -17,7 +17,7 @@ const ANGULAR = {
 
 const REACT = {
   match: 'symbol',
-  draws: { Button: 'button', Table: 'table', TableRow: 'table', Pagination: 'pagination', Select: 'select', BarChart: null },
+  draws: { ArenaButton: 'button', ArenaTable: 'table', ArenaTableRow: 'table', ArenaPagination: 'pagination', ArenaSelect: 'select', ArenaBarChart: null },
   needs: { table: ['pagination', 'select'] },
 };
 
@@ -56,25 +56,25 @@ test('a selector is matched at its end, so one name is not read inside a longer 
 });
 
 test('React is read through the import that names the package', () => {
-  const source = "import { Button, Table as Grid } from '@dravensoft/arena-react';";
+  const source = "import { ArenaButton, ArenaTable as ArenaGrid } from '@dravensoft/arena-react';";
   const { drawn } = symbolKeys(REACT, [source], '@dravensoft/arena-react');
-  assert.deepEqual(drawn, ['Button', 'Table'], 'the alias is the consumer\'s; the name in the import is Arena\'s');
+  assert.deepEqual(drawn, ['ArenaButton', 'ArenaTable'], 'the alias is the consumer\'s; the name in the import is Arena\'s');
 });
 
 test('React is also read through the tag it opens, for a symbol reached another way', () => {
-  const { drawn } = symbolKeys(REACT, ['<Pagination page={1} />'], '@dravensoft/arena-react');
-  assert.deepEqual(drawn, ['Pagination']);
+  const { drawn } = symbolKeys(REACT, ['<ArenaPagination page={1} />'], '@dravensoft/arena-react');
+  assert.deepEqual(drawn, ['ArenaPagination']);
 });
 
-test('a bare word is not a component, because half this library is called Table in somebody else\'s code', () => {
-  const { drawn } = symbolKeys(REACT, ['const Table = ourOwnThing; render(Table);'], '@dravensoft/arena-react');
+test('a bare word is not a component, because half this library is called ArenaTable in somebody else\'s code', () => {
+  const { drawn } = symbolKeys(REACT, ['const ArenaTable = ourOwnThing; render(ArenaTable);'], '@dravensoft/arena-react');
   assert.deepEqual(drawn, [], 'no import from the package and no tag opened, so nothing of Arena\'s was written');
 });
 
 test('the import is matched against this package alone', () => {
   const shape = namedImports('@dravensoft/arena-react');
-  assert.ok(shape.test("import { Button } from '@dravensoft/arena-react';"));
-  assert.equal(namedImports('@dravensoft/arena-react').test("import { Button } from '@acme/arena-react';"), false);
+  assert.ok(shape.test("import { ArenaButton } from '@dravensoft/arena-react';"));
+  assert.equal(namedImports('@dravensoft/arena-react').test("import { ArenaButton } from '@acme/arena-react';"), false);
 });
 
 test('a map keyed by something this command cannot scan for is an answer of none', () => {

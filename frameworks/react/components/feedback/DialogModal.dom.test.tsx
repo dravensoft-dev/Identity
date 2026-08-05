@@ -6,8 +6,8 @@ import { writeFileSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { mount, cleanup } from '../../test/Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
-import { Dialog } from './dialog/Dialog.tsx';
-import { ConfirmDialog } from './confirm-dialog/ConfirmDialog.tsx';
+import { ArenaDialog } from './arena-dialog/ArenaDialog.tsx';
+import { ArenaConfirmDialog } from './arena-confirm-dialog/ArenaConfirmDialog.tsx';
 
 afterEach(cleanup);
 
@@ -29,23 +29,23 @@ function tempBindingPath(label: string) {
   return join(tmpdir(), `arena-${label}-${process.pid}-${tempCounter}.behaviour.json`);
 }
 
-test('Dialog matches its dialog-modal binding, in both directions', () => {
+test('ArenaDialog matches its dialog-modal binding, in both directions', () => {
   const container = mount(
-    <Dialog open onClose={() => {}} title="Delete project">
+    <ArenaDialog open onClose={() => {}} title="Delete project">
       <p>Body</p>
-    </Dialog>,
+    </ArenaDialog>,
   );
   assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/dialog/Dialog.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/arena-dialog/ArenaDialog.behaviour.json'),
     subjects: { default: container.querySelector<HTMLElement>('[role="dialog"], dialog') },
     behavioural: DIALOG_BEHAVIOURAL,
   });
 });
 
-test('ConfirmDialog matches its alertdialog binding, in both directions', () => {
+test('ArenaConfirmDialog matches its alertdialog binding, in both directions', () => {
   const container = mount(
-    <ConfirmDialog
+    <ArenaConfirmDialog
       open
       onCancel={() => {}}
       onConfirm={() => {}}
@@ -55,7 +55,7 @@ test('ConfirmDialog matches its alertdialog binding, in both directions', () => 
   );
   assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/confirm-dialog/ConfirmDialog.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/arena-confirm-dialog/ArenaConfirmDialog.behaviour.json'),
 
     subjects: { default: container.querySelector<HTMLElement>('[role="dialog"], [role="alertdialog"]') },
     behavioural: CONFIRM_DIALOG_BEHAVIOURAL,
@@ -70,7 +70,7 @@ test('assertPattern reports a stale exception', () => {
     exceptions: [{ requirement: 'roles.aria-modal', reason: 'synthetic' }],
   }));
   try {
-    const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+    const container = mount(<ArenaDialog open onClose={() => {}} title="t"><p>b</p></ArenaDialog>);
     assert.throws(() => assertPattern({
       root: container,
       bindingPath: p,
@@ -87,7 +87,7 @@ test('assertPattern reports an overclaim', () => {
 
   writeFileSync(p, JSON.stringify({ pattern: 'dialog-modal', exceptions: [] }));
   try {
-    const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+    const container = mount(<ArenaDialog open onClose={() => {}} title="t"><p>b</p></ArenaDialog>);
     assert.throws(() => assertPattern({
       root: container,
       bindingPath: p,
@@ -101,10 +101,10 @@ test('assertPattern reports an overclaim', () => {
 
 test('assertPattern reports a missed selector as "no subject element", not as an OVERCLAIM', () => {
 
-  const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+  const container = mount(<ArenaDialog open onClose={() => {}} title="t"><p>b</p></ArenaDialog>);
   assert.throws(() => assertPattern({
     root: container,
-    bindingPath: join(REACT_COMPONENTS, 'feedback/dialog/Dialog.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'feedback/arena-dialog/ArenaDialog.behaviour.json'),
     subjects: { default: container.querySelector<HTMLElement>('[role="nonexistent"]') },
     behavioural: ALL_UNMET,
   }), (err) => {
@@ -118,7 +118,7 @@ test('assertPattern refuses an undeclared undecidable requirement', () => {
   const p = tempBindingPath('undeclared');
   writeFileSync(p, JSON.stringify({ pattern: 'dialog-modal', exceptions: [] }));
   try {
-    const container = mount(<Dialog open onClose={() => {}} title="t"><p>b</p></Dialog>);
+    const container = mount(<ArenaDialog open onClose={() => {}} title="t"><p>b</p></ArenaDialog>);
     assert.throws(() => assertPattern({
       root: container,
       bindingPath: p,
@@ -132,7 +132,7 @@ test('assertPattern refuses an undeclared undecidable requirement', () => {
 
 test('the require-text input substitutes a focus ring for the outline it removes', () => {
   const container = mount(
-    <ConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project"
+    <ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project"
       confirmLabel="Delete" requireText="DELETE" />,
   );
   const input = container.querySelector<HTMLInputElement>('input');

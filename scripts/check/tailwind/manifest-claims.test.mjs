@@ -60,15 +60,15 @@ test('every manifest claim holds', () => {
   assert.deepEqual(problems, [], problems.join('\n'));
 });
 
-test('no SideNav slot hard-codes an indent bracket, because a static utility holds no runtime multiplier', () => {
+test('no ArenaSideNav slot hard-codes an indent bracket, because a static utility holds no runtime multiplier', () => {
   for (const slot of ['item', 'trigger', 'sectionLabel']) {
-    const carried = resolve('SideNav', {}, slot).filter((cls) => cls.startsWith('ps-['));
+    const carried = resolve('ArenaSideNav', {}, slot).filter((cls) => cls.startsWith('ps-['));
     assert.deepEqual(carried, [], `${slot} hard-codes ${carried.join(' ')}; the depth-0 inline start is all a slot may carry`);
   }
 });
 
 export const CLAIMS = {
-  AppLogo: [
+  ArenaAppLogo: [
     ...['sm', 'md', 'lg', 'xl'].flatMap((s) => [
       { chosen: { size: s }, slot: 'mark', has: [`size-logo-mark-${s}`], why: 'each size step pairs a mark box with its wordmark step' },
       { chosen: { size: s }, slot: 'name', has: [`text-logo-${s}`], why: 'each size step pairs a mark box with its wordmark step' },
@@ -77,17 +77,17 @@ export const CLAIMS = {
     { chosen: { orientation: 'vertical' }, slot: 'root', has: ['flex-col', 'gap-3'], why: 'orientation changes the axis and the gap, nothing else' },
     { slot: 'mark', has: ['*:w-full', '*:h-full', '*:block'], why: 'the mark slot stretches its projected child rather than sizing it' },
   ],
-  ChartCard: [
+  ArenaChartCard: [
     { slot: 'root', has: ['flex', 'bg-base-200', 'border-[length:var(--bw)]', 'border-base-300', 'rounded-lg'], why: 'a chart tile is a bordered tile off the surface scale, not a heading-bearing panel' },
     { slot: 'title', has: ['font-mono', 'uppercase', 'tracking-label'], hasNot: ['font-display', 'text-h1', 'text-h2', 'text-h3', 'text-h4'], why: 'a microlabel carries neither the display font nor a heading size, which would fabricate a document outline' },
     { slot: 'head', has: ['justify-between', 'items-center', 'flex-wrap'], why: 'the head row spaces title and actions to opposite ends and wraps, since the slot projects one element per control' },
   ],
-  ActivityFeed: [
+  ArenaActivityFeed: [
     { slot: 'dot', has: ['bg-current'], hasNot: ['bg-error', 'bg-success', 'bg-warning', 'bg-info', 'bg-primary', 'bg-secondary'], why: 'the dot carries the tone as a colour, never as a fill of its own' },
     { chosen: { divided: true }, slot: 'item', has: ['border-t-[length:var(--bw)]'], why: 'divided draws the rule between rows' },
     { chosen: { divided: false }, slot: 'item', has: ['border-t-0'], why: 'the first row carries no divider above it' },
   ],
-  Avatar: [
+  ArenaAvatar: [
     ...['xs', 'sm', 'md', 'lg'].map((s) => ({
       chosen: { size: s }, slot: 'box', has: [`text-[length:calc(var(--avatar-${s})*0.4)]`],
       why: 'the initials font size is exactly diameter times the ratio spacing.json declares',
@@ -104,7 +104,7 @@ export const CLAIMS = {
     { chosen: { status: 'offline' }, slot: 'status', has: ['bg-base-content/52'], why: 'a presence tone maps to the status colour taxonomy, never to a series colour' },
     { slot: 'image', has: ['w-full', 'h-full', 'object-cover'], why: 'the image fills the box and crops to it, so a non-square source never distorts' },
   ],
-  Card: [
+  ArenaCard: [
     { slot: 'root', has: ['block', 'bg-base-200'], why: 'the card sits on the middle step of the surface scale and is never a zero-area inline box' },
     { chosen: { accent: true }, slot: 'root', has: ['border-primary'], hasNot: ['border-base-300'], why: 'accent swaps the hairline for the accent border and touches nothing else' },
     { chosen: { accent: false }, slot: 'root', has: ['border-base-300'], hasNot: ['border-primary'], why: 'accent swaps the hairline for the accent border and touches nothing else' },
@@ -113,13 +113,13 @@ export const CLAIMS = {
     { slot: 'eyebrow', has: ['font-mono', 'uppercase', 'text-primary'], why: 'the eyebrow is the accent mono micro-label above the display-weight title' },
     { slot: 'title', has: ['font-display', 'text-h4'], why: 'the eyebrow is the accent mono micro-label above the display-weight title' },
   ],
-  Skeleton: [
+  ArenaSkeleton: [
     { chosen: { variant: 'text' }, slot: 'root', has: ['arena-shimmer'], hasNot: ['hidden'], why: 'the text variant carries no root override; the host reads stack() for it, not root()' },
     { slot: 'stack', has: ['flex-col', 'gap-2.5'], why: 'the stack lays its lines in a column and is unaffected by variant' },
     { slot: 'line', has: ['w-full'], hasNot: ['w-[62%]'], why: 'a full line runs the whole width and only the closing one runs short' },
     { slot: 'lastLine', has: ['w-[62%]'], why: 'the last line is narrower than the rest, the way a paragraph ends' },
   ],
-  StatCard: [
+  ArenaStatCard: [
     ...Object.entries({ neutral: 'text-base-content', accent: 'text-primary', gold: 'text-secondary',
       success: 'text-success', warning: 'text-warning', danger: 'text-error', info: 'text-info' })
       .map(([tone, cls]) => ({ chosen: { tone }, slot: 'value', has: [cls], why: 'every value tone maps to its own text colour and no other survives beside it' })),
@@ -130,7 +130,7 @@ export const CLAIMS = {
     { chosen: { deltaTone: 'positive' }, slot: 'delta', has: ['border-success', 'text-success'], why: 'a positive delta reads success, not the danger family' },
     { chosen: { deltaTone: 'neutral' }, slot: 'delta', has: ['rounded-pill'], why: 'every delta tone keeps the shared pill base' },
   ],
-  Table: [
+  ArenaTable: [
     ...['th', 'td', 'tdMono'].map((slot) => ({
       slot, has: ['outline-none', 'focus:shadow-[inset_0_0_0_var(--focus-width)_var(--focus-ring)]'],
       why: 'a cell draws its focus ring from the focus tokens and suppresses the UA outline, or a keyboard user cannot see where the cursor is',
@@ -145,18 +145,18 @@ export const CLAIMS = {
     { slot: 'th', has: ['table-cell'], why: 'a row and a cell need the table display utilities to work as custom-element hosts' },
     { slot: 'td', has: ['table-cell'], why: 'a row and a cell need the table display utilities to work as custom-element hosts' },
   ],
-  Tag: [
+  ArenaTag: [
     { chosen: { tone: 'danger' }, slot: 'root', has: ['border-error', 'text-error'], hasNot: ['bg-error'], why: 'danger is outline: border and text in --error, never a filled background' },
     ...['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'].map((tone) => ({
       chosen: { tone }, slot: 'root', has: ['rounded-pill', 'text-ctl-xs'],
       why: 'every tone keeps the shared pill base and its control font size, which an unregistered suffix would lose to the tone colour',
     })),
   ],
-  UnauthCard: [
+  ArenaUnauthCard: [
     { slot: 'root', has: ['block', 'shadow-3', 'max-w-[calc(var(--sp-1)*95+var(--sp-1)*18+var(--bw)*2)]'], why: 'the width is the derivation and never the literal it computes to' },
     { slot: 'panel', has: ['bg-base-200'], hasNot: ['shadow-3'], why: 'the panel is the surface and the elevation is the box around it, split so both layers can reach either' },
   ],
-  Alert: [
+  ArenaAlert: [
     ...Object.entries({ info: 'info', success: 'success', warning: 'warning', danger: 'error', neutral: 'neutral' })
       .flatMap(([tone, family]) => [
         { chosen: { tone }, slot: 'root', has: [`border-${family}`], why: 'every tone colours its root, icon and action from the same status family, never the danger family' },
@@ -168,12 +168,12 @@ export const CLAIMS = {
     { slot: 'close', has: ['bg-transparent', 'border-none'], why: 'the close and action controls are text-only chrome, carrying no border or fill of their own' },
     { chosen: { titled: true }, slot: 'message', has: ['mt-1'], why: 'the message carries the title-separating margin only when a title is present' },
   ],
-  BottomNav: [
+  ArenaBottomNav: [
     { slot: 'root', has: ['pb-[var(--pad-safe-bottom)]'], why: 'the bar adds the safe-area inset to its own height rather than eating into the row' },
     { slot: 'root', has: ['flex'], why: 'a host-bound root is never the UA-default inline box' },
     { slot: 'item', has: ['flex-1', 'basis-0', 'min-w-0'], why: 'a column takes an equal share and a zero floor, so a long label cannot push its neighbours out of the bar' },
   ],
-  Breadcrumbs: [
+  ArenaBreadcrumbs: [
     { slot: 'root', has: ['flex'], why: 'a host-bound breadcrumbs trail has no other way to lay out' },
     { slot: 'current', has: ['font-bold', 'text-base-content'], why: 'only the current crumb is bold and full-strength; a linked crumb stays muted' },
     { slot: 'crumb', has: ['text-base-content/62', 'no-underline', 'cursor-pointer', 'hover:text-base-content/82'], hasNot: ['font-bold'], why: 'a linked crumb stays muted, carries no underline, reads as a pointer target, and takes its hover as a state modifier rather than a variant' },
@@ -181,44 +181,44 @@ export const CLAIMS = {
     { slot: 'crumb', has: ['font-mono', 'text-ctl-sm', 'tracking-mono-nav'], why: 'every slot shares the mono, wide-tracked control type' },
     { slot: 'current', has: ['font-mono', 'text-ctl-sm', 'tracking-mono-nav'], why: 'every slot shares the mono, wide-tracked control type' },
   ],
-  BulkActionBar: [
+  ArenaBulkActionBar: [
     { chosen: { open: true }, slot: 'root', has: ['flex'], why: 'the root carries a display utility in its own base string, independent of the open variant' },
     { slot: 'divider', has: ['w-px'], why: 'the divider uses the one-pixel utility rather than a border-width token, since it is not a border' },
   ],
-  CommandPalette: [
+  ArenaCommandPalette: [
     { chosen: { open: true }, slot: 'root', has: ['flex'], why: 'the root carries a display utility in its own base string, independent of the open variant' },
   ],
-  ConfirmDialog: [
-    { chosen: { open: true }, slot: 'foot', has: ['flex-wrap'], why: 'the footer wraps the way Dialog, PageHead and ChartCard all do, and a third action row behaving differently is worse than none' },
+  ArenaConfirmDialog: [
+    { chosen: { open: true }, slot: 'foot', has: ['flex-wrap'], why: 'the footer wraps the way ArenaDialog, ArenaPageHead and ArenaChartCard all do, and a third action row behaving differently is worse than none' },
     { chosen: { open: true }, slot: 'root', has: ['flex'], why: 'the root carries a display utility in its own base string, independent of the open variant' },
     { chosen: { invalid: true }, slot: 'input', has: ['border-error'], hasNot: ['border-base-300'], why: 'invalid borders the require-text input in --error and drops the neutral border' },
     { chosen: { invalid: false }, slot: 'input', has: ['border-base-300'], why: 'a valid require-text input keeps the neutral border' },
   ],
-  Dialog: [
+  ArenaDialog: [
     { chosen: { open: true }, slot: 'foot', has: ['flex-wrap'], why: 'the footer wraps because the consumer projects one control per element rather than a wrapper of their own' },
     { chosen: { open: true }, slot: 'scrim', has: ['z-modal'], why: 'the scrim sits on --z-modal, one slot below the nested confirmation it can raise' },
     { chosen: { open: true }, slot: 'panel', has: ['w-120'], why: 'the panel carries its own default width, so the width member is an override rather than a requirement' },
   ],
-  Grid: [
+  ArenaGrid: [
     ...Object.entries({ none: 'gap-0', sm: 'gap-3', md: 'gap-4', lg: 'gap-6' })
       .map(([step, cls]) => ({ chosen: { gap: step }, slot: 'root', has: [cls], why: 'four named gap steps are four visible ones, and none really is none' })),
     { chosen: { centred: true }, slot: 'root', has: ['mx-auto'], why: 'centred caps the grid against its own maximum and centres what is left' },
     { chosen: { centred: false }, slot: 'root', hasNot: ['mx-auto'], why: 'without it the grid fills its container' },
   ],
-  EmptyState: [
+  ArenaEmptyState: [
     { slot: 'root', has: ['flex', 'border-dashed'], why: 'the dashed border is the visual distinction from an error state, whose border is solid' },
     { slot: 'action', has: ['mt-1.5'], why: 'the action slot carries the token spacing that separates a present action from the copy above it' },
   ],
-  ErrorState: [
+  ArenaErrorState: [
     { slot: 'root', has: ['flex', 'border-error', 'bg-error/14'], hasNot: ['border-dashed', 'bg-error', 'bg-error-fill'], why: 'danger stays a soft resting tint here: this is a non-interactive status surface, not a risk trigger' },
     { slot: 'actions', has: ['mt-1.5'], why: 'the actions slot carries the token spacing that separates the row from the copy above it' },
     { slot: 'retry', has: ['bg-primary', 'text-primary-content', 'border-primary'], why: 'Arena draws this button under the contract, so it carries the same primary classes as the non-destructive confirm' },
   ],
-  Onboarding: [
+  ArenaOnboarding: [
     { chosen: { open: true }, slot: 'root', has: ['block'], why: 'the root carries a display utility in its own base string, independent of the open variant' },
     { slot: 'dot', has: ['duration-[var(--dur-mid)]'], why: 'the dot width transition rides the token duration scale, never a literal' },
   ],
-  ProgressBar: [
+  ArenaProgressBar: [
     ...Object.entries({ accent: 'text-primary', gold: 'text-secondary', success: 'text-success', danger: 'text-error', info: 'text-info' })
       .map(([tone, cls]) => ({ chosen: { tone }, slot: 'track', has: [cls], why: 'every tone inks the track, which is what the fill reads through bg-current' })),
     ...Object.entries({ sm: 'h-1', md: 'h-1.5', lg: 'h-2.5' })
@@ -229,7 +229,7 @@ export const CLAIMS = {
     { slot: 'track', has: ['overflow-hidden', 'rounded-pill'], hasNot: ['rounded-full'], why: 'the track clips its own fill and takes the pill radius' },
     { slot: 'root', has: ['block', 'w-full'], why: 'w-full on an inline host does nothing, since an unknown element defaults to display inline' },
   ],
-  Spinner: [
+  ArenaSpinner: [
     ...Object.entries({ accent: 'text-primary', gold: 'text-secondary', neutral: 'text-base-content/62', 'on-accent': 'text-primary-content' })
       .map(([tone, cls]) => ({ chosen: { tone }, slot: 'root', has: [cls], why: 'tone colours the root and size sizes the circle, so neither axis reaches the other slot' })),
     ...Object.entries({ sm: 'size-icon-sm', md: 'size-5', lg: 'size-8' })
@@ -237,19 +237,19 @@ export const CLAIMS = {
     { slot: 'circle', has: ['border-current', 'border-t-transparent', 'rounded-pill', 'arena-spinner'], hasNot: ['rounded-full'], why: 'the ring takes its colour from the root so one tone paints both, and its radius is the pill token' },
     { slot: 'root', has: ['inline-flex'], why: 'a host-bound root is never the UA-default inline box' },
   ],
-  Toast: [
+  ArenaToast: [
     { chosen: { tone: 'danger' }, slot: 'action', has: ['text-secondary'], why: 'danger is the one tone whose action flips to the secondary ink, so it never sits crimson on crimson' },
     { chosen: { tone: 'neutral' }, slot: 'action', has: ['text-primary'], why: 'every other tone leaves the action on the brand ink' },
     { slot: 'root', has: ['flex', 'z-toast'], why: 'the root sits on --z-toast, the one slot above every other overlay' },
   ],
-  Tooltip: [
+  ArenaTooltip: [
     ...[true, false].map((anchored) => ({ chosen: { anchored }, slot: 'bubble',
       has: ['arena-fade', 'z-tooltip', 'whitespace-nowrap', 'rounded-sm', 'shadow-2', 'bg-base-content', 'text-base-100', 'font-mono', 'text-ctl-xs'],
       why: 'the appearance is identical in both models and only the position moves' })),
     { chosen: { anchored: false }, slot: 'root', has: ['relative', 'inline-flex'], why: 'in flow the bubble is positioned against a relative root' },
     { chosen: { anchored: true }, slot: 'root', has: ['inline-flex'], hasNot: ['relative'], why: 'anchored, the overlay pane owns the position and every wrapper-relative utility is gone' },
   ],
-  Button: [
+  ArenaButton: [
     { chosen: { variant: 'danger' }, slot: 'root', has: ['border-error', 'text-error', 'bg-transparent'], why: 'danger is outline: border and text in --error, and its only error fill is a hover wash' },
     { chosen: { variant: 'primary' }, slot: 'root', has: ['bg-primary', 'text-primary-content'], why: 'primary is the one filled variant, and it fills with the brand rather than a status colour' },
     ...['primary', 'secondary', 'ghost', 'danger'].map((variant) => ({
@@ -262,7 +262,7 @@ export const CLAIMS = {
     { chosen: { full: false }, slot: 'root', has: ['w-auto'], why: 'full stretches to the container and its absence pins the width to the content' },
     { slot: 'spinner', has: ['arena-btn-spin'], why: 'the spinner slot carries the reduced-motion-aware utility, which is where that answer lives' },
   ],
-  Checkbox: [
+  ArenaCheckbox: [
     { slot: 'box', has: ['[&:has(~input:focus-visible)]:shadow-[0_0_0_var(--focus-width)_var(--gold-soft)]'], why: 'the focus ring is a selector on the box, so nothing injects a stylesheet and no hook class survives' },
     { chosen: { checked: true }, slot: 'box', has: ['bg-primary', 'border-primary'], why: 'checked fills with the brand; unchecked is the input surface behind a neutral hairline' },
     { chosen: { checked: false }, slot: 'box', has: ['bg-base-300', 'border-neutral'], why: 'checked fills with the brand; unchecked is the input surface behind a neutral hairline' },
@@ -275,7 +275,7 @@ export const CLAIMS = {
       why: 'the box keeps its geometry through the merge, in both states',
     })),
   ],
-  IconButton: [
+  ArenaIconButton: [
     ...Object.entries({ sm: ['h-ctl-h-sm', 'min-w-ctl-h-sm'], md: ['h-ctl-h', 'min-w-ctl-h'], lg: ['h-ctl-h-lg', 'min-w-ctl-h-lg'] })
       .map(([size, has]) => ({ chosen: { size }, slot: 'root', has, why: 'each size keeps its own density height and a matching minimum width, so the box stays square' })),
     { chosen: { variant: 'ghost' }, slot: 'root', has: ['bg-transparent', 'border-base-300'], why: 'ghost is transparent with a hairline; solid is the one filled variant, and it fills with the brand' },
@@ -284,7 +284,7 @@ export const CLAIMS = {
     { chosen: { showLabel: false }, slot: 'root', has: ['p-0', 'gap-0'], why: 'showLabel opens the box out and gives the glyph a gap; without it the control has neither' },
     { slot: 'root', has: ['disabled:opacity-45', 'disabled:cursor-not-allowed'], why: 'the disabled treatment is a :disabled variant, which only a real disabled control matches' },
   ],
-  Input: [
+  ArenaInput: [
     { chosen: { state: 'neutral' }, slot: 'field', has: ['focus-within:border-secondary'], why: 'neutral rings gold only on focus, where error and valid ring at rest and say which they are' },
     { chosen: { state: 'error' }, slot: 'field', has: ['border-error', 'ring-error/14'], why: 'error and valid ring at rest and say which they are, at the soft tint rather than full strength' },
     { chosen: { state: 'error' }, slot: 'statusIcon', has: ['text-error'], why: 'error and valid ring at rest and say which they are' },
@@ -295,17 +295,17 @@ export const CLAIMS = {
     { chosen: { readonly: true }, slot: 'input', has: ['cursor-default'], why: 'disabled dims the whole field group and readonly changes the surface, not the border' },
     { slot: 'required', has: ['text-primary'], why: 'the required marker is the brand, so a label reads as required without the word' },
   ],
-  Radio: [
+  ArenaRadio: [
     { slot: 'ring', has: ['[&:has(~input:focus-visible)]:shadow-[0_0_0_var(--focus-width)_var(--gold-soft)]'], why: 'the ring finds its own focus through an arbitrary variant, so nothing injects a stylesheet and no hook class survives' },
     { slot: 'group', has: ['flex', 'flex-col', 'gap-3'], why: 'the group is a column, and it is a display utility because the host binds it' },
   ],
-  Menu: [
+  ArenaMenu: [
     { slot: 'root', has: ['inline-flex'], why: 'a host-bound root is never the UA-default inline box' },
     { chosen: { anchored: true }, slot: 'panel', hasNot: ['absolute', 'top-full', 'left-0', 'mt-1.5'], why: 'anchored, the CDK positions the pane, so every in-flow positioning class is gone' },
     { chosen: { anchored: true }, slot: 'root', hasNot: ['relative'], why: 'nothing is positioned against the host once the panel has left it' },
     { chosen: { anchored: false }, slot: 'panel', has: ['absolute', 'top-full', 'left-0', 'mt-1.5'], why: 'in flow, the panel positions itself against the host, which is the shape the specimen renders' },
   ],
-  PageHead: [
+  ArenaPageHead: [
     ...[true, false].map((narrow) => ({ chosen: { narrow }, slot: 'actions', has: ['flex-wrap'],
       why: 'three buttons at 390px overflow the page without it, and the row wraps its own children at every width' })),
     { chosen: { narrow: false }, slot: 'root', has: ['flex', 'flex-row', 'items-start'], hasNot: ['flex-col', 'items-stretch'], why: 'the wide layout is a row, and it is the default because nothing has been measured yet' },
@@ -314,39 +314,39 @@ export const CLAIMS = {
     { chosen: { narrow: true }, slot: 'actions', has: ['w-full'], hasNot: ['w-auto'], why: 'below the breakpoint the actions go full width' },
     { chosen: { align: 'center', narrow: false }, slot: 'root', has: ['items-center'], hasNot: ['items-start'], why: 'align centre, wide, centres the actions block against the title' },
   ],
-  Pagination: [
+  ArenaPagination: [
     { slot: 'root', has: ['inline-flex', 'items-center'], why: 'a host-bound root is never the UA-default inline box' },
     { slot: 'nav', has: ['disabled:text-base-content/40', 'disabled:cursor-not-allowed'], why: 'an unreachable step says so through a :disabled variant, which only a real disabled control matches' },
     { slot: 'pageCurrent', has: ['bg-primary', 'text-primary-content'], why: 'the current page is the one filled control in the row' },
     { slot: 'pageOther', has: ['bg-transparent'], hasNot: ['bg-primary'], why: 'the current page is the one filled control in the row' },
     { slot: 'page', has: ['h-8.5', 'min-w-8.5', 'border-[length:var(--bw)]'], why: 'the shared box is set once on the page slot, so a state slot never fights it' },
   ],
-  SegmentedControl: [
+  ArenaSegmentedControl: [
     { chosen: { selected: true }, slot: 'segment', has: ['bg-neutral', 'font-semibold', 'shadow-1'], why: 'the selected segment reads as a raised neutral chip rather than a brand fill' },
     { chosen: { selected: false }, slot: 'segment', has: ['bg-transparent', 'text-base-content/62', 'hover:text-base-content/82'], why: 'an unselected segment is muted and answers hover' },
     { slot: 'track', has: ['inline-flex', 'rounded-sm', 'focus-within:border-secondary'], why: 'the track carries the focus ring for the group, since the native inputs are hidden' },
     { slot: 'segment', has: ['rounded-xs'], why: 'the segment radius is one step inside the track radius' },
     { slot: 'input', has: ['opacity-0', 'size-0'], hasNot: ['hidden'], why: 'the native input is hidden by the recipe rather than by display none, so it stays focusable' },
   ],
-  Select: [
+  ArenaSelect: [
     { slot: 'field', has: ['focus:border-secondary'], why: 'the focus ring is the recipe\'s job, not the component\'s, so nothing injects a stylesheet for it' },
     { slot: 'field', has: ['appearance-none', 'pr-9'], why: 'the field strips the platform chrome and reserves the room the caret Arena draws sits in' },
     { slot: 'root', has: ['flex'], why: 'a host-bound root is never the UA-default inline box' },
     { slot: 'caret', has: ['pointer-events-none'], why: 'the caret is decoration over the native control and must not swallow the click' },
     { slot: 'field', has: ['focus:border-secondary', 'focus:outline-none'], why: 'a select takes focus itself, so the ring is focus rather than focus-within' },
   ],
-  Sheet: [
+  ArenaSheet: [
     ...['bottom', 'start', 'end'].map((placement) => ({
       chosen: { placement, open: true }, slot: 'root', has: ['flex'],
       why: 'every placement keeps its display utility, since the host binds the root slot',
     })),
   ],
-  SideNav: [
+  ArenaSideNav: [
     ...['item', 'trigger'].map((slot) => ({ slot, has: ['flex', 'items-center', 'gap-3', 'py-2.5', 'rounded-sm'],
       why: 'the trigger matches the item metrics, or a collapsible header will not line up with its siblings' })),
     { slot: 'root', has: ['flex', 'flex-col'], why: 'the rail is a column, and it is a display utility because the host binds it' },
   ],
-  Switch: [
+  ArenaSwitch: [
     { chosen: { footprint: 'horizontal-md' }, slot: 'track', has: ['w-10', 'h-5.5'], why: 'a horizontal footprint is wider than it is tall, and the vertical one is its transpose' },
     { chosen: { footprint: 'vertical-md' }, slot: 'track', has: ['w-5.5', 'h-10'], why: 'a horizontal footprint is wider than it is tall, and the vertical one is its transpose' },
     { chosen: { thumb: 'on-horizontal' }, slot: 'knob', has: ['translate-x-full'], why: 'the knob travels along the axis its footprint names' },
@@ -359,7 +359,7 @@ export const CLAIMS = {
     { slot: 'knob', has: ['bg-primary-content'], why: 'the knob is the content colour against the filled track' },
     { chosen: { disabled: true }, slot: 'root', has: ['opacity-50'], why: 'disabled dims the whole control' },
   ],
-  Tabs: [
+  ArenaTabs: [
     { slot: 'root', has: ['flex', 'border-b-[length:var(--bw)]', 'border-base-300'], why: 'the tablist sits on a hairline rule that the selected tab overdraws' },
     { chosen: { selected: true }, slot: 'tab', has: ['font-semibold', 'text-base-content', 'shadow-[inset_0_calc(var(--bw-strong)*-1)_0_var(--crimson)]'], why: 'the selected tab is marked by an inset underline rather than a fill' },
     { chosen: { selected: false }, slot: 'tab', has: ['font-medium', 'text-base-content/62', 'shadow-none'], why: 'an unselected tab is muted and carries no underline' },
@@ -367,7 +367,7 @@ export const CLAIMS = {
     { chosen: { selected: true }, slot: 'panel', has: ['block'], hasNot: ['hidden'], why: 'exactly one panel is shown, and the other is hidden rather than merely unstyled' },
     { chosen: { selected: false }, slot: 'panel', has: ['hidden'], hasNot: ['block'], why: 'exactly one panel is shown, and the other is hidden rather than merely unstyled' },
   ],
-  Textarea: [
+  ArenaTextarea: [
     { slot: 'field', has: ['focus:border-secondary'], why: 'the focus ring is the recipe\'s job, not the component\'s, so nothing injects a stylesheet for it' },
     { chosen: { state: 'neutral' }, slot: 'field', has: ['focus:border-secondary'], hasNot: ['border-success'], why: 'a textarea takes focus itself, so its ring is focus rather than focus-within' },
     { chosen: { state: 'error' }, slot: 'field', has: ['border-error', 'ring-error/14'], hasNot: ['border-success'], why: 'error rings at rest and says which it is' },
@@ -379,7 +379,7 @@ export const CLAIMS = {
     { slot: 'counterNear', has: ['text-warning'], why: 'the counter warns before it refuses, which is a status colour and not a danger one' },
     { slot: 'foot', has: ['justify-between'], why: 'the foot spaces the help text and the counter to opposite ends' },
   ],
-  Badge: [
+  ArenaBadge: [
     { slot: 'dot', has: ['bg-current'], why: 'the dot takes the tone ink from the text colour around it rather than naming one' },
     ...['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'].map((tone) => ({
       chosen: { tone }, slot: 'root', has: ['rounded-pill', 'font-mono', 'uppercase', 'text-ctl-xs', 'tracking-badge'],

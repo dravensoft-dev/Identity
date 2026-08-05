@@ -9,7 +9,7 @@ test('contentType maps the extensions the demo pages actually load', () => {
   assert.equal(contentType('/a/b.html'), 'text/html; charset=utf-8');
   assert.equal(contentType('/a/b.css'), 'text/css; charset=utf-8');
   assert.equal(contentType('/a/b.js'), 'text/javascript; charset=utf-8');
-  assert.equal(contentType('/a/Button.jsx'), 'text/javascript; charset=utf-8');
+  assert.equal(contentType('/a/ArenaButton.jsx'), 'text/javascript; charset=utf-8');
   assert.equal(contentType('/a/tokens.json'), 'application/json; charset=utf-8');
   assert.equal(contentType('/a/mark.svg'), 'image/svg+xml');
   assert.equal(contentType('/a/face.woff2'), 'font/woff2');

@@ -11,23 +11,23 @@ import { join } from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { REACT_COMPONENTS } from './AssertPattern.tsx';
-import { Tooltip } from '../components/feedback/tooltip/Tooltip.tsx';
-import { Menu } from '../components/navigation/menu/Menu.tsx';
-import { AppLogo } from '../components/brand/app-logo/AppLogo.tsx';
-import { SideNavSection } from '../components/navigation/side-nav-section/SideNavSection.tsx';
+import { ArenaTooltip } from '../components/feedback/arena-tooltip/ArenaTooltip.tsx';
+import { ArenaMenu } from '../components/navigation/arena-menu/ArenaMenu.tsx';
+import { ArenaAppLogo } from '../components/brand/arena-app-logo/ArenaAppLogo.tsx';
+import { ArenaSideNavSection } from '../components/navigation/arena-side-nav-section/ArenaSideNavSection.tsx';
 
 interface MemberSpec { form?: string; type?: string; required?: boolean; description?: string }
 const CONTRACTS = join(REACT_COMPONENTS, '../../../contracts/api/components');
 
 const WITHOUT_THE_SLOT = new Map([
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
-  ['Tooltip', () => <Tooltip label="Retry the build" />],
+  ['ArenaTooltip', () => <ArenaTooltip label="Retry the build" />],
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
-  ['Menu', () => <Menu items={[]} />],
+  ['ArenaMenu', () => <ArenaMenu items={[]} />],
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
-  ['AppLogo', () => <AppLogo name="Dravensoft" />],
+  ['ArenaAppLogo', () => <ArenaAppLogo name="Dravensoft" />],
   // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
-  ['SideNavSection', () => <SideNavSection label="Projects" />],
+  ['ArenaSideNavSection', () => <ArenaSideNavSection label="Projects" />],
 ]);
 
 export function requiredSlots(dir: string, read = readFileSync, list = readdirSync) {

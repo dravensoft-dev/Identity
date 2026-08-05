@@ -5,8 +5,8 @@ import { createRoot } from 'react-dom/client';
 import { LoginScreen } from './LoginScreen.tsx';
 import { DashboardScreen } from './DashboardScreen.tsx';
 import { ProjectScreen } from './ProjectScreen.tsx';
-import { Toast, TOAST_DISMISS } from '../../components/feedback/toast/Toast.tsx';
-import { ToastHost } from '../../components/feedback/toast-host/ToastHost.tsx';
+import { ArenaToast, TOAST_DISMISS } from '../../components/feedback/arena-toast/ArenaToast.tsx';
+import { ArenaToastHost } from '../../components/feedback/arena-toast-host/ArenaToastHost.tsx';
 
 interface ConsoleToast {
   tone: ArenaToastTone;
@@ -54,13 +54,13 @@ function App(){
   return (
     <React.Fragment>
       {view}
-      <ToastHost>
+      <ArenaToastHost>
         {toasts.map((t) => (
-          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist}
+          <ArenaToast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist}
             actionLabel={t.actionLabel} onAction={t.onAction} dismissible
             onClose={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} />
         ))}
-      </ToastHost>
+      </ArenaToastHost>
     </React.Fragment>
   );
 }

@@ -1,0 +1,17 @@
+{
+  "component": "ArenaUnauthCard",
+  "description": "The panel a signed-out screen needs: sign in, check your inbox, this link expired, a two-factor code. It knows nothing about credentials on purpose; the fields are composed inside it.",
+  "affordances": [],
+  "api": {
+    "brand": { "form": "slot",
+               "description": "The brand lock-up above the panel's content. An ArenaAppLogo, in practice." },
+    "eyebrow": { "form": "primitive", "type": "string",
+                 "description": "Mono crimson microlabel: the product, not the task." },
+    "title": { "form": "primitive", "type": "string",
+               "description": "The task. \"Welcome back\", \"Check your inbox\"." },
+    "content": { "form": "slot",
+                 "description": "The fields, composed from ArenaInput and ArenaButton." },
+    "footer": { "form": "slot",
+                "description": "Centred muted line below the content: a recovery link, a legal note." }
+  }
+}

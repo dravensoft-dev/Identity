@@ -56,7 +56,7 @@ else's library is in reach of none of them. Each lives in
 quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<Component>.variants.ts` (the class-name table, composed by the shared `arenaStyles`),
 `<Component>.prompt.md` (usage and Do/Don't), and an `index.ts` barrel.
-`components/display/tag/` is the
+`components/display/arena-tag/` is the
 reference shape. **A directory with no `<Component>.variants.ts` is one of two declared cases
 rather than one**; derive the set rather than trusting a list here:
 
@@ -66,20 +66,20 @@ comm -23 <(find components -mindepth 2 -maxdepth 2 -type d -printf '%f\n' | sort
 ```
 
 The three SVG charts have no recipe at all, for the reason below. **A compound family's
-children have none either, because they import the parent's**: each `SideNav*` child imports
-`sideNavStyles` from `side-nav/SideNav.variants`, which is the recipe mirror of the rule
+children have none either, because they import the parent's**: each `ArenaSideNav*` child imports
+`arenaSideNavStyles` from `side-nav/ArenaSideNav.variants`, which is the recipe mirror of the rule
 `frameworks/tailwind/AGENTS.md` states for manifests, that a manifest mirrors a *surface* and a
 family draws one. The category is the one
 `frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
 `frameworks/AGENTS.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
-**A compound family pushes nothing, so its recursive case costs no helper.** `SideNav` nests to
+**A compound family pushes nothing, so its recursive case costs no helper.** `ArenaSideNav` nests to
 any depth because each container re-provides `SideNavState` at `depth + 1` and a row **pulls**
 the nearest, which is the whole mechanism: an item reads its own indent from the injector rather
 than being handed one. A consumer's own wrapper component between two levels is therefore
 harmless here, since it interrupts nothing that travels. **The coordination is a member of no
-contract**, the way `Table`/`TableRow` and `RadioGroup`/`Radio` are not.
+contract**, the way `ArenaTable`/`ArenaTableRow` and `ArenaRadioGroup`/`ArenaRadio` are not.
 
 The layer spans every category the layout rule allows: `brand`, `charts`, `display`,
 `feedback`, `forms`, `layout` and `navigation`. **Read the set from the tree
@@ -102,13 +102,13 @@ this paragraph**, with `ls *.ts | grep -v generated`; what follows is why the in
 are where they are:
 `ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
 once per name when a breakpoint token does not resolve and never caches the failure**: every
-comparison against `NaN` is false, so a silent one leaves `Table`, `Calendar` and `PageHead` on
+comparison against `NaN` is false, so a silent one leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on
 their wide branch on a phone with nothing reported, plus `forgetBreakpoints`, which drops what
 was cached for the two callers that need it, a document that swapped its stylesheet at runtime
 and a suite whose subject is the cache, and `viewportBelow`, below),
 `AnchorActivation.ts` (the predicate behind the anchor convention: an anchor Arena draws cancels
 a primary click with no modifier and reports through its own navigation event, and everything
-else is the browser's, which `Card`, `Breadcrumbs`, `SideNavItem` and `CommandPalette` all read
+else is the browser's, which `ArenaCard`, `ArenaBreadcrumbs`, `ArenaSideNavItem` and `ArenaCommandPalette` all read
 and `test/AnchorActivation.test.ts` holds one activation at a time),
 `FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
 used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
@@ -171,13 +171,13 @@ that can go stale while the gates read another one.
 
 ```ts
 import { arenaStyles } from '../../../ArenaStyles.generated';
-import manifest from './Tag.classes.generated';
+import manifest from './ArenaTag.classes.generated';
 
-export const tagStyles = arenaStyles(manifest);
+export const arenaTagStyles = arenaStyles(manifest);
 ```
 
 The import is extensionless and names a stem nothing else claims. An extensionless import of
-`Tag.classes` would resolve to the `.ts` **only because** TS and bun probe `.ts` before
+`ArenaTag.classes` would resolve to the `.ts` **only because** TS and bun probe `.ts` before
 `.json`, so a bundler configured `.json`-first could resolve something else entirely. The
 `.generated` infix is what removes the ambiguity, and it says the same thing to a reader: this
 file is written by `bun run build:tailwind` and editing it is editing the wrong file.
@@ -244,7 +244,7 @@ so a bridge that has stopped being a bridge cannot pass by having nothing left t
 
 **What the gate does not cover** is whether an override's *value* is the right one for the
 class it lands on: the gate reads names and selectors, never paint, so only a real render
-catches that. `Tooltip.demo.generated.html` and `Menu.demo.generated.html` are that render: both open a real CDK
+catches that. `ArenaTooltip.demo.generated.html` and `ArenaMenu.demo.generated.html` are that render: both open a real CDK
 overlay in a real browser, which is where a z-index that stacks wrongly is visible at all.
 `check:cdk` fails the moment the bridge and the installed package disagree.
 
@@ -468,7 +468,7 @@ cannot tell an emit from a bubble and would read a doubled call as a passing one
 suites assert **both** numbers, the output on the component instance and what a template
 binding hears, because either alone is blind: the instance count cannot see a native event
 escaping to the consumer, and the binding count cannot see the output going silent.
-`CalendarEvent.cases.test.ts` is the shape.
+`ArenaCalendarEvent.cases.test.ts` is the shape.
 
 **`click` is not the only output named after a native event, and the rest are unaudited.**
 Derive the set rather than trusting a list:
@@ -479,18 +479,18 @@ grep -rhoE 'readonly (blur|cancel|change|click|close|focus|input|select|submit|t
 ```
 
 Every one of them carries the same double-fire risk, and only the four `click` ones are
-measured. `change` is the widest at eight primitives, and `Checkbox.compliance.test.ts` and
-`RadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
+measured. `change` is the widest at eight primitives, and `ArenaCheckbox.compliance.test.ts` and
+`ArenaRadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
 half the pair above; the other six assert nothing about it.
 
 ## Two roots, two projections, one template
 
 Angular hands projected content to the **first matching** `<ng-content>`, so a component with
-two root branches cannot give each its own. `Table.prompt.md` records what that cost the table:
+two root branches cannot give each its own. `ArenaTable.prompt.md` records what that cost the table:
 its wide and card shapes are one projection into a box whose display and role change, and the
 empty state is a block beside the grid rather than a cell spanning it.
 
-`Card` is the one place in this layer that pays for both roots instead. `href` has to render a
+`ArenaCard` is the one place in this layer that pays for both roots instead. `href` has to render a
 real `<a>`, because openable in a new tab, address copyable and announced as a link cannot be
 rebuilt on a div, and a card projects into two slots. So both `<ng-content>` elements live in
 one `<ng-template>`, and whichever branch renders stamps it with `ngTemplateOutlet`:
@@ -512,7 +512,7 @@ copying this shape owes the same suite**, because the answer is a property of th
 version rather than of the pattern, and it is the only thing standing between the idiom and a
 card that renders nothing.
 
-`SideNavItem` splits on `href` too and needs none of this: it projects nothing, so its two
+`ArenaSideNavItem` splits on `href` too and needs none of this: it projects nothing, so its two
 branches carry only interpolated inputs.
 
 ## Adopting it

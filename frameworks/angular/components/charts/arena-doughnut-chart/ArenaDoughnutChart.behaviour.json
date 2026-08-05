@@ -1,0 +1,11 @@
+{
+  "component": "ArenaDoughnutChart",
+  "pattern": "figure-with-data-table",
+  "exceptions": [],
+  "additions": [
+    {
+      "provides": "keyboard.legend-reachable",
+      "reason": "The legend column scrolls (`overflow: auto`) once its rows outgrow the clamped width, and a tabindex-less overflow box is a keyboard trap (WCAG 2.1.1). The legend carries tabindex=\"0\" and role=\"group\" with an aria-label so a keyboard user can reach and scroll it. This is ahead of the pattern rather than a divergence from it -- figure-with-data-table does not require it."
+    }
+  ]
+}

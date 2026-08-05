@@ -1,0 +1,25 @@
+{
+  "component": "ArenaCalendarEvent",
+  "seed": {
+    "id": "review",
+    "title": "Release review",
+    "start": "2026-03-17T11:00",
+    "end": "2026-03-17T12:00",
+    "colorId": 3
+  },
+  "host": {
+    "component": "ArenaCalendar",
+    "members": {
+      "anchorDate": "2026-03-16",
+      "view": "week",
+      "dayStart": "08:00",
+      "dayEnd": "18:00"
+    },
+    "slots": {
+      "content": [
+        "$subject"
+      ]
+    }
+  },
+  "note": "An event only means anything on a grid, so the host draws one."
+}

@@ -1,6 +1,6 @@
 /* Danger is outline: the error token is ink, a border and a tint, never a full-strength
  * background. The one filled danger surface in the system is the final irreversible
- * confirmation inside ConfirmDialog, and it says so by reaching for a token of its own,
+ * confirmation inside ArenaConfirmDialog, and it says so by reaching for a token of its own,
  * --error-fill, rather than for --error at full strength. Both halves used to be asserted per
  * component against a resolved class string, which stopped being possible once a component
  * renders its own class names. Asserting them once over the authored manifests is what
@@ -29,7 +29,7 @@ test('every manifest is read, or these conventions are asserted over nothing', (
 });
 
 const STATUS_RAMP = new Map([
-  ['Avatar', 'the busy presence dot, which is a status colour beside bg-success and bg-warning on the '
+  ['ArenaAvatar', 'the busy presence dot, which is a status colour beside bg-success and bg-warning on the '
     + 'same four-value ramp rather than a danger affordance; the convention governs what a user can act on'],
 ]);
 
@@ -47,7 +47,7 @@ test('the one filled danger surface reaches for --error-fill, and it is the only
   const filled = [...manifests.values()]
     .filter((manifest) => everyClassString(manifest).some(({ classes }) => classes.some((c) => /error-fill/.test(c))))
     .map((manifest) => manifest.component);
-  assert.deepEqual(filled, ['ConfirmDialog'],
+  assert.deepEqual(filled, ['ArenaConfirmDialog'],
     'the final irreversible confirmation is the one filled danger surface in the system');
 });
 
@@ -74,7 +74,7 @@ test('no manifest introduces a raw hex, because a colour is a token or it is not
   assert.deepEqual(offenders, [], offenders.join('\n'));
 });
 
-test('no manifest draws a gradient, the sole exception being Skeleton\'s neutral shimmer', () => {
+test('no manifest draws a gradient, the sole exception being ArenaSkeleton\'s neutral shimmer', () => {
   const offenders = [];
   for (const manifest of manifests.values()) {
     for (const { where, classes } of everyClassString(manifest)) {
@@ -83,5 +83,5 @@ test('no manifest draws a gradient, the sole exception being Skeleton\'s neutral
       }
     }
   }
-  assert.deepEqual(offenders, [], `${offenders.join('\n')}\n(Skeleton's shimmer is an @utility in Animations.css, not a manifest class)`);
+  assert.deepEqual(offenders, [], `${offenders.join('\n')}\n(ArenaSkeleton's shimmer is an @utility in Animations.css, not a manifest class)`);
 });

@@ -36,13 +36,13 @@ export const LAYER_TITLE = {
 
 export const LAYER_IDIOM = {
   react: `\`\`\`tsx
-import { Button, Tag } from '${PACKAGES.react}';
+import { ArenaButton, ArenaTag } from '${PACKAGES.react}';
 \`\`\`
 
 A member is a prop. The main slot is \`children\`, a named slot is a prop taking a node, and an
 event is an \`on\`-prefixed handler. An icon is a Phosphor class-name string, never an element.`,
   angular: `\`\`\`ts
-import { Button, Tag } from '${PACKAGES.angular}';
+import { ArenaButton, ArenaTag } from '${PACKAGES.angular}';
 \`\`\`
 
 Every component is standalone: put its class in the host component's \`imports\`, then write its

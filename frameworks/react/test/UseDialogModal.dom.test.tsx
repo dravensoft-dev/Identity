@@ -26,22 +26,22 @@ test('focusFirstFocusable falls back to the panel itself when it has none', () =
   assert.equal(document.activeElement, p, 'a panel with no focusable child must take focus itself');
 });
 
-test('trapTabKey wraps Shift+Tab from the first focusable to the last', () => {
+test('trapTabKey wraps Shift+ArenaTab from the first focusable to the last', () => {
   const p = panelWith('<button>a</button><button>b</button><button>c</button>');
   const [first, , last] = focusableElements(p);
   first!.focus();
   let prevented = false;
   trapTabKey(p!, { key: 'Tab', shiftKey: true, preventDefault: () => { prevented = true; } }, first ?? null);
   assert.equal(prevented, true, 'the key at a boundary must be consumed');
-  assert.equal(document.activeElement, last, 'Shift+Tab from the first did not wrap to the last');
+  assert.equal(document.activeElement, last, 'Shift+ArenaTab from the first did not wrap to the last');
 });
 
-test('trapTabKey wraps Tab from the last focusable to the first', () => {
+test('trapTabKey wraps ArenaTab from the last focusable to the first', () => {
   const p = panelWith('<button>a</button><button>b</button><button>c</button>');
   const [first, , last] = focusableElements(p);
   last!.focus();
   trapTabKey(p!, { key: 'Tab', shiftKey: false, preventDefault: () => {} }, last ?? null);
-  assert.equal(document.activeElement, first, 'Tab from the last did not wrap to the first');
+  assert.equal(document.activeElement, first, 'ArenaTab from the last did not wrap to the first');
 });
 
 test('trapTabKey leaves a middle element alone -- the browser does that part', () => {

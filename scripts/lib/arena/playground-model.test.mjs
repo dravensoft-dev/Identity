@@ -52,7 +52,7 @@ const fixture = {
   seed: { label: 'Client Portal', hint: 'Seeded and bound', columns: [{ header: 'Service' }] },
   slots: {
     content: [{ text: 'Body copy.' }],
-    action: [{ component: 'Badge', members: { tone: 'accent' }, slots: { content: [{ text: 'New' }] } }],
+    action: [{ component: 'ArenaBadge', members: { tone: 'accent' }, slots: { content: [{ text: 'New' }] } }],
   },
   bind: { sortChange: 'sort', close: { open: false } },
   host: null,
@@ -178,7 +178,7 @@ test('a slot holding one text node is editable; one holding a component is prese
 test('isTextNodes accepts exactly one text node and nothing else', () => {
   assert.equal(isTextNodes([{ text: 'x' }]), true);
   assert.equal(isTextNodes([{ text: 'x' }, { text: 'y' }]), false);
-  assert.equal(isTextNodes([{ component: 'Badge' }]), false);
+  assert.equal(isTextNodes([{ component: 'ArenaBadge' }]), false);
   assert.equal(isTextNodes(null), false);
 });
 
@@ -201,13 +201,13 @@ test('knobs keep contract order, which is the order every reader already sees', 
 
 test('countSubjects reaches through nested slots', () => {
   assert.equal(countSubjects(null), 0);
-  assert.equal(countSubjects({ component: 'Table', slots: { content: [{ component: 'TableRow', slots: { content: [SUBJECT] } }] } }), 1);
-  assert.equal(countSubjects({ component: 'Table', slots: { content: [SUBJECT, SUBJECT] } }), 2);
+  assert.equal(countSubjects({ component: 'ArenaTable', slots: { content: [{ component: 'ArenaTableRow', slots: { content: [SUBJECT] } }] } }), 1);
+  assert.equal(countSubjects({ component: 'ArenaTable', slots: { content: [SUBJECT, SUBJECT] } }), 2);
 });
 
 test('a host with anything but one placeholder throws, naming how many it found', () => {
   assert.throws(
-    () => playgroundModel(contract, { ...fixture, host: { component: 'Table', slots: { content: [] } } }, types),
+    () => playgroundModel(contract, { ...fixture, host: { component: 'ArenaTable', slots: { content: [] } } }, types),
     /holding 0 "\$subject" placeholders/,
   );
 });
@@ -215,10 +215,10 @@ test('a host with anything but one placeholder throws, naming how many it found'
 test('uses lists every component a host or a slot instantiates, once, in the order met', () => {
   const withHost = playgroundModel(
     contract,
-    { ...fixture, host: { component: 'Table', slots: { content: [{ component: 'TableRow', slots: { content: [SUBJECT] } }] } } },
+    { ...fixture, host: { component: 'ArenaTable', slots: { content: [{ component: 'ArenaTableRow', slots: { content: [SUBJECT] } }] } } },
     types,
   );
-  assert.deepEqual(withHost.uses, ['Table', 'TableRow', 'Badge']);
+  assert.deepEqual(withHost.uses, ['ArenaTable', 'ArenaTableRow', 'ArenaBadge']);
 });
 
 test('a model carries the component\'s own prose and affordances so the page needs no second read', () => {

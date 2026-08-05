@@ -1,0 +1,12 @@
+{
+  "component": "ArenaBadge",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "text": "Deployed"
+      }
+    ]
+  },
+  "note": "Mono, uppercase, short: a status label rather than a sentence."
+}

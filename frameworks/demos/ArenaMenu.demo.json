@@ -1,0 +1,36 @@
+{
+  "component": "ArenaMenu",
+  "seed": {
+    "items": [
+      {
+        "label": "Promote",
+        "icon": "ph-bold ph-rocket-launch"
+      },
+      {
+        "label": "Copy commit",
+        "icon": "ph-bold ph-copy",
+        "shortcut": "C"
+      },
+      {
+        "divider": true
+      },
+      {
+        "label": "Delete",
+        "icon": "ph-bold ph-trash",
+        "destructive": true
+      }
+    ]
+  },
+  "slots": {
+    "trigger": [
+      {
+        "component": "ArenaIconButton",
+        "members": {
+          "icon": "ph-bold ph-dots-three-vertical",
+          "label": "Actions"
+        }
+      }
+    ]
+  },
+  "note": "The trigger is one element Arena forwards its own props onto."
+}

@@ -1,9 +1,9 @@
-/* UnauthCard predates Card, and its `panel` slot types out by hand the same surface Card's `root`
+/* ArenaUnauthCard predates ArenaCard, and its `panel` slot types out by hand the same surface ArenaCard's `root`
  * draws -- background, border width, border colour, radius, overflow. Nothing compares one
- * manifest to another, so a change to Card's radius or border colour would move Card alone and
- * leave UnauthCard on whatever it had, silently, until somebody noticed by eye. Sharing one
- * recipe was rejected on its own terms: UnauthCard's padding split (panel p-5 holding a body p-4)
- * is not Card's single body p-5, so `panel` is not a clean substitution for `root`. What was
+ * manifest to another, so a change to ArenaCard's radius or border colour would move ArenaCard alone and
+ * leave ArenaUnauthCard on whatever it had, silently, until somebody noticed by eye. Sharing one
+ * recipe was rejected on its own terms: ArenaUnauthCard's padding split (panel p-5 holding a body p-4)
+ * is not ArenaCard's single body p-5, so `panel` is not a clean substitution for `root`. What was
  * never rejected is checking that the surface halves agree, which is this. */
 
 import { readFileSync } from 'node:fs';
@@ -17,10 +17,10 @@ export const SURFACE = ['bg-', 'border-', 'rounded-'];
 
 export const PAIRS = [
   {
-    name: 'UnauthCard.panel mirrors Card.root',
-    a: { file: 'display/unauth-card/UnauthCard.manifest.json', slot: 'panel' },
-    b: { file: 'display/card/Card.manifest.json', slot: 'root', variant: ['accent', 'false'] },
-    reason: 'UnauthCard composes the same bordered surface Card draws, by hand. The two padding '
+    name: 'ArenaUnauthCard.panel mirrors ArenaCard.root',
+    a: { file: 'display/arena-unauth-card/ArenaUnauthCard.manifest.json', slot: 'panel' },
+    b: { file: 'display/arena-card/ArenaCard.manifest.json', slot: 'root', variant: ['accent', 'false'] },
+    reason: 'ArenaUnauthCard composes the same bordered surface ArenaCard draws, by hand. The two padding '
       + 'scales differ on purpose and are not compared; the surface is.',
   },
 ];

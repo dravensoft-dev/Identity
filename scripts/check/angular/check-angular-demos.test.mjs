@@ -6,13 +6,13 @@ import { BUNDLE_DIR, PAGE_SUFFIX, ENTRY_SUFFIX, pageProblems } from './check-ang
 import { readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
-const TREE = { forms: ['button'] };
-const DIR = 'frameworks/angular/components/forms/button';
+const TREE = { forms: ['arena-button'] };
+const DIR = 'frameworks/angular/components/forms/arena-button';
 
 const PAGE =
-  '<!doctype html><html><head><meta charset="utf-8"><title>Button</title></head>'
+  '<!doctype html><html><head><meta charset="utf-8"><title>ArenaButton</title></head>'
   + '<body><script src="../../../../../intro/theme.js"></script>'
-  + `<script type="module" src="../../../${BUNDLE_DIR}/Button.demo.entry.generated.js"></script></body></html>`;
+  + `<script type="module" src="../../../${BUNDLE_DIR}/ArenaButton.demo.entry.generated.js"></script></body></html>`;
 
 const ENTRY =
   "import '@angular/compiler';\n"
@@ -24,8 +24,8 @@ function reader(files) {
 }
 
 const GOOD = {
-  [`${DIR}/Button${PAGE_SUFFIX}`]: PAGE,
-  [`${DIR}/Button${ENTRY_SUFFIX}`]: ENTRY,
+  [`${DIR}/ArenaButton${PAGE_SUFFIX}`]: PAGE,
+  [`${DIR}/ArenaButton${ENTRY_SUFFIX}`]: ENTRY,
 };
 
 test('a page with a bundled entry and a zoneless bootstrap passes', () => {
@@ -36,8 +36,8 @@ test('a page with a bundled entry and a zoneless bootstrap passes', () => {
 
 test('the inventory is the component tree, so a component with no page fails with no list to consult', () => {
   const { problems } = pageProblems(TREE, reader({}));
-  assert.ok(problems.some((p) => p.includes(`Button${PAGE_SUFFIX}: missing — run bun run generate:playgrounds`)));
-  assert.ok(problems.some((p) => p.includes(`Button${ENTRY_SUFFIX}: missing`)));
+  assert.ok(problems.some((p) => p.includes(`ArenaButton${PAGE_SUFFIX}: missing — run bun run generate:playgrounds`)));
+  assert.ok(problems.some((p) => p.includes(`ArenaButton${ENTRY_SUFFIX}: missing`)));
 });
 
 test('an empty tree fails rather than passing vacuously', () => {
@@ -47,7 +47,7 @@ test('an empty tree fails rather than passing vacuously', () => {
 
 test('the module script is what is read, not the first script on the page', () => {
   const files = { ...GOOD };
-  files[`${DIR}/Button${PAGE_SUFFIX}`] = PAGE.replace(/<script type="module"[^>]*><\/script>/, '');
+  files[`${DIR}/ArenaButton${PAGE_SUFFIX}`] = PAGE.replace(/<script type="module"[^>]*><\/script>/, '');
   const { problems } = pageProblems(TREE, reader(files));
   assert.ok(problems.some((p) => p.includes('loads no module script')),
     'the chrome scripts above it must not be mistaken for the application');
@@ -55,29 +55,29 @@ test('the module script is what is read, not the first script on the page', () =
 
 test("a page pointing at another component's bundle fails", () => {
   const files = { ...GOOD };
-  files[`${DIR}/Button${PAGE_SUFFIX}`] = PAGE.replace('Button.demo.entry', 'Tooltip.demo.entry');
+  files[`${DIR}/ArenaButton${PAGE_SUFFIX}`] = PAGE.replace('ArenaButton.demo.entry', 'ArenaTooltip.demo.entry');
   const { problems } = pageProblems(TREE, reader(files));
   assert.ok(problems.some((p) => p.includes("is not this component's bundled entry")));
 });
 
 test('an Angular page declaring @dsCard fails, because a blank page would pass check:cards', () => {
   const files = { ...GOOD };
-  files[`${DIR}/Button${PAGE_SUFFIX}`] =
-    '<!-- @dsCard group="Angular" viewport="700x400" name="Button" subtitle="x" -->\n' + PAGE;
+  files[`${DIR}/ArenaButton${PAGE_SUFFIX}`] =
+    '<!-- @dsCard group="Angular" viewport="700x400" name="ArenaButton" subtitle="x" -->\n' + PAGE;
   const { problems } = pageProblems(TREE, reader(files));
   assert.ok(problems.some((p) => p.includes('declares @dsCard')));
 });
 
 test('an entry that bootstraps with a zone fails, because the layer ships no zone.js', () => {
   const files = { ...GOOD };
-  files[`${DIR}/Button${ENTRY_SUFFIX}`] = "import '@angular/compiler';\nbootstrapApplication(Demo);\n";
+  files[`${DIR}/ArenaButton${ENTRY_SUFFIX}`] = "import '@angular/compiler';\nbootstrapApplication(Demo);\n";
   const { problems } = pageProblems(TREE, reader(files));
   assert.ok(problems.some((p) => p.includes('does not provide zoneless change detection')));
 });
 
 test('an entry without @angular/compiler fails, because the library ships partially compiled', () => {
   const files = { ...GOOD };
-  files[`${DIR}/Button${ENTRY_SUFFIX}`] = ENTRY.replace("import '@angular/compiler';\n", '');
+  files[`${DIR}/ArenaButton${ENTRY_SUFFIX}`] = ENTRY.replace("import '@angular/compiler';\n", '');
   const { problems } = pageProblems(TREE, reader(files));
   assert.ok(problems.some((p) => p.includes("does not import '@angular/compiler'")));
 });

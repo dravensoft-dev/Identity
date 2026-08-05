@@ -6,7 +6,7 @@ import {
 } from './component-css.mjs';
 
 const manifest = {
-  component: 'SideNavItem',
+  component: 'ArenaSideNavItem',
   slots: { root: 'flex gap-2', innerLabel: 'truncate' },
   variants: {
     tone: { neutral: { root: 'bg-base-300' }, danger: { root: 'bg-error/12' } },
@@ -16,9 +16,9 @@ const manifest = {
 };
 
 test('a class name is kebab-cased on both halves, so a camelCase slot cannot leak into CSS', () => {
-  assert.equal(slotClass('SideNavItem', 'innerLabel'), 'arena-side-nav-item__inner-label');
-  assert.equal(variantClass('SideNavItem', 'root', 'tone', 'neutral'), 'arena-side-nav-item__root--tone-neutral');
-  assert.equal(compoundClass('PageHead', 'root', 0), 'arena-page-head__root--cv1');
+  assert.equal(slotClass('ArenaSideNavItem', 'innerLabel'), 'arena-side-nav-item__inner-label');
+  assert.equal(variantClass('ArenaSideNavItem', 'root', 'tone', 'neutral'), 'arena-side-nav-item__root--tone-neutral');
+  assert.equal(compoundClass('ArenaPageHead', 'root', 0), 'arena-page-head__root--cv1');
 });
 
 test('an empty variant branch emits no rule, because a class with no declaration is dead weight', () => {

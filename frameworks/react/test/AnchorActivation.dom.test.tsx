@@ -10,10 +10,10 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from './Harness.tsx';
-import { Card } from '../components/display/card/Card.tsx';
-import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs.tsx';
-import { SideNavItem } from '../components/navigation/side-nav-item/SideNavItem.tsx';
-import { CommandPalette } from '../components/navigation/command-palette/CommandPalette.tsx';
+import { ArenaCard } from '../components/display/arena-card/ArenaCard.tsx';
+import { ArenaBreadcrumbs } from '../components/navigation/arena-breadcrumbs/ArenaBreadcrumbs.tsx';
+import { ArenaSideNavItem } from '../components/navigation/arena-side-nav-item/ArenaSideNavItem.tsx';
+import { ArenaCommandPalette } from '../components/navigation/arena-command-palette/ArenaCommandPalette.tsx';
 
 afterEach(cleanup);
 
@@ -49,43 +49,43 @@ function assertConvention(name: string, anchor: () => Element, reported: () => n
   assert.equal(middle.defaultPrevented, false, `${name}: a middle click must reach the browser`);
 }
 
-test('Card.href reports the primary click and leaves every other one to the browser', () => {
+test('ArenaCard.href reports the primary click and leaves every other one to the browser', () => {
   let clicked = 0;
-  const root = mount(<Card href="/clients/acme" title="Acme Corp" onClick={() => { clicked += 1; }} />);
-  assertConvention('Card', () => root.firstElementChild!, () => clicked);
+  const root = mount(<ArenaCard href="/clients/acme" title="Acme Corp" onClick={() => { clicked += 1; }} />);
+  assertConvention('ArenaCard', () => root.firstElementChild!, () => clicked);
 });
 
 test('an ArenaCrumb reports the primary click and leaves every other one to the browser', () => {
   let navigated = 0;
   const root = mount(
-    <Breadcrumbs ariaLabel="Project navigation" onNavigate={() => { navigated += 1; }}
+    <ArenaBreadcrumbs ariaLabel="Project navigation" onNavigate={() => { navigated += 1; }}
       items={[{ label: 'Clients', href: '/clients' }, { label: 'Acme' }]} />,
   );
-  assertConvention('Breadcrumbs', () => root.querySelector('a')!, () => navigated);
+  assertConvention('ArenaBreadcrumbs', () => root.querySelector('a')!, () => navigated);
 });
 
-test('SideNavItem with href reports the primary click and leaves every other one alone', () => {
+test('ArenaSideNavItem with href reports the primary click and leaves every other one alone', () => {
   let navigated = 0;
   const root = mount(
-    <SideNavItem id="prod" label="Production" href="/deploys/prod"
+    <ArenaSideNavItem id="prod" label="Production" href="/deploys/prod"
       onActivate={() => { navigated += 1; }} />,
   );
-  assertConvention('SideNavItem', () => root.querySelector('a')!, () => navigated);
+  assertConvention('ArenaSideNavItem', () => root.querySelector('a')!, () => navigated);
 });
 
 test('an ArenaCommand with route reports the primary click and leaves every other one alone', () => {
   let ran = 0;
   const root = mount(
-    <CommandPalette open commands={[{ id: 'clients', label: 'Clients', route: '/clients' }]}
+    <ArenaCommandPalette open commands={[{ id: 'clients', label: 'Clients', route: '/clients' }]}
       onClose={() => {}} onRun={() => { ran += 1; }} />,
   );
-  assertConvention('CommandPalette', () => root.querySelector('a[role="option"]')!, () => ran);
+  assertConvention('ArenaCommandPalette', () => root.querySelector('a[role="option"]')!, () => ran);
 });
 
 test('Enter on a routed row runs it exactly once, through the palette and not the anchor', () => {
   let ran = 0;
   const root = mount(
-    <CommandPalette open commands={[{ id: 'clients', label: 'Clients', route: '/clients' }]}
+    <ArenaCommandPalette open commands={[{ id: 'clients', label: 'Clients', route: '/clients' }]}
       onClose={() => {}} onRun={() => { ran += 1; }} />,
   );
   const field = root.querySelector('input')!;
@@ -95,9 +95,9 @@ test('Enter on a routed row runs it exactly once, through the palette and not th
   assert.equal(event.defaultPrevented, true, 'Enter belongs to the palette, not to a form');
 });
 
-test('a SideNavItem WITHOUT href still activates on a modified click', () => {
+test('an ArenaSideNavItem WITHOUT href still activates on a modified click', () => {
   let navigated = 0;
-  const root = mount(<SideNavItem id="prod" label="Production" onActivate={() => { navigated += 1; }} />);
+  const root = mount(<ArenaSideNavItem id="prod" label="Production" onActivate={() => { navigated += 1; }} />);
   const button = root.querySelector('button')!;
   click(button, { ctrlKey: true });
   assert.equal(navigated, 1,
@@ -107,7 +107,7 @@ test('a SideNavItem WITHOUT href still activates on a modified click', () => {
 test('an ArenaCommand WITHOUT route still runs on a modified click', () => {
   let ran = 0;
   const root = mount(
-    <CommandPalette open commands={[{ id: 'new', label: 'New invoice' }]}
+    <ArenaCommandPalette open commands={[{ id: 'new', label: 'New invoice' }]}
       onClose={() => {}} onRun={() => { ran += 1; }} />,
   );
   click(root.querySelector('button[role="option"]')!, { metaKey: true });

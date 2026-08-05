@@ -5,20 +5,20 @@ import { LAYERS } from '../../lib/arena/layers.mjs';
 
 test('a change confined to one layer routes to that layer alone', () => {
   assert.deepEqual(
-    layersChanged(['frameworks/react/components/forms/button/Button.tsx']),
+    layersChanged(['frameworks/react/components/forms/arena-button/ArenaButton.tsx']),
     { react: true, angular: false, tailwind: false },
   );
 });
 
 test('a Tailwind change routes to both other layers, because both compile what it emits', () => {
   assert.deepEqual(
-    layersChanged(['frameworks/tailwind/components/forms/button/Button.manifest.json']),
+    layersChanged(['frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json']),
     { react: true, angular: true, tailwind: true },
   );
 });
 
 test('a change to anything shared routes to every layer', () => {
-  for (const shared of ['contracts/api/components/Button.json', 'scripts/check/arena/check-api.mjs',
+  for (const shared of ['contracts/api/components/ArenaButton.json', 'scripts/check/arena/check-api.mjs',
     'package.json', 'bun.lock', '.github/workflows/pr.yml']) {
     assert.deepEqual(
       layersChanged([shared]),

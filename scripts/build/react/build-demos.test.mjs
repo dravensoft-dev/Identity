@@ -6,10 +6,10 @@ import { join } from 'node:path';
 import { findSourceFiles, rewriteRelativeSourceImports, loaderFor, outputPathFor, ROOT_MODULES, ROOTS } from './build-demos.mjs';
 
 test('a relative .jsx import points at the .generated.js sibling this script writes', () => {
-  const code = 'import { Button } from "./Button.jsx";\nimport { A } from "../a/A.jsx";\n';
+  const code = 'import { ArenaButton } from "./ArenaButton.jsx";\nimport { A } from "../a/A.jsx";\n';
   assert.equal(
     rewriteRelativeSourceImports(code),
-    'import { Button } from "./Button.generated.js";\nimport { A } from "../a/A.generated.js";\n',
+    'import { ArenaButton } from "./ArenaButton.generated.js";\nimport { A } from "../a/A.generated.js";\n',
   );
 });
 
@@ -23,24 +23,24 @@ test('findSourceFiles keeps every module a page loads and drops a suite or a dec
   try {
     const compDir = join(dir, 'display', 'tag');
     mkdirSync(compDir, { recursive: true });
-    writeFileSync(join(compDir, 'Tag.jsx'), 'export function Tag() {}\n');
-    writeFileSync(join(compDir, 'Tag.test.jsx'), "import test from 'node:test';\n");
-    writeFileSync(join(compDir, 'Tag.dom.test.jsx'), "import test from 'node:test';\n");
+    writeFileSync(join(compDir, 'ArenaTag.jsx'), 'export function ArenaTag() {}\n');
+    writeFileSync(join(compDir, 'ArenaTag.test.jsx'), "import test from 'node:test';\n");
+    writeFileSync(join(compDir, 'ArenaTag.dom.test.jsx'), "import test from 'node:test';\n");
     writeFileSync(join(dir, 'display', 'Display.card.entry.jsx'), 'export default null;\n');
     const badgeDir = join(dir, 'display', 'badge');
     mkdirSync(badgeDir, { recursive: true });
-    writeFileSync(join(badgeDir, 'Badge.tsx'), 'export function Badge() {}\n');
-    writeFileSync(join(badgeDir, 'Badge.dom.test.tsx'), "import test from 'node:test';\n");
+    writeFileSync(join(badgeDir, 'ArenaBadge.tsx'), 'export function ArenaBadge() {}\n');
+    writeFileSync(join(badgeDir, 'ArenaBadge.dom.test.tsx'), "import test from 'node:test';\n");
     writeFileSync(join(badgeDir, 'BadgeInternals.ts'), 'export const n = 1;\n');
-    writeFileSync(join(badgeDir, 'Badge.d.ts'), 'export declare const x: number;\n');
+    writeFileSync(join(badgeDir, 'ArenaBadge.d.ts'), 'export declare const x: number;\n');
 
     const found = findSourceFiles(dir).map((p) => p.slice(dir.length + 1));
 
     assert.deepEqual(found.sort(), [
       join('display', 'Display.card.entry.jsx'),
-      join('display', 'badge', 'Badge.tsx'),
+      join('display', 'badge', 'ArenaBadge.tsx'),
       join('display', 'badge', 'BadgeInternals.ts'),
-      join('display', 'tag', 'Tag.jsx'),
+      join('display', 'tag', 'ArenaTag.jsx'),
     ].sort());
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -48,18 +48,18 @@ test('findSourceFiles keeps every module a page loads and drops a suite or a dec
 });
 
 test('a relative .tsx import points at the same .generated.js sibling a .jsx one does', () => {
-  const code = 'import { Badge } from "./Badge.tsx";\nimport { A } from "../a/A.jsx";\n';
+  const code = 'import { ArenaBadge } from "./ArenaBadge.tsx";\nimport { A } from "../a/A.jsx";\n';
   assert.equal(
     rewriteRelativeSourceImports(code),
-    'import { Badge } from "./Badge.generated.js";\nimport { A } from "../a/A.generated.js";\n',
+    'import { ArenaBadge } from "./ArenaBadge.generated.js";\nimport { A } from "../a/A.generated.js";\n',
   );
 });
 
 test('the loader follows the file rather than the call site, so both extensions compile in one pass', () => {
-  assert.equal(loaderFor('/x/Badge.tsx'), 'tsx');
-  assert.equal(loaderFor('/x/Tag.jsx'), 'jsx');
-  assert.equal(outputPathFor('a/Badge.tsx'), 'a/Badge.generated.js');
-  assert.equal(outputPathFor('a/Tag.jsx'), 'a/Tag.generated.js');
+  assert.equal(loaderFor('/x/ArenaBadge.tsx'), 'tsx');
+  assert.equal(loaderFor('/x/ArenaTag.jsx'), 'jsx');
+  assert.equal(outputPathFor('a/ArenaBadge.tsx'), 'a/ArenaBadge.generated.js');
+  assert.equal(outputPathFor('a/ArenaTag.jsx'), 'a/ArenaTag.generated.js');
 });
 
 test('a .ts specifier is rewritten too, because a browser cannot execute TypeScript', () => {
@@ -77,12 +77,12 @@ test('a .ts specifier is rewritten too, because a browser cannot execute TypeScr
 
 test('a source that already names itself generated does not gain a second segment', () => {
   assert.equal(
-    outputPathFor('a/Card.demo.entry.generated.tsx'), 'a/Card.demo.entry.generated.js',
-    'Card.demo.entry.generated.generated.js is what the page would then fail to load',
+    outputPathFor('a/ArenaCard.demo.entry.generated.tsx'), 'a/ArenaCard.demo.entry.generated.js',
+    'ArenaCard.demo.entry.generated.generated.js is what the page would then fail to load',
   );
   assert.equal(
-    rewriteRelativeSourceImports('import { M } from "./Card.demo.entry.generated.tsx";\n'),
-    'import { M } from "./Card.demo.entry.generated.js";\n',
+    rewriteRelativeSourceImports('import { M } from "./ArenaCard.demo.entry.generated.tsx";\n'),
+    'import { M } from "./ArenaCard.demo.entry.generated.js";\n',
     'the specifier and the output path have to agree, or the import resolves to nothing',
   );
 });

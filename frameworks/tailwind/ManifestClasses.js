@@ -1,10 +1,8 @@
-export const CLASS_PREFIX = 'arena';
-
 export function kebab(name) {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
-export const classBase = (manifest) => `${CLASS_PREFIX}-${kebab(manifest)}`;
+export const classBase = (manifest) => kebab(manifest);
 
 export const slotClass = (manifest, slot) => `${classBase(manifest)}__${kebab(slot)}`;
 

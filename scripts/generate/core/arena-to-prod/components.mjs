@@ -6,7 +6,7 @@
  * reports. A key it cannot place is a line on stderr rather than a stop, since an element of the
  * consumer's own may wear the prefix. What it will not do is guess from a bare word: React is
  * read through the import naming the package and the JSX opening the tag, never the identifier
- * alone, because half this library is called Card, Input, Table or Menu in somebody else's code. */
+ * alone, because half this library is called ArenaCard, ArenaInput, ArenaTable or ArenaMenu in somebody else's code. */
 
 export const AUTO = 'auto';
 

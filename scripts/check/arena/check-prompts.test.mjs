@@ -16,19 +16,19 @@ test('the gate read a real corpus rather than an empty one', () => {
 
 test('a prompt with no region is a problem, because a contracted member would go unstated', () => {
   const { problems } = promptProblems(undefined, [
-    { component: 'Badge', layer: 'react', path: 'frameworks/react/components/display/badge/Badge.tsx' },
+    { component: 'ArenaBadge', layer: 'react', path: 'frameworks/react/components/display/arena-badge/ArenaBadge.tsx' },
   ]);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /carries no @api region/);
 });
 
 test('regionOf reads the whole region, markers included', () => {
-  const source = `x\n\n${openLine('Badge')}\nrows\n${CLOSE_LINE}\n\ny\n`;
-  assert.equal(regionOf(source), `${openLine('Badge')}\nrows\n${CLOSE_LINE}`);
+  const source = `x\n\n${openLine('ArenaBadge')}\nrows\n${CLOSE_LINE}\n\ny\n`;
+  assert.equal(regionOf(source), `${openLine('ArenaBadge')}\nrows\n${CLOSE_LINE}`);
 });
 
 test('an unclosed region reads as no region, so the gate reports it rather than trusting it', () => {
-  assert.equal(regionOf(`${openLine('Badge')}\nrows\n`), null);
+  assert.equal(regionOf(`${openLine('ArenaBadge')}\nrows\n`), null);
   assert.equal(regionOf('no region here\n'), null);
 });
 

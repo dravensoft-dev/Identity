@@ -16,7 +16,7 @@ test('the page loads the oracle and every component sheet, in one document', () 
 
 test('a selection is the whole resolved one, not a single variant on its own', () => {
   const manifest = {
-    component: 'Badge',
+    component: 'ArenaBadge',
     slots: { root: 'inline-flex', dot: 'size-1.5' },
     variants: { tone: { neutral: { root: 'a' }, danger: { root: 'b' } } },
     defaultVariants: { tone: 'neutral' },
@@ -24,7 +24,7 @@ test('a selection is the whole resolved one, not a single variant on its own', (
   assert.deepEqual(selections(manifest).map((s) => s.name), ['defaults', 'tone=neutral', 'tone=danger']);
   const built = cases(manifest);
   assert.equal(built.length, selections(manifest).length * 2, 'every slot is mounted for every selection');
-  const danger = built.find((c) => c.id === 'Badge|root|tone=danger');
+  const danger = built.find((c) => c.id === 'ArenaBadge|root|tone=danger');
   assert.equal(danger.arena, 'arena-badge__root arena-badge__root--tone-danger',
     'the base and the variant are both on the element, which is what makes source order the thing under test');
 });
@@ -44,10 +44,10 @@ test('a pass that mounted nothing is a failure rather than a silent pass', () =>
 
 test('a mismatch names the case and the properties that differ', () => {
   const problems = problemsFrom(
-    { compared: 4, mismatches: [{ id: 'Switch|icon|size=md', differing: ['line-height: 16.5px vs 11px'] }] },
+    { compared: 4, mismatches: [{ id: 'ArenaSwitch|icon|size=md', differing: ['line-height: 16.5px vs 11px'] }] },
     'under reduced motion',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Switch\|icon\|size=md/);
+  assert.match(problems[0], /ArenaSwitch\|icon\|size=md/);
   assert.match(problems[0], /line-height: 16\.5px vs 11px/);
 });

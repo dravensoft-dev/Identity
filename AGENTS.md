@@ -160,13 +160,13 @@ the one that opened it. `bun run check:citations` holds every path a document na
   drop the suffix when the plan lands. **They are deleted once executed**, which is why debt filed
   in one dies with it, and why a document citing one is a citation that was condemned when it was
   written.
-- **No gradients** on any surface, the sole exception being `Skeleton`'s neutral shimmer. Depth
+- **No gradients** on any surface, the sole exception being `ArenaSkeleton`'s neutral shimmer. Depth
   comes from the `base-100` to `base-200` to `base-300` surface scale, the hairline border and
   the warm shadow.
 - **No emoji**, in product or docs.
 - **Danger is outline, never filled**: transparent background, border and content in
   `--error`/`--danger`. The only filled danger surface in the whole system is the final
-  irreversible confirmation inside `ConfirmDialog`.
+  irreversible confirmation inside `ArenaConfirmDialog`.
 - **A commit message containing a backtick is written with a quoted here-doc**, never
   `git commit -m "…"`. A backtick inside a double-quoted shell string opens command substitution
   and is silently spliced away: the message lands with the name it was quoting missing, and
@@ -201,7 +201,7 @@ around it says. Three shapes recur, and none is findable by a keyword query:
 When you change component `X`, read every hit of:
 
 ```bash
-X=Skeleton   # the component you just changed
+X=ArenaSkeleton   # the component you just changed
 grep -rn --binary-files=without-match "\b$X\b" \
     --include='*.md' --include='*.json' --include='*.mjs' --include='*.tsx' --include='*.ts' \
     AGENTS.md DOUBTS.md contracts/ docs/ frameworks/ scripts/

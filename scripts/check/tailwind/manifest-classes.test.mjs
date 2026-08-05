@@ -8,7 +8,7 @@ import { classBase, classesFor, arenaClassesFor } from '../../../frameworks/tail
 import { slotClass } from '../../lib/tailwind/component-css.mjs';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 
-const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/display/tag/Tag.manifest.json'), 'utf8'));
+const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/display/arena-tag/ArenaTag.manifest.json'), 'utf8'));
 
 test('the default variants apply when nothing is chosen', () => {
   const { root, dot } = classesFor(tag);
@@ -59,7 +59,8 @@ test('the harness spells a class the way the generator does, for every manifest 
   assert.ok(manifests.length > 0, 'no manifest was read, so this asserts nothing');
   for (const manifest of manifests) {
     const base = classBase(manifest.component);
-    assert.equal(base, `arena-${kebab(manifest.component)}`, `${manifest.component}: the harness and layers.mjs disagree on kebab`);
+    assert.equal(base, kebab(manifest.component), `${manifest.component}: the harness and layers.mjs disagree on kebab`);
+    assert.ok(base.startsWith('arena-'), `${manifest.component}: a class base no longer carries the arena prefix the DOM depends on`);
     for (const [slot, classes] of Object.entries(arenaClassesFor(manifest))) {
       for (const one of classes.split(/\s+/).filter(Boolean)) {
         assert.ok(one.startsWith(`${base}__`),

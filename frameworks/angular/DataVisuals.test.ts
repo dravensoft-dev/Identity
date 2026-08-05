@@ -112,7 +112,7 @@ test('catSurface tints from the slot colour, and the edge is the stronger of the
   assert.match(surface.border, /^color-mix\(in oklab, var\(--color-cat-3\) 26%, transparent\)$/);
 });
 
-test('areaFill is the tint LineChart draws under its series', () => {
+test('areaFill is the tint ArenaLineChart draws under its series', () => {
   assert.equal(areaFill('var(--success)'), 'color-mix(in oklab, var(--success) 18%, transparent)');
 });
 

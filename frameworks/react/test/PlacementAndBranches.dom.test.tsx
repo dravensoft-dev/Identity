@@ -5,68 +5,68 @@ import { join } from 'node:path';
 import { mount, cleanup, act } from './Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from './AssertPattern.tsx';
 import { isFocusable } from '../../../scripts/lib/core/behaviour-compliance.mjs';
-import { Skeleton } from '../components/display/skeleton/Skeleton.tsx';
-import { CalendarEvent } from '../components/display/calendar-event/CalendarEvent.tsx';
+import { ArenaSkeleton } from '../components/display/arena-skeleton/ArenaSkeleton.tsx';
+import { ArenaCalendarEvent } from '../components/display/arena-calendar-event/ArenaCalendarEvent.tsx';
 
 afterEach(cleanup);
 
 const VARIANTS = ['block', 'line', 'text', 'circle'];
 
-test('Skeleton renders role=status in every variant, circle included', () => {
+test('ArenaSkeleton renders role=status in every variant, circle included', () => {
   const seen: Record<string, boolean> = {};
   for (const variant of VARIANTS) {
     // @ts-expect-error the contract refuses this on purpose, and the render is what this asserts
-    const container = mount(<Skeleton variant={variant} />);
+    const container = mount(<ArenaSkeleton variant={variant} />);
     seen[variant] = Boolean(container.querySelector<HTMLElement>('[role="status"]')!);
     cleanup();
   }
   assert.deepEqual(seen, { block: true, line: true, text: true, circle: true });
 });
 
-test('Skeleton circle carries the role and a name, like its siblings', () => {
-  const container = mount(<Skeleton variant="circle" />);
+test('ArenaSkeleton circle carries the role and a name, like its siblings', () => {
+  const container = mount(<ArenaSkeleton variant="circle" />);
   const el = container.firstElementChild;
   assert.equal(el!.getAttribute('role'), 'status');
   assert.equal(el!.getAttribute('aria-label'), 'Loading');
   assert.equal(el!.getAttribute('aria-hidden'), null);
 });
 
-test('Skeleton matches its status binding, block and circle both', () => {
+test('ArenaSkeleton matches its status binding, block and circle both', () => {
 
-  const placeholder = mount(<Skeleton variant="block" />);
+  const placeholder = mount(<ArenaSkeleton variant="block" />);
   assertPattern({
     root: placeholder,
-    bindingPath: join(REACT_COMPONENTS, 'display/skeleton/Skeleton.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'display/arena-skeleton/ArenaSkeleton.behaviour.json'),
     behavioural: { 'focus.unaffected': true },
   });
   cleanup();
 
-  const circle = mount(<Skeleton variant="circle" />);
+  const circle = mount(<ArenaSkeleton variant="circle" />);
   assertPattern({
     root: circle,
-    bindingPath: join(REACT_COMPONENTS, 'display/skeleton/Skeleton.behaviour.json'),
+    bindingPath: join(REACT_COMPONENTS, 'display/arena-skeleton/ArenaSkeleton.behaviour.json'),
     behavioural: { 'focus.unaffected': true },
   });
 });
 
-test('CalendarEvent hands its ref to the element that takes focus, panel or no panel', () => {
+test('ArenaCalendarEvent hands its ref to the element that takes focus, panel or no panel', () => {
   const injected = {
     box: {}, color: 'var(--color-cat-1)', timeLabel: '09:00 – 09:30',
     dateLabel: 'Monday 20 July', tabIndex: -1,
   };
   const plain = React.createRef<HTMLElement>();
-  mount(<CalendarEvent ref={plain} id="a" title="Standup" start="2026-07-20T09:00:00Z"
+  mount(<ArenaCalendarEvent ref={plain} id="a" title="Standup" start="2026-07-20T09:00:00Z"
     end="2026-07-20T09:30:00Z" interactive onClick={() => {}} {...injected} />);
   assert.equal(plain.current!.tagName, 'BUTTON', 'the plain chip is not its own button any more');
   assert.equal(plain.current!.getAttribute('tabindex'), '-1',
     'the plain chip cannot be focused programmatically');
 
   const paneled = React.createRef<HTMLElement>();
-  mount(<CalendarEvent ref={paneled} id="b" title="Standup" start="2026-07-20T09:00:00Z"
+  mount(<ArenaCalendarEvent ref={paneled} id="b" title="Standup" start="2026-07-20T09:00:00Z"
     end="2026-07-20T09:30:00Z" interactive onClick={() => {}} actionsEnabled
     actions={<button type="button">Delete</button>} {...injected} />);
   assert.equal(paneled.current!.tagName, 'BUTTON',
-    'a paneled chip forwarded its ref to an element Calendar cannot focus');
+    'a paneled chip forwarded its ref to an element ArenaCalendar cannot focus');
   assert.equal(paneled.current!.getAttribute('tabindex'), '-1',
     'the paneled chip body cannot be focused programmatically');
 
@@ -79,7 +79,7 @@ const CHIP = {
   dateLabel: 'Monday 20 July', tabIndex: -1,
 };
 const mountChip = (extra: Record<string, unknown> = {}) => mount(
-  <CalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
+  <ArenaCalendarEvent id="a" title="Standup" start="2026-07-20T09:00:00Z" end="2026-07-20T09:30:00Z"
     interactive onClick={() => {}} actionsEnabled actions={<button type="button">Delete</button>}
     {...CHIP} {...extra} />,
 );
@@ -95,7 +95,7 @@ test('ArrowRight steps from the chip body to its kebab, and ArrowLeft steps back
   const kebab = kebabOf(c);
   assert.ok(body && kebab, 'the fixture did not render both a body and a kebab');
   assert.equal(kebab.getAttribute('tabindex'), '-1',
-    'the kebab is in the page Tab sequence -- focus.roving would be false');
+    'the kebab is in the page ArenaTab sequence -- focus.roving would be false');
 
   act(() => { body.focus(); });
   press(body, 'ArrowRight');

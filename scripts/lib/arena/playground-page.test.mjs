@@ -5,7 +5,7 @@ import {
 } from './playground-page.mjs';
 
 const page = (over = {}) => playgroundPage({
-  component: 'Card', banner: '<!-- b -->\n', mount: '<div id="root"></div>', script: 'X.js', ...over,
+  component: 'ArenaCard', banner: '<!-- b -->\n', mount: '<div id="root"></div>', script: 'X.js', ...over,
 });
 
 test('every page links the shared chrome, which is what makes the frame the same in every layer', () => {
@@ -49,33 +49,33 @@ test('the banner is the first line, and the depth to intro/ is the same for ever
 const NOTHING_COMPOSED = new Map();
 
 test('a compound child draws the surface its parent manifest describes, not one of its own', () => {
-  assert.deepEqual(surfacesDrawn({ component: 'TableRow', uses: ['Table', 'TableCell'] }, NOTHING_COMPOSED), ['Table']);
-  assert.deepEqual(surfacesDrawn({ component: 'Tab', uses: ['Tabs'] }, NOTHING_COMPOSED), ['Tabs']);
+  assert.deepEqual(surfacesDrawn({ component: 'ArenaTableRow', uses: ['ArenaTable', 'ArenaTableCell'] }, NOTHING_COMPOSED), ['ArenaTable']);
+  assert.deepEqual(surfacesDrawn({ component: 'ArenaTab', uses: ['ArenaTabs'] }, NOTHING_COMPOSED), ['ArenaTabs']);
 });
 
 test('a component a page composes brings its own sheet, so nothing renders unstyled', () => {
   assert.deepEqual(
-    surfacesDrawn({ component: 'Tooltip', uses: ['IconButton'] }, NOTHING_COMPOSED),
-    ['IconButton', 'Tooltip'],
+    surfacesDrawn({ component: 'ArenaTooltip', uses: ['ArenaIconButton'] }, NOTHING_COMPOSED),
+    ['ArenaIconButton', 'ArenaTooltip'],
   );
 });
 
 test('a surface a component renders INSIDE itself is linked too, since no fixture can name it', () => {
-  const graph = new Map([['Table', new Set(['Pagination'])]]);
-  assert.deepEqual(surfacesDrawn({ component: 'Table', uses: [] }, graph), ['Pagination', 'Table']);
+  const graph = new Map([['ArenaTable', new Set(['ArenaPagination'])]]);
+  assert.deepEqual(surfacesDrawn({ component: 'ArenaTable', uses: [] }, graph), ['ArenaPagination', 'ArenaTable']);
 });
 
 test('a hand-drawn chart contributes no sheet, and anything else with no surface is an error', () => {
-  assert.deepEqual(surfacesDrawn({ component: 'BarChart', uses: [] }, NOTHING_COMPOSED), []);
+  assert.deepEqual(surfacesDrawn({ component: 'ArenaBarChart', uses: [] }, NOTHING_COMPOSED), []);
   assert.throws(
-    () => surfacesDrawn({ component: 'Badge', uses: ['Nonexistent'] }, NOTHING_COMPOSED),
+    () => surfacesDrawn({ component: 'ArenaBadge', uses: ['Nonexistent'] }, NOTHING_COMPOSED),
     /render it unstyled/,
   );
 });
 
 test('every page links the preflight, because a form control without it falls back to the browser\'s own size', () => {
-  const links = sheetLinks({ component: 'Badge', uses: [] }, NOTHING_COMPOSED);
+  const links = sheetLinks({ component: 'ArenaBadge', uses: [] }, NOTHING_COMPOSED);
   assert.equal(links.split('\n').length, 2);
   assert.match(links, new RegExp(`${UP}frameworks/tailwind/consume/Preflight\\.generated\\.css`));
-  assert.match(links, /consume\/components\/display\/badge\/Badge\.styles\.generated\.css/);
+  assert.match(links, /consume\/components\/display\/arena-badge\/ArenaBadge\.styles\.generated\.css/);
 });

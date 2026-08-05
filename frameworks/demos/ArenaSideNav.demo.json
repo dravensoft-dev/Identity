@@ -1,0 +1,69 @@
+{
+  "component": "ArenaSideNav",
+  "seed": {
+    "ariaLabel": "Main",
+    "active": "services"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaSideNavSection",
+        "members": {
+          "label": "Delivery"
+        },
+        "slots": {
+          "content": [
+            {
+              "component": "ArenaSideNavItem",
+              "members": {
+                "id": "overview",
+                "label": "Overview",
+                "icon": "ph-bold ph-squares-four"
+              }
+            },
+            {
+              "component": "ArenaSideNavItem",
+              "members": {
+                "id": "services",
+                "label": "Services",
+                "icon": "ph-bold ph-stack",
+                "badge": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "component": "ArenaSideNavCollapsible",
+        "members": {
+          "id": "reports",
+          "label": "Reports",
+          "icon": "ph-bold ph-chart-bar",
+          "defaultExpanded": true
+        },
+        "slots": {
+          "content": [
+            {
+              "component": "ArenaSideNavItem",
+              "members": {
+                "id": "usage",
+                "label": "Usage"
+              }
+            },
+            {
+              "component": "ArenaSideNavItem",
+              "members": {
+                "id": "billing",
+                "label": "Billing"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "bind": {
+    "nav": "active"
+  },
+  "note": "The recursive family: each level indents by indentStep multiples of --sp-1."
+}

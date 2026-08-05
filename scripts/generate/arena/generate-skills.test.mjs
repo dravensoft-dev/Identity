@@ -53,7 +53,7 @@ test('a newline in a description becomes a space, because a table cell is one li
 });
 
 test('a prompt path is relative to the layer root, which is where a layer index sits', () => {
-  assert.equal(promptPath('forms', 'Button'), './components/forms/button/Button.prompt.md');
+  assert.equal(promptPath('forms', 'ArenaButton'), './components/forms/arena-button/ArenaButton.prompt.md');
 });
 
 test('the tailwind layer holds no index: it ships manifests, not components', () => {
@@ -63,16 +63,16 @@ test('the tailwind layer holds no index: it ships manifests, not components', ()
 });
 
 test('layersFor reports only the layers that actually hold the directory', () => {
-  assert.deepEqual(layersFor('forms', 'Button').sort(), ['angular', 'react']);
+  assert.deepEqual(layersFor('forms', 'ArenaButton').sort(), ['angular', 'react']);
   assert.deepEqual(layersFor('forms', 'NoSuchComponent'), []);
 });
 
 test('a row names the component, its members, its pattern and the layers that ship it', () => {
   const row = renderRow({
-    component: 'Badge', description: 'Status label.', layers: ['angular', 'react'],
+    component: 'ArenaBadge', description: 'Status label.', layers: ['angular', 'react'],
     members: ['tone', 'dot'], patterns: 'none',
   });
-  assert.equal(row, '| `Badge` | Status label. | `tone` `dot` | none | angular, react |');
+  assert.equal(row, '| `ArenaBadge` | Status label. | `tone` `dot` | none | angular, react |');
 });
 
 test('a component with no binding reads as undeclared rather than as the pattern named none', () => {
@@ -84,13 +84,13 @@ test('a component with no binding reads as undeclared rather than as the pattern
 
 test('a layer row links the prompt beside the component rather than naming a pattern', () => {
   const row = renderLayerRow({
-    component: 'Badge', category: 'display', description: 'Status label.', layers: ['react'],
+    component: 'ArenaBadge', category: 'display', description: 'Status label.', layers: ['react'],
     contract: { api: { content: { form: 'slot' }, dot: {} } },
   }, 'react');
   assert.equal(
     row,
-    '| `Badge` | Status label. | `children` `dot` | '
-    + '[`Badge.prompt.md`](./components/display/badge/Badge.prompt.md) |',
+    '| `ArenaBadge` | Status label. | `children` `dot` | '
+    + '[`ArenaBadge.prompt.md`](./components/display/arena-badge/ArenaBadge.prompt.md) |',
   );
 });
 

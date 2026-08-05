@@ -7,7 +7,7 @@
  * which is what a chart is. `needs` is the other half, closed here where the sources are, so the
  * command only unions: Arena draws components a consumer never names, and a subset missing one is
  * a render with no border and no colour. Each layer gets its own map because they differ in fact:
- * React's confirm dialog renders a Button, Angular's draws one out of its own manifest. */
+ * React's confirm dialog renders an ArenaButton, Angular's draws one out of its own manifest. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

@@ -100,14 +100,14 @@ stale table rather than as silence, **and the fix is always the contract**.
 **When a consumer needs their own content inside ONE item of something Arena draws, make the
 item a component.** Per-item projection stops applying the moment the consumer instantiates one
 element per item instead of handing Arena a render function, so Angular's missing
-`ngTemplateOutlet` binding stops being the obstacle. `RadioGroup`/`Radio`,
-`Calendar`/`CalendarEvent` and `Table`/`TableRow`/`TableCell` all follow it.
+`ngTemplateOutlet` binding stops being the obstacle. `ArenaRadioGroup`/`ArenaRadio`,
+`ArenaCalendar`/`ArenaCalendarEvent` and `ArenaTable`/`ArenaTableRow`/`ArenaTableCell` all follow it.
 
 The parent owns **where** an item goes and the item owns **what** it looks like. React's parent
 reads its children's props and injects the rest with `cloneElement`; Angular has no
 `cloneElement`, so the item injects the parent and pulls its signals instead, and nothing is
 pushed at all. **That is why the fragment and wrapper hazards are React's alone**, and why the
-`SideNav` recursion is solved in opposite directions in the two layers, each in its own
+`ArenaSideNav` recursion is solved in opposite directions in the two layers, each in its own
 document. **Neither layer's coordination is a member of any contract.**
 
 **A compound parent's content slot is OPTIONAL, and the one exception is a named group.**
@@ -116,7 +116,7 @@ and read the `required` flags. Every compound ROOT declares its children optiona
 nothing, and so does a container that merely nests. Only a section that renders a **heading
 naming the group** requires and guards, because a childless one renders a label for nothing.
 
-**What a root must still not do is ship an invalid degenerate render.** With no children `Tabs`
+**What a root must still not do is ship an invalid degenerate render.** With no children `ArenaTabs`
 draws an empty tablist and **no** tabpanel, because a panel whose `aria-labelledby` points at a
 tab that does not exist is worse than an absent one.
 
@@ -154,7 +154,7 @@ a layer that disagrees with it is wrong.
 ## Two rules a component author reaches for constantly
 
 **The single-icon convention.** A component's icon is a Phosphor class-name string Arena draws,
-never a slot, so `IconButton` presents no slot at all and a per-item or single icon is one
+never a slot, so `ArenaIconButton` presents no slot at all and a per-item or single icon is one
 system across the library. The price is recorded rather than hidden: flattening each
 `<button>`'s heritage clause drops the five `form*` overrides and every global or ARIA attribute
 a `{...rest}` spread would forward, with no gate behind the loss. `check:api` reads the `.tsx`,
@@ -162,7 +162,7 @@ so a restored spread fails, but **nothing re-derives which native members the fl
 dropped**.
 
 **A member only a human can supply is required and guarded at runtime**, never defaulted.
-`Table.label` names the grid for assistive technology; `SegmentedControl.ariaLabel` is the same
+`ArenaTable.label` names the grid for assistive technology; `ArenaSegmentedControl.ariaLabel` is the same
 shape. A constant fallback is rejected on the charts' own evidence: a name that is present but
 only says what the component *is* satisfies `roles.label` mechanically while telling a
 screen-reader user nothing, and nothing can derive it, because a data table's subject is
@@ -197,7 +197,7 @@ stays small and explicitly sized: three rows by two columns.
 
 **One shape for every layer**: directories are `kebab-case` and lowercase; a file name begins
 with a capital, and a multi-word stem is `PascalCase` with hyphens removed; a secondary dotted
-segment stays `lowerCamelCase`, as in `Badge.manifest.json`. Capital-initial is the rule and
+segment stays `lowerCamelCase`, as in `ArenaBadge.manifest.json`. Capital-initial is the rule and
 PascalCase is how a multi-word stem is *formed* under it, which is why a conventional all-caps
 document name needs no dispensation.
 

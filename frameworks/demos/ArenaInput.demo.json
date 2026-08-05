@@ -1,0 +1,14 @@
+{
+  "component": "ArenaInput",
+  "seed": {
+    "label": "Service name",
+    "value": "checkout-api",
+    "hint": "Lowercase, hyphen separated.",
+    "icon": "ph-bold ph-terminal-window",
+    "placeholder": "billing-worker"
+  },
+  "bind": {
+    "change": "value"
+  },
+  "note": "The one component taking a consumer function: validate runs on validateOn."
+}

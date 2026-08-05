@@ -134,7 +134,7 @@ const QUERIED = new Map([['footer', ['arena-dialog']], ['action', ['arena-card']
 test('a marker used without its import is caught, which is the case that shipped an empty dialog', () => {
   const problems = markerProblems([{
     path: 'a/B.ts',
-    source: "@Component({ imports: [Dialog], template: `<arena-dialog><div footer>ok</div></arena-dialog>` })",
+    source: "@Component({ imports: [ArenaDialog], template: `<arena-dialog><div footer>ok</div></arena-dialog>` })",
   }], QUERIED);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /projects into the `footer` slot of <arena-dialog> and does not import ArenaFooter/);
@@ -143,7 +143,7 @@ test('a marker used without its import is caught, which is the case that shipped
 test('the same template with the import is fine, and a template with no arena- element is none of this rule\'s business', () => {
   assert.deepEqual(markerProblems([{
     path: 'a/B.ts',
-    source: "@Component({ imports: [Dialog, ArenaFooter], template: `<arena-dialog><div footer>ok</div></arena-dialog>` })",
+    source: "@Component({ imports: [ArenaDialog, ArenaFooter], template: `<arena-dialog><div footer>ok</div></arena-dialog>` })",
   }], QUERIED), []);
   assert.deepEqual(markerProblems([{
     path: 'a/B.ts',
@@ -154,14 +154,14 @@ test('the same template with the import is fine, and a template with no arena- e
 test('a marker word inside an ATTRIBUTE VALUE is not a use of it, which is what over-reported first', () => {
   assert.deepEqual(markerProblems([{
     path: 'a/B.ts',
-    source: "@Component({ imports: [Card], template: `<arena-card><arena-tooltip label=\"Every action for this build\">x</arena-tooltip></arena-card>` })",
+    source: "@Component({ imports: [ArenaCard], template: `<arena-card><arena-tooltip label=\"Every action for this build\">x</arena-tooltip></arena-card>` })",
   }], QUERIED), []);
 });
 
 test('a slot gated by an INPUT rather than by a query needs no directive, so projecting into it is not a problem', () => {
   assert.deepEqual(markerProblems([{
     path: 'a/B.ts',
-    source: "@Component({ imports: [CalendarEvent], template: `<arena-calendar-event><button actions>Delete</button></arena-calendar-event>` })",
+    source: "@Component({ imports: [ArenaCalendarEvent], template: `<arena-calendar-event><button actions>Delete</button></arena-calendar-event>` })",
   }], QUERIED), []);
 });
 

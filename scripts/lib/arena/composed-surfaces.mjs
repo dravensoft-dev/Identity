@@ -1,6 +1,6 @@
 /* Which components a component RENDERS INSIDE ITSELF, read from every layer's own source and
- * unioned. A fixture says what a page instantiates and cannot say this: React's UnauthCard
- * composes Card and Angular's draws the same frame from its own manifest, so the answer differs
+ * unioned. A fixture says what a page instantiates and cannot say this: React's ArenaUnauthCard
+ * composes ArenaCard and Angular's draws the same frame from its own manifest, so the answer differs
  * by layer while the page must not, or a difference in the frame reads as a difference in the
  * component. Import graph rather than render: a branch a knob has not taken yet still needs its
  * stylesheet, so a superset is the correct side to err on. */

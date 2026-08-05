@@ -96,7 +96,7 @@ test('measureCardPage records a rejecting page as unrendered, and the sweep stil
 });
 
 test('parseDsCard reads the group, name and viewport off the first line', () => {
-  const html = '<!-- @dsCard group="Components" viewport="700x460" name="Display" subtitle="Card · Badge" -->\n<!doctype html>';
+  const html = '<!-- @dsCard group="Components" viewport="700x460" name="Display" subtitle="ArenaCard · ArenaBadge" -->\n<!doctype html>';
   assert.deepEqual(parseDsCard(html), { group: 'Components', name: 'Display', width: 700, height: 460 });
 });
 
@@ -145,7 +145,7 @@ test('content taller than the declared box clips, and the message names both num
 
 test('content wider than the declared box clips too', () => {
   const r = classify({
-    file: 'frameworks/react/components/brand/app-logo/AppLogo.card.html',
+    file: 'frameworks/react/components/brand/arena-app-logo/ArenaAppLogo.card.html',
     declared: { width: 700, height: 660 },
     measured: { scrollWidth: 732, scrollHeight: 660, clientWidth: 700, clientHeight: 660, contentHeight: 660, rendered: true, timedOut: false },
   });

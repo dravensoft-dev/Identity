@@ -1,0 +1,25 @@
+{
+  "component": "ArenaCard",
+  "cases": [
+    {
+      "name": "link",
+      "when": "`href` is set -- the whole card is a real <a href>, whatever `interactive` says",
+      "pattern": "none",
+      "reason": "There is no link pattern to bind, and that is not an omission: a link's role, its keyboard activation and its focusability all come from the platform the moment the element is an <a href>. Binding `button` here would name a role this element does not have, and rebuilding the anchor's affordances on a div would lose exactly what href exists for -- open in a new tab, copy the address, hear it announced as a link. The same shape, and the same reason, as ArenaSideNavItem's own link case.",
+      "exceptions": []
+    },
+    {
+      "name": "surface",
+      "when": "`interactive` is false -- the default, and nothing obliges a consumer to change it",
+      "pattern": "none",
+      "reason": "arena-card renders a bordered surface with an optional eyebrow/title header and an `action` slot; it manages no state, adds no role, and owns no interactive element of its own -- any button or control inside comes from the content slot or from `[action]`, both caller-supplied, not from ArenaCard itself. This is the shape that keeps a dead tab stop off every card of every list.",
+      "exceptions": []
+    },
+    {
+      "name": "interactive",
+      "when": "`interactive` is true -- the whole card is one activation target, the ordinary shape of a list on a phone",
+      "pattern": "button",
+      "exceptions": []
+    }
+  ]
+}

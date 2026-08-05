@@ -1,8 +1,0 @@
-{
-  "component": "ProgressBar",
-  "seed": {
-    "progressPercentage": 62,
-    "label": "Uploading build artefacts"
-  },
-  "note": "The label is read out, so it says what is progressing rather than that something is."
-}

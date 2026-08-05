@@ -11,13 +11,13 @@ import { join } from 'node:path';
 import React from 'react';
 import { mount, cleanup } from '../../test/Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
-import { Input } from './input/Input.tsx';
-import { Textarea } from './textarea/Textarea.tsx';
+import { ArenaInput } from './arena-input/ArenaInput.tsx';
+import { ArenaTextarea } from './arena-textarea/ArenaTextarea.tsx';
 
 afterEach(cleanup);
 
-const INPUT_BINDING = join(REACT_COMPONENTS, 'forms/input/Input.behaviour.json');
-const TEXTAREA_BINDING = join(REACT_COMPONENTS, 'forms/textarea/Textarea.behaviour.json');
+const INPUT_BINDING = join(REACT_COMPONENTS, 'forms/arena-input/ArenaInput.behaviour.json');
+const TEXTAREA_BINDING = join(REACT_COMPONENTS, 'forms/arena-textarea/ArenaTextarea.behaviour.json');
 
 function reflects(render: (v: boolean) => React.ReactElement, selector: string, attribute: string) {
   const on = mount(render(true)).querySelector(selector);
@@ -29,11 +29,11 @@ function reflects(render: (v: boolean) => React.ReactElement, selector: string, 
   return on;
 }
 
-test('Input reflects readonly and required, and is a single-line textbox', () => {
-  reflects((v: boolean) => <Input label="Project" readOnly={v} />, 'input', 'readonly');
-  reflects((v: boolean) => <Input label="Project" required={v} />, 'input', 'required');
+test('ArenaInput reflects readonly and required, and is a single-line textbox', () => {
+  reflects((v: boolean) => <ArenaInput label="Project" readOnly={v} />, 'input', 'readonly');
+  reflects((v: boolean) => <ArenaInput label="Project" required={v} />, 'input', 'required');
 
-  const root = mount(<Input label="Project" readOnly />);
+  const root = mount(<ArenaInput label="Project" readOnly />);
   const el = root.querySelector<HTMLInputElement>('input');
   assert.equal(el!.hasAttribute('aria-multiline'), false,
     'the element type is the reflection here, so an explicit aria-multiline would be redundant');
@@ -48,11 +48,11 @@ test('Input reflects readonly and required, and is a single-line textbox', () =>
   });
 });
 
-test('Textarea reflects readonly and required, and is a multi-line textbox', () => {
-  reflects((v: boolean) => <Textarea label="Notes" readOnly={v} />, 'textarea', 'readonly');
-  reflects((v: boolean) => <Textarea label="Notes" required={v} />, 'textarea', 'required');
+test('ArenaTextarea reflects readonly and required, and is a multi-line textbox', () => {
+  reflects((v: boolean) => <ArenaTextarea label="Notes" readOnly={v} />, 'textarea', 'readonly');
+  reflects((v: boolean) => <ArenaTextarea label="Notes" required={v} />, 'textarea', 'required');
 
-  const root = mount(<Textarea label="Notes" readOnly />);
+  const root = mount(<ArenaTextarea label="Notes" readOnly />);
   const el = root.querySelector<HTMLTextAreaElement>('textarea');
   assert.equal(el!.tagName, 'TEXTAREA',
     'multiline is carried by the element itself, which is why no aria-multiline is authored');

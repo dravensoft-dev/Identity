@@ -40,16 +40,16 @@ test('no stamp rebuilds, and no input found rebuilds rather than skipping on a w
 
 test('missingEmitProblems reports nothing when every source test has a matching emit', () => {
   const problems = missingEmitProblems(
-    ['DataVisuals.test.ts', 'components/charts/bar-chart/BarChart.geometry.test.ts'],
-    ['DataVisuals.test.js', 'components/charts/bar-chart/BarChart.geometry.test.js'],
+    ['DataVisuals.test.ts', 'components/charts/arena-bar-chart/ArenaBarChart.geometry.test.ts'],
+    ['DataVisuals.test.js', 'components/charts/arena-bar-chart/ArenaBarChart.geometry.test.js'],
   );
   assert.deepEqual(problems, []);
 });
 
 test('missingEmitProblems names a source test with no matching emit', () => {
   const problems = missingEmitProblems(
-    ['DataVisuals.test.ts', 'components/charts/bar-chart/BarChart.geometry.test.ts'],
-    ['components/charts/bar-chart/BarChart.geometry.test.js'],
+    ['DataVisuals.test.ts', 'components/charts/arena-bar-chart/ArenaBarChart.geometry.test.ts'],
+    ['components/charts/arena-bar-chart/ArenaBarChart.geometry.test.js'],
   );
   assert.equal(problems.length, 1);
   assert.match(problems[0], /DataVisuals\.test\.ts/);

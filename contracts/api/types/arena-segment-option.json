@@ -1,7 +1,7 @@
 {
   "name": "ArenaSegmentOption",
   "kind": "object",
-  "description": "One option in a SegmentedControl.",
+  "description": "One option in an ArenaSegmentedControl.",
   "fields": {
     "value": { "form": "primitive", "type": "string", "required": true,
                "description": "What the option selects, and what `change` carries." },

@@ -78,10 +78,10 @@ test('classStringsBySlot reads both slots and every variant branch, merging same
 });
 
 test('a manifest covers its own contract unless MANIFEST_COVERS says it draws a wider surface', () => {
-  assert.deepEqual(coveredContracts('Button'), ['Button']);
-  assert.deepEqual(coveredContracts('Table'), ['Table', 'TableRow', 'TableCell']);
-  assert.deepEqual(coveredContracts('ConfirmDialog'), ['ConfirmDialog', 'Button']);
-  assert.deepEqual(coveredContracts('Radio'), ['Radio', 'RadioGroup']);
+  assert.deepEqual(coveredContracts('ArenaButton'), ['ArenaButton']);
+  assert.deepEqual(coveredContracts('ArenaTable'), ['ArenaTable', 'ArenaTableRow', 'ArenaTableCell']);
+  assert.deepEqual(coveredContracts('ArenaConfirmDialog'), ['ArenaConfirmDialog', 'ArenaButton']);
+  assert.deepEqual(coveredContracts('ArenaRadio'), ['ArenaRadio', 'ArenaRadioGroup']);
   for (const [, { reason }] of MANIFEST_COVERS) assert.ok(reason.length > 40, 'every entry states why');
 });
 
@@ -90,11 +90,11 @@ test('every contract MANIFEST_COVERS names exists, so no entry is stale', () => 
 });
 
 test('the affordance union is what licenses a slot, which is the whole point of covering several', () => {
-  assert.deepEqual([...affordancesFor(['Table', 'TableRow', 'TableCell'])].sort(), ['focus', 'hover']);
-  assert.deepEqual([...affordancesFor(['TableCell'])], ['focus'],
+  assert.deepEqual([...affordancesFor(['ArenaTable', 'ArenaTableRow', 'ArenaTableCell'])].sort(), ['focus', 'hover']);
+  assert.deepEqual([...affordancesFor(['ArenaTableCell'])], ['focus'],
     'one of the covered contracts alone must still be narrower than the union, or this asserts nothing');
-  assert.deepEqual([...affordancesFor(['PageHead'])], []);
-  assert.deepEqual([...affordancesFor(['Card'])].sort(), ['focus', 'hover']);
+  assert.deepEqual([...affordancesFor(['ArenaPageHead'])], []);
+  assert.deepEqual([...affordancesFor(['ArenaCard'])].sort(), ['focus', 'hover']);
 });
 
 test('a contract with no affordances array throws rather than reading as none', () => {
@@ -115,35 +115,35 @@ test('every contract declares the key, and only from the closed set', () => {
 });
 
 test('THE CORE CLAIM: a manifest hover no covered contract declares is invented', () => {
-  const manifest = { component: 'Pagination', slots: { nav: 'inline-flex items-center hover:bg-base-200' } };
+  const manifest = { component: 'ArenaPagination', slots: { nav: 'inline-flex items-center hover:bg-base-200' } };
   const { findings } = manifestProblems(manifest, new Set());
   assert.equal(findings.length, 1);
-  assert.deepEqual(findings[0], { half: 'manifest', component: 'Pagination', slot: 'nav', family: 'hover' });
+  assert.deepEqual(findings[0], { half: 'manifest', component: 'ArenaPagination', slot: 'nav', family: 'hover' });
 });
 
 test('and the same modifier passes once a contract declares the affordance', () => {
-  const manifest = { component: 'Pagination', slots: { nav: 'hover:bg-base-200' } };
+  const manifest = { component: 'ArenaPagination', slots: { nav: 'hover:bg-base-200' } };
   assert.deepEqual(manifestProblems(manifest, new Set(['hover'])).findings, []);
 });
 
 test('THE OTHER HALF: React implementing an affordance its contract does not declare is invented too', () => {
-  const contract = JSON.parse(readFileSync(join(repoRoot, 'contracts/api/components/BarChart.json'), 'utf8'));
-  assert.ok(contract.affordances.includes('hover'), 'BarChart hovers, and the contract is where that is said');
-  assert.deepEqual(reactProblems('BarChart', 'charts').findings, []);
+  const contract = JSON.parse(readFileSync(join(repoRoot, 'contracts/api/components/ArenaBarChart.json'), 'utf8'));
+  assert.ok(contract.affordances.includes('hover'), 'ArenaBarChart hovers, and the contract is where that is said');
+  assert.deepEqual(reactProblems('ArenaBarChart', 'charts').findings, []);
 
-  const invented = reactProblems('BarChart', 'charts');
+  const invented = reactProblems('ArenaBarChart', 'charts');
   assert.ok(invented.sites > 0, 'a half examining zero sites finds zero violations by construction');
 });
 
 test('the react half asks only the components that draw by hand, because the rest answer with their manifest', () => {
-  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['BarChart', 'DoughnutChart', 'LineChart']);
-  assert.deepEqual(unaskedHandDrawn(['BarChart', 'DoughnutChart', 'LineChart']), []);
+  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaLineChart']);
+  assert.deepEqual(unaskedHandDrawn(['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaLineChart']), []);
 });
 
 test('a hand-drawn component the react half never opened is a failure, not a clean pass', () => {
-  const problems = unaskedHandDrawn(['BarChart', 'DoughnutChart']);
+  const problems = unaskedHandDrawn(['ArenaBarChart', 'ArenaDoughnutChart']);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /LineChart/);
+  assert.match(problems[0], /ArenaLineChart/);
   assert.match(problems[0], /never opened/);
 });
 
@@ -161,7 +161,7 @@ test('a name with no React source is not a finding -- a layer may simply not imp
 test('a component directory holding no source is a finding, not a silent skip', () => {
   assert.equal(missingReactSource('NoSuchComponentAtAll', 'display'), null,
     'an absent directory is check:structure\'s claim, not this one\'s');
-  assert.equal(missingReactSource('Button', 'forms'), null);
+  assert.equal(missingReactSource('ArenaButton', 'forms'), null);
   assert.equal(zeroReactSourceProblems(0).length, 1);
   assert.match(zeroReactSourceProblems(0)[0], /checked nothing/);
   assert.deepEqual(zeroReactSourceProblems(1), []);

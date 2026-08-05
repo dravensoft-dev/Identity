@@ -9,13 +9,13 @@
    a loop is not a transition, so nothing here restates a number stated elsewhere.
 
    Reduced motion is answered per animation, on the terms the motion sets: the
-   shimmer is decorative, so it stops outright; ProgressBar's indeterminate
+   shimmer is decorative, so it stops outright; ArenaProgressBar's indeterminate
    sweep reports work in progress, so it slows rather than stops — a frozen
-   indicator reads as a hung process; Dialog and Menu are entrances, so they
+   indicator reads as a hung process; ArenaDialog and ArenaMenu are entrances, so they
    keep the fade and drop the travel, redefining their keyframes inside the
-   media query rather than disabling the animation; Tooltip animates opacity
+   media query rather than disabling the animation; ArenaTooltip animates opacity
    only and carries no reduced-motion clause at all — there is no motion to
-   reduce; and the two spinners, Button's and the standalone one, report work in
+   reduce; and the two spinners, ArenaButton's and the standalone one, report work in
    progress like the progress sweep does, so they slow to --loop-reduced rather
    than freezing. That is all seven, and this list is the normative one: the
    Tailwind README points here rather than restating it. */
@@ -112,7 +112,7 @@
 }
 
 /* Byte-identical to arena-btn-spin above, and deliberately not merged with it:
-   Button's inline spinner and the standalone Spinner are two components, and
+   ArenaButton's inline spinner and the standalone ArenaSpinner are two components, and
    one utility shared between them makes a change to either a change to both.
    What they do share is --loop-spin, which is the level at which "these two
    spin at the same speed" is meant to be stated. */

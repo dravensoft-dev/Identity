@@ -34,11 +34,11 @@ const PROPS = new Set([
 ]);
 
 export const EXEMPT = new Map([
-  ['frameworks/react/components/charts/bar-chart/BarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
-   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike Avatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
-  ['frameworks/react/components/charts/line-chart/LineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
-   'the same yOf(values[hover]) projection as BarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
-  ['frameworks/react/components/display/calendar/Calendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
+  ['frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
+   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike ArenaAvatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
+  ['frameworks/react/components/charts/arena-line-chart/ArenaLineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
+   'the same yOf(values[hover]) projection as ArenaBarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
+  ['frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 6.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/react/DataVisuals.ts:width:1',
    'srOnly is the standard visually-hidden idiom, and its 1px box is not a design dimension — it is the smallest non-zero footprint that keeps the element in the accessibility tree, paired with clip:rect(0 0 0 0) to hide it regardless of box size. 0 would drop it from the tree in some engines and defeat the whole point. Nothing in contracts/design/ could stand in for it: the number is a constraint of the a11y idiom, and it must be a fixed literal for the negative margin below to cancel exactly'],
@@ -384,7 +384,7 @@ export function scanAttributes(rawText) {
 }
 
 const PASSTHROUGH = new Map([
-  ['AppLogo', { prop: 'size', governs: 'width' }],
+  ['ArenaAppLogo', { prop: 'size', governs: 'width' }],
 ]);
 
 const COMPONENT_PARAMS = /function\s+([A-Za-z_]\w*)\s*\(\{([\s\S]*?)\}(?:\s*:\s*[^)]+)?\)\s*\{/g;

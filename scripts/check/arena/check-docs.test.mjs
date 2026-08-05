@@ -46,7 +46,7 @@ test('a dist tree is assembled output and is read by nothing', () => {
   const root = tree({
     'README.md': 'a',
     'frameworks/react/dist/README.md': 'an em dash — lands here, copied from a document that already passed',
-    'frameworks/react/dist/Button.jsx': '// one comment\n// and a second\nexport const a = 1;\n',
+    'frameworks/react/dist/ArenaButton.jsx': '// one comment\n// and a second\nexport const a = 1;\n',
   });
   assert.deepEqual(punctuationProblems(root).problems, []);
   assert.deepEqual(commentRuleProblems(root).problems, []);
@@ -123,7 +123,7 @@ test('every em dash on a line is reported, not just the first', () => {
 
 test('an em dash inside a fence or a code span is the document quoting code', () => {
   const root = tree({
-    'a.md': '```jsx\n<Radio hint="Real users — approval" />\n```\n',
+    'a.md': '```jsx\n<ArenaRadio hint="Real users — approval" />\n```\n',
     'b.md': 'the token `--a — b` resolves\n',
   });
   assert.deepEqual(punctuationProblems(root).problems, []);
@@ -452,14 +452,14 @@ test('the carve-out is the /** shape only, and only under a component directory'
     'the carve-out reached a layer-root file, where no contract member lives and nothing holds a doc');
   rmSync(root, { recursive: true });
 
-  assert.match('frameworks/angular/components/display/card/Card.ts', MEMBER_DOC_TREE);
+  assert.match('frameworks/angular/components/display/arena-card/ArenaCard.ts', MEMBER_DOC_TREE);
   assert.doesNotMatch('frameworks/react/Theme.ts', MEMBER_DOC_TREE);
 });
 
 test('a rule may be registered as a family, not only as one phrase', () => {
   assert.equal(statesRule('none of the nine forms is imperative', 'the nine forms'), true);
   assert.equal(statesRule('an R6 violation', /\bR[1-6]\b/), true);
-  assert.equal(statesRule('a Radio inside a RadioGroup', /\bR[1-6]\b/), false);
+  assert.equal(statesRule('an ArenaRadio inside an ArenaRadioGroup', /\bR[1-6]\b/), false);
   assert.equal(statesRule('run `check:dimensions` after', /\bcheck:[a-z-]+/), true);
 });
 

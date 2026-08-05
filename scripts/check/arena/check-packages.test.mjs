@@ -141,8 +141,8 @@ test('a wildcard target names a family, so what is checked is that the family is
 });
 
 test('a wildcard matches one path segment, the way Node resolves an exports pattern', () => {
-  const dir = assembled({ 'README.md': '#', 'Index.d.ts': '', 'css/components/badge.css': '' });
-  assert.deepEqual(globMatches('./css/components/*', dir), ['css/components/badge.css']);
+  const dir = assembled({ 'README.md': '#', 'Index.d.ts': '', 'css/components/arena-badge.css': '' });
+  assert.deepEqual(globMatches('./css/components/*', dir), ['css/components/arena-badge.css']);
   assert.deepEqual(globMatches('./css/*', dir), [],
     'a single star does not reach through a directory, so a family emitted one level deeper is '
     + 'reported as empty rather than silently counted');
@@ -159,7 +159,7 @@ test('a package exposing nothing is a problem, and so is a bin that was never em
 });
 
 test('a package carrying no component map cannot answer auto, and that is caught before a release', () => {
-  const dir = assembled({ 'css/components/button.css': '' });
+  const dir = assembled({ 'css/components/arena-button.css': '' });
   assert.deepEqual(componentMapProblems(PACKAGES[0], dir),
     ['@dravensoft/arena-react: no components.json, so "components": "auto" has nothing to resolve a template against']);
   rmSync(dir, { recursive: true });
@@ -167,19 +167,19 @@ test('a package carrying no component map cannot answer auto, and that is caught
 
 test('a map is held to the sheets beside it in both directions', () => {
   const named = assembled({
-    'css/components/button.css': '',
-    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'button', 'arena-tag': 'tag' } }),
+    'css/components/arena-button.css': '',
+    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'arena-button', 'arena-tag': 'arena-tag' } }),
   });
   assert.deepEqual(componentMapProblems(PACKAGES[0], named),
-    ['@dravensoft/arena-react: components.json names tag, and no such sheet was emitted']);
+    ['@dravensoft/arena-react: components.json names arena-tag, and no such sheet was emitted']);
 
   const short = assembled({
-    'css/components/button.css': '',
-    'css/components/tag.css': '',
-    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'button' } }),
+    'css/components/arena-button.css': '',
+    'css/components/arena-tag.css': '',
+    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'arena-button' } }),
   });
   assert.deepEqual(componentMapProblems(PACKAGES[0], short),
-    ['@dravensoft/arena-react: components.json reaches no key for tag, so auto can never put it in a subset']);
+    ['@dravensoft/arena-react: components.json reaches no key for arena-tag, so auto can never put it in a subset']);
 
   rmSync(named, { recursive: true });
   rmSync(short, { recursive: true });
@@ -187,7 +187,7 @@ test('a map is held to the sheets beside it in both directions', () => {
 
 test('a map that resolves everything to nothing is a failure, not an empty subset', () => {
   const dir = assembled({
-    'css/components/button.css': '',
+    'css/components/arena-button.css': '',
     'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-bar-chart': null } }),
   });
   assert.ok(componentMapProblems(PACKAGES[0], dir).some((m) => m.includes('names no component sheet')));
@@ -234,9 +234,9 @@ test('the repository passes its own equivalence claim, over more than nothing', 
 test('a stylesheet chain that resolves end to end reports nothing, and says how far it walked', () => {
   const dir = assembled({
     'arena.css': "@import './css/components.css';",
-    'css/components.css': "@import './components/button.css';\n@import './components/tag.css';",
-    'css/components/button.css': "@import '../prelude.css';",
-    'css/components/tag.css': "@import '../prelude.css';",
+    'css/components.css': "@import './components/arena-button.css';\n@import './components/arena-tag.css';",
+    'css/components/arena-button.css': "@import '../prelude.css';",
+    'css/components/arena-tag.css': "@import '../prelude.css';",
     'css/prelude.css': ':root{}',
   });
   const { problems, walked } = styleProblems(PACKAGES[1], dir);
@@ -249,7 +249,7 @@ test('an import naming a file beside the barrel that lives a directory below it 
   const dir = assembled({
     'arena.css': "@import './css/components.css';",
     'css/components.css': "@import './button.css';",
-    'css/components/button.css': '',
+    'css/components/arena-button.css': '',
   });
   const { problems } = styleProblems(PACKAGES[1], dir);
   assert.ok(problems.includes(
@@ -270,8 +270,8 @@ test('a chain that leads nowhere fails rather than passing for having found no i
 test('a bare specifier is the consumer\'s to resolve and is never walked as a path', () => {
   const dir = assembled({
     'arena.css': "@import '@phosphor-icons/web/bold';\n@import url('https://fonts.googleapis.com/css2?family=Archivo');\n@import './css/components.css';",
-    'css/components.css': "@import './components/tag.css';",
-    'css/components/tag.css': '',
+    'css/components.css': "@import './components/arena-tag.css';",
+    'css/components/arena-tag.css': '',
   });
   assert.deepEqual(styleProblems(PACKAGES[1], dir).problems, []);
   rmSync(dir, { recursive: true });
@@ -280,8 +280,8 @@ test('a bare specifier is the consumer\'s to resolve and is never walked as a pa
 test('a cycle terminates rather than walking the same sheet forever', () => {
   const dir = assembled({
     'arena.css': "@import './css/components.css';",
-    'css/components.css': "@import './components/tag.css';",
-    'css/components/tag.css': "@import '../components.css';",
+    'css/components.css': "@import './components/arena-tag.css';",
+    'css/components/arena-tag.css': "@import '../components.css';",
   });
   assert.deepEqual(styleProblems(PACKAGES[1], dir).problems, []);
   rmSync(dir, { recursive: true });

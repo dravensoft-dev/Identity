@@ -12,12 +12,12 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('a relative source specifier becomes .js, because the package holds no JSX and no TypeScript', () => {
   assert.equal(
-    rewriteSourceSpecifiers("import { Button } from '../../forms/button/Button.jsx';"),
-    "import { Button } from '../../forms/button/Button.js';",
+    rewriteSourceSpecifiers("import { ArenaButton } from '../../forms/arena-button/ArenaButton.jsx';"),
+    "import { ArenaButton } from '../../forms/arena-button/ArenaButton.js';",
   );
   assert.equal(
-    rewriteSourceSpecifiers("export * from './components/display/tag/Tag.jsx';"),
-    "export * from './components/display/tag/Tag.js';",
+    rewriteSourceSpecifiers("export * from './components/display/arena-tag/ArenaTag.jsx';"),
+    "export * from './components/display/arena-tag/ArenaTag.js';",
   );
 });
 
@@ -39,7 +39,7 @@ test('the word jsx inside a path is not an extension', () => {
 test('a .ts specifier reaches the tarball as .js, because dist holds no TypeScript', () => {
   assert.equal(rewriteSourceSpecifiers("from './UseDialogModal.ts'"), "from './UseDialogModal.js'");
   assert.equal(rewriteSourceSpecifiers("from '../../../DataVisuals.ts'"), "from '../../../DataVisuals.js'");
-  assert.equal(rewriteSourceSpecifiers("from './Button.tsx'"), "from './Button.js'");
+  assert.equal(rewriteSourceSpecifiers("from './ArenaButton.tsx'"), "from './ArenaButton.js'");
   assert.equal(rewriteSourceSpecifiers("from './Tokens.generated.js'"), "from './Tokens.generated.js'",
     'already .js, so the rewrite is a no-op rather than a doubling');
   assert.equal(rewriteSourceSpecifiers("from 'react'"), "from 'react'",
@@ -95,8 +95,8 @@ test('every layer-root module the package needs is named, and Tokens is among th
 
 test('a relative .tsx specifier becomes .js too, so both extensions land on one package layout', () => {
   assert.equal(
-    rewriteSourceSpecifiers("import { Badge } from '../../display/badge/Badge.tsx';"),
-    "import { Badge } from '../../display/badge/Badge.js';",
+    rewriteSourceSpecifiers("import { ArenaBadge } from '../../display/arena-badge/ArenaBadge.tsx';"),
+    "import { ArenaBadge } from '../../display/arena-badge/ArenaBadge.js';",
   );
   assert.equal(
     rewriteSourceSpecifiers("import { sp1 } from '../../../Tokens.generated.js';"),
@@ -159,8 +159,8 @@ test('a specifier naming nothing in the package fails the build rather than the 
 });
 
 test('a declaration is not mistaken for a source to compile', () => {
-  assert.equal(isSource('a/Button.tsx'), true);
+  assert.equal(isSource('a/ArenaButton.tsx'), true);
   assert.equal(isSource('a/Internals.ts'), true);
-  assert.equal(isSource('a/Button.d.ts'), false);
+  assert.equal(isSource('a/ArenaButton.d.ts'), false);
   assert.equal(isSource('a/Tokens.generated.js'), false);
 });

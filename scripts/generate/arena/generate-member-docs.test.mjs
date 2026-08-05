@@ -46,7 +46,7 @@ test('a drifted doc is replaced rather than joined, single line or multi', () =>
   assert.equal((both.match(/\/\*\*/g) ?? []).length, 1);
 });
 
-test('a member sharing a line with a sibling is still reached, which is how Alert was written', () => {
+test('a member sharing a line with a sibling is still reached, which is how ArenaAlert was written', () => {
   const packed = '  title?: string; children?: React.ReactNode; icon?: string;';
   assert.match(packed, PACKED_MEMBERS);
   assert.deepEqual(unpackMembers(packed).split('\n'), [

@@ -44,11 +44,11 @@ Every one of these is enforced somewhere, so breaking one is a defect rather tha
   `calc()`/`clamp()` over one.
 - **Danger is outline, never filled**: transparent background, border and content in
   `--error`/`--danger`. The single filled danger surface in the whole system is the final
-  irreversible confirmation inside `ConfirmDialog`.
+  irreversible confirmation inside `ArenaConfirmDialog`.
 - **One primary accent per view.** Crimson is the voice; at most one `variant="primary"`
   action on a screen. Gold is distinction and focus, not a second primary.
 - **No gradients** on any surface. Depth comes from the `base-100` to `base-200` to `base-300`
-  surface scale, the hairline border and the warm shadow. `Skeleton`'s neutral shimmer is the
+  surface scale, the hairline border and the warm shadow. `ArenaSkeleton`'s neutral shimmer is the
   one exception.
 - **No emoji**, in product or in copy.
 - **Icons are Phosphor class-name strings, never elements and never SVG**:
@@ -64,7 +64,7 @@ Every one of these is enforced somewhere, so breaking one is a defect rather tha
   handler and nothing navigates twice. A modified click, a middle click and the context menu
   are the browser's: they open the `href` themselves and report nothing. **Never wrap an Arena
   component in your router's own link**, which nests an anchor inside an anchor, and in Angular
-  does not bind at all. `Card.href`, `ArenaCommand.route`, `ArenaCrumb.href` and `SideNavItem.href`.
+  does not bind at all. `ArenaCard.href`, `ArenaCommand.route`, `ArenaCrumb.href` and `ArenaSideNavItem.href`.
 - **A required member absent is a caller bug**, not a state to render. Every layer fails hard
   rather than drawing something empty, so an absent one is loud on the first render.
 - **No render follows from whether you bound a listener or filled a slot.** A member decides,

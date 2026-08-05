@@ -14,7 +14,7 @@ import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs
 const TYPES = new Map([['ArenaTone', 'enum'], ['ArenaCrumb', 'object']]);
 
 const CONTRACT = {
-  component: 'Breadcrumbs',
+  component: 'ArenaBreadcrumbs',
   api: {
     items: { form: 'array', of: 'ArenaCrumb', required: true },
     separator: { form: 'primitive', type: 'string' },
@@ -22,7 +22,7 @@ const CONTRACT = {
   },
 };
 
-const TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
+const TREE = { charts: ['arena-bar-chart'], display: ['arena-tag', 'arena-unauth-card'] };
 
 const layerExists = (layer, ext) => (tree, missing = []) => {
   const gone = new Set(missing);
@@ -39,18 +39,18 @@ test('a complete layer resolves every component to its own PascalCase file and r
   const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE));
   assert.deepEqual(problems, []);
   assert.equal(implementations.size, 3);
-  assert.equal(implementations.get('BarChart'), 'frameworks/angular/components/charts/bar-chart/BarChart.ts');
-  assert.equal(implementations.get('UnauthCard'), 'frameworks/angular/components/display/unauth-card/UnauthCard.ts');
+  assert.equal(implementations.get('ArenaBarChart'), 'frameworks/angular/components/charts/arena-bar-chart/ArenaBarChart.ts');
+  assert.equal(implementations.get('ArenaUnauthCard'), 'frameworks/angular/components/display/arena-unauth-card/ArenaUnauthCard.ts');
 });
 
 test('a component directory whose PascalCase file is missing is a problem, not a skip -- and the rest of the layer still resolves', () => {
 
-  const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE, ['tag']));
+  const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE, ['arena-tag']));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/angular\/components\/display\/tag\/: is a component directory with no Tag\.ts/);
+  assert.match(problems[0], /frameworks\/angular\/components\/display\/arena-tag\/: is a component directory with no ArenaTag\.ts/);
   assert.match(problems[0], /clean pass over an unchecked layer/);
   assert.equal(implementations.size, 2);
-  assert.ok(!implementations.has('Tag'));
+  assert.ok(!implementations.has('ArenaTag'));
 });
 
 test('a layer that yields zero implementations is a failure, not a clean pass', () => {
@@ -77,24 +77,24 @@ test('a category holding no directories contributes nothing and is not itself a 
   assert.match(problems[0], /found 0 Angular component implementations/);
 });
 
-const REACT_TREE = { charts: ['bar-chart'], display: ['tag', 'unauth-card'] };
+const REACT_TREE = { charts: ['arena-bar-chart'], display: ['arena-tag', 'arena-unauth-card'] };
 
 test('a complete React layer resolves every component to its own .d.ts and reports nothing', () => {
   const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE));
   assert.deepEqual(problems, []);
   assert.equal(implementations.size, 3);
-  assert.equal(implementations.get('BarChart'), 'frameworks/react/components/charts/bar-chart/BarChart.d.ts');
-  assert.equal(implementations.get('UnauthCard'), 'frameworks/react/components/display/unauth-card/UnauthCard.d.ts');
+  assert.equal(implementations.get('ArenaBarChart'), 'frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.d.ts');
+  assert.equal(implementations.get('ArenaUnauthCard'), 'frameworks/react/components/display/arena-unauth-card/ArenaUnauthCard.d.ts');
 });
 
 test('a React component directory declaring no surface at all is a problem, not a skip -- and the rest of the layer still resolves', () => {
 
-  const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE, ['tag']));
+  const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE, ['arena-tag']));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/react\/components\/display\/tag\/: is a component directory with no Tag\.tsx and no Tag\.d\.ts/);
+  assert.match(problems[0], /frameworks\/react\/components\/display\/arena-tag\/: is a component directory with no ArenaTag\.tsx and no ArenaTag\.d\.ts/);
   assert.match(problems[0], /clean pass over an unchecked layer/);
   assert.equal(implementations.size, 2);
-  assert.ok(!implementations.has('Tag'));
+  assert.ok(!implementations.has('ArenaTag'));
 });
 
 test('a React layer that yields zero implementations is a failure, not a clean pass', () => {
@@ -218,18 +218,18 @@ test('an array of the wrong element type fails', () => {
 
 test('a primitive member typed differently in the layer is a problem', () => {
   const problems = compareSurface(
-    { component: 'Breadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
+    { component: 'ArenaBreadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
     [{ name: 'separator', required: false, form: 'primitive', type: 'number' }],
     'react',
   );
   assert.deepEqual(problems, [
-    'react/Breadcrumbs.separator: typed number, contract says string',
+    'react/ArenaBreadcrumbs.separator: typed number, contract says string',
   ]);
 });
 
 test('a primitive member typed the same in both is not a problem', () => {
   const problems = compareSurface(
-    { component: 'Breadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
+    { component: 'ArenaBreadcrumbs', api: { separator: { form: 'primitive', type: 'string' } } },
     [{ name: 'separator', required: false, form: 'primitive', type: 'string' }],
     'react',
   );
@@ -467,7 +467,7 @@ test('R1: a predefined object may not carry a slot or an event field', () => {
 
 test('an object field naming an enum type nobody declared fails', () => {
   const problems = validateTypes([{
-    name: 'Widget', kind: 'object',
+    name: 'ArenaWidget', kind: 'object',
     fields: { tone: { form: 'enum', type: 'Nonexistent' } },
   }]);
   assert.equal(problems.length, 1);
@@ -477,7 +477,7 @@ test('an object field naming an enum type nobody declared fails', () => {
 test('an object field naming a real type that is an object, not an enum, fails', () => {
   const problems = validateTypes([
     { name: 'ArenaCrumb', kind: 'object', fields: { label: { form: 'primitive', type: 'string' } } },
-    { name: 'Widget', kind: 'object', fields: { thing: { form: 'enum', type: 'ArenaCrumb' } } },
+    { name: 'ArenaWidget', kind: 'object', fields: { thing: { form: 'enum', type: 'ArenaCrumb' } } },
   ]);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /ArenaCrumb/);
@@ -486,7 +486,7 @@ test('an object field naming a real type that is an object, not an enum, fails',
 test('an object field naming a declared enum passes', () => {
   const problems = validateTypes([
     { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent'] },
-    { name: 'Widget', kind: 'object', fields: { tone: { form: 'enum', type: 'ArenaTone' } } },
+    { name: 'ArenaWidget', kind: 'object', fields: { tone: { form: 'enum', type: 'ArenaTone' } } },
   ]);
   assert.deepEqual(problems, []);
 });
@@ -576,7 +576,7 @@ test('validateContract accepts consumer data routed back out through an event pa
 
 test('validateContract accepts a functionInput in a kind:input contract', () => {
   const problems = validateContract(
-    { component: 'Input', kind: 'input',
+    { component: 'ArenaInput', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } } },
     new Map(),
   );
@@ -594,7 +594,7 @@ test('validateContract rejects a functionInput outside a kind:input contract', (
 
 test('validateContract checks a functionInput signature type against contracts/api/types', () => {
   const problems = validateContract(
-    { component: 'Input', kind: 'input',
+    { component: 'ArenaInput', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'Nope' }, returns: 'string' } } },
     new Map(),
   );
@@ -604,14 +604,14 @@ test('validateContract checks a functionInput signature type against contracts/a
 
 test('validateContract checks a functionInput RETURN type against contracts/api/types too', () => {
   const problems = validateContract(
-    { component: 'Input', kind: 'input',
+    { component: 'ArenaInput', kind: 'input',
       api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'Nope' } } },
     new Map(),
   );
   assert.ok(problems.some((p) => /Nope/.test(p) && /return/i.test(p)));
 
   const missing = validateContract(
-    { component: 'Input', kind: 'input', api: { validate: { form: 'functionInput', params: {} } } },
+    { component: 'ArenaInput', kind: 'input', api: { validate: { form: 'functionInput', params: {} } } },
     new Map(),
   );
   assert.ok(missing.some((p) => /validate/.test(p) && /returns/.test(p)));
@@ -619,7 +619,7 @@ test('validateContract checks a functionInput RETURN type against contracts/api/
 
 test('a functionInput whose layer parameter type differs from the contract is reported', () => {
   const contract = {
-    component: 'Input', kind: 'input',
+    component: 'ArenaInput', kind: 'input',
     api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } },
   };
   const problems = compareSurface(
@@ -636,7 +636,7 @@ test('a functionInput whose layer parameter type differs from the contract is re
 
 test('a functionInput whose layer return differs from the contract is reported', () => {
   const contract = {
-    component: 'Input', kind: 'input',
+    component: 'ArenaInput', kind: 'input',
     api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } },
   };
   const problems = compareSurface(
@@ -652,7 +652,7 @@ test('a functionInput whose layer return differs from the contract is reported',
 
 test('a functionInput matching the contract exactly reports nothing, and binds to a prop of the same name', () => {
   const contract = {
-    component: 'Input', kind: 'input',
+    component: 'ArenaInput', kind: 'input',
     api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string' } },
   };
   assert.deepEqual(
@@ -670,7 +670,7 @@ test('a functionInput matching the contract exactly reports nothing, and binds t
 
 test('a functionInput required by the contract and optional in the layer is reported', () => {
   const contract = {
-    component: 'Input', kind: 'input',
+    component: 'ArenaInput', kind: 'input',
     api: { validate: { form: 'functionInput', params: { value: 'string' }, returns: 'string', required: true } },
   };
   const problems = compareSurface(

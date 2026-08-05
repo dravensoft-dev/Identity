@@ -18,12 +18,12 @@ import { ANGULAR_COMPONENTS } from './Compliance';
 const LAYER = join(ANGULAR_COMPONENTS, '..');
 
 const PRIVATE = new Map([
-  ['display/calendar/CalendarInternals.ts',
+  ['display/arena-calendar/CalendarInternals.ts',
    'date and geometry arithmetic the family consumes and no consumer calls: `arena-calendar` '
    + 'reads event times through it and `arena-calendar-event` reads its two fit thresholds. A '
    + 'consumer drives the view through `anchorDate` and `view`, never by computing a week '
    + 'boundary. It is typechecked through the components that import it.'],
-  ['navigation/pagination/PaginationWindow.ts',
+  ['navigation/arena-pagination/PaginationWindow.ts',
    'the same shape one category over, and the standing precedent for it: `pageWindow` decides '
    + 'which page numbers elide, which is `arena-pagination`\'s own arithmetic and not a member '
    + 'of its API.'],

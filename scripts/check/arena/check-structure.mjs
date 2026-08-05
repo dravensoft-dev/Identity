@@ -5,6 +5,7 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.mjs';
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+export const PREFIX = 'Arena';
 
 export function validateStructure({ categories, layers, complete = false }) {
   const problems = [];
@@ -12,6 +13,11 @@ export function validateStructure({ categories, layers, complete = false }) {
   const firstCategoryOf = new Map();
   for (const [category, names] of Object.entries(categories))
     for (const name of names) {
+      if (!name.startsWith(PREFIX)) {
+        problems.push(`${name} does not start with ${PREFIX}: a component is spelt the same in the contract, `
+          + 'the manifest, both layers and a consumer\'s source, and the prefix is what makes the element, '
+          + 'the export and the sheet one name rather than three');
+      }
       if (firstCategoryOf.has(name)) {
         problems.push(`${name} is declared in both ${firstCategoryOf.get(name)} and ${category} in frameworks/Components.json`);
         continue;

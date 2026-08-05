@@ -4,7 +4,7 @@ What more than one script needs in order to write JSX for the React layer.
 
 | module | why it exists |
 | --- | --- |
-| `playground-react.mjs` | Emits this layer's demo page and demo entry from the layer-neutral model in `../arena/playground-model.mjs`. Every member is written out as its own attribute rather than spread, so the two layers' entries read as translations of each other: the other layer has no spread, and this one has no reason to diverge from it. A literal reaches JSX through `JSON.stringify` inside an expression container, which is one escaping rule for every form rather than one per type. A slot holding several nodes becomes a **keyed array** and never a fragment, because `Tabs`, `Table` and `RadioGroup` read their direct children through `Children.toArray` and `cloneElement`, and a fragment hides them from that walk. |
+| `playground-react.mjs` | Emits this layer's demo page and demo entry from the layer-neutral model in `../arena/playground-model.mjs`. Every member is written out as its own attribute rather than spread, so the two layers' entries read as translations of each other: the other layer has no spread, and this one has no reason to diverge from it. A literal reaches JSX through `JSON.stringify` inside an expression container, which is one escaping rule for every form rather than one per type. A slot holding several nodes becomes a **keyed array** and never a fragment, because `ArenaTabs`, `ArenaTable` and `ArenaRadioGroup` read their direct children through `Children.toArray` and `cloneElement`, and a fragment hides them from that walk. |
 
 Every `X.test.mjs` beside a module covers that module.
 

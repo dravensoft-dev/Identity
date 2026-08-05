@@ -30,15 +30,15 @@ test('a script suite is classified by the domain directory it sits in, whatever 
 });
 
 test('a framework suite is classified by its layer, DOM split and category depth included', () => {
-  assert.equal(domainOfTestPath('frameworks/react/components/forms/button/Button.test.tsx'), 'react');
-  assert.equal(domainOfTestPath('frameworks/react/components/forms/input/Input.dom.test.tsx'), 'react');
+  assert.equal(domainOfTestPath('frameworks/react/components/forms/arena-button/ArenaButton.test.tsx'), 'react');
+  assert.equal(domainOfTestPath('frameworks/react/components/forms/arena-input/ArenaInput.dom.test.tsx'), 'react');
   assert.equal(domainOfTestPath('frameworks/react/test/UseDialogModal.dom.test.tsx'), 'react');
 });
 
 test("the Angular suites run from the emit, and the emit is still the Angular layer's", () => {
   assert.equal(domainOfTestPath('frameworks/angular/build/test/test/Harness.test.js'), 'angular');
   assert.equal(
-    domainOfTestPath('frameworks/angular/build/test/components/forms/button/Button.a11y.test.js'),
+    domainOfTestPath('frameworks/angular/build/test/components/forms/arena-button/ArenaButton.a11y.test.js'),
     'angular',
   );
 });
@@ -54,7 +54,7 @@ test('a checkout under a directory of an anchor name does not decide every path 
 
 test('a path belonging to no domain is null rather than guessed', () => {
   assert.equal(domainOfTestPath('README.md'), null);
-  assert.equal(domainOfTestPath('contracts/api/components/Button.json'), null);
+  assert.equal(domainOfTestPath('contracts/api/components/ArenaButton.json'), null);
   assert.equal(domainOfTestPath('scripts/serve.mjs'), null);
   assert.equal(domainOfTestPath('frameworks/Components.json'), null);
 });

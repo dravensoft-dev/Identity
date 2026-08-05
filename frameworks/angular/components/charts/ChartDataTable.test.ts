@@ -9,18 +9,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
-import { BarChart } from './bar-chart/BarChart';
-import { DoughnutChart } from './doughnut-chart/DoughnutChart';
-import { LineChart } from './line-chart/LineChart';
+import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart';
+import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart';
+import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
-const BINDING = join(ANGULAR_COMPONENTS, 'charts/bar-chart/BarChart.behaviour.json');
+const BINDING = join(ANGULAR_COMPONENTS, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json');
 
 const LABELS = ['Alpha', 'Beta', 'Gamma'];
 const VALUES = [12, 30, 7];
 const SERIES = 'Deliveries';
 
 function renderBarChart() {
-  const fixture = TestBed.createComponent(BarChart);
+  const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
   fixture.componentRef.setInput('seriesLabel', SERIES);
@@ -84,7 +84,7 @@ test('arena-bar-chart matches its figure-with-data-table binding, which excepts 
 });
 
 test('arena-bar-chart REFUSES to render without a seriesLabel, where it used to name itself by type', () => {
-  const fixture = TestBed.createComponent(BarChart);
+  const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
   try {
@@ -99,7 +99,7 @@ test('arena-bar-chart REFUSES to render without a seriesLabel, where it used to 
   }
 });
 test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
-  const fixture = TestBed.createComponent(BarChart);
+  const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
   fixture.componentRef.setInput('seriesLabel', SERIES);
@@ -122,7 +122,7 @@ test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessibl
 });
 
 test('arena-doughnut-chart takes its accessible name, caption and value column from seriesLabel', () => {
-  const fixture = TestBed.createComponent(DoughnutChart);
+  const fixture = TestBed.createComponent(ArenaDoughnutChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
   fixture.componentRef.setInput('seriesLabel', SERIES);
@@ -165,26 +165,26 @@ function assertFigure(host: Element, tail: string): void {
 }
 
 test('arena-doughnut-chart matches its figure-with-data-table binding, which excepts nothing', () => {
-  const fixture = TestBed.createComponent(DoughnutChart);
+  const fixture = TestBed.createComponent(ArenaDoughnutChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
   fixture.componentRef.setInput('seriesLabel', SERIES);
   fixture.detectChanges();
   try {
-    assertFigure(fixture.nativeElement as Element, 'charts/doughnut-chart/DoughnutChart.behaviour.json');
+    assertFigure(fixture.nativeElement as Element, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json');
   } finally {
     fixture.destroy();
   }
 });
 
 test('arena-line-chart matches its figure-with-data-table binding, which excepts nothing', () => {
-  const fixture = TestBed.createComponent(LineChart);
+  const fixture = TestBed.createComponent(ArenaLineChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
   fixture.componentRef.setInput('seriesLabel', SERIES);
   fixture.detectChanges();
   try {
-    assertFigure(fixture.nativeElement as Element, 'charts/line-chart/LineChart.behaviour.json');
+    assertFigure(fixture.nativeElement as Element, 'charts/arena-line-chart/ArenaLineChart.behaviour.json');
   } finally {
     fixture.destroy();
   }

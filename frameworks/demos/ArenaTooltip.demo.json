@@ -1,0 +1,18 @@
+{
+  "component": "ArenaTooltip",
+  "seed": {
+    "label": "Copy the commit SHA"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaIconButton",
+        "members": {
+          "icon": "ph-bold ph-copy",
+          "label": "Copy"
+        }
+      }
+    ]
+  },
+  "note": "The bubble is a primitive; what it describes is the slot."
+}

@@ -4,7 +4,7 @@
  * it. A test dispatching ArrowDown here would pass identically against a working
  * group and a broken one, so what is asserted is the structural precondition the
  * browser needs, and the behaviour itself is checked by hand on the card page.
- * RadioGroup and Radio bind the same pattern over the same DOM, so one render
+ * ArenaRadioGroup and ArenaRadio bind the same pattern over the same DOM, so one render
  * answers both bindings. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,21 +12,21 @@ import { join } from 'node:path';
 import React from 'react';
 import { mount, cleanup } from '../../test/Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
-import { RadioGroup } from './radio-group/RadioGroup.tsx';
-import { Radio } from './radio/Radio.tsx';
+import { ArenaRadioGroup } from './arena-radio-group/ArenaRadioGroup.tsx';
+import { ArenaRadio } from './arena-radio/ArenaRadio.tsx';
 
 afterEach(cleanup);
 
-const GROUP_BINDING = join(REACT_COMPONENTS, 'forms/radio-group/RadioGroup.behaviour.json');
-const RADIO_BINDING = join(REACT_COMPONENTS, 'forms/radio/Radio.behaviour.json');
+const GROUP_BINDING = join(REACT_COMPONENTS, 'forms/arena-radio-group/ArenaRadioGroup.behaviour.json');
+const RADIO_BINDING = join(REACT_COMPONENTS, 'forms/arena-radio/ArenaRadio.behaviour.json');
 
 function renderGroup(ariaLabel = 'Deployment target') {
   return mount(
-    <RadioGroup ariaLabel={ariaLabel} name="env" value="staging">
-      <Radio value="production" label="Production" />
-      <Radio value="staging" label="Staging" />
-      <Radio value="qa" label="QA" />
-    </RadioGroup>,
+    <ArenaRadioGroup ariaLabel={ariaLabel} name="env" value="staging">
+      <ArenaRadio value="production" label="Production" />
+      <ArenaRadio value="staging" label="Staging" />
+      <ArenaRadio value="qa" label="QA" />
+    </ArenaRadioGroup>,
   );
 }
 
@@ -60,7 +60,7 @@ test('the group name is the member and not the form name', () => {
     'nothing in the tree is the label, so the name must be the literal one the caller gave');
 });
 
-for (const [subject, bindingPath] of [['RadioGroup', GROUP_BINDING], ['Radio', RADIO_BINDING]]) {
+for (const [subject, bindingPath] of [['ArenaRadioGroup', GROUP_BINDING], ['ArenaRadio', RADIO_BINDING]]) {
   test(`${subject} meets the radiogroup pattern it binds`, () => {
     const root = renderGroup();
     const group = root.querySelector<HTMLElement>('[role="radiogroup"]');

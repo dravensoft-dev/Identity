@@ -74,31 +74,31 @@ const patterns = new Map([
 ]);
 
 test('a binding naming a real pattern with no exceptions is valid', () => {
-  assert.deepEqual(validateBinding('Dialog', 'react', { pattern: 'dialog-modal' }, patterns), []);
+  assert.deepEqual(validateBinding('ArenaDialog', 'react', { pattern: 'dialog-modal' }, patterns), []);
 });
 
 test('a binding naming a pattern that does not exist is a problem', () => {
-  assert.match(validateBinding('Dialog', 'react', { pattern: 'modal' }, patterns)[0], /unknown pattern "modal"/);
+  assert.match(validateBinding('ArenaDialog', 'react', { pattern: 'modal' }, patterns)[0], /unknown pattern "modal"/);
 });
 
 test('binding none without a reason is a problem', () => {
-  assert.match(validateBinding('Card', 'react', { pattern: 'none' }, patterns)[0], /requires a reason/);
+  assert.match(validateBinding('ArenaCard', 'react', { pattern: 'none' }, patterns)[0], /requires a reason/);
 });
 
 test('binding none with a reason is valid', () => {
-  assert.deepEqual(validateBinding('Card', 'react', { pattern: 'none', reason: 'a surface' }, patterns), []);
+  assert.deepEqual(validateBinding('ArenaCard', 'react', { pattern: 'none', reason: 'a surface' }, patterns), []);
 });
 
 test('binding absent without a reason is a problem', () => {
   assert.match(
-    validateBinding('Calendar', 'angular-delegated', { pattern: 'absent' }, patterns)[0],
+    validateBinding('ArenaCalendar', 'angular-delegated', { pattern: 'absent' }, patterns)[0],
     /binding absent requires a reason/,
   );
 });
 
 test('binding absent with a reason is valid', () => {
   assert.deepEqual(
-    validateBinding('Calendar', 'angular-delegated', { pattern: 'absent', reason: 'no such component' }, patterns),
+    validateBinding('ArenaCalendar', 'angular-delegated', { pattern: 'absent', reason: 'no such component' }, patterns),
     [],
   );
 });
@@ -107,32 +107,32 @@ test('none and absent are distinct patterns, not the same fact spelled two ways'
   const renders = { pattern: 'none', reason: 'a presentational surface that renders' };
   const doesNotExist = { pattern: 'absent', reason: 'no such component exists in this layer' };
   assert.notEqual(renders.pattern, doesNotExist.pattern);
-  assert.deepEqual(validateBinding('Card', 'angular-delegated', renders, patterns), []);
-  assert.deepEqual(validateBinding('Calendar', 'angular-delegated', doesNotExist, patterns), []);
+  assert.deepEqual(validateBinding('ArenaCard', 'angular-delegated', renders, patterns), []);
+  assert.deepEqual(validateBinding('ArenaCalendar', 'angular-delegated', doesNotExist, patterns), []);
 });
 
 test('an exception naming a requirement the pattern does not have is a problem', () => {
   const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.restore', reason: 'x' }] };
-  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /excepts "focus.restore", which pattern "dialog-modal" does not require/);
+  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0], /excepts "focus.restore", which pattern "dialog-modal" does not require/);
 });
 
 test('an exception without a reason is a problem', () => {
   const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.trap' }] };
-  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /reason/);
+  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0], /reason/);
 });
 
 test('a cases entry that does not name itself is rejected, and it used to clear the gate entirely', () => {
   const b = { cases: [{ pattern: 'none', reason: 'a label' }] };
-  const problems = validateBinding('Dialog', 'react', b, patterns);
+  const problems = validateBinding('ArenaDialog', 'react', b, patterns);
   assert.match(problems[0], /cases\[0\] declares no "name"/);
 });
 
 test('a nameless case skips the when rule too, so the name check must not depend on it', () => {
   const nameless = { cases: [{ pattern: 'dialog-modal', when: 'open' }] };
-  assert.equal(validateBinding('Dialog', 'react', nameless, patterns).length, 1);
+  assert.equal(validateBinding('ArenaDialog', 'react', nameless, patterns).length, 1);
 
   const named = { cases: [{ name: 'open', pattern: 'dialog-modal' }] };
-  assert.match(validateBinding('Dialog', 'react', named, patterns)[0], /must say WHEN it is produced/);
+  assert.match(validateBinding('ArenaDialog', 'react', named, patterns)[0], /must say WHEN it is produced/);
 });
 
 test('a duplicate case name is rejected, because crossLayerAgrees would compare only the last one', () => {
@@ -142,7 +142,7 @@ test('a duplicate case name is rejected, because crossLayerAgrees would compare 
       { name: 'open', when: 'open is true and inert', pattern: 'none', reason: 'inert' },
     ],
   };
-  assert.match(validateBinding('Dialog', 'react', b, patterns)[0], /declares the case name "open" more than once/);
+  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0], /declares the case name "open" more than once/);
 });
 
 test('distinct names on a well-formed cased binding are no problem', () => {
@@ -152,12 +152,12 @@ test('distinct names on a well-formed cased binding are no problem', () => {
       { name: 'open', when: 'open is true', pattern: 'dialog-modal' },
     ],
   };
-  assert.deepEqual(validateBinding('Dialog', 'react', b, patterns), []);
+  assert.deepEqual(validateBinding('ArenaDialog', 'react', b, patterns), []);
 });
 
 test('a delegated binding must name what provides the behaviour', () => {
   const b = { pattern: 'dialog-modal', delegatedTo: '' };
-  assert.match(validateBinding('Dialog', 'angular', b, patterns)[0], /delegatedTo/);
+  assert.match(validateBinding('ArenaDialog', 'angular', b, patterns)[0], /delegatedTo/);
 });
 
 test('an angular binding must name its React counterpart', () => {
@@ -166,20 +166,20 @@ test('an angular binding must name its React counterpart', () => {
 });
 
 test('an angular binding that names its counterpart is valid', () => {
-  const b = { pattern: 'dialog-modal', component: 'StatCard' };
+  const b = { pattern: 'dialog-modal', component: 'ArenaStatCard' };
   assert.deepEqual(validateBinding('stat-card', 'angular', b, patterns), []);
 });
 
 test('the React inventory finds every component, no category and no loose file', () => {
   const found = reactComponents('.');
   assert.equal(found.length, 55);
-  assert.ok(found.includes('Dialog'));
-  assert.ok(found.includes('CalendarEvent'));
-  assert.ok(found.includes('TableRow'));
-  assert.ok(found.includes('TableCell'));
-  assert.ok(found.includes('SideNavItem'));
-  assert.ok(found.includes('SideNavSection'));
-  assert.ok(found.includes('SideNavCollapsible'));
+  assert.ok(found.includes('ArenaDialog'));
+  assert.ok(found.includes('ArenaCalendarEvent'));
+  assert.ok(found.includes('ArenaTableRow'));
+  assert.ok(found.includes('ArenaTableCell'));
+  assert.ok(found.includes('ArenaSideNavItem'));
+  assert.ok(found.includes('ArenaSideNavSection'));
+  assert.ok(found.includes('ArenaSideNavCollapsible'));
 
   assert.ok(!found.includes('SideNavInject'));
 
@@ -193,12 +193,12 @@ test('the React inventory finds every component, no category and no loose file',
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
   assert.equal(found.length, 55);
-  assert.ok(found.includes('tag'));
-  assert.ok(found.includes('bar-chart'));
-  assert.ok(found.includes('button'));
-  assert.ok(found.includes('tooltip'));
-  assert.ok(found.includes('calendar'));
-  assert.ok(found.includes('calendar-event'));
+  assert.ok(found.includes('arena-tag'));
+  assert.ok(found.includes('arena-bar-chart'));
+  assert.ok(found.includes('arena-button'));
+  assert.ok(found.includes('arena-tooltip'));
+  assert.ok(found.includes('arena-calendar'));
+  assert.ok(found.includes('arena-calendar-event'));
   assert.ok(!found.includes('CalendarInternals.ts'));
   assert.ok(!found.includes('CalendarState.ts'));
   for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'layout', 'navigation'])
@@ -220,26 +220,26 @@ test('the Angular inventory finds every component, no category and no bare modul
 });
 
 test('an Angular binding path resolves the category by looking and the stem as Pascal', () => {
-  assert.deepEqual(angularBindingPath('.', 'bar-chart'), {
-    path: 'frameworks/angular/components/charts/bar-chart/BarChart.behaviour.json',
-    stem: 'BarChart',
-    tail: 'charts/bar-chart/BarChart.behaviour.json',
+  assert.deepEqual(angularBindingPath('.', 'arena-bar-chart'), {
+    path: 'frameworks/angular/components/charts/arena-bar-chart/ArenaBarChart.behaviour.json',
+    stem: 'ArenaBarChart',
+    tail: 'charts/arena-bar-chart/ArenaBarChart.behaviour.json',
   });
   assert.equal(angularBindingPath('.', 'no-such-component'), null);
 });
 
 test('a React binding path resolves the category by looking and the stem as Pascal', () => {
-  assert.deepEqual(reactBindingPath('.', 'bar-chart'), {
-    path: 'frameworks/react/components/charts/bar-chart/BarChart.behaviour.json',
-    stem: 'BarChart',
-    tail: 'charts/bar-chart/BarChart.behaviour.json',
+  assert.deepEqual(reactBindingPath('.', 'arena-bar-chart'), {
+    path: 'frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.behaviour.json',
+    stem: 'ArenaBarChart',
+    tail: 'charts/arena-bar-chart/ArenaBarChart.behaviour.json',
   });
   assert.equal(reactBindingPath('.', 'no-such-component'), null);
 });
 
 test('a component bound in both layers now spells the same tail on both sides', () => {
-  assert.equal(reactBindingPath('.', 'tag').tail, angularBindingPath('.', 'tag').tail);
-  assert.equal(reactBindingPath('.', 'tag').tail, 'display/tag/Tag.behaviour.json');
+  assert.equal(reactBindingPath('.', 'arena-tag').tail, angularBindingPath('.', 'arena-tag').tail);
+  assert.equal(reactBindingPath('.', 'arena-tag').tail, 'display/arena-tag/ArenaTag.behaviour.json');
 });
 
 test('two bindings naming the same pattern agree', () => {
@@ -278,12 +278,12 @@ test('absent on either side is skipped even with no divergesFrom declared', () =
 });
 
 test('loadBinding reads a real binding from disk', () => {
-  const b = loadBinding('./frameworks/react/components/feedback/dialog/Dialog.behaviour.json');
+  const b = loadBinding('./frameworks/react/components/feedback/arena-dialog/ArenaDialog.behaviour.json');
   assert.equal(b.pattern, 'dialog-modal');
   assert.ok(Array.isArray(b.exceptions));
 });
 
-test('the real Calendar binding needs no divergesFrom to agree with React', () => {
+test('the real ArenaCalendar binding needs no divergesFrom to agree with React', () => {
   const reactBinding = { pattern: 'grid' };
   const angularCalendar = { pattern: 'absent', reason: 'Angular has no such component at all.' };
   assert.equal(crossLayerAgrees(reactBinding, angularCalendar), true);
@@ -324,7 +324,7 @@ test('a case inherits the binding reason and may override it', () => {
 });
 
 test('a binding declaring both pattern and cases is rejected by validateBinding', () => {
-  const problems = validateBinding('Alert', 'react',
+  const problems = validateBinding('ArenaAlert', 'react',
     { pattern: 'alert', cases: [{ name: 'x', when: 'y', pattern: 'alert', exceptions: [] }] },
     new Map([['alert', { name: 'alert', requires: {} }]]));
   assert.ok(problems.some((p) => /both .*pattern.* and .*cases/i.test(p)), problems.join('\n'));

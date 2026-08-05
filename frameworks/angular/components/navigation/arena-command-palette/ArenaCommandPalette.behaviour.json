@@ -1,0 +1,5 @@
+{
+  "component": "ArenaCommandPalette",
+  "pattern": "combobox",
+  "exceptions": []
+}

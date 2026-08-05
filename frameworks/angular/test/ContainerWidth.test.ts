@@ -1,6 +1,6 @@
 /* containerWidth observes ONE element, and which one is the whole question: a component whose
  * host is `display: contents` has no box, so observing the host reports 0 for ever and every
- * width-derived branch silently takes its narrow arm. Calendar was measured that way, and its
+ * width-derived branch silently takes its narrow arm. ArenaCalendar was measured that way, and its
  * chips dropped the time label on every screen while the grid drew correctly, because the
  * fixture seeded the view the width would otherwise have chosen. happy-dom has no layout, so
  * what is pinned here is the TARGET rather than the number: the element handed to the observer. */

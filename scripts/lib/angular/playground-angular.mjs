@@ -35,7 +35,7 @@ export function markerNames(source) {
 }
 
 export function selector(name) {
-  return `arena-${kebab(name)}`;
+  return kebab(name);
 }
 
 export function typeExpr(knob) {

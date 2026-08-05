@@ -41,9 +41,9 @@ export function sheetLinks(model, graph, root) {
 export function toggleDock() {
   return [
     '<div class="dtoggle-dock">',
-    '<button class="dtoggle themebtn" type="button" data-light="0" aria-label="Switch theme">'
+    '<button class="dtoggle themebtn" type="button" data-light="0" aria-label="ArenaSwitch theme">'
     + '<span class="tlabel">Dark</span><span class="knob"></span></button>',
-    '<button class="dtoggle" type="button" id="density" data-compact="0" aria-label="Switch density">'
+    '<button class="dtoggle" type="button" id="density" data-compact="0" aria-label="ArenaSwitch density">'
     + '<span class="tlabel">Comfortable</span><span class="knob"></span></button>',
     '</div>',
   ].join('\n');

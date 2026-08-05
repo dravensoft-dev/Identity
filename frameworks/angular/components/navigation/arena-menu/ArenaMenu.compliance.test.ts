@@ -1,0 +1,219 @@
+/* Every requirement of `menu-button` is about the TRIGGER, which is projected content the
+ * primitive does not own -- so `subjects.default` is the resolved trigger and not the host.
+ * Resolution is the interesting part: an <arena-button> is display:contents and stops its own
+ * click, so the wrapping node is neither focusable nor reachable, and writing the attributes
+ * onto it is the defect the delegated entry named. keyboard.Enter, keyboard.Space,
+ * keyboard.Escape and focus.onOpen are each earned by a named assertion below. */
+import { useTestEnvironment } from '../../../test/TestbedEnv';
+useTestEnvironment();
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { join } from 'node:path';
+import { Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
+import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
+import { disposeOverlays } from '../../../test/Overlays';
+import type { ArenaMenuItem } from '../../../Api.generated';
+import { ArenaButton } from '../../forms/arena-button/ArenaButton';
+import { ArenaMenu } from './ArenaMenu';
+
+const BINDING = join(ANGULAR_COMPONENTS, 'navigation/arena-menu/ArenaMenu.behaviour.json');
+
+const ITEMS: ArenaMenuItem[] = [
+  { header: 'Build 482' },
+  { label: 'Promote', icon: 'ph-bold ph-rocket-launch', shortcut: 'P' },
+  { label: 'Download logs', disabled: true },
+  { divider: true },
+  { label: 'Delete', destructive: true },
+];
+
+@Component({
+  standalone: true,
+  imports: [ArenaMenu],
+  template: `<arena-menu [items]="items" (select)="chosen.push($event)"><button trigger type="button">More actions</button></arena-menu>`,
+})
+class MenuHost {
+  readonly items = ITEMS;
+  readonly chosen: ArenaMenuItem[] = [];
+}
+
+@Component({
+  standalone: true,
+  imports: [ArenaButton, ArenaMenu],
+  template: `<arena-menu [items]="items"><arena-button trigger>More actions</arena-button></arena-menu>`,
+})
+class WrappedTriggerHost {
+  readonly items = ITEMS;
+}
+
+function render() {
+  const fixture = TestBed.createComponent(MenuHost);
+  fixture.detectChanges();
+  const host = fixture.nativeElement.querySelector('arena-menu') as HTMLElement;
+  const trigger = host.querySelector('button') as HTMLButtonElement;
+  return { fixture, host, trigger };
+}
+
+function panel(): HTMLElement | null {
+  return document.body.querySelector('.cdk-overlay-container [role="menu"]');
+}
+
+function press(el: Element, key: string): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  el.dispatchEvent(event);
+  return event;
+}
+
+test('arena-menu meets the menu-button pattern it binds', () => {
+  const { fixture, host, trigger } = render();
+  try {
+    assert.equal(trigger.getAttribute('aria-haspopup'), 'menu');
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+
+    const enter = press(trigger, 'Enter');
+    fixture.detectChanges();
+    assert.equal(enter.defaultPrevented, true,
+      'keyboard.Enter: the trigger must intercept Enter rather than leave it to a synthesized click, ' +
+      'or the menu opens twice in a browser and never in a suite');
+    assert.ok(panel(), 'keyboard.Enter: Enter did not open the menu');
+    assert.equal(trigger.getAttribute('aria-expanded'), 'true');
+
+    const first = panel()!.querySelector('[role="menuitem"]:not([disabled])') as HTMLElement;
+    assertSameNode(document.activeElement, first,
+      'focus.onOpen: opening did not move focus to the first enabled item');
+
+    assertPattern({
+      root: document.body,
+      bindingPath: BINDING,
+      subjects: { default: trigger },
+      behavioural: {
+        'keyboard.Enter': true,
+        'keyboard.Space': true,
+        'keyboard.Escape': true,
+        'focus.onOpen': true,
+      },
+    });
+
+    const escape = press(document.activeElement as Element, 'Escape');
+    fixture.detectChanges();
+    assertNoNode(panel(), 'keyboard.Escape: Escape did not close the menu');
+    assertSameNode(document.activeElement, trigger, 'keyboard.Escape: closing did not restore focus to the trigger');
+    assert.equal(escape.type, 'keydown');
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+  } finally {
+    fixture.destroy();
+    disposeOverlays();
+  }
+});
+
+test('Space opens it too, and is prevented so the platform does not also synthesize a click', () => {
+  const { fixture, trigger } = render();
+  try {
+    const space = press(trigger, ' ');
+    fixture.detectChanges();
+    assert.equal(space.defaultPrevented, true, 'keyboard.Space: Space must be intercepted');
+    assert.ok(panel(), 'keyboard.Space: Space did not open the menu');
+
+    press(trigger, ' ');
+    fixture.detectChanges();
+    assertNoNode(panel(), 'keyboard.Space: a second Space must close it again');
+  } finally {
+    fixture.destroy();
+    disposeOverlays();
+  }
+});
+
+test('the panel is in the CDK overlay container, not inside the host, so no ancestor can clip it', () => {
+  const { fixture, host, trigger } = render();
+  try {
+    trigger.click();
+    fixture.detectChanges();
+    const menu = panel();
+    assert.ok(menu, 'the menu must render');
+    assert.equal(host.contains(menu), false,
+      'the panel must not be a descendant of the trigger wrapper -- that is what an overflow:hidden ancestor clips');
+    assert.ok(menu!.closest('.cdk-overlay-container'), 'the panel must live in the CDK overlay container');
+  } finally {
+    fixture.destroy();
+    disposeOverlays();
+  }
+});
+
+test('a divider and a header are not activatable, a disabled row reports nothing, and an enabled one carries the whole item', () => {
+  const { fixture, trigger } = render();
+  try {
+    trigger.click();
+    fixture.detectChanges();
+    const menu = panel()!;
+
+    const rows = Array.from(menu.querySelectorAll('[role="menuitem"]'));
+    assert.equal(rows.length, 3, 'only the three activatable entries are menuitems -- a divider and a header are neither');
+    assert.equal(menu.querySelectorAll('button:disabled').length, 1);
+
+    const disabled = rows.find((r) => r.textContent?.includes('Download logs')) as HTMLButtonElement;
+    disabled.click();
+    fixture.detectChanges();
+    assert.deepEqual(fixture.componentInstance.chosen, [], 'a disabled entry must report nothing');
+    assert.ok(panel(), 'and must not close the menu either');
+
+    const promote = rows.find((r) => r.textContent?.includes('Promote')) as HTMLButtonElement;
+    promote.click();
+    fixture.detectChanges();
+    assert.deepEqual(fixture.componentInstance.chosen, [ITEMS[1]],
+      'select carries the whole item, not a key into the list');
+    assertNoNode(panel(), 'activating an entry must close the menu');
+  } finally {
+    fixture.destroy();
+    disposeOverlays();
+  }
+});
+
+test('a pointer press outside closes it and leaves focus where the pointer put it', () => {
+  const { fixture, trigger } = render();
+  try {
+    trigger.click();
+    fixture.detectChanges();
+    assert.ok(panel());
+
+    document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    fixture.detectChanges();
+    assertNoNode(panel(), 'a press outside the host and outside the pane must close the menu');
+
+    trigger.click();
+    fixture.detectChanges();
+    panel()!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    fixture.detectChanges();
+    assert.ok(panel(), 'a press inside the pane must not close it, even though the pane is not inside the host');
+  } finally {
+    fixture.destroy();
+    disposeOverlays();
+  }
+});
+
+test('the trigger is resolved to the focusable control, never to a display:contents wrapper around it', () => {
+  const fixture = TestBed.createComponent(WrappedTriggerHost);
+  try {
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('arena-menu') as HTMLElement;
+    const wrapper = host.querySelector('arena-button') as HTMLElement;
+    const control = wrapper.querySelector('button') as HTMLButtonElement;
+
+    assert.equal(wrapper.getAttribute('aria-haspopup'), null,
+      'the wrapping node must carry nothing: it is display:contents, so an ARIA attribute on it reaches no one');
+    assert.equal(control.getAttribute('aria-haspopup'), 'menu',
+      'the attributes belong on the actual focusable element');
+    assert.equal(control.getAttribute('aria-expanded'), 'false');
+
+    control.click();
+    fixture.detectChanges();
+    assert.ok(panel(),
+      'a click on the wrapped control must open the menu -- arena-button stops the native click bubbling, ' +
+      'so a listener on the host would never hear it');
+    assert.equal(control.getAttribute('aria-expanded'), 'true');
+  } finally {
+    fixture.destroy();
+    disposeOverlays();
+  }
+});
