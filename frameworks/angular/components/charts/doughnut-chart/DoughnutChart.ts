@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { containerWidth } from '../../../ContainerSize';
 import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors, valueWriter } from '../../../DataVisuals';
-import type { ChartLegendLayout, NumberFormat } from '../../../Api.generated';
+import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
@@ -165,9 +165,9 @@ export class DoughnutChart {
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
-  readonly valueFormat = input<NumberFormat>();
+  readonly valueFormat = input<ArenaNumberFormat>();
   /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
-  readonly legendLayout = input<ChartLegendLayout>('auto');
+  readonly legendLayout = input<ArenaChartLegendLayout>('auto');
   /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
   readonly sliceActivate = output<number>();
 

@@ -5,9 +5,9 @@
   "api": {
     "state": { "form": "primitive", "type": "boolean", "default": false,
                "description": "The current on/off value. Controlled: the consumer owns it and pushes it each render." },
-    "orientation": { "form": "enum", "type": "Orientation", "default": "horizontal",
+    "orientation": { "form": "enum", "type": "ArenaOrientation", "default": "horizontal",
                      "description": "Whether the switch lies horizontally or stands vertically." },
-    "size": { "form": "enum", "type": "SwitchSize", "default": "md",
+    "size": { "form": "enum", "type": "ArenaSwitchSize", "default": "md",
               "description": "The switch's overall size." },
     "iconOn": { "form": "primitive", "type": "string",
                 "description": "A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`." },

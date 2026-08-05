@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ProgressBar.classes.generated.ts';
 
-import type { ControlSize, ProgressTone } from '../../../Api.generated';
+import type { ArenaControlSize, ArenaProgressTone } from '../../../Api.generated';
 
 export interface ProgressBarProps {
 
@@ -13,7 +13,7 @@ export interface ProgressBarProps {
   indeterminate?: boolean;
 
   /** The bar's colour. */
-  tone?: ProgressTone;
+  tone?: ArenaProgressTone;
 
   /** Names what is progressing. Drawn above the bar, and it is the bar's accessible name. Required and guarded rather than defaulted: nothing can derive what is progressing, and a fallback of "Progress" satisfies roles.label mechanically while telling a screen-reader user only what the component is -- two of them on one page announce identically. */
   label: string;
@@ -22,7 +22,7 @@ export interface ProgressBarProps {
   showPercentage?: boolean;
 
   /** The bar's thickness. */
-  size?: ControlSize;
+  size?: ArenaControlSize;
 }
 
 

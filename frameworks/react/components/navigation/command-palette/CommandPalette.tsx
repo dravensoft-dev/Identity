@@ -4,9 +4,9 @@ import { trapTabKey } from '../../../UseDialogModal.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './CommandPalette.classes.generated.ts';
 
-import type { Command } from '../../../Api.generated';
+import type { ArenaCommand } from '../../../Api.generated';
 
-export type { Command };
+export type { ArenaCommand };
 
 export interface CommandPaletteProps {
 
@@ -14,7 +14,7 @@ export interface CommandPaletteProps {
   open: boolean;
 
   /** Every command the palette can find. Filtered by label and hint as the user types. */
-  commands: readonly Command[];
+  commands: readonly ArenaCommand[];
 
   /** The search field's placeholder. */
   placeholder?: string;
@@ -26,7 +26,7 @@ export interface CommandPaletteProps {
   onClose?: () => void;
 
   /** A command was activated, carrying which one. Emitted after close. For a command with `route` it fires for a primary click with no modifier and for Enter, both of which cancel the row's anchor first, so the two activations do the same thing and a host that routes here never navigates twice; a modified or middle click on such a row is the browser's, fires nothing and does not close the palette. */
-  onRun?: (command: Command) => void;
+  onRun?: (command: ArenaCommand) => void;
 }
 
 
@@ -34,11 +34,11 @@ const paletteStyles = arenaStyles(manifest);
 
 let nextId = 0;
 
-export function capCommands(commands: readonly Command[], max: number | undefined): readonly Command[] {
+export function capCommands(commands: readonly ArenaCommand[], max: number | undefined): readonly ArenaCommand[] {
   return max === undefined || max < 0 ? commands : commands.slice(0, max);
 }
 
-export function orderCommands(commands: readonly Command[]): Command[] {
+export function orderCommands(commands: readonly ArenaCommand[]): ArenaCommand[] {
   const names: string[] = [];
   for (const command of commands) {
     if (command.group && !names.includes(command.group)) names.push(command.group);
@@ -51,10 +51,10 @@ export function orderCommands(commands: readonly Command[]): Command[] {
 
 export interface CommandGroup {
   name: string | null;
-  rows: { command: Command; index: number }[];
+  rows: { command: ArenaCommand; index: number }[];
 }
 
-export function commandGroups(ordered: readonly Command[]): CommandGroup[] {
+export function commandGroups(ordered: readonly ArenaCommand[]): CommandGroup[] {
   const groups: CommandGroup[] = [];
   ordered.forEach((command, index) => {
     const name = command.group ?? null;
@@ -84,7 +84,7 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => inputRef.current && inputRef.current.focus(), 0); } }, [open]);
   useEffect(() => { setI(0); }, [q]);
   if (!open) return null;
-  const run = (c: Command | undefined) => { onClose && onClose(); c && onRun && onRun(c); };
+  const run = (c: ArenaCommand | undefined) => { onClose && onClose(); c && onRun && onRun(c); };
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setI((v) => Math.min(v + 1, filtered.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setI((v) => Math.max(v - 1, 0)); }
@@ -98,7 +98,7 @@ export function CommandPalette({ open, commands, placeholder = 'Search for an ac
   return (
     <div onClick={onClose} className={styles.root()}>
       <div ref={panelRef} onKeyDown={onPanelKeyDown}
-        onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Command palette"
+        onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="ArenaCommand palette"
         className={styles.panel()}>
         <div className={styles.search()}>
           <i className={`ph-bold ph-magnifying-glass ${styles.searchIcon()}`} aria-hidden="true" />

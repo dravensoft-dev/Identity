@@ -12,7 +12,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import type { TableColumn, TableSort, TableSortControl } from '../../../Api.generated';
+import type { ArenaTableColumn, ArenaTableSort, ArenaTableSortControl } from '../../../Api.generated';
 import { Table, parseSortOption, sortOptionValue } from './Table';
 import { forgetWarnings } from '../../../WarnOnce';
 import { TableRow } from '../table-row/TableRow';
@@ -22,7 +22,7 @@ const LABEL = 'Recent sales';
 const BP_MD = '768px';
 const NARROW_WIDTH = 390;
 
-const COLUMNS: TableColumn[] = [
+const COLUMNS: ArenaTableColumn[] = [
   { header: 'Customer', sortable: true },
   { header: 'Status' },
   { header: 'Total', sortable: true },
@@ -45,9 +45,9 @@ const COLUMNS: TableColumn[] = [
 class SortControlHost {
   label = LABEL;
   columns = COLUMNS;
-  control: TableSortControl = 'auto';
-  readonly sort = signal<TableSort | undefined>({ column: 2, direction: 'desc' });
-  seen: TableSort[] = [];
+  control: ArenaTableSortControl = 'auto';
+  readonly sort = signal<ArenaTableSort | undefined>({ column: 2, direction: 'desc' });
+  seen: ArenaTableSort[] = [];
 }
 
 function stubResize(width: number): () => void {
@@ -82,7 +82,7 @@ function select(fixture: ComponentFixture<SortControlHost>): HTMLSelectElement |
   return (fixture.nativeElement as Element).querySelector('select');
 }
 
-test('the option value round-trips, so the control edits the same TableSort the header does', () => {
+test('the option value round-trips, so the control edits the same ArenaTableSort the header does', () => {
   assert.equal(sortOptionValue(2, 'desc'), '2:desc');
   assert.deepEqual(parseSortOption('2:desc'), { column: 2, direction: 'desc' });
   assert.deepEqual(parseSortOption('0:asc'), { column: 0, direction: 'asc' });

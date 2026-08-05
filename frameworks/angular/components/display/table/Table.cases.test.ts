@@ -19,7 +19,7 @@ import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 import { Table } from './Table';
 import { TableRow } from '../table-row/TableRow';
 import { TableCell } from '../table-cell/TableCell';
@@ -29,7 +29,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/table/Table.behaviour.json');
 const CELL_BINDING = join(ANGULAR_COMPONENTS, 'display/table-cell/TableCell.behaviour.json');
 
 const LABEL = 'Recent deployments';
-const COLUMNS: TableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
+const COLUMNS: ArenaTableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
 const BP_MD = '768px';
 const NARROW_WIDTH = 400;
 
@@ -51,7 +51,7 @@ const NARROW_WIDTH = 400;
 })
 class TableHost {
   label = LABEL;
-  columns: TableColumn[] = COLUMNS;
+  columns: ArenaTableColumn[] = COLUMNS;
   responsive = false;
   disabled = false;
   activated = 0;
@@ -68,7 +68,7 @@ class TableHost {
 })
 class EmptyTableHost {
   label = LABEL;
-  columns: TableColumn[] = COLUMNS;
+  columns: ArenaTableColumn[] = COLUMNS;
 }
 
 function stubResize(width: number): () => void {

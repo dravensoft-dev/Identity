@@ -122,7 +122,7 @@ test('a column carrying a `render` function reaches nothing', () => {
   const withRender = render({
     columns: COLUMNS.map((c) => ({ ...c, render: () => <b>NOPE</b> })),
   });
-  assert.doesNotMatch(withRender, /NOPE/, 'TableColumn.render is being called again');
+  assert.doesNotMatch(withRender, /NOPE/, 'ArenaTableColumn.render is being called again');
   assert.equal(withRender, baseline, 'a column-level render function changed the output');
 });
 

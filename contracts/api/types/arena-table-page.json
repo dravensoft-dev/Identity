@@ -1,0 +1,13 @@
+{
+  "name": "ArenaTablePage",
+  "kind": "object",
+  "description": "Which page of a longer list is on screen. Present, Table draws its own Pagination below the grid and names it from `label`. Table does not slice: it does not hold the rows, so the consumer passes the page they already sliced and Table draws the control over it.",
+  "fields": {
+    "index": { "form": "primitive", "type": "number", "required": true,
+               "description": "The current page, 1-based, the same counting Pagination uses." },
+    "size": { "form": "primitive", "type": "number", "required": true,
+              "description": "How many rows a full page holds. Table needs it to say how many pages there are, not to cut anything." },
+    "total": { "form": "primitive", "type": "number", "required": true,
+               "description": "How many rows there are across every page. Required because the projected children are one page and the count of pages cannot be derived from them; it is also what lets Table notice that the current page has gone PAST THE END and ask for page 1. That is the only reset Table performs, and it is the narrower half of the one a consumer writes: filtering ten pages down to five while the reader sits on the third leaves the page in range, so Table says nothing and the reader is on page three of results they did not ask for. Resetting on every change of total would be wrong, since removing one row from page three of ten must move nobody, and a count alone does not distinguish the two cases. Whether a change of CRITERION returns the reader to the first page is the consumer's question, because the consumer is the one holding the criterion." }
+  }
+}

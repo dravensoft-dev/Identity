@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { appLogoStyles } from './AppLogo.variants';
-import type { LogoSize, Orientation } from '../../../Api.generated';
+import type { ArenaLogoSize, ArenaOrientation } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-app-logo',
@@ -21,9 +21,9 @@ export class AppLogo {
   /** The wordmark's second half, drawn muted. Present for the manual's Primary variant, absent for Monochrome, which is why there is no `variant` member: the mark's ink and this are the same two decisions. */
   readonly dim = input<string>();
   /** Both halves at once: the mark's slot and the wordmark. */
-  readonly size = input<LogoSize>('md');
+  readonly size = input<ArenaLogoSize>('md');
   /** Mark beside the name, or above it. */
-  readonly orientation = input<Orientation>('horizontal');
+  readonly orientation = input<ArenaOrientation>('horizontal');
 
   protected readonly styles = computed(() =>
     appLogoStyles({ size: this.size(), orientation: this.orientation() }));

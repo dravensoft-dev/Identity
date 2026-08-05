@@ -14,7 +14,7 @@ WIDGET rather than the trail and leaves two of these on one page indistinguishab
 landmarks. Say which hierarchy this is a trail through ("Project navigation").
 
 A crumb renders as a real `<a href>` and splits its activations. The plain one is reported
-through `navigate`, which carries the clicked `Crumb` alone: route from there and the browser
+through `navigate`, which carries the clicked `ArenaCrumb` alone: route from there and the browser
 does not navigate underneath you. The rest keep working for a consumer who wires no listener
 at all.
 
@@ -38,14 +38,14 @@ handler instead:
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `ariaLabel*` | primitive | `string` |  | Names this navigation landmark. Required, and guarded at runtime: nothing can derive it, and the constant "Breadcrumb" it used to hardcode made two trails on one page indistinguishable as landmarks while satisfying the requirement mechanically. Say which hierarchy this is a trail through: "Project navigation", never "Breadcrumb". |
-| `items*` | array | `readonly Crumb[]` |  | The trail, root first. The last entry is the current location and is never a link. |
+| `items*` | array | `readonly ArenaCrumb[]` |  | The trail, root first. The last entry is the current location and is never a link. |
 | `separator` | primitive | `string` | `"/"` | Drawn between crumbs, never before the first. Arena draws it, in its own aria-hidden span. |
-| `navigate` | event | `Crumb` |  | A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, because a platform's own event type never travels in a payload; what the listener needs from it, the chance to route instead of navigating, arrives as behaviour rather than as data. Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate. It fires for a primary click with no modifier and for Enter; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working trail of real links. |
+| `navigate` | event | `ArenaCrumb` |  | A non-current crumb was activated, carrying that crumb alone. The native MouseEvent is not forwarded, because a platform's own event type never travels in a payload; what the listener needs from it, the chance to route instead of navigating, arrives as behaviour rather than as data. Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate. It fires for a primary click with no modifier and for Enter; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working trail of real links. |
 
 <!-- @api end -->
 
 ```ts
-go(crumb: Crumb): void {
+go(crumb: ArenaCrumb): void {
   this.router.navigateByUrl(crumb.href ?? '/');
 }
 ```

@@ -3,7 +3,7 @@
   "description": "A tone-coloured message with an optional icon, a single action, and optional dismissal.",
   "affordances": [],
   "api": {
-    "tone": { "form": "enum", "type": "AlertTone", "default": "info",
+    "tone": { "form": "enum", "type": "ArenaAlertTone", "default": "info",
               "description": "The severity: colour, default icon, and (for danger) the alert role." },
     "title": { "form": "primitive", "type": "string",
                "description": "An optional bold lead line above the message." },

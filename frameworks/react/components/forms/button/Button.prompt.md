@@ -15,14 +15,14 @@ Action button. The main action uses `variant="primary"` (crimson), maximum one p
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `children` | slot |  |  | The button's label. Sits between the two icons when both are given. |
-| `variant` | enum | `ButtonVariant` | `"primary"` | Which action this is. Danger is outline, never filled. |
-| `size` | enum | `ControlSize` | `"md"` | Height, from the density tokens, so the button re-densifies inside .arena-compact. |
+| `variant` | enum | `ArenaButtonVariant` | `"primary"` | Which action this is. Danger is outline, never filled. |
+| `size` | enum | `ArenaControlSize` | `"md"` | Height, from the density tokens, so the button re-densifies inside .arena-compact. |
 | `icon` | primitive | `string` |  | Phosphor class name drawn before the label. Replaced by the spinner while loading. |
 | `iconRight` | primitive | `string` |  | Phosphor class name drawn after the label: a caret on a menu trigger, an arrow on a next action. |
 | `loading` | primitive | `boolean` | `false` | Replaces the leading icon with a spinner and blocks activation. The spin slows under reduced motion rather than stopping: a frozen spinner reads as a hung process. |
 | `full` | primitive | `boolean` | `false` | Stretches to the container's width. |
 | `disabled` | primitive | `boolean` | `false` | Blocks activation and dims the control. Implied by loading. |
-| `type` | enum | `ButtonType` | `"button"` | Native button behaviour. Defaults to 'button' so a button inside a form does not submit it by accident. |
+| `type` | enum | `ArenaButtonType` | `"button"` | Native button behaviour. Defaults to 'button' so a button inside a form does not submit it by accident. |
 | `name` | primitive | `string` |  | Submitted with the form, when the button submits one. |
 | `value` | primitive | `string` |  | The value submitted under `name`. |
 | `autoFocus` | primitive | `boolean` | `false` | Focused on mount. |

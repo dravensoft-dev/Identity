@@ -11,13 +11,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import type { TableColumn, TableSort } from '../../../Api.generated';
+import type { ArenaTableColumn, ArenaTableSort } from '../../../Api.generated';
 import { Table } from './Table';
 import { TableRow } from '../table-row/TableRow';
 import { TableCell } from '../table-cell/TableCell';
 
 const LABEL = 'Recent deployments';
-const COLUMNS: TableColumn[] = [
+const COLUMNS: ArenaTableColumn[] = [
   { header: 'Service', sortable: true },
   { header: 'Status' },
   { header: 'p95', sortable: true },
@@ -40,12 +40,12 @@ const COLUMNS: TableColumn[] = [
 class SortHost {
   label = LABEL;
   columns = COLUMNS;
-  readonly sort = signal<TableSort | undefined>(undefined);
-  seen: TableSort[] = [];
+  readonly sort = signal<ArenaTableSort | undefined>(undefined);
+  seen: ArenaTableSort[] = [];
   activated = 0;
 }
 
-function render(sort?: TableSort): ComponentFixture<SortHost> {
+function render(sort?: ArenaTableSort): ComponentFixture<SortHost> {
   const fixture = TestBed.createComponent(SortHost);
   fixture.componentInstance.sort.set(sort);
   fixture.detectChanges();

@@ -2,15 +2,15 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Switch.classes.generated.ts';
 
-import type { Orientation, SwitchSize } from '../../../Api.generated';
+import type { ArenaOrientation, ArenaSwitchSize } from '../../../Api.generated';
 
 export interface SwitchProps {
   /** The current on/off value. Controlled: the consumer owns it and pushes it each render. */
   state?: boolean;
   /** Whether the switch lies horizontally or stands vertically. */
-  orientation?: Orientation;
+  orientation?: ArenaOrientation;
   /** The switch's overall size. */
-  size?: SwitchSize;
+  size?: ArenaSwitchSize;
   /** A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`. */
   iconOn?: string;
   /** A Phosphor class name for the glyph shown while off. */

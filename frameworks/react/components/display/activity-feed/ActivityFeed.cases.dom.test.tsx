@@ -7,7 +7,7 @@
  * Control+End and Control+Home need focusable elements OUTSIDE the feed, so the
  * fixture puts one on each side of it -- the requirement is about leaving the feed,
  * and a feed alone in a document has nowhere to leave to. */
-import type { ActivityItem } from '../../../Api.generated';
+import type { ArenaActivityItem } from '../../../Api.generated';
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
@@ -30,7 +30,7 @@ afterEach(() => {
 const BINDING = join(REACT_COMPONENTS, 'display/activity-feed/ActivityFeed.behaviour.json');
 
 const LABEL = 'Deployment activity';
-const ITEMS: ActivityItem[] = [
+const ITEMS: ArenaActivityItem[] = [
   { id: '1', actor: 'Ada', action: 'deployed', target: 'checkout-api', time: '09:12', tone: 'success' },
   { id: '2', actor: 'Grace', action: 'rolled back', target: 'billing-worker', time: '09:40', tone: 'danger' },
   { id: '3', actor: 'Alan', action: 'approved', target: 'release-482', time: '10:03' },

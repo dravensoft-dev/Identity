@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveActivityFeedRows } from './ActivityFeed';
-import type { ActivityItem } from '../../../Api.generated';
+import type { ArenaActivityItem } from '../../../Api.generated';
 import { activityFeedStyles } from './ActivityFeed.variants';
 
 test('the seven tones resolve to seven distinct dot classes', () => {
@@ -11,7 +11,7 @@ test('the seven tones resolve to seven distinct dot classes', () => {
 });
 
 test('resolveActivityFeedRows carries each item through unchanged, for the template to read', () => {
-  const items: ActivityItem[] = [{ id: 'evt-1', actor: 'Marta', action: 'deployed', target: 'billing@2.4.1', time: '2m', tone: 'success' }];
+  const items: ArenaActivityItem[] = [{ id: 'evt-1', actor: 'Marta', action: 'deployed', target: 'billing@2.4.1', time: '2m', tone: 'success' }];
   const rows = resolveActivityFeedRows(items);
   assert.equal(rows[0].item, items[0]);
 });

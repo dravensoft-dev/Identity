@@ -11,14 +11,14 @@ import { Table, parseSortOption, sortOptionValue } from './Table.tsx';
 import { forgetWarnings } from '../../../WarnOnce.ts';
 import { TableRow } from '../table-row/TableRow.tsx';
 import { TableCell } from '../table-cell/TableCell.tsx';
-import type { TableColumn, TableSort, TableSortControl } from '../../../Api.generated';
+import type { ArenaTableColumn, ArenaTableSort, ArenaTableSortControl } from '../../../Api.generated';
 
 afterEach(cleanup);
 
 const LABEL = 'Recent sales';
 const NARROW_WIDTH = 390;
 
-const COLUMNS: TableColumn[] = [
+const COLUMNS: ArenaTableColumn[] = [
   { header: 'Customer', sortable: true },
   { header: 'Status' },
   { header: 'Total', sortable: true },
@@ -43,9 +43,9 @@ function narrowWidths<T>(width: number, body: () => T): T {
 }
 
 function render(options: {
-  sort?: TableSort;
-  sortControl?: TableSortControl;
-  seen?: TableSort[];
+  sort?: ArenaTableSort;
+  sortControl?: ArenaTableSortControl;
+  seen?: ArenaTableSort[];
 } = {}) {
   return mount(
     <Table label={LABEL} columns={COLUMNS} sort={options.sort} sortControl={options.sortControl}
@@ -57,7 +57,7 @@ function render(options: {
   );
 }
 
-test('the option value round-trips, so the control edits the same TableSort the header does', () => {
+test('the option value round-trips, so the control edits the same ArenaTableSort the header does', () => {
   assert.equal(sortOptionValue(2, 'desc'), '2:desc');
   assert.deepEqual(parseSortOption('2:desc'), { column: 2, direction: 'desc' });
   assert.deepEqual(parseSortOption('0:asc'), { column: 0, direction: 'asc' });
@@ -66,7 +66,7 @@ test('the option value round-trips, so the control edits the same TableSort the 
 });
 
 test('card mode draws a sort control, and picking one reports the same sortChange a header would', () => {
-  const seen: TableSort[] = [];
+  const seen: ArenaTableSort[] = [];
   const root = narrowWidths(NARROW_WIDTH, () => render({ sort: { column: 2, direction: 'desc' }, seen }));
 
   assert.equal(root.querySelectorAll('[role="columnheader"], th').length, 0,

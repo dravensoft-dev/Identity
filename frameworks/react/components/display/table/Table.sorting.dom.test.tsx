@@ -11,12 +11,12 @@ import { mount, cleanup, act } from '../../../test/Harness.tsx';
 import { Table } from './Table.tsx';
 import { TableRow } from '../table-row/TableRow.tsx';
 import { TableCell } from '../table-cell/TableCell.tsx';
-import type { TableColumn, TableSort } from '../../../Api.generated';
+import type { ArenaTableColumn, ArenaTableSort } from '../../../Api.generated';
 
 afterEach(cleanup);
 
 const LABEL = 'Recent deployments';
-const COLUMNS: TableColumn[] = [
+const COLUMNS: ArenaTableColumn[] = [
   { header: 'Service', sortable: true },
   { header: 'Status' },
   { header: 'p95', sortable: true },
@@ -46,7 +46,7 @@ test('with no `sort` no header is a target, however many columns declare sortabl
 });
 
 test('aria-sort names the sorted column and says `none` on the other sortable ones', () => {
-  const sort: TableSort = { column: 0, direction: 'asc' };
+  const sort: ArenaTableSort = { column: 0, direction: 'asc' };
   const root = mount(<Table label={LABEL} columns={COLUMNS} responsive={false} sort={sort}>{rows()}</Table>);
   const th = headers(root);
   assert.equal(th[0]!.getAttribute('aria-sort'), 'ascending');
@@ -62,7 +62,7 @@ test('descending is announced as descending, not as a second ascending', () => {
 });
 
 test('activating the sorted column flips it; a different column starts ascending', () => {
-  const seen: TableSort[] = [];
+  const seen: ArenaTableSort[] = [];
   const root = mount(
     <Table label={LABEL} columns={COLUMNS} responsive={false}
       sort={{ column: 0, direction: 'asc' }} onSortChange={(next) => seen.push(next)}>{rows()}</Table>,
@@ -78,7 +78,7 @@ test('activating the sorted column flips it; a different column starts ascending
 });
 
 test('Enter and Space on a header sort it, and neither adds a tab stop', () => {
-  const seen: TableSort[] = [];
+  const seen: ArenaTableSort[] = [];
   const root = mount(
     <Table label={LABEL} columns={COLUMNS} responsive={false}
       sort={{ column: 0, direction: 'asc' }} onSortChange={(next) => seen.push(next)}>{rows()}</Table>,
@@ -99,7 +99,7 @@ test('Enter and Space on a header sort it, and neither adds a tab stop', () => {
 
 test('Enter on a DATA row still activates the row, not a sort', () => {
   let activated = 0;
-  const seen: TableSort[] = [];
+  const seen: ArenaTableSort[] = [];
   const root = mount(
     <Table label={LABEL} columns={COLUMNS} responsive={false}
       sort={{ column: 0, direction: 'asc' }} onSortChange={(next) => seen.push(next)}>

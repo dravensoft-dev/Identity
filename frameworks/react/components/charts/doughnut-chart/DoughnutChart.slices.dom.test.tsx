@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from '../../../test/Harness.tsx';
 import { DoughnutChart } from './DoughnutChart.tsx';
-import type { ChartLegendLayout } from '../../../Api.generated';
+import type { ArenaChartLegendLayout } from '../../../Api.generated';
 
 afterEach(cleanup);
 
@@ -34,7 +34,7 @@ function widths<T>(width: number, body: () => T): T {
   }
 }
 
-function render(options: { seen?: number[]; legendLayout?: ChartLegendLayout } = {}) {
+function render(options: { seen?: number[]; legendLayout?: ArenaChartLegendLayout } = {}) {
   return mount(
     <DoughnutChart labels={LABELS} values={VALUES} seriesLabel="Revenue by channel"
       legendLayout={options.legendLayout}

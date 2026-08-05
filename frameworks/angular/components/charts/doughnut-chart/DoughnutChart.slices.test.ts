@@ -12,7 +12,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import type { ChartLegendLayout } from '../../../Api.generated';
+import type { ArenaChartLegendLayout } from '../../../Api.generated';
 import { DoughnutChart } from './DoughnutChart';
 
 const LABELS = ['Retail', 'Wholesale', 'Consignment', 'Export'];
@@ -29,7 +29,7 @@ const VALUES = [40, 25, 0, 35];
 class DoughnutHost {
   labels = LABELS;
   values = VALUES;
-  legendLayout: ChartLegendLayout = 'auto';
+  legendLayout: ArenaChartLegendLayout = 'auto';
   seen: number[] = [];
 }
 

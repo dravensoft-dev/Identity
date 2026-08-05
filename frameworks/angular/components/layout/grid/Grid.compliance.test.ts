@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { GridGap } from '../../../Api.generated';
+import type { ArenaGridGap } from '../../../Api.generated';
 import { Grid } from './Grid';
 import { assertPattern, isFocusable, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
@@ -30,7 +30,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'layout/grid/Grid.behaviour.json');
 })
 class GridHost {
   min = 'calc(var(--sp-1) * 50)';
-  gap: GridGap = 'md';
+  gap: ArenaGridGap = 'md';
   maxWidth: string | undefined = undefined;
 }
 

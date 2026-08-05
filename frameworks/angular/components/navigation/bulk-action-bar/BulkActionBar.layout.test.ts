@@ -11,13 +11,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import type { BulkAction, BulkActionBarLayout } from '../../../Api.generated';
+import type { ArenaBulkAction, ArenaBulkActionBarLayout } from '../../../Api.generated';
 import { BulkActionBar } from './BulkActionBar';
 
 const BP_SM = '480px';
 const NARROW_WIDTH = 390;
 
-const ACTIONS: BulkAction[] = [
+const ACTIONS: ArenaBulkAction[] = [
   { id: 'export', label: 'Export' },
   { id: 'archive', label: 'Archive' },
   { id: 'delete', label: 'Delete', destructive: true },
@@ -32,7 +32,7 @@ const ACTIONS: BulkAction[] = [
 })
 class BarHost {
   actions = ACTIONS;
-  layout: BulkActionBarLayout = 'auto';
+  layout: ArenaBulkActionBarLayout = 'auto';
 }
 
 function stubResize(width: number): () => void {

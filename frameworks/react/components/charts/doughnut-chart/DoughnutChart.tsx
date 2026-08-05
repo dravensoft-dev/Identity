@@ -3,7 +3,7 @@ import { useContainerWidth } from '../../../UseContainerWidth.ts';
 import { resolveColors, arcPath, srOnly, valueWriter, CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
-import type { ChartLegendLayout, NumberFormat } from '../../../Api.generated';
+import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
 
 export interface DoughnutChartProps {
 
@@ -20,7 +20,7 @@ export interface DoughnutChartProps {
   slots?: readonly number[];
 
   /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
-  legendLayout?: ChartLegendLayout;
+  legendLayout?: ArenaChartLegendLayout;
 
   /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
   onSliceActivate?: (index: number) => void;
@@ -32,7 +32,7 @@ export interface DoughnutChartProps {
   valuePrefix?: string;
 
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
-  valueFormat?: NumberFormat;
+  valueFormat?: ArenaNumberFormat;
 }
 
 

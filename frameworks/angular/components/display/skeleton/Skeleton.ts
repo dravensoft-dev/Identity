@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { skeletonStyles } from './Skeleton.variants';
-import type { SkeletonVariant } from '../../../Api.generated';
+import type { ArenaSkeletonVariant } from '../../../Api.generated';
 
 export function skeletonRowSlot(row: number, total: number): 'line' | 'lastLine' {
   return row === total && total > 1 ? 'lastLine' : 'line';
@@ -28,7 +28,7 @@ export function skeletonRowSlot(row: number, total: number): 'line' | 'lastLine'
 })
 export class Skeleton {
   /** The shape the placeholder reserves. */
-  readonly variant = input<SkeletonVariant>('block');
+  readonly variant = input<ArenaSkeletonVariant>('block');
   /** Number of rows when variant="text". The last runs short. */
   readonly lines = input(3);
   /** CSS width, e.g. "100%" or "12rem". Defaults to full width. */

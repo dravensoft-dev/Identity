@@ -3,7 +3,7 @@ import manifest from '../calendar/Calendar.classes.generated.ts';
 import React from 'react';
 import { IconButton } from '../../forms/icon-button/IconButton.tsx';
 
-import type { CatSlot } from '../../../Api.generated';
+import type { ArenaCatSlot } from '../../../Api.generated';
 
 export interface CalendarEventProps {
 
@@ -20,7 +20,7 @@ export interface CalendarEventProps {
   end: string;
 
   /** Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. */
-  colorId?: CatSlot;
+  colorId?: ArenaCatSlot;
 
   /** Whether the chip can be activated. A boolean rather than "is `click` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. */
   interactive?: boolean;

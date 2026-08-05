@@ -2,11 +2,11 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Alert.classes.generated.ts';
 
-import type { AlertTone } from '../../../Api.generated';
+import type { ArenaAlertTone } from '../../../Api.generated';
 
 export interface AlertProps {
   /** The severity: colour, default icon, and (for danger) the alert role. */
-  tone?: AlertTone;
+  tone?: ArenaAlertTone;
   /** An optional bold lead line above the message. */
   title?: string;
   /** The message body. */
@@ -32,9 +32,9 @@ const GLYPHS: Record<string, string> = {
   danger: 'ph-fill ph-warning-octagon',
   neutral: 'ph-fill ph-note',
 };
-type Tone = keyof typeof manifest.variants.tone;
-const toneOf = (tone: string | undefined): Tone =>
-  (tone && TONES.includes(tone) ? tone as Tone : 'info');
+type ArenaTone = keyof typeof manifest.variants.tone;
+const toneOf = (tone: string | undefined): ArenaTone =>
+  (tone && TONES.includes(tone) ? tone as ArenaTone : 'info');
 
 export function Alert({ tone = 'info', title, children, icon, actionLabel, onAction, dismissible, onClose }: AlertProps) {
   const at = toneOf(tone);

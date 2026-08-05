@@ -8,14 +8,14 @@ import {
   createOverlayRef, createRepositionScrollStrategy,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import type { MenuAlign, MenuItem } from '../../../Api.generated';
+import type { ArenaMenuAlign, ArenaMenuItem } from '../../../Api.generated';
 import { sp1 } from '../../../Tokens.generated';
 import { menuStyles } from './Menu.variants';
 
 const TRIGGER_SELECTOR =
   'button:not([tabindex="-1"]), a[href]:not([tabindex="-1"]), [role="button"]:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
 
-export const MENU_POSITIONS: Record<MenuAlign, ConnectedPosition[]> = {
+export const MENU_POSITIONS: Record<ArenaMenuAlign, ConnectedPosition[]> = {
   start: [
     { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: sp1 * 1.5 },
     { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -sp1 * 1.5 },
@@ -26,11 +26,11 @@ export const MENU_POSITIONS: Record<MenuAlign, ConnectedPosition[]> = {
   ],
 };
 
-export function isActivatable(item: MenuItem): boolean {
+export function isActivatable(item: ArenaMenuItem): boolean {
   return !item.divider && item.header === undefined;
 }
 
-export function rowState(item: MenuItem): 'disabled' | 'destructive' | 'default' {
+export function rowState(item: ArenaMenuItem): 'disabled' | 'destructive' | 'default' {
   if (item.disabled) return 'disabled';
   return item.destructive ? 'destructive' : 'default';
 }
@@ -70,11 +70,11 @@ export function rowState(item: MenuItem): 'disabled' | 'destructive' | 'default'
 })
 export class Menu {
   /** The entries, in order: activatable rows, dividers and group headers. */
-  readonly items = input.required<readonly MenuItem[]>();
+  readonly items = input.required<readonly ArenaMenuItem[]>();
   /** Which edge of the trigger the panel lines up with. */
-  readonly align = input<MenuAlign>('start');
+  readonly align = input<ArenaMenuAlign>('start');
   /** An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. */
-  readonly select = output<MenuItem>();
+  readonly select = output<ArenaMenuItem>();
 
   protected readonly styles = computed(() => menuStyles({ anchored: true }));
 
@@ -101,7 +101,7 @@ export class Menu {
     });
   }
 
-  protected rowClass(item: MenuItem): string {
+  protected rowClass(item: ArenaMenuItem): string {
     const styles = this.styles();
     const state = rowState(item);
     const modifier = state === 'disabled' ? styles.itemDisabled()
@@ -109,7 +109,7 @@ export class Menu {
     return `${styles.item()} ${modifier}`;
   }
 
-  protected run(item: MenuItem): void {
+  protected run(item: ArenaMenuItem): void {
     if (item.disabled) return;
     this.close(true);
     this.select.emit(item);

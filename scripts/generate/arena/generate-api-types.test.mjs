@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { renderApiModule, docComment, fieldType, API_TARGETS, buildApiModules } from './generate-api-types.mjs';
 
 test('an enum renders as a string-literal union', () => {
-  const out = renderApiModule([{ name: 'Direction', kind: 'enum', values: ['up', 'down'] }]);
-  assert.match(out, /export type Direction = 'up' \| 'down';/);
+  const out = renderApiModule([{ name: 'ArenaDirection', kind: 'enum', values: ['up', 'down'] }]);
+  assert.match(out, /export type ArenaDirection = 'up' \| 'down';/);
 });
 
 test('renderApiModule emits a numeric enum unquoted', () => {
-  const out = renderApiModule([{ name: 'CatSlot', kind: 'enum', description: 'x', values: [1, 2, 3] }]);
-  assert.match(out, /export type CatSlot = 1 \| 2 \| 3;/);
+  const out = renderApiModule([{ name: 'ArenaCatSlot', kind: 'enum', description: 'x', values: [1, 2, 3] }]);
+  assert.match(out, /export type ArenaCatSlot = 1 \| 2 \| 3;/);
 });
 
 test('renderApiModule still quotes a string enum', () => {
@@ -19,31 +19,31 @@ test('renderApiModule still quotes a string enum', () => {
 
 test('an object renders as an interface, with optional fields marked optional', () => {
   const out = renderApiModule([{
-    name: 'Crumb', kind: 'object',
+    name: 'ArenaCrumb', kind: 'object',
     fields: {
       label: { form: 'primitive', type: 'string', required: true },
       href: { form: 'primitive', type: 'string' },
     },
   }]);
-  assert.match(out, /export interface Crumb \{/);
+  assert.match(out, /export interface ArenaCrumb \{/);
   assert.match(out, /^ {2}label: string;$/m);
   assert.match(out, /^ {2}href\?: string;$/m);
 });
 
 test('an enum-typed field renders as the enum name, not as a re-inlined union', () => {
   const out = renderApiModule([{
-    name: 'StatDelta', kind: 'object',
-    fields: { direction: { form: 'enum', type: 'Direction', required: true } },
+    name: 'ArenaStatDelta', kind: 'object',
+    fields: { direction: { form: 'enum', type: 'ArenaDirection', required: true } },
   }]);
-  assert.match(out, /^ {2}direction: Direction;$/m);
+  assert.match(out, /^ {2}direction: ArenaDirection;$/m);
 });
 
 test('a description becomes a doc comment on the type and on the field', () => {
   const out = renderApiModule([{
-    name: 'Crumb', kind: 'object', description: 'One entry in a trail.',
+    name: 'ArenaCrumb', kind: 'object', description: 'One entry in a trail.',
     fields: { label: { form: 'primitive', type: 'string', required: true, description: 'What the crumb reads.' } },
   }]);
-  assert.match(out, /\/\*\* One entry in a trail\. \*\/\nexport interface Crumb \{/);
+  assert.match(out, /\/\*\* One entry in a trail\. \*\/\nexport interface ArenaCrumb \{/);
   assert.match(out, /^ {2}\/\*\* What the crumb reads\. \*\/$/m);
 });
 

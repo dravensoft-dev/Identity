@@ -12,13 +12,13 @@ import assert from 'node:assert/strict';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { assertNoNode } from '../../../test/NodeAssert';
-import type { TableColumn, TablePage } from '../../../Api.generated';
+import type { ArenaTableColumn, ArenaTablePage } from '../../../Api.generated';
 import { Table } from './Table';
 import { TableRow } from '../table-row/TableRow';
 import { TableCell } from '../table-cell/TableCell';
 
 const LABEL = 'Recent deployments';
-const COLUMNS: TableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
+const COLUMNS: ArenaTableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
 
 @Component({
   standalone: true,
@@ -39,11 +39,11 @@ class PageHost {
   label = LABEL;
   columns = COLUMNS;
   withRows = true;
-  readonly page = signal<TablePage | undefined>(undefined);
+  readonly page = signal<ArenaTablePage | undefined>(undefined);
   asked: number[] = [];
 }
 
-function render(page?: TablePage, withRows = true): ComponentFixture<PageHost> {
+function render(page?: ArenaTablePage, withRows = true): ComponentFixture<PageHost> {
   const fixture = TestBed.createComponent(PageHost);
   fixture.componentInstance.withRows = withRows;
   fixture.componentInstance.page.set(page);

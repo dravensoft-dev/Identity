@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { ToastPlacement } from '../../../Api.generated';
+import type { ArenaToastPlacement } from '../../../Api.generated';
 import { toastHostStyles } from './ToastHost.variants';
 
 @Component({
@@ -13,7 +13,7 @@ import { toastHostStyles } from './ToastHost.variants';
 })
 export class ToastHost {
   /** Which corner the stack is pinned to. A bottom placement clears the device's own bottom inset, so a stack on a phone never lands under the home indicator. */
-  readonly placement = input<ToastPlacement>('bottom-end');
+  readonly placement = input<ArenaToastPlacement>('bottom-end');
 
   protected readonly styles = computed(() => toastHostStyles({ placement: this.placement() }));
 }

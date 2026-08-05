@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Tone } from '../../Api.generated';
+import type { ArenaTone } from '../../Api.generated';
 import { Shell } from './Shell.tsx';
 import { Card } from '../../components/display/card/Card.tsx';
 import { Badge } from '../../components/display/badge/Badge.tsx';
@@ -7,7 +7,7 @@ import { Tag } from '../../components/display/tag/Tag.tsx';
 import { StatCard } from '../../components/display/stat-card/StatCard.tsx';
 import { Button } from '../../components/forms/button/Button.tsx';
 
-const METRICS: { k: string; v: string; tone?: Tone }[] = [
+const METRICS: { k: string; v: string; tone?: ArenaTone }[] = [
   { k: 'Active projects', v: '12' },
   { k: 'Deployments (7d)', v: '48' },
   { k: 'Average uptime', v: '99.98%', tone: 'success' },
@@ -16,7 +16,7 @@ const METRICS: { k: string; v: string; tone?: Tone }[] = [
 export interface ConsoleProject {
   name: string;
   client: string;
-  status: [Tone, string];
+  status: [ArenaTone, string];
   build: string;
   when: string;
   tags: string[];

@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { assertNoNode } from '../../../test/NodeAssert';
-import type { Tone } from '../../../Api.generated';
+import type { ArenaTone } from '../../../Api.generated';
 import { Badge } from './Badge';
 import { assertPattern, isFocusable, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
@@ -23,7 +23,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'display/badge/Badge.behaviour.json');
   template: `<arena-badge [tone]="tone" [dot]="dot">Deployed</arena-badge>`,
 })
 class BadgeHost {
-  tone: Tone = 'success';
+  tone: ArenaTone = 'success';
   dot = false;
 }
 

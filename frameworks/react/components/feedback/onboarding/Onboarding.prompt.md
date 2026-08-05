@@ -20,9 +20,9 @@ const [step, setStep] = useState(0);
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `open*` | primitive | `boolean` |  | Whether the tour is shown. Closed renders nothing, scrim included. |
-| `steps*` | array | `readonly OnboardingStep[]` |  | The tour, in order. An empty tour renders nothing. |
+| `steps*` | array | `readonly ArenaOnboardingStep[]` |  | The tour, in order. An empty tour renders nothing. |
 | `index` | primitive | `number` | `0` | Which step is current. The host owns it and answers next/back. |
-| `anchor` | object | `OnboardingAnchor` |  | Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. |
+| `anchor` | object | `ArenaOnboardingAnchor` |  | Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. |
 | `onNext` | event |  |  | Next was activated on a step that is not the last. |
 | `onBack` | event |  |  | Back was activated on a step that is not the first. |
 | `onSkip` | event |  |  | Skip was activated, or the scrim was clicked. |

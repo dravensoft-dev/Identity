@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { avatarStyles } from './Avatar.variants';
-import type { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
+import type { ArenaAvatarSize, ArenaAvatarShape, ArenaAvatarStatus } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-avatar',
@@ -29,11 +29,11 @@ export class Avatar {
   /** The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text. */
   readonly name = input('');
   /** The avatar's diameter. */
-  readonly size = input<AvatarSize>('md');
+  readonly size = input<ArenaAvatarSize>('md');
   /** Circle for a person, rounded for a team. */
-  readonly shape = input<AvatarShape>('circle');
+  readonly shape = input<ArenaAvatarShape>('circle');
   /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value. */
-  readonly status = input<AvatarStatus>();
+  readonly status = input<ArenaAvatarStatus>();
 
   protected readonly styles = computed(() =>
     avatarStyles({ size: this.size(), shape: this.shape(), status: this.status() ?? 'none' }));

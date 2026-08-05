@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy, Component, ElementRef, booleanAttribute, computed, input, output, signal,
   viewChild,
 } from '@angular/core';
-import type { InputType, ValidateOn } from '../../../Api.generated';
+import type { ArenaInputType, ArenaValidateOn } from '../../../Api.generated';
 import { inputStyles } from './Input.variants';
 
 export function inputIdFor(id: string | undefined, label: string | undefined): string | null {
@@ -68,9 +68,9 @@ export class Input {
   /** Called on the value; returns the error message, or empty for valid. */
   readonly validate = input<(value: string) => string>();
   /** When `validate` runs. */
-  readonly validateOn = input<ValidateOn>('blur');
+  readonly validateOn = input<ArenaValidateOn>('blur');
   /** Native input type. */
-  readonly type = input<InputType>('text');
+  readonly type = input<ArenaInputType>('text');
   /** Phosphor class name drawn at the field's start. */
   readonly icon = input<string>();
   /** Static text Arena draws before the value, e.g. `git@`. */

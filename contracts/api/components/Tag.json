@@ -5,7 +5,7 @@
   "api": {
     "content": { "form": "slot",
                  "description": "The tag's label." },
-    "tone": { "form": "enum", "type": "TagTone", "default": "neutral",
+    "tone": { "form": "enum", "type": "ArenaTagTone", "default": "neutral",
               "description": "The tag's emphasis colour." },
     "removable": { "form": "primitive", "type": "boolean", "default": false,
                    "description": "Whether the dismiss × is shown. Every layer gates the × on this member and never on whether anything listens for `remove`, because Arena never derives what it draws from what a consumer listens for. Removability is a declared input, not something inferred from the event." },

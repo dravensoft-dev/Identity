@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
 import { bulkActionBarStyles } from './BulkActionBar.variants';
-import type { BulkAction, BulkActionBarLayout } from '../../../Api.generated';
+import type { ArenaBulkAction, ArenaBulkActionBarLayout } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-bulk-action-bar',
@@ -44,13 +44,13 @@ export class BulkActionBar {
   /** What is being counted, plural: "items", "projects". */
   readonly noun = input('items');
   /** The actions offered for the current selection. */
-  readonly actions = input.required<readonly BulkAction[]>();
+  readonly actions = input.required<readonly ArenaBulkAction[]>();
   /** Whether the bar may stack. 'auto' measures its OWN container, not the viewport, and drops the count, the actions and Clear onto separate rows when one row does not fit; 'inline' keeps the single row at every width, for a bar in a place the consumer knows is wide. It is a member rather than something a consumer reaches in with CSS because the alternative is what happens without it: reordering the bar's own children by position, which puts focus order out of step with visual order and breaks the next time anything inside moves. Stacking here reorders nothing, so the tab order and the reading order stay the same order they are wide. */
-  readonly layout = input<BulkActionBarLayout>('auto');
+  readonly layout = input<ArenaBulkActionBarLayout>('auto');
   /** Whether the Clear control is drawn. Every layer gates on this member and never on whether anything listens for `clear`, because Arena never derives what it draws from what a consumer listens for. */
   readonly clearable = input(true);
   /** An action was activated, carrying which one. */
-  readonly run = output<BulkAction>();
+  readonly run = output<ArenaBulkAction>();
   /** The Clear control was activated. */
   readonly clear = output<void>();
 
@@ -86,7 +86,7 @@ export class BulkActionBar {
     els[there].focus();
   }
 
-  protected classesFor(action: BulkAction) {
+  protected classesFor(action: ArenaBulkAction) {
     return bulkActionBarStyles({ destructive: !!action.destructive, narrow: this.narrow() });
   }
 }

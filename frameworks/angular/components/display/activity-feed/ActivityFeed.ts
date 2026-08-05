@@ -1,21 +1,21 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
-import type { ActivityItem } from '../../../Api.generated';
+import type { ArenaActivityItem } from '../../../Api.generated';
 import { focusableElements } from '../../../FocusTrap';
 import { activityFeedStyles } from './ActivityFeed.variants';
 import manifest from './ActivityFeed.classes.generated';
 
 const TONES = Object.keys(manifest.variants.tone);
-type Tone = NonNullable<ActivityItem['tone']>;
-const toneOf = (tone: string | undefined): Tone | undefined =>
-  (tone && TONES.includes(tone) ? tone as Tone : undefined);
+type ArenaTone = NonNullable<ArenaActivityItem['tone']>;
+const toneOf = (tone: string | undefined): ArenaTone | undefined =>
+  (tone && TONES.includes(tone) ? tone as ArenaTone : undefined);
 
 export interface ActivityFeedRow {
-  item: ActivityItem;
+  item: ArenaActivityItem;
   itemClass: string;
   dotClass: string;
 }
 
-export function resolveActivityFeedRows(items: readonly ActivityItem[]): ActivityFeedRow[] {
+export function resolveActivityFeedRows(items: readonly ArenaActivityItem[]): ActivityFeedRow[] {
   return items.map((item, index) => {
     const resolved = activityFeedStyles({ tone: toneOf(item.tone), divided: index > 0 });
     return { item, itemClass: resolved.item(), dotClass: resolved.dot() };
@@ -52,7 +52,7 @@ export class ActivityFeed {
   /** Names the feed for assistive technology. Required, and guarded at runtime: nothing can derive it, and a feed is a landmark a reader navigates BY, so say what the events are about ("Deployment activity"), never "Activity feed". */
   readonly label = input.required<string>();
   /** The events, newest first by convention. Each row is drawn by Arena; there is no per-item projection. */
-  readonly items = input.required<readonly ActivityItem[]>();
+  readonly items = input.required<readonly ArenaActivityItem[]>();
   /** Whether a multi-step update to the feed is in progress, reflected as `aria-busy`. Set it while rows are being loaded or replaced and clear it once they settle, so a screen reader announces the settled feed rather than each intermediate state. It is an input rather than something Arena infers: only the host knows when its own loading has finished. */
   readonly busy = input(false, { transform: booleanAttribute });
 

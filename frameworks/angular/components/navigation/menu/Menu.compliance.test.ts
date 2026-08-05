@@ -15,13 +15,13 @@ import { TestBed } from '@angular/core/testing';
 import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 import { disposeOverlays } from '../../../test/Overlays';
-import type { MenuItem } from '../../../Api.generated';
+import type { ArenaMenuItem } from '../../../Api.generated';
 import { Button } from '../../forms/button/Button';
 import { Menu } from './Menu';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'navigation/menu/Menu.behaviour.json');
 
-const ITEMS: MenuItem[] = [
+const ITEMS: ArenaMenuItem[] = [
   { header: 'Build 482' },
   { label: 'Promote', icon: 'ph-bold ph-rocket-launch', shortcut: 'P' },
   { label: 'Download logs', disabled: true },
@@ -36,7 +36,7 @@ const ITEMS: MenuItem[] = [
 })
 class MenuHost {
   readonly items = ITEMS;
-  readonly chosen: MenuItem[] = [];
+  readonly chosen: ArenaMenuItem[] = [];
 }
 
 @Component({

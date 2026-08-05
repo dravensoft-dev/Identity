@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Grid.classes.generated.ts';
 
-import type { GridGap } from '../../../Api.generated';
+import type { ArenaGridGap } from '../../../Api.generated';
 
 export interface GridProps {
 
@@ -10,7 +10,7 @@ export interface GridProps {
   min?: string;
 
   /** The air between cells, on both axes. Named steps rather than a length, because rhythm is what the spacing scale is for and a grid is where a hand-picked one shows worst. */
-  gap?: GridGap;
+  gap?: ArenaGridGap;
 
   /** A ceiling on the grid's own width, centred in whatever contains it. Absent, it fills its container, which is what a grid nested inside a page should do; a page's own reading width is what this is for. */
   maxWidth?: string;
@@ -21,8 +21,8 @@ export interface GridProps {
 
 const gridStyles = arenaStyles(manifest);
 const GAPS = Object.keys(manifest.variants.gap);
-const gapOf = (gap: string | undefined): GridGap =>
-  (gap && GAPS.includes(gap) ? gap as GridGap : 'md');
+const gapOf = (gap: string | undefined): ArenaGridGap =>
+  (gap && GAPS.includes(gap) ? gap as ArenaGridGap : 'md');
 
 export function Grid({ min = 'calc(var(--sp-1) * 50)', gap = 'md', maxWidth, children }: GridProps) {
   return (

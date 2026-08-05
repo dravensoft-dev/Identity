@@ -7,22 +7,22 @@ import {
 } from './playground-model.mjs';
 
 const types = {
-  Tone: { name: 'Tone', kind: 'enum', values: ['neutral', 'accent', 'danger'] },
-  SortDirection: { name: 'SortDirection', kind: 'enum', values: ['asc', 'desc'] },
-  TableSort: {
-    name: 'TableSort',
+  ArenaTone: { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] },
+  ArenaSortDirection: { name: 'ArenaSortDirection', kind: 'enum', values: ['asc', 'desc'] },
+  ArenaTableSort: {
+    name: 'ArenaTableSort',
     kind: 'object',
     fields: {
       column: { form: 'primitive', type: 'number', required: true, description: 'The column.' },
-      direction: { form: 'enum', type: 'SortDirection', required: true, description: 'The direction.' },
+      direction: { form: 'enum', type: 'ArenaSortDirection', required: true, description: 'The direction.' },
     },
   },
-  TableColumn: {
-    name: 'TableColumn',
+  ArenaTableColumn: {
+    name: 'ArenaTableColumn',
     kind: 'object',
     fields: {
       header: { form: 'primitive', type: 'string', required: true, description: 'The header.' },
-      align: { form: 'enum', type: 'Tone', default: 'neutral', description: 'The alignment.' },
+      align: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The alignment.' },
     },
   },
 };
@@ -33,17 +33,17 @@ const contract = {
   affordances: ['hover'],
   api: {
     label: { form: 'primitive', type: 'string', required: true, description: 'The name.' },
-    tone: { form: 'enum', type: 'Tone', default: 'neutral', description: 'The tone.' },
+    tone: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The tone.' },
     hint: { form: 'primitive', type: 'string', description: 'A hint.' },
     count: { form: 'primitive', type: 'number', description: 'A count.' },
     open: { form: 'primitive', type: 'boolean', default: false, description: 'Whether open.' },
-    columns: { form: 'array', of: 'TableColumn', required: true, description: 'The columns.' },
+    columns: { form: 'array', of: 'ArenaTableColumn', required: true, description: 'The columns.' },
     labels: { form: 'array', of: 'string', description: 'The labels.' },
-    sort: { form: 'object', type: 'TableSort', description: 'The sort.' },
+    sort: { form: 'object', type: 'ArenaTableSort', description: 'The sort.' },
     content: { form: 'slot', description: 'The body.' },
     action: { form: 'slot', description: 'The action.' },
     close: { form: 'event', description: 'It closed.' },
-    sortChange: { form: 'event', payload: 'TableSort', description: 'The sort changed.' },
+    sortChange: { form: 'event', payload: 'ArenaTableSort', description: 'The sort changed.' },
   },
 };
 
@@ -76,17 +76,17 @@ test('a neutral value is the form\'s own empty, and an enum\'s is its first decl
   assert.equal(neutralValue({ form: 'primitive', type: 'string' }, types), '');
   assert.equal(neutralValue({ form: 'primitive', type: 'number' }, types), 0);
   assert.equal(neutralValue({ form: 'primitive', type: 'boolean' }, types), false);
-  assert.equal(neutralValue({ form: 'enum', type: 'Tone' }, types), 'neutral');
+  assert.equal(neutralValue({ form: 'enum', type: 'ArenaTone' }, types), 'neutral');
   assert.deepEqual(neutralValue({ form: 'array', of: 'string' }, types), []);
 });
 
 test('a neutral object carries every field that is required or defaulted, and nothing else', () => {
-  assert.deepEqual(neutralObject(types.TableSort, types), { column: 0, direction: 'asc' });
-  assert.deepEqual(neutralObject(types.TableColumn, types), { header: '', align: 'neutral' });
+  assert.deepEqual(neutralObject(types.ArenaTableSort, types), { column: 0, direction: 'asc' });
+  assert.deepEqual(neutralObject(types.ArenaTableColumn, types), { header: '', align: 'neutral' });
 });
 
 test('objectFields carries each field\'s options and initial, so one control can draw them all', () => {
-  const fields = objectFields(types.TableSort, types);
+  const fields = objectFields(types.ArenaTableSort, types);
   assert.deepEqual(fields.map((f) => f.name), ['column', 'direction']);
   assert.deepEqual(fields[1].options, ['asc', 'desc']);
   assert.equal(fields[1].initial, 'asc');
@@ -97,10 +97,10 @@ test('a control and its codec are decided by form and type together', () => {
   assert.deepEqual(controlFor({ form: 'primitive', type: 'boolean' }, types), { control: 'check', codec: 'flag' });
   assert.deepEqual(controlFor({ form: 'primitive', type: 'number' }, types), { control: 'number', codec: 'number' });
   assert.deepEqual(controlFor({ form: 'primitive', type: 'string' }, types), { control: 'text', codec: 'raw' });
-  assert.equal(controlFor({ form: 'enum', type: 'Tone' }, types).control, 'select');
+  assert.equal(controlFor({ form: 'enum', type: 'ArenaTone' }, types).control, 'select');
   assert.equal(controlFor({ form: 'array', of: 'number' }, types).control, 'lines');
-  assert.equal(controlFor({ form: 'array', of: 'TableColumn' }, types).control, 'json');
-  assert.equal(controlFor({ form: 'object', type: 'TableSort' }, types).control, 'fields');
+  assert.equal(controlFor({ form: 'array', of: 'ArenaTableColumn' }, types).control, 'json');
+  assert.equal(controlFor({ form: 'object', type: 'ArenaTableSort' }, types).control, 'fields');
 });
 
 test('consumerData is refused by name rather than dropped', () => {
@@ -188,7 +188,7 @@ test('events are not knobs, and each carries its payload and its write-back targ
   assert.deepEqual(events.map((e) => e.name), ['close', 'sortChange']);
   assert.equal(events[0].payload, null);
   assert.deepEqual(events[0].bind, { open: false });
-  assert.equal(events[1].payload, 'TableSort');
+  assert.equal(events[1].payload, 'ArenaTableSort');
   assert.equal(events[1].bind, 'sort');
 });
 

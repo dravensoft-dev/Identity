@@ -82,7 +82,7 @@ consume it to produce a position: an SVG `y` from a data value, a clamp against
 re-theme and cannot re-densify.
 
 **One type ties the API level back to the design one, and it is deliberately one case rather
-than a mechanism.** `api/types/cat-slot.json` declares `CatSlot` as a literal set whose bound is
+than a mechanism.** `api/types/cat-slot.json` declares `ArenaCatSlot` as a literal set whose bound is
 not authored there: it is the count of `--color-cat-*` slots in `design/palette.dark.json`,
 reaching the layers as the derived `catSlots` constant. `check:script-tokens` asserts the set is
 exactly `1..catSlots` **in order**, so a further colour in the ramp fails the build until the

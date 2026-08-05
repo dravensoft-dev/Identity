@@ -13,12 +13,12 @@ import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
-import type { SelectOption } from '../../../Api.generated';
+import type { ArenaSelectOption } from '../../../Api.generated';
 import { Select } from './Select';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'forms/select/Select.behaviour.json');
 
-const OPTIONS: SelectOption[] = [
+const OPTIONS: ArenaSelectOption[] = [
   { value: 'staging', label: 'Staging' },
   { value: 'production', label: 'Production' },
 ];

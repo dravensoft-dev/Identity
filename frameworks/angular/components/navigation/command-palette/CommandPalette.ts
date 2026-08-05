@@ -17,20 +17,20 @@ import {
 import { commandPaletteStyles } from './CommandPalette.variants';
 import { isPrimaryActivation } from '../../../AnchorActivation';
 import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
-import type { Command } from '../../../Api.generated';
+import type { ArenaCommand } from '../../../Api.generated';
 
 let nextId = 0;
 
-export function filterCommands(commands: readonly Command[], query: string): Command[] {
+export function filterCommands(commands: readonly ArenaCommand[], query: string): ArenaCommand[] {
   const needle = query.toLowerCase();
   return commands.filter((command) => `${command.label} ${command.hint ?? ''}`.toLowerCase().includes(needle));
 }
 
-export function capCommands(commands: readonly Command[], max: number | undefined): readonly Command[] {
+export function capCommands(commands: readonly ArenaCommand[], max: number | undefined): readonly ArenaCommand[] {
   return max === undefined || max < 0 ? commands : commands.slice(0, max);
 }
 
-export function orderCommands(commands: readonly Command[]): Command[] {
+export function orderCommands(commands: readonly ArenaCommand[]): ArenaCommand[] {
   const names: string[] = [];
   for (const command of commands) {
     if (command.group && !names.includes(command.group)) names.push(command.group);
@@ -42,7 +42,7 @@ export function orderCommands(commands: readonly Command[]): Command[] {
 }
 
 export interface CommandRow {
-  command: Command;
+  command: ArenaCommand;
   index: number;
 }
 
@@ -51,7 +51,7 @@ export interface CommandGroup {
   rows: CommandRow[];
 }
 
-export function commandGroups(ordered: readonly Command[]): CommandGroup[] {
+export function commandGroups(ordered: readonly ArenaCommand[]): CommandGroup[] {
   const groups: CommandGroup[] = [];
   ordered.forEach((command, index) => {
     const name = command.group ?? null;
@@ -91,7 +91,7 @@ export function activeOptionId(uid: string, active: number, rowCount: number): s
   },
   template: `
     @if (open()) {
-      <div #panel [class]="styles().panel()" role="dialog" aria-modal="true" aria-label="Command palette"
+      <div #panel [class]="styles().panel()" role="dialog" aria-modal="true" aria-label="ArenaCommand palette"
            (click)="$event.stopPropagation()">
         <div [class]="styles().search()">
           <i [class]="styles().searchIcon() + ' ph-bold ph-magnifying-glass'" aria-hidden="true"></i>
@@ -153,7 +153,7 @@ export class CommandPalette {
   /** Whether the palette is shown. Closed renders nothing. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
   /** Every command the palette can find. Filtered by label and hint as the user types. */
-  readonly commands = input.required<readonly Command[]>();
+  readonly commands = input.required<readonly ArenaCommand[]>();
   /** The search field's placeholder. */
   readonly placeholder = input('Search for an action or project…');
   /** How many matches the list shows at most. Absent, all of them. The ceiling applies AFTER the query has run over every command, which is what makes it different from the caller trimming `commands` before passing them: a trimmed list cannot match what was cut, and a capped one can, so the first rows are still the best the whole set has. It is the palette's rather than the domain's, because how many rows help before the list stops being an accelerator is a property of this control; a caller who caps their own collection has guessed at it once, for one collection, with no query in hand. It is not ranking: the order stays the order the caller passed, ungrouped first and then each group as it first appears. */
@@ -161,7 +161,7 @@ export class CommandPalette {
   /** The palette asked to be closed: Escape, the scrim, or a command having been run. */
   readonly close = output<void>();
   /** A command was activated, carrying which one. Emitted after close. For a command with `route` it fires for a primary click with no modifier and for Enter, both of which cancel the row's anchor first, so the two activations do the same thing and a host that routes here never navigates twice; a modified or middle click on such a row is the browser's, fires nothing and does not close the palette. */
-  readonly run = output<Command>();
+  readonly run = output<ArenaCommand>();
 
   protected readonly query = signal('');
   protected readonly active = signal(0);
@@ -235,13 +235,13 @@ export class CommandPalette {
     }
   }
 
-  protected onRouteClick(command: Command, event: MouseEvent): void {
+  protected onRouteClick(command: ArenaCommand, event: MouseEvent): void {
     if (!isPrimaryActivation(event)) return;
     event.preventDefault();
     this.onRun(command);
   }
 
-  protected onRun(command: Command): void {
+  protected onRun(command: ArenaCommand): void {
     this.close.emit();
     this.run.emit(command);
   }

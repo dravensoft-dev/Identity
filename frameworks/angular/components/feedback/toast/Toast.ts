@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
-import type { ToastTone } from '../../../Api.generated';
+import type { ArenaToastTone } from '../../../Api.generated';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated';
 import { toastStyles } from './Toast.variants';
 
@@ -43,7 +43,7 @@ export class Toast {
   /** The body. */
   readonly message = input<string>();
   /** The side bar's colour, and whether the toast announces assertively. */
-  readonly tone = input<ToastTone>('neutral');
+  readonly tone = input<ArenaToastTone>('neutral');
   /** The label of the single inline action: Undo, Retry, View logs. Absent renders no action. */
   readonly actionLabel = input<string>();
   /** The inline action was activated. */

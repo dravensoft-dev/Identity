@@ -17,7 +17,7 @@ import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../
 import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated';
 
 const SSR_VIEWPORT_H = 900;
-import type { OnboardingAnchor, OnboardingStep } from '../../../Api.generated';
+import type { ArenaOnboardingAnchor, ArenaOnboardingStep } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-onboarding',
@@ -67,11 +67,11 @@ export class Onboarding {
   /** Whether the tour is shown. Closed renders nothing, scrim included. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
   /** The tour, in order. An empty tour renders nothing. */
-  readonly steps = input.required<readonly OnboardingStep[]>();
+  readonly steps = input.required<readonly ArenaOnboardingStep[]>();
   /** Which step is current. The host owns it and answers next/back. */
   readonly index = input(0);
   /** Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. */
-  readonly anchor = input<OnboardingAnchor>();
+  readonly anchor = input<ArenaOnboardingAnchor>();
   /** Next was activated on a step that is not the last. */
   readonly next = output<void>();
   /** Back was activated on a step that is not the first. */
@@ -85,7 +85,7 @@ export class Onboarding {
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
 
   protected readonly visible = computed(() => this.open() && this.steps().length > 0);
-  protected readonly step = computed<OnboardingStep>(() => this.steps()[this.index()] ?? {});
+  protected readonly step = computed<ArenaOnboardingStep>(() => this.steps()[this.index()] ?? {});
   protected readonly last = computed(() => this.index() === this.steps().length - 1);
 
   protected readonly label = computed(() => {

@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { ToastHost } from './ToastHost.tsx';
 import { Toast } from '../toast/Toast.tsx';
-import type { ToastPlacement } from '../../../Api.generated';
+import type { ArenaToastPlacement } from '../../../Api.generated';
 
 const PLACEMENTS = ['top-start', 'top-end', 'bottom-start', 'bottom-end'] as const;
 
@@ -18,7 +18,7 @@ function classesOf(html: string): string[] {
   return (/class="([^"]*)"/.exec(html)?.[1] ?? '').split(/\s+/).filter(Boolean);
 }
 
-function pinnedOf(placement: ToastPlacement): { block: string[]; inline: string[] } {
+function pinnedOf(placement: ArenaToastPlacement): { block: string[]; inline: string[] } {
   const drawn = classesOf(renderToStaticMarkup(<ToastHost placement={placement} />));
   return {
     block: BLOCK.filter((edge) => drawn.some((c) => c.includes(`--placement-${edge}-`))),
@@ -89,7 +89,7 @@ test('ToastHost drops a consumer style object and a consumer attribute -- no R4 
 });
 
 test('an unknown placement falls back to the default rather than rendering an unpinned box', () => {
-  assert.deepEqual(pinnedOf('corner' as ToastPlacement), { block: ['bottom'], inline: ['end'] },
+  assert.deepEqual(pinnedOf('corner' as ArenaToastPlacement), { block: ['bottom'], inline: ['end'] },
     'a variant key the manifest does not declare resolves to no classes at all, so the guard '
     + 'that answers it is derived from the manifest rather than written out beside it');
 });

@@ -11,12 +11,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { NumberFormat } from '../../Api.generated';
+import type { ArenaNumberFormat } from '../../Api.generated';
 import { LineChart } from './line-chart/LineChart';
 import { BarChart } from './bar-chart/BarChart';
 import { DoughnutChart } from './doughnut-chart/DoughnutChart';
 
-const FORMAT: NumberFormat = { locale: 'es-BO', fractionDigits: 2 };
+const FORMAT: ArenaNumberFormat = { locale: 'es-BO', fractionDigits: 2 };
 const WRITTEN = 'Bs. 1.234,50';
 
 @Component({
@@ -36,7 +36,7 @@ class NumbersHost {
   values = [1234.5];
   prefix: string | undefined = 'Bs. ';
   suffix: string | undefined = undefined;
-  format: NumberFormat | undefined = FORMAT;
+  format: ArenaNumberFormat | undefined = FORMAT;
 }
 
 function render(patch: Partial<NumbersHost> = {}): { html: string; text: string; destroy: () => void } {

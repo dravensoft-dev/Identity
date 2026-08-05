@@ -12,13 +12,13 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { SegmentOption } from '../../../Api.generated';
+import type { ArenaSegmentOption } from '../../../Api.generated';
 import { SegmentedControl } from './SegmentedControl';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'navigation/segmented-control/SegmentedControl.behaviour.json');
 
-const RANGES: SegmentOption[] = [
+const RANGES: ArenaSegmentOption[] = [
   { value: '24h', label: '24h' },
   { value: '7d', label: '7d' },
   { value: '30d', label: '30d' },
@@ -32,7 +32,7 @@ const RANGES: SegmentOption[] = [
                                       (change)="chosen.push($event)" />`,
 })
 class SegmentedControlHost {
-  options: readonly SegmentOption[] = RANGES;
+  options: readonly ArenaSegmentOption[] = RANGES;
   ariaLabel = 'Time range';
   name: string | undefined = 'range';
   value: string | undefined = '7d';

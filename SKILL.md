@@ -64,7 +64,7 @@ Every one of these is enforced somewhere, so breaking one is a defect rather tha
   handler and nothing navigates twice. A modified click, a middle click and the context menu
   are the browser's: they open the `href` themselves and report nothing. **Never wrap an Arena
   component in your router's own link**, which nests an anchor inside an anchor, and in Angular
-  does not bind at all. `Card.href`, `Command.route`, `Crumb.href` and `SideNavItem.href`.
+  does not bind at all. `Card.href`, `ArenaCommand.route`, `ArenaCrumb.href` and `SideNavItem.href`.
 - **A required member absent is a caller bug**, not a state to render. Every layer fails hard
   rather than drawing something empty, so an absent one is loud on the first render.
 - **No render follows from whether you bound a listener or filled a slot.** A member decides,

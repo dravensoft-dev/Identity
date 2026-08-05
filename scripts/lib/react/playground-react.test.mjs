@@ -23,7 +23,7 @@ const model = {
   affordances: [],
   knobs: [
     knob({ member: 'title', bind: 'pinned' }),
-    knob({ member: 'tone', form: 'enum', type: 'Tone', bind: 'defaulted', control: 'select', options: ['neutral'] }),
+    knob({ member: 'tone', form: 'enum', type: 'ArenaTone', bind: 'defaulted', control: 'select', options: ['neutral'] }),
     knob({ member: 'content', form: 'slot', type: null, control: 'slotText', initial: 'Body.', nodes: [{ text: 'Body.' }] }),
     knob({
       member: 'action', form: 'slot', type: null, control: 'slotPresence', codec: 'flag', initial: true,
@@ -32,7 +32,7 @@ const model = {
   ],
   events: [
     { name: 'click', payload: null, bind: null, doc: 'Clicked.' },
-    { name: 'sortChange', payload: 'TableSort', bind: 'sort', doc: 'Sorted.' },
+    { name: 'sortChange', payload: 'ArenaTableSort', bind: 'sort', doc: 'Sorted.' },
   ],
   host: null,
   uses: ['Badge'],
@@ -40,14 +40,14 @@ const model = {
 
 test('a type expression follows the form, and a slot is what its control can hold', () => {
   assert.equal(typeExpr(knob({ type: 'string' })), 'string');
-  assert.equal(typeExpr(knob({ form: 'array', type: 'TableColumn' })), 'TableColumn[]');
+  assert.equal(typeExpr(knob({ form: 'array', type: 'ArenaTableColumn' })), 'ArenaTableColumn[]');
   assert.equal(typeExpr(knob({ form: 'slot', control: 'slotText' })), 'string');
   assert.equal(typeExpr(knob({ form: 'slot', control: 'slotPresence' })), 'boolean');
   assert.equal(typeExpr(knob({ form: 'functionInput' })), 'string');
 });
 
 test('only a declared type is imported, never a primitive', () => {
-  assert.deepEqual(contractTypes(model), ['Tone']);
+  assert.deepEqual(contractTypes(model), ['ArenaTone']);
   assert.deepEqual(contractTypes({ knobs: [knob({ form: 'array', type: 'string' })] }), []);
 });
 
@@ -73,7 +73,7 @@ test('a text node becomes an expression container, so a brace in the copy is not
 test('a required member is not optional in the interface, and an optional one is', () => {
   const out = knobsInterface(model);
   assert.match(out, /^ {2}title: string;$/m);
-  assert.match(out, /^ {2}tone: Tone;$/m);
+  assert.match(out, /^ {2}tone: ArenaTone;$/m);
   assert.match(out, /^ {2}content\?: string;$/m);
 });
 

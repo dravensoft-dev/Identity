@@ -1,5 +1,5 @@
 import { Injectable, type Signal, computed, signal } from '@angular/core';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 
 export interface GridCursor {
   row: number;
@@ -13,7 +13,7 @@ export interface RowEntry {
 
 @Injectable()
 export class TableState {
-  columns: Signal<readonly TableColumn[]> = signal([]);
+  columns: Signal<readonly ArenaTableColumn[]> = signal([]);
   narrow: Signal<boolean> = signal(false);
   rows: Signal<readonly object[]> = signal([]);
 

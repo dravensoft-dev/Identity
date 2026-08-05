@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { BulkActionBar } from './BulkActionBar';
 import { bulkActionBarStyles } from './BulkActionBar.variants';
-import type { BulkAction } from '../../../Api.generated';
+import type { ArenaBulkAction } from '../../../Api.generated';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'navigation/bulk-action-bar/BulkActionBar.behaviour.json');
@@ -101,11 +101,11 @@ test('the Clear output was renamed from `cleared` to `clear`, per the API contra
   } finally { fixture.destroy(); }
 });
 
-test('classesFor still resolves a destructive action\'s classes to the same recipe output after the BulkAction retype', () => {
+test('classesFor still resolves a destructive action\'s classes to the same recipe output after the ArenaBulkAction retype', () => {
   const fixture = render(3);
   try {
     const instance = fixture.componentInstance as unknown as {
-      classesFor(action: BulkAction): { action(): string };
+      classesFor(action: ArenaBulkAction): { action(): string };
     };
     const viaMethod = instance.classesFor({ id: 'delete', label: 'Delete', destructive: true }).action();
     const viaRecipe = bulkActionBarStyles({ destructive: true }).action();

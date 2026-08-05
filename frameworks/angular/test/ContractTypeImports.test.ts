@@ -58,11 +58,11 @@ test('a contract type is imported with `import type`, never as a value', () => {
 
 test('the rule is decided by the keyword and not by the file, so a bare import is caught wherever it sits', () => {
   assert.deepEqual(
-    valueImportProblems([{ path: 'a/b/C.ts', source: "import type { Tone } from '../../../Api.generated';" }]),
+    valueImportProblems([{ path: 'a/b/C.ts', source: "import type { ArenaTone } from '../../../Api.generated';" }]),
     [],
   );
   const caught = valueImportProblems([
-    { path: 'a/b/C.ts', source: "import { Tone } from '../../../Api.generated';" },
+    { path: 'a/b/C.ts', source: "import { ArenaTone } from '../../../Api.generated';" },
   ]);
   assert.equal(caught.length, 1);
   assert.match(caught[0], /a\/b\/C\.ts: imports from Api\.generated without/);

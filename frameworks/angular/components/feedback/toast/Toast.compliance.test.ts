@@ -13,14 +13,14 @@ import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
 import { assertPatternCases, ANGULAR_COMPONENTS, isFocusable } from '../../../test/Compliance';
-import type { ToastTone } from '../../../Api.generated';
+import type { ArenaToastTone } from '../../../Api.generated';
 import { Toast } from './Toast';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'feedback/toast/Toast.behaviour.json');
 
 const TONES = ['neutral', 'success', 'danger', 'gold'] as const;
 
-function renderToast(tone: ToastTone, inputs: Record<string, unknown> = {}) {
+function renderToast(tone: ArenaToastTone, inputs: Record<string, unknown> = {}) {
   const fixture = TestBed.createComponent(Toast);
   fixture.componentRef.setInput('tone', tone);
   fixture.componentRef.setInput('title', 'Deployment failed');

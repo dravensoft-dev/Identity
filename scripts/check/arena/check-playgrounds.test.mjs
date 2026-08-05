@@ -9,18 +9,18 @@ import {
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const types = new Map([
-  ['Tone', { name: 'Tone', kind: 'enum', values: ['neutral', 'accent', 'danger'] }],
-  ['SortDirection', { name: 'SortDirection', kind: 'enum', values: ['asc', 'desc'] }],
-  ['TableSort', {
-    name: 'TableSort',
+  ['ArenaTone', { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] }],
+  ['ArenaSortDirection', { name: 'ArenaSortDirection', kind: 'enum', values: ['asc', 'desc'] }],
+  ['ArenaTableSort', {
+    name: 'ArenaTableSort',
     kind: 'object',
     fields: {
       column: { form: 'primitive', type: 'number', required: true, description: 'The column.' },
-      direction: { form: 'enum', type: 'SortDirection', required: true, description: 'The direction.' },
+      direction: { form: 'enum', type: 'ArenaSortDirection', required: true, description: 'The direction.' },
     },
   }],
-  ['TableColumn', {
-    name: 'TableColumn',
+  ['ArenaTableColumn', {
+    name: 'ArenaTableColumn',
     kind: 'object',
     fields: { header: { form: 'primitive', type: 'string', required: true, description: 'The header.' } },
   }],
@@ -32,20 +32,20 @@ const widget = {
   affordances: [],
   api: {
     label: { form: 'primitive', type: 'string', required: true, description: 'The name.' },
-    tone: { form: 'enum', type: 'Tone', default: 'neutral', description: 'The tone.' },
+    tone: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The tone.' },
     index: { form: 'primitive', type: 'number', description: 'A position.' },
-    columns: { form: 'array', of: 'TableColumn', description: 'The columns.' },
-    sort: { form: 'object', type: 'TableSort', description: 'The sort.' },
+    columns: { form: 'array', of: 'ArenaTableColumn', description: 'The columns.' },
+    sort: { form: 'object', type: 'ArenaTableSort', description: 'The sort.' },
     content: { form: 'slot', description: 'The body.' },
     mark: { form: 'slot', required: true, description: 'The mark.' },
-    sortChange: { form: 'event', payload: 'TableSort', description: 'Sorted.' },
+    sortChange: { form: 'event', payload: 'ArenaTableSort', description: 'Sorted.' },
     close: { form: 'event', description: 'Closed.' },
   },
 };
 
 const badge = {
   component: 'Badge',
-  api: { content: { form: 'slot', description: 'The label.' }, tone: { form: 'enum', type: 'Tone', default: 'neutral', description: 'The tone.' } },
+  api: { content: { form: 'slot', description: 'The label.' }, tone: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The tone.' } },
 };
 
 const contracts = new Map([['Widget', widget], ['Badge', badge]]);
@@ -96,7 +96,7 @@ test('a seed of the wrong primitive type fails, and this is what stops a page th
 test('a seed outside an enum\'s declared values fails, naming the values', () => {
   assert.match(
     seedProblems('Widget', widget, { seed: { label: 'x', tone: 'gold' } }, types)[0],
-    /"gold" is not one of Tone's \["neutral","accent","danger"\]/,
+    /"gold" is not one of ArenaTone's \["neutral","accent","danger"\]/,
   );
 });
 
@@ -108,11 +108,11 @@ test('an array seed is checked item by item', () => {
 });
 
 test('an object seed is checked field by field, including a field the type does not declare', () => {
-  assert.match(objectProblems('w.sort', 'TableSort', { column: 0, direction: 'asc', nope: 1 }, types)[0], /TableSort declares no such field/);
+  assert.match(objectProblems('w.sort', 'ArenaTableSort', { column: 0, direction: 'asc', nope: 1 }, types)[0], /ArenaTableSort declares no such field/);
 });
 
 test('an object seed omitting a required field fails', () => {
-  assert.match(objectProblems('w.sort', 'TableSort', { column: 0 }, types)[0], /TableSort.direction is required and the fixture omits it/);
+  assert.match(objectProblems('w.sort', 'ArenaTableSort', { column: 0 }, types)[0], /ArenaTableSort.direction is required and the fixture omits it/);
 });
 
 test('a slot the contract does not declare fails', () => {
@@ -150,7 +150,7 @@ test('a host holding no placeholder fails, and one holding two fails', () => {
 test('a host node is checked like any other node', () => {
   assert.match(
     hostProblems('Widget', { host: { component: 'Badge', members: { tone: 'gold' }, slots: { content: ['$subject'] } } }, contracts, types)[0],
-    /is not one of Tone's/,
+    /is not one of ArenaTone's/,
   );
 });
 
@@ -159,11 +159,11 @@ test('a bind naming something that is not an event fails', () => {
 });
 
 test('a bind writing a payload into a member of another type fails', () => {
-  assert.match(bindProblems('Widget', widget, { bind: { sortChange: 'index' } }, types)[0], /carries TableSort and index holds number/);
+  assert.match(bindProblems('Widget', widget, { bind: { sortChange: 'index' } }, types)[0], /carries ArenaTableSort and index holds number/);
 });
 
 test('a bind writing into a field of an object member is resolved through the type', () => {
-  assert.deepEqual(bindProblems('W', { api: { page: { form: 'object', type: 'TableSort' }, ev: { form: 'event', payload: 'number' } } }, { bind: { ev: 'page.column' } }, types), []);
+  assert.deepEqual(bindProblems('W', { api: { page: { form: 'object', type: 'ArenaTableSort' }, ev: { form: 'event', payload: 'number' } } }, { bind: { ev: 'page.column' } }, types), []);
 });
 
 test('a void event cannot write a payload anywhere, and says so', () => {
@@ -171,7 +171,7 @@ test('a void event cannot write a payload anywhere, and says so', () => {
 });
 
 test('a patch is type-checked against the member it writes', () => {
-  assert.match(bindProblems('Widget', widget, { bind: { close: { tone: 'gold' } } }, types)[0], /is not one of Tone's/);
+  assert.match(bindProblems('Widget', widget, { bind: { close: { tone: 'gold' } } }, types)[0], /is not one of ArenaTone's/);
 });
 
 test('$delta steps a number and is refused on anything else', () => {

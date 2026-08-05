@@ -3,7 +3,7 @@ import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './PageHead.classes.generated.ts';
 import { useContainerWidth, readBreakpoint } from '../../../UseContainerWidth.ts';
 
-import type { PageHeadAlign } from '../../../Api.generated';
+import type { ArenaPageHeadAlign } from '../../../Api.generated';
 
 export interface PageHeadProps {
 
@@ -17,7 +17,7 @@ export interface PageHeadProps {
   actions?: React.ReactNode;
 
   /** Cross-axis alignment of the actions block against the title, wide layout only. */
-  align?: PageHeadAlign;
+  align?: ArenaPageHeadAlign;
 }
 
 

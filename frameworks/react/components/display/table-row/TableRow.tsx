@@ -1,14 +1,14 @@
 import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../table/Table.classes.generated.ts';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 import type { TableCellInjected } from '../table-cell/TableCell.tsx';
 
 const rowStyles = arenaStyles(manifest);
 
 export interface TableRowInjected {
   rowIndex: number;
-  columns: readonly TableColumn[];
+  columns: readonly ArenaTableColumn[];
   layout: 'table' | 'card';
   cursorCol: number | null;
   onCellFocus: (row: number, col: number) => void;

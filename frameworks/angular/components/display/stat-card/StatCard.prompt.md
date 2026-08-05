@@ -9,7 +9,7 @@ questions about the same number, and neither implies the other:
   says which way it pointed, colors the delta pill. Revenue down is bad, latency
   down is good, and the tile cannot know which metric it is showing.
 
-`delta` is one object (`StatDelta`), not three flat inputs, per the API capability contract
+`delta` is one object (`ArenaStatDelta`), not three flat inputs, per the API capability contract
 (`contracts/api/components/StatCard.json`). The pill renders only when `delta.value` is
 truthy; a `delta` carrying a `tone`/`direction` but an empty `value` renders no pill at all.
 
@@ -30,8 +30,8 @@ same breath, a bad state that is improving is still a bad state.
 |---|---|---|---|---|
 | `label*` | primitive | `string` |  | Short uppercase microlabel, two words at most. |
 | `value*` | primitive | `string` |  | Preformatted, e.g. "1,284" or "99.9%". StatCard never formats. |
-| `tone` | enum | `Tone` | `"neutral"` | What state the number IS in right now, as against how it moved. Badge's vocabulary. |
-| `delta` | object | `StatDelta` |  | How the number moved. Absent renders no pill. |
+| `tone` | enum | `ArenaTone` | `"neutral"` | What state the number IS in right now, as against how it moved. Badge's vocabulary. |
+| `delta` | object | `ArenaStatDelta` |  | How the number moved. Absent renders no pill. |
 | `sub` | primitive | `string` |  | Small muted line under the value: context, e.g. "vs last week". |
 | `icon` | primitive | `string` |  | A Phosphor class name for a small glyph beside the label, drawn muted. Arena renders the aria-hidden wrapper and the `<i>`. |
 

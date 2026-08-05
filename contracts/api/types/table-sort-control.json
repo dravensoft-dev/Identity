@@ -1,6 +1,0 @@
-{
-  "name": "TableSortControl",
-  "kind": "enum",
-  "description": "How the sort affordance is reached in card mode, where there is no header row to activate. Above --bp-md the header row IS the control and this decides nothing.",
-  "values": ["auto", "none"]
-}

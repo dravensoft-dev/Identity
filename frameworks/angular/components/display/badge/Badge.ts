@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
-import type { Tone } from '../../../Api.generated';
+import type { ArenaTone } from '../../../Api.generated';
 import { badgeStyles } from './Badge.variants';
 
 @Component({
@@ -16,7 +16,7 @@ import { badgeStyles } from './Badge.variants';
 })
 export class Badge {
   /** System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight. */
-  readonly tone = input<Tone>('neutral');
+  readonly tone = input<ArenaTone>('neutral');
   /** Draws a filled dot in the tone colour before the label. */
   readonly dot = input(false, { transform: booleanAttribute });
 

@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 import { Skeleton } from './Skeleton';
-import type { SkeletonVariant } from '../../../Api.generated';
+import type { ArenaSkeletonVariant } from '../../../Api.generated';
 
 useTestEnvironment();
 
-function renderSkeleton(variant?: SkeletonVariant, width?: string, height?: string, radius?: string) {
+function renderSkeleton(variant?: ArenaSkeletonVariant, width?: string, height?: string, radius?: string) {
   const fixture = TestBed.createComponent(Skeleton);
   if (variant !== undefined) fixture.componentRef.setInput('variant', variant);
   if (width !== undefined) fixture.componentRef.setInput('width', width);

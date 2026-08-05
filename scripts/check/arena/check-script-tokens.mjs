@@ -31,7 +31,7 @@ export function catSlotEnumProblems(catSlots, values) {
   const actual = Array.isArray(values) ? values : [];
   const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
   if (matches) return [];
-  return [`contracts/api/types/cat-slot.json: CatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
+  return [`contracts/api/types/arena-cat-slot.json: ArenaCatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
 }
 
 export const SHADOW_EXEMPT = new Map([
@@ -161,13 +161,13 @@ async function main() {
   const [, freshModule] = built.entries().next().value;
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(freshModule)?.[1]);
   if (!Number.isInteger(catSlots)) {
-    problems.push('catSlots: the generated module no longer exports a numeric catSlots — CatSlot cannot be checked against the ramp');
+    problems.push('catSlots: the generated module no longer exports a numeric catSlots — ArenaCatSlot cannot be checked against the ramp');
   } else {
     try {
-      const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/cat-slot.json'), 'utf8'));
+      const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/arena-cat-slot.json'), 'utf8'));
       problems.push(...catSlotEnumProblems(catSlots, catSlot.values));
     } catch (err) {
-      problems.push(`contracts/api/types/cat-slot.json: unreadable (${err.message}) — CatSlot restates the --color-cat-* ramp and must exist`);
+      problems.push(`contracts/api/types/arena-cat-slot.json: unreadable (${err.message}) — ArenaCatSlot restates the --color-cat-* ramp and must exist`);
     }
   }
 
@@ -176,7 +176,7 @@ async function main() {
     for (const p of problems) console.error(`  ${p}`);
     process.exit(1);
   }
-  console.log(`check-script-tokens: ${flagged.length} script-readable token(s) in sync across ${SCRIPT_TARGETS.length} layer(s); CatSlot matches the ${catSlots}-slot ramp`);
+  console.log(`check-script-tokens: ${flagged.length} script-readable token(s) in sync across ${SCRIPT_TARGETS.length} layer(s); ArenaCatSlot matches the ${catSlots}-slot ramp`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

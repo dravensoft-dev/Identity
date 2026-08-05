@@ -1,4 +1,4 @@
-import type { Tone, TableColumn } from '../../Api.generated';
+import type { ArenaTone, ArenaTableColumn } from '../../Api.generated';
 import type { ConsoleProject } from './DashboardScreen.tsx';
 import React, { useState } from 'react';
 import { Shell } from './Shell.tsx';
@@ -15,14 +15,14 @@ import { Button } from '../../components/forms/button/Button.tsx';
 import { Switch } from '../../components/forms/switch/Switch.tsx';
 import { Dialog } from '../../components/feedback/dialog/Dialog.tsx';
 
-const DEPLOYS: { build: string; env: string; status: [Tone, string]; author: string; dur: string }[] = [
+const DEPLOYS: { build: string; env: string; status: [ArenaTone, string]; author: string; dur: string }[] = [
   { build: '#4821', env: 'Production', status: ['success', 'Active'], author: 'CI · main', dur: '3m 41s' },
   { build: '#4820', env: 'Staging', status: ['success', 'OK'], author: 'ana@', dur: '3m 12s' },
   { build: '#4818', env: 'Production', status: ['neutral', 'Rolled back'], author: 'CI · main', dur: '4m 02s' },
   { build: '#4815', env: 'QA', status: ['danger', 'Failed'], author: 'diego@', dur: '1m 08s' },
 ];
 
-const DEPLOY_COLUMNS: TableColumn[] = [
+const DEPLOY_COLUMNS: ArenaTableColumn[] = [
   { header: 'Build', mono: true, width: 'calc(var(--sp-1) * 24)' },
   { header: 'Environment' },
   { header: 'Status' },

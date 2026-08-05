@@ -14,12 +14,12 @@ Icon-only button for toolbars and rows. Always pass `label` (accessible name in 
 |---|---|---|---|---|
 | `icon*` | primitive | `string` |  | Phosphor class name, e.g. 'ph-bold ph-plus'. Arena draws the <i> and hides it from assistive technology; `label` is the accessible name. |
 | `label*` | primitive | `string` |  | The accessible name, present in every state. Also the visible text when showLabel is set, and the title attribute when it is not. |
-| `size` | enum | `ControlSize` | `"md"` | Height, from the density tokens: the same scale Button uses, so the two re-densify together in a toolbar. |
-| `variant` | enum | `IconButtonVariant` | `"ghost"` | Visual treatment. |
+| `size` | enum | `ArenaControlSize` | `"md"` | Height, from the density tokens: the same scale Button uses, so the two re-densify together in a toolbar. |
+| `variant` | enum | `ArenaIconButtonVariant` | `"ghost"` | Visual treatment. |
 | `showLabel` | primitive | `boolean` | `false` | Shows the label as text beside the icon (H6). Don't rely on the title alone on touch or keyboard surfaces. |
 | `pressed` | primitive | `boolean` |  | Whether this control is a toggle, and whether it is currently on. Present, Arena writes aria-pressed and draws the on state with the same accent tint a current SideNav item takes, so "this one is on" is one statement across the library; absent, the control is not a toggle at all. The tri-state is the point and a default of false would destroy it: aria-pressed="false" on a plain button announces a toggle that is off rather than a button, so every IconButton in the system would announce as an unpressed toggle. The label does NOT change with the state, which is what the button pattern means by a toggle: a control that renames itself is announced as a different control rather than as the same one in another state. |
 | `disabled` | primitive | `boolean` | `false` | Blocks activation and dims the control. |
-| `type` | enum | `ButtonType` | `"button"` | Native button behaviour. Defaults to 'button' so an icon button inside a form does not submit it by accident. |
+| `type` | enum | `ArenaButtonType` | `"button"` | Native button behaviour. Defaults to 'button' so an icon button inside a form does not submit it by accident. |
 | `name` | primitive | `string` |  | Submitted with the form, when the button submits one. |
 | `value` | primitive | `string` |  | The value submitted under `name`. |
 | `autoFocus` | primitive | `boolean` | `false` | Focused on mount. |

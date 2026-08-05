@@ -1,0 +1,21 @@
+{
+  "name": "ArenaMenuItem",
+  "kind": "object",
+  "description": "One entry in a Menu, and it is one of three shapes: an entry carrying `divider` draws a hairline rule, one carrying `header` draws a group label, and every other entry draws an activatable row. Every field is optional because of that -- no field is common to all three -- and there is no `id`, because a divider and a header have nothing to identify and `select` carries the whole item rather than a key into the list.",
+  "fields": {
+    "label": { "form": "primitive", "type": "string",
+               "description": "What the row reads." },
+    "icon": { "form": "primitive", "type": "string",
+              "description": "A Phosphor class name drawn before the label -- Arena draws the <i>, the consumer names the glyph." },
+    "shortcut": { "form": "primitive", "type": "string",
+                  "description": "The keyboard hint drawn right-aligned in the mono face. Display only: Menu binds no key for it." },
+    "destructive": { "form": "primitive", "type": "boolean", "default": false,
+                     "description": "Draws the row in the danger ink. Destructive entries go last." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false,
+                  "description": "The row is drawn muted and reports no `select`." },
+    "divider": { "form": "primitive", "type": "boolean", "default": false,
+                 "description": "Draws a hairline rule in place of a row. Carries no other field." },
+    "header": { "form": "primitive", "type": "string",
+                "description": "Draws a group label in place of a row. Carries no other field." }
+  }
+}

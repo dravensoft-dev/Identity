@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, contentChild, input } fro
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { pageHeadStyles } from './PageHead.variants';
-import type { PageHeadAlign } from '../../../Api.generated';
+import type { ArenaPageHeadAlign } from '../../../Api.generated';
 
 @Component({
   selector: 'arena-page-head',
@@ -30,7 +30,7 @@ export class PageHead {
   /** A muted line under the title. */
   readonly subtitle = input<string>();
   /** Cross-axis alignment of the actions block against the title, wide layout only. */
-  readonly align = input<PageHeadAlign>('start');
+  readonly align = input<ArenaPageHeadAlign>('start');
 
   protected readonly actions = contentChild(ArenaActions);
 

@@ -11,14 +11,14 @@ import { pascal } from '../../lib/arena/layers.mjs';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
 import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs';
 
-const TYPES = new Map([['Tone', 'enum'], ['Crumb', 'object']]);
+const TYPES = new Map([['ArenaTone', 'enum'], ['ArenaCrumb', 'object']]);
 
 const CONTRACT = {
   component: 'Breadcrumbs',
   api: {
-    items: { form: 'array', of: 'Crumb', required: true },
+    items: { form: 'array', of: 'ArenaCrumb', required: true },
     separator: { form: 'primitive', type: 'string' },
-    navigate: { form: 'event', payload: 'Crumb' },
+    navigate: { form: 'event', payload: 'ArenaCrumb' },
   },
 };
 
@@ -147,7 +147,7 @@ test('a union between forms is reported as an R5 violation', () => {
 
 test('an event payload that is a platform type is an R4 violation of its own', () => {
   const problems = compareSurface(
-    { component: 'X', api: { navigate: { form: 'event', payload: 'Crumb' } } },
+    { component: 'X', api: { navigate: { form: 'event', payload: 'ArenaCrumb' } } },
     [{ name: 'navigate', form: 'event', payload: 'MouseEvent', platformPayload: true, required: false }],
     'angular',
   );
@@ -156,25 +156,25 @@ test('an event payload that is a platform type is an R4 violation of its own', (
 
 test('a layer declaring exactly the contract agrees, in both idioms', () => {
   const angular = [
-    { name: 'items', form: 'array', of: 'Crumb', required: true },
+    { name: 'items', form: 'array', of: 'ArenaCrumb', required: true },
     { name: 'separator', form: 'primitive', type: 'string', required: false },
-    { name: 'navigate', form: 'event', payload: 'Crumb', required: false },
+    { name: 'navigate', form: 'event', payload: 'ArenaCrumb', required: false },
   ];
   assert.deepEqual(compareSurface(CONTRACT, angular, 'angular'), []);
 
   const react = [
-    { name: 'items', form: 'array', of: 'Crumb', required: true },
+    { name: 'items', form: 'array', of: 'ArenaCrumb', required: true },
     { name: 'separator', form: 'primitive', type: 'string', required: false },
-    { name: 'onNavigate', form: 'event', payload: 'Crumb', required: false },
+    { name: 'onNavigate', form: 'event', payload: 'ArenaCrumb', required: false },
   ];
   assert.deepEqual(compareSurface(CONTRACT, react, 'react'), []);
 });
 
 test('a member the contract does not name fails, even when it looks harmless', () => {
   const members = [
-    { name: 'items', form: 'array', of: 'Crumb', required: true },
+    { name: 'items', form: 'array', of: 'ArenaCrumb', required: true },
     { name: 'separator', form: 'primitive', type: 'string', required: false },
-    { name: 'navigate', form: 'event', payload: 'Crumb', required: false },
+    { name: 'navigate', form: 'event', payload: 'ArenaCrumb', required: false },
     { name: 'compact', form: 'primitive', type: 'boolean', required: false },
   ];
   const problems = compareSurface(CONTRACT, members, 'angular');
@@ -185,8 +185,8 @@ test('a member the contract does not name fails, even when it looks harmless', (
 
 test('an OPTIONAL member a layer omits still fails -- required governs the consumer, never the layer', () => {
   const members = [
-    { name: 'items', form: 'array', of: 'Crumb', required: true },
-    { name: 'navigate', form: 'event', payload: 'Crumb', required: false },
+    { name: 'items', form: 'array', of: 'ArenaCrumb', required: true },
+    { name: 'navigate', form: 'event', payload: 'ArenaCrumb', required: false },
   ];
   const problems = compareSurface(CONTRACT, members, 'angular');
   assert.equal(problems.length, 1);
@@ -196,9 +196,9 @@ test('an OPTIONAL member a layer omits still fails -- required governs the consu
 
 test('the same name in the wrong form fails', () => {
   const members = [
-    { name: 'items', form: 'array', of: 'Crumb', required: true },
+    { name: 'items', form: 'array', of: 'ArenaCrumb', required: true },
     { name: 'separator', form: 'slot', required: false },
-    { name: 'navigate', form: 'event', payload: 'Crumb', required: false },
+    { name: 'navigate', form: 'event', payload: 'ArenaCrumb', required: false },
   ];
   const problems = compareSurface(CONTRACT, members, 'angular');
   assert.equal(problems.length, 1);
@@ -211,7 +211,7 @@ test('an array of the wrong element type fails', () => {
   const members = [
     { name: 'items', form: 'array', of: 'string', required: true },
     { name: 'separator', form: 'primitive', type: 'string', required: false },
-    { name: 'navigate', form: 'event', payload: 'Crumb', required: false },
+    { name: 'navigate', form: 'event', payload: 'ArenaCrumb', required: false },
   ];
   assert.ok(compareSurface(CONTRACT, members, 'angular').some((p) => /items/.test(p)));
 });
@@ -238,8 +238,8 @@ test('a primitive member typed the same in both is not a problem', () => {
 
 test('a contract member required: true implemented as optional by a layer is reported', () => {
   const problems = compareSurface(
-    { component: 'X', api: { items: { form: 'array', of: 'Crumb', required: true } } },
-    [{ name: 'items', form: 'array', of: 'Crumb', required: false }],
+    { component: 'X', api: { items: { form: 'array', of: 'ArenaCrumb', required: true } } },
+    [{ name: 'items', form: 'array', of: 'ArenaCrumb', required: false }],
     'react',
   );
   assert.equal(problems.length, 1);
@@ -264,12 +264,12 @@ test('matching required-ness on a primitive and an array member reports nothing'
     {
       component: 'X',
       api: {
-        items: { form: 'array', of: 'Crumb', required: true },
+        items: { form: 'array', of: 'ArenaCrumb', required: true },
         separator: { form: 'primitive', type: 'string' },
       },
     },
     [
-      { name: 'items', form: 'array', of: 'Crumb', required: true },
+      { name: 'items', form: 'array', of: 'ArenaCrumb', required: true },
       { name: 'separator', form: 'primitive', type: 'string', required: false },
     ],
     'react',
@@ -288,8 +288,8 @@ test('a required slot mismatched against an optional layer member reports nothin
 
 test('an event with mismatched required-ness reports nothing -- an outbound member is never "required", a consumer is always free not to listen', () => {
   const problems = compareSurface(
-    { component: 'X', api: { navigate: { form: 'event', payload: 'Crumb', required: true } } },
-    [{ name: 'navigate', form: 'event', payload: 'Crumb', required: false }],
+    { component: 'X', api: { navigate: { form: 'event', payload: 'ArenaCrumb', required: true } } },
+    [{ name: 'navigate', form: 'event', payload: 'ArenaCrumb', required: false }],
     'angular',
   );
   assert.deepEqual(problems, []);
@@ -308,17 +308,17 @@ test('a member name declared twice in one layer\'s surface is reported as a dupl
 });
 
 const LOGO_SIZE_TYPES = new Map([
-  ['LogoSize', { name: 'LogoSize', kind: 'enum', values: ['sm', 'md', 'lg', 'xl'] }],
+  ['ArenaLogoSize', { name: 'ArenaLogoSize', kind: 'enum', values: ['sm', 'md', 'lg', 'xl'] }],
 ]);
 
 test('an inline literal union whose values match the contract enum reports nothing', () => {
-  const contract = { component: 'X', api: { size: { form: 'enum', type: 'LogoSize' } } };
+  const contract = { component: 'X', api: { size: { form: 'enum', type: 'ArenaLogoSize' } } };
   const members = [{ name: 'size', form: 'enum', values: ['sm', 'md', 'lg', 'xl'], required: false }];
   assert.deepEqual(compareSurface(contract, members, 'react', LOGO_SIZE_TYPES), []);
 });
 
 test('an inline literal union whose values differ from the contract enum is reported, naming both sets', () => {
-  const contract = { component: 'X', api: { size: { form: 'enum', type: 'LogoSize' } } };
+  const contract = { component: 'X', api: { size: { form: 'enum', type: 'ArenaLogoSize' } } };
   const members = [{ name: 'size', form: 'enum', values: ['sm', 'md'], required: false }];
   const problems = compareSurface(contract, members, 'react', LOGO_SIZE_TYPES);
   assert.equal(problems.length, 1);
@@ -326,15 +326,15 @@ test('an inline literal union whose values differ from the contract enum is repo
 });
 
 test('an inline literal union naming an enum absent from the types map reports nothing -- resolution is not this function\'s job', () => {
-  const contract = { component: 'X', api: { size: { form: 'enum', type: 'LogoSize' } } };
+  const contract = { component: 'X', api: { size: { form: 'enum', type: 'ArenaLogoSize' } } };
   const members = [{ name: 'size', form: 'enum', values: ['sm', 'md'], required: false }];
   assert.deepEqual(compareSurface(contract, members, 'react'), []);
 });
 
 test('a named member resolves against an enum contract member, and a type mismatch still fails', () => {
-  const contract = { component: 'X', api: { tone: { form: 'enum', type: 'Tone' } } };
+  const contract = { component: 'X', api: { tone: { form: 'enum', type: 'ArenaTone' } } };
   assert.deepEqual(
-    compareSurface(contract, [{ name: 'tone', form: 'named', type: 'Tone', required: false }], 'react'),
+    compareSurface(contract, [{ name: 'tone', form: 'named', type: 'ArenaTone', required: false }], 'react'),
     [],
   );
   const problems = compareSurface(
@@ -344,13 +344,13 @@ test('a named member resolves against an enum contract member, and a type mismat
   );
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Status/);
-  assert.match(problems[0], /Tone/);
+  assert.match(problems[0], /ArenaTone/);
 });
 
 test('a named member resolves against an object contract member, and a type mismatch still fails', () => {
-  const contract = { component: 'X', api: { crumb: { form: 'object', type: 'Crumb' } } };
+  const contract = { component: 'X', api: { crumb: { form: 'object', type: 'ArenaCrumb' } } };
   assert.deepEqual(
-    compareSurface(contract, [{ name: 'crumb', form: 'named', type: 'Crumb', required: false }], 'react'),
+    compareSurface(contract, [{ name: 'crumb', form: 'named', type: 'ArenaCrumb', required: false }], 'react'),
     [],
   );
   const problems = compareSurface(
@@ -360,17 +360,17 @@ test('a named member resolves against an object contract member, and a type mism
   );
   assert.equal(problems.length, 1);
   assert.match(problems[0], /Widget/);
-  assert.match(problems[0], /Crumb/);
+  assert.match(problems[0], /ArenaCrumb/);
 });
 
 test('a named member against a primitive contract member is reported, not coerced into matching', () => {
   const problems = compareSurface(
     { component: 'X', api: { separator: { form: 'primitive', type: 'string' } } },
-    [{ name: 'separator', form: 'named', type: 'Direction', required: false }],
+    [{ name: 'separator', form: 'named', type: 'ArenaDirection', required: false }],
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Direction/);
+  assert.match(problems[0], /ArenaDirection/);
   assert.match(problems[0], /primitive/);
 });
 
@@ -457,7 +457,7 @@ test('an event member colliding with a literally-named onX member is reported, n
 
 test('R1: a predefined object may not carry a slot or an event field', () => {
   const problems = validateTypes([{
-    name: 'Crumb', kind: 'object',
+    name: 'ArenaCrumb', kind: 'object',
     fields: { label: { form: 'primitive', type: 'string' }, onClick: { form: 'event' } },
   }]);
   assert.equal(problems.length, 1);
@@ -476,17 +476,17 @@ test('an object field naming an enum type nobody declared fails', () => {
 
 test('an object field naming a real type that is an object, not an enum, fails', () => {
   const problems = validateTypes([
-    { name: 'Crumb', kind: 'object', fields: { label: { form: 'primitive', type: 'string' } } },
-    { name: 'Widget', kind: 'object', fields: { thing: { form: 'enum', type: 'Crumb' } } },
+    { name: 'ArenaCrumb', kind: 'object', fields: { label: { form: 'primitive', type: 'string' } } },
+    { name: 'Widget', kind: 'object', fields: { thing: { form: 'enum', type: 'ArenaCrumb' } } },
   ]);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Crumb/);
+  assert.match(problems[0], /ArenaCrumb/);
 });
 
 test('an object field naming a declared enum passes', () => {
   const problems = validateTypes([
-    { name: 'Tone', kind: 'enum', values: ['neutral', 'accent'] },
-    { name: 'Widget', kind: 'object', fields: { tone: { form: 'enum', type: 'Tone' } } },
+    { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent'] },
+    { name: 'Widget', kind: 'object', fields: { tone: { form: 'enum', type: 'ArenaTone' } } },
   ]);
   assert.deepEqual(problems, []);
 });
@@ -521,9 +521,9 @@ test('an event payload naming an undeclared, non-primitive type still fails', ()
 
 test('an enum member must name a declared enum, not a declared object', () => {
   const problems = validateContract(
-    { component: 'X', api: { tone: { form: 'enum', type: 'Crumb' } } }, TYPES,
+    { component: 'X', api: { tone: { form: 'enum', type: 'ArenaCrumb' } } }, TYPES,
   );
-  assert.ok(problems.some((p) => /Crumb/.test(p)));
+  assert.ok(problems.some((p) => /ArenaCrumb/.test(p)));
 });
 
 test('the committed generated modules are what contracts/api/types/ generates', () => {
@@ -685,8 +685,8 @@ test('a functionInput required by the contract and optional in the layer is repo
 
 test('validateContract accepts an event payload naming a declared enum', () => {
   const problems = validateContract(
-    { component: 'X', api: { pick: { form: 'event', payload: 'LogoSize' } } },
-    new Map([['LogoSize', 'enum']]),
+    { component: 'X', api: { pick: { form: 'event', payload: 'ArenaLogoSize' } } },
+    new Map([['ArenaLogoSize', 'enum']]),
   );
   assert.deepEqual(problems, []);
 });
@@ -694,7 +694,7 @@ test('validateContract accepts an event payload naming a declared enum', () => {
 test('validateContract still rejects an event payload naming no declared type', () => {
   const problems = validateContract(
     { component: 'X', api: { pick: { form: 'event', payload: 'Nope' } } },
-    new Map([['LogoSize', 'enum']]),
+    new Map([['ArenaLogoSize', 'enum']]),
   );
   assert.ok(problems.some((p) => /Nope/.test(p)));
 });

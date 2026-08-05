@@ -33,7 +33,7 @@ function click(el: Element) {
 
 const THREE_STEPS = [
   { title: 'Welcome', body: 'One' },
-  { title: 'Command palette', body: 'Two' },
+  { title: 'ArenaCommand palette', body: 'Two' },
   { title: 'All set', body: 'Three' },
 ];
 

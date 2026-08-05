@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { assertSameNode } from '../../../test/NodeAssert';
-import type { ToastPlacement } from '../../../Api.generated';
+import type { ArenaToastPlacement } from '../../../Api.generated';
 import { ToastHost } from './ToastHost';
 import { Toast } from '../toast/Toast';
 import { assertPattern, isFocusable, ANGULAR_COMPONENTS } from '../../../test/Compliance';
@@ -30,7 +30,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'feedback/toast-host/ToastHost.behaviou
   `,
 })
 class ToastHostPage {
-  placement: ToastPlacement = 'bottom-end';
+  placement: ArenaToastPlacement = 'bottom-end';
 }
 
 function render(patch: Partial<ToastHostPage> = {}) {

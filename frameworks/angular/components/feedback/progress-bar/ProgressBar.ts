@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, numberAttribute } from '@angular/core';
-import type { ControlSize, ProgressTone } from '../../../Api.generated';
+import type { ArenaControlSize, ArenaProgressTone } from '../../../Api.generated';
 import { progressBarStyles } from './ProgressBar.variants';
 
 export function clampPercentage(value: number): number {
@@ -37,13 +37,13 @@ export class ProgressBar {
   /** A wait with no percentage; the bar sweeps instead of filling. */
   readonly indeterminate = input(false, { transform: booleanAttribute });
   /** The bar's colour. */
-  readonly tone = input<ProgressTone>('accent');
+  readonly tone = input<ArenaProgressTone>('accent');
   /** Names what is progressing. Drawn above the bar, and it is the bar's accessible name. Required and guarded rather than defaulted: nothing can derive what is progressing, and a fallback of "Progress" satisfies roles.label mechanically while telling a screen-reader user only what the component is -- two of them on one page announce identically. */
   readonly label = input.required<string>();
   /** Shows the percentage beside the label. Determinate only. */
   readonly showPercentage = input(true, { transform: booleanAttribute });
   /** The bar's thickness. */
-  readonly size = input<ControlSize>('md');
+  readonly size = input<ArenaControlSize>('md');
 
   protected readonly percentage = computed(() => clampPercentage(this.progressPercentage()));
   protected readonly showsValue = computed(() => this.showPercentage() && !this.indeterminate());

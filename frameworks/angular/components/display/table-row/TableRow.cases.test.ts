@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 import { Table } from '../table/Table';
 import { TableRow } from './TableRow';
 import { TableCell } from '../table-cell/TableCell';
@@ -26,7 +26,7 @@ import { assertPatternCases, ANGULAR_COMPONENTS } from '../../../test/Compliance
 
 const BINDING = join(ANGULAR_COMPONENTS, 'display/table-row/TableRow.behaviour.json');
 const LABEL = 'Recent deployments';
-const COLUMNS: TableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
+const COLUMNS: ArenaTableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
 const BP_MD = '768px';
 const NARROW_WIDTH = 400;
 
@@ -44,7 +44,7 @@ const NARROW_WIDTH = 400;
 })
 class RowHost {
   label = LABEL;
-  columns: TableColumn[] = COLUMNS;
+  columns: ArenaTableColumn[] = COLUMNS;
   responsive = false;
   interactive = false;
   disabled = false;

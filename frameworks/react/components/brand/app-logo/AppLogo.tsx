@@ -2,14 +2,14 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './AppLogo.classes.generated.ts';
 
-import type { LogoSize, Orientation } from '../../../Api.generated';
+import type { ArenaLogoSize, ArenaOrientation } from '../../../Api.generated';
 
 export interface AppLogoProps {
 
   /** Both halves at once: the mark's slot and the wordmark. */
-  size?: LogoSize;
+  size?: ArenaLogoSize;
   /** Mark beside the name, or above it. */
-  orientation?: Orientation;
+  orientation?: ArenaOrientation;
 
   /** The mark, as an asset the consumer supplies. Required: Arena ships MIT and a default would ship Dravensoft's trademark to whoever never read the API. The slot sizes the mark; a mark that brings its own dimensions fights the lock-up. */
   mark: React.ReactNode;

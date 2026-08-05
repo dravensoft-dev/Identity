@@ -6,7 +6,7 @@ import {
 } from './generate-prompt-api.mjs';
 
 test('an array names what it holds, and consumer data keeps its one spelling', () => {
-  assert.equal(typeCell({ form: 'array', of: 'Crumb' }), '`readonly Crumb[]`');
+  assert.equal(typeCell({ form: 'array', of: 'ArenaCrumb' }), '`readonly ArenaCrumb[]`');
   assert.equal(typeCell({ form: 'array', of: 'consumerData' }), `\`readonly ${CONSUMER_DATA}[]\``);
   assert.equal(typeCell({ form: 'consumerData' }), `\`${CONSUMER_DATA}\``);
 });
@@ -26,7 +26,7 @@ test('a functionInput renders the signature the contract models', () => {
 
 test('a slot carries a type only when it is parameterised', () => {
   assert.equal(typeCell({ form: 'slot' }), '');
-  assert.equal(typeCell({ form: 'slot', params: { row: 'TableColumn' } }), '`(row: TableColumn)`');
+  assert.equal(typeCell({ form: 'slot', params: { row: 'ArenaTableColumn' } }), '`(row: ArenaTableColumn)`');
 });
 
 test('a default is written in its JSON form, so a string zero is not read as a number', () => {

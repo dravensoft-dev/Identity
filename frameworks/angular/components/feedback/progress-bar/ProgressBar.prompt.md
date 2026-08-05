@@ -15,10 +15,10 @@ row carrying the label and the percentage, and the track below it.
 |---|---|---|---|---|
 | `progressPercentage` | primitive | `number` | `0` | How far along, 0-100. Clamped and rounded. Ignored when `indeterminate`. |
 | `indeterminate` | primitive | `boolean` | `false` | A wait with no percentage; the bar sweeps instead of filling. |
-| `tone` | enum | `ProgressTone` | `"accent"` | The bar's colour. |
+| `tone` | enum | `ArenaProgressTone` | `"accent"` | The bar's colour. |
 | `label*` | primitive | `string` |  | Names what is progressing. Drawn above the bar, and it is the bar's accessible name. Required and guarded rather than defaulted: nothing can derive what is progressing, and a fallback of "Progress" satisfies roles.label mechanically while telling a screen-reader user only what the component is -- two of them on one page announce identically. |
 | `showPercentage` | primitive | `boolean` | `true` | Shows the percentage beside the label. Determinate only. |
-| `size` | enum | `ControlSize` | `"md"` | The bar's thickness. |
+| `size` | enum | `ArenaControlSize` | `"md"` | The bar's thickness. |
 
 <!-- @api end -->
 

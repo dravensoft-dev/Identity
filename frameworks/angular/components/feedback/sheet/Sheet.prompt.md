@@ -26,7 +26,7 @@ slots higher, and the scrim is how it says so.
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `open*` | primitive | `boolean` |  | Whether the panel is on the page at all. The host owns it, the same way it owns a dialog's. Closed renders nothing, which is what distinguishes it from collapsed. |
-| `placement` | enum | `SheetPlacement` | `"bottom"` | The edge the panel is anchored to. It spans that edge and stands off the device's own inset there, so a bottom sheet on a phone clears the home indicator. |
+| `placement` | enum | `ArenaSheetPlacement` | `"bottom"` | The edge the panel is anchored to. It spans that edge and stands off the device's own inset there, so a bottom sheet on a phone clears the home indicator. |
 | `title*` | primitive | `string` |  | Names the panel for assistive technology and heads it visually. It is also the accessible name of the fold control, so a reader hears which panel is being folded rather than the word Toggle. Required and **guarded at runtime** rather than defaulted: what this panel is showing is editorial, and a constant fallback would satisfy the pattern mechanically while telling a screen-reader user nothing. |
 | `collapsed` | primitive | `boolean` | `false` | Whether the body is folded away. The header stays visible either way: a collapsed panel is still on the page and still says what it is, which is why folding is not the same act as closing. The body is hidden rather than removed, so the fold control's reference to it never points at nothing. |
 | `collapsedChange` | event | `boolean` |  | The fold control was pressed, carrying the state it moved to. Arena never folds the panel by itself, so a host that ignores this gets a control that reports and a body that does not move. |

@@ -165,7 +165,7 @@ unknown>` is not on this list: it is **consumer data**, the eighth form, and
 that covers one exact spelling and nothing wider. `Record<string, Widget>` is a
 record of a known type, which is a predefined object, and it is an R4 violation.
 
-**R5. No unions between forms.** A member is one form. `(string | SegmentOption)[]` picks one.
+**R5. No unions between forms.** A member is one form. `(string | ArenaSegmentOption)[]` picks one.
 
 **R6. What a component renders is never derived from whether a listener is bound, or from
 whether a slot was filled.** A component that draws a dismiss × only when someone is listening
@@ -218,8 +218,8 @@ to import. `Alert` renders it this way in both layers.
 **A field inside a predefined object is never a node, and inside an *array* of predefined
 objects it can only be a primitive.** R1 offers two remedies for a node-valued field, making it
 a slot of the component or making it a primitive Arena draws, and the first is unavailable per
-item, because a component-level slot cannot vary across a list. So `BulkAction.icon`,
-`Command.icon`, `ActivityItem`'s text fields and `OnboardingStep.body` are all primitives, and
+item, because a component-level slot cannot vary across a list. So `ArenaBulkAction.icon`,
+`ArenaCommand.icon`, `ArenaActivityItem`'s text fields and `ArenaOnboardingStep.body` are all primitives, and
 Arena draws them; a per-item icon is a Phosphor class name, the same answer the convention
 above gives for a single one. The consequence is stated rather than hidden: a consumer cannot
 place their own markup inside one row of a list Arena renders. The convention is why no feed,
@@ -310,7 +310,7 @@ the address, and answering with an in-app route would be the defect the conventi
 avoid. So a handler that routes fires for exactly the activation it should answer, and the keyboard
 agrees with the mouse, because Enter on such a row takes the same path a primary click does. This is
 the rule `RouterLink` applies, and it is here for the same reason. Four members carry it:
-`Card.href`, `Command.route`, `Crumb.href` and `SideNavItem.href`.
+`Card.href`, `ArenaCommand.route`, `ArenaCrumb.href` and `SideNavItem.href`.
 
 **Leaving it to the router instead is not available, and the reason is mechanical rather than
 doctrinal.** `RouterLink` decides whether it sits on an anchor by `tagName` and by
@@ -337,11 +337,11 @@ object form, and that is the price.
   "component": "Breadcrumbs",
   "description": "A trail of ancestor locations ending at the current one.",
   "api": {
-    "items":     { "form": "array",     "of": "Crumb",  "required": true,
+    "items":     { "form": "array",     "of": "ArenaCrumb",  "required": true,
                    "description": "The trail, root first. The last entry is the current location." },
     "separator": { "form": "primitive", "type": "string", "default": "/",
                    "description": "Drawn between crumbs, never before the first." },
-    "navigate":  { "form": "event",     "payload": "Crumb",
+    "navigate":  { "form": "event",     "payload": "ArenaCrumb",
                    "description": "A non-current crumb was activated." }
   }
 }
@@ -349,7 +349,7 @@ object form, and that is the price.
 
 `form` takes eight values (`primitive`, `enum`, `object`, `array`, `consumerData`,
 `functionInput`, `slot`, `event`) and `array` is discriminated by `of`: a primitive type name
-(`"string"`) makes it an array of primitives, a declared type name (`"Crumb"`) makes it an array
+(`"string"`) makes it an array of primitives, a declared type name (`"ArenaCrumb"`) makes it an array
 of predefined objects, and the form name `"consumerData"` makes it a list of consumer data.
 
 A slot declares its parameters, or none:
@@ -386,20 +386,20 @@ divergence is a defect; that is the point of this layer.
 Declared once, in `contracts/api/types/`, one file per type:
 
 ```json
-{ "name": "Crumb", "kind": "object",
+{ "name": "ArenaCrumb", "kind": "object",
   "description": "One entry in a breadcrumb trail.",
   "fields": { "label": { "form": "primitive", "type": "string", "required": true },
               "href":  { "form": "primitive", "type": "string" } } }
 ```
 
 ```json
-{ "name": "Tone", "kind": "enum",
+{ "name": "ArenaTone", "kind": "enum",
   "description": "What state a value IS in right now.",
   "values": ["neutral", "accent", "gold", "success", "warning", "danger", "info"] }
 ```
 
 **A closed set of values is not always an enum.** An enum is right when the closed set is
-authored in the contract and owned by it, as `Tone` above is, and it is not automatically right
+authored in the contract and owned by it, as `ArenaTone` above is, and it is not automatically right
 when the set merely restates a value the token layer already derives. The charts' categorical
 ramp slot is the case the rule is written from. It is a bounded 1..N whose
 bound lives in exactly one authoritative place, `contracts/design/palette.dark.json`'s
@@ -411,14 +411,14 @@ with **nothing tying it back to the palette** is a stale-assertion surface of ex
 this layer exists to remove.
 
 **So it may be an enum only while something machine-checks the restatement.**
-`contracts/api/types/cat-slot.json` declares `CatSlot = 1 | … | 8`, and `check:script-tokens`
+`contracts/api/types/arena-cat-slot.json` declares `ArenaCatSlot = 1 | … | 8`, and `check:script-tokens`
 (`catSlotEnumProblems()` in `scripts/check/arena/check-script-tokens.mjs`) asserts that set is exactly
 1..`catSlots` **in order**: add a ninth colour to the ramp and the gate fails until the
 contract type follows. `enumLiteral()` in `build-api-types.mjs` renders a numeric set unquoted,
 which is what lets the type render at all.
 
 So the rule survives with its test attached: a closed set that restates a token-derived value
-may be an enum **only** while something machine-checks the restatement. `CatSlot` is the only
+may be an enum **only** while something machine-checks the restatement. `ArenaCatSlot` is the only
 type in `contracts/api/types/` that does this, and the assertion is written as that one named case
 rather than as a mechanism: a second such type would need its own tie, and whether a general
 mechanism is worth building is a question for whoever brings the second one, not a facility

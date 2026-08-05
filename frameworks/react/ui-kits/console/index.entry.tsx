@@ -1,4 +1,4 @@
-import type { ToastTone } from '../../Api.generated';
+import type { ArenaToastTone } from '../../Api.generated';
 import type { ConsoleProject } from './DashboardScreen.tsx';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -9,7 +9,7 @@ import { Toast, TOAST_DISMISS } from '../../components/feedback/toast/Toast.tsx'
 import { ToastHost } from '../../components/feedback/toast-host/ToastHost.tsx';
 
 interface ConsoleToast {
-  tone: ToastTone;
+  tone: ArenaToastTone;
   title: string;
   message: string;
   persist?: boolean;

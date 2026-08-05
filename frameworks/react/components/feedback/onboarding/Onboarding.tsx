@@ -6,9 +6,9 @@ import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tok
 const SSR_VIEWPORT_H = 900;
 import { useDialogModal } from '../../../UseDialogModal.ts';
 
-import type { OnboardingStep, OnboardingAnchor } from '../../../Api.generated';
+import type { ArenaOnboardingStep, ArenaOnboardingAnchor } from '../../../Api.generated';
 
-export type { OnboardingStep };
+export type { ArenaOnboardingStep };
 
 export interface OnboardingProps {
 
@@ -16,13 +16,13 @@ export interface OnboardingProps {
   open: boolean;
 
   /** The tour, in order. An empty tour renders nothing. */
-  steps: readonly OnboardingStep[];
+  steps: readonly ArenaOnboardingStep[];
 
   /** Which step is current. The host owns it and answers next/back. */
   index?: number;
 
   /** Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right. */
-  anchor?: OnboardingAnchor;
+  anchor?: ArenaOnboardingAnchor;
 
   /** Next was activated on a step that is not the last. */
   onNext?: () => void;

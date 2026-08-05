@@ -145,12 +145,12 @@ asking the layer would be asking the manifest.
 A React component's `.tsx` imports its enum and object types from
 `../../api.generated`, and **re-exports exactly the names a consumer can already
 import from that component**, no more and no less. A type a component's own file
-names and exports (`StatCard`'s `StatDelta`, `Breadcrumbs`'s `Crumb`) keeps a
-consumer's `import type { StatDelta } from '.../StatCard'` resolving only while the
-file re-exports it, so it does (`export type { StatDelta };`). A type spelled inline
+names and exports (`StatCard`'s `ArenaStatDelta`, `Breadcrumbs`'s `ArenaCrumb`) keeps a
+consumer's `import type { ArenaStatDelta } from '.../StatCard'` resolving only while the
+file re-exports it, so it does (`export type { ArenaStatDelta };`). A type spelled inline
 as a literal union at its use site (`AppLogo`'s `size?: 'sm' | 'md' | 'lg' | 'xl'`,
 `StatCard`'s `tone?: 'neutral' | 'accent' | …'`) offers a consumer no name to import,
-so nothing is re-exported for it, and `LogoSize` and `Tone` stay un-re-exported for
+so nothing is re-exported for it, and `ArenaLogoSize` and `ArenaTone` stay un-re-exported for
 exactly that reason. This is a compatibility rule rather than a design principle: it
 exists only so a consumer's import keeps resolving, and it is mechanical, since what a
 file re-exports is decided by what it names. Angular has no equivalent question,
@@ -196,7 +196,7 @@ is (1) a primitive type name, `"string"`, `"number"` or `"boolean"`; (2) the for
 **enum** `contracts/api/types/` declares. Anything else is reported: a name `contracts/api/types/` does not
 declare at all, and an object name used where the fourth arm does not apply. The four exist
 because `classify()` produces all four from a real signature. It reduces
-`(v: string) => void`, `(v: Crumb) => void` and `(v: LogoSize) => void` alike, so a contract
+`(v: string) => void`, `(v: ArenaCrumb) => void` and `(v: ArenaLogoSize) => void` alike, so a contract
 stating only some of them would be a gap between what the reader reads and what the
 contract can say, rather than a rule the contract enforces.
 

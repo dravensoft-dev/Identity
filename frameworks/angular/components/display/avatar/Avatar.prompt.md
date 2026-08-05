@@ -17,9 +17,9 @@ a presence dot.
 |---|---|---|---|---|
 | `src` | primitive | `string` |  | Image URL. Absent renders initials from `name`. |
 | `name` | primitive | `string` | `""` | The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text. |
-| `size` | enum | `AvatarSize` | `"md"` | The avatar's diameter. |
-| `shape` | enum | `AvatarShape` | `"circle"` | Circle for a person, rounded for a team. |
-| `status` | enum | `AvatarStatus` |  | A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value. |
+| `size` | enum | `ArenaAvatarSize` | `"md"` | The avatar's diameter. |
+| `shape` | enum | `ArenaAvatarShape` | `"circle"` | Circle for a person, rounded for a team. |
+| `status` | enum | `ArenaAvatarStatus` |  | A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value. |
 
 <!-- @api end -->
 

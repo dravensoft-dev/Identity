@@ -1,6 +1,0 @@
-{
-  "name": "BulkActionBarLayout",
-  "kind": "enum",
-  "description": "Whether the bar may stack when its own container is too narrow for one row.",
-  "values": ["auto", "inline"]
-}

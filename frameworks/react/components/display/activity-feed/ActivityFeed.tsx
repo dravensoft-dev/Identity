@@ -1,11 +1,11 @@
 import React from 'react';
 import { focusableElements } from '../../../UseDialogModal.ts';
 
-import type { ActivityItem } from '../../../Api.generated';
+import type { ArenaActivityItem } from '../../../Api.generated';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ActivityFeed.classes.generated.ts';
 
-export type { ActivityItem };
+export type { ArenaActivityItem };
 
 export interface ActivityFeedProps {
 
@@ -13,7 +13,7 @@ export interface ActivityFeedProps {
   label: string;
 
   /** The events, newest first by convention. Each row is drawn by Arena; there is no per-item projection. */
-  items: readonly ActivityItem[];
+  items: readonly ArenaActivityItem[];
 
   /** Whether a multi-step update to the feed is in progress, reflected as `aria-busy`. Set it while rows are being loaded or replaced and clear it once they settle, so a screen reader announces the settled feed rather than each intermediate state. It is an input rather than something Arena infers: only the host knows when its own loading has finished. */
   busy?: boolean;
@@ -22,9 +22,9 @@ export interface ActivityFeedProps {
 
 const feedStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);
-type Tone = NonNullable<ActivityItem['tone']>;
-const toneOf = (tone: string | undefined): Tone | undefined =>
-  (tone && TONES.includes(tone) ? tone as Tone : undefined);
+type ArenaTone = NonNullable<ArenaActivityItem['tone']>;
+const toneOf = (tone: string | undefined): ArenaTone | undefined =>
+  (tone && TONES.includes(tone) ? tone as ArenaTone : undefined);
 
 export function ActivityFeed({ items, label, busy = false }: ActivityFeedProps) {
   if (!label?.trim()) throw new Error('ActivityFeed: `label` is required');

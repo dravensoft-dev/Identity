@@ -1,4 +1,4 @@
-import type { ActivityItem } from '../../../Api.generated';
+import type { ArenaActivityItem } from '../../../Api.generated';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -7,7 +7,7 @@ import { ActivityFeed } from './ActivityFeed.tsx';
 
 const LABEL = 'Deployment activity';
 
-const ITEMS: ActivityItem[] = [
+const ITEMS: ArenaActivityItem[] = [
   { id: '1', actor: 'ana@', action: 'approved the release', target: 'build #4821', time: '2h ago' },
   { id: '2', actor: 'diego@', action: 'opened incident', target: 'checkout latency', time: '3h ago', tone: 'danger' },
 ];

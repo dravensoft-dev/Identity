@@ -20,7 +20,7 @@ uppercase mono action; `dismissible` adds the single `ph-x` close control.
 
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
-| `tone` | enum | `AlertTone` | `"info"` | The severity: colour, default icon, and (for danger) the alert role. |
+| `tone` | enum | `ArenaAlertTone` | `"info"` | The severity: colour, default icon, and (for danger) the alert role. |
 | `title` | primitive | `string` |  | An optional bold lead line above the message. |
 | `content` | slot |  |  | The message body. |
 | `icon` | primitive | `string` |  | A Phosphor class name overriding the tone's default glyph. Arena draws it. |

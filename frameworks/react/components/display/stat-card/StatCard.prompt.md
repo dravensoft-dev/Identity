@@ -21,8 +21,8 @@ Single metric on the card surface: uppercase label, one big tabular-nums value, 
 |---|---|---|---|---|
 | `label*` | primitive | `string` |  | Short uppercase microlabel, two words at most. |
 | `value*` | primitive | `string` |  | Preformatted, e.g. "1,284" or "99.9%". StatCard never formats. |
-| `tone` | enum | `Tone` | `"neutral"` | What state the number IS in right now, as against how it moved. Badge's vocabulary. |
-| `delta` | object | `StatDelta` |  | How the number moved. Absent renders no pill. |
+| `tone` | enum | `ArenaTone` | `"neutral"` | What state the number IS in right now, as against how it moved. Badge's vocabulary. |
+| `delta` | object | `ArenaStatDelta` |  | How the number moved. Absent renders no pill. |
 | `sub` | primitive | `string` |  | Small muted line under the value: context, e.g. "vs last week". |
 | `icon` | primitive | `string` |  | A Phosphor class name for a small glyph beside the label, drawn muted. Arena renders the aria-hidden wrapper and the `<i>`. |
 

@@ -2,7 +2,7 @@
    The mono treatment for a figure, without the ink. Imported by Theme.css, so
    `bun run build:tailwind` compiles it into Utilities.generated.css with everything else.
 
-   TableColumn.mono does two things at once, the mono face and the gold ink, and only
+   ArenaTableColumn.mono does two things at once, the mono face and the gold ink, and only
    inside a table. The ink is what stops it being reusable: gold says identifier, so a
    sale total in gold inside a white card says the wrong thing. This is the half that
    travels, for the figures a consumer draws themselves in a definition list, a KPI or a

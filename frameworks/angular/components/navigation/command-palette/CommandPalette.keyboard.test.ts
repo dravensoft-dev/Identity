@@ -3,7 +3,7 @@ ensureDom();
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Command } from '../../../Api.generated';
+import type { ArenaCommand } from '../../../Api.generated';
 import {
   activeOptionId,
   filterCommands,
@@ -12,7 +12,7 @@ import {
   scrollRowIntoView,
 } from './CommandPalette';
 
-const COMMANDS: Command[] = [
+const COMMANDS: ArenaCommand[] = [
   { id: 'deploy', label: 'Deploy to production', hint: 'client portal', shortcut: '⌘D' },
   { id: 'logs', label: 'View build logs', hint: 'build 4821' },
   { id: 'invite', label: 'Invite teammate', hint: 'members settings' },

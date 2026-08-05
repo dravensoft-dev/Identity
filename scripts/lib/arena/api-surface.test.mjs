@@ -20,7 +20,7 @@ test('a node type is a slot', () => {
 });
 
 test('a function type is an event, and its single parameter is the payload', () => {
-  assert.deepEqual(classify('(crumb: Crumb) => void'), { form: 'event', payload: 'Crumb' });
+  assert.deepEqual(classify('(crumb: ArenaCrumb) => void'), { form: 'event', payload: 'ArenaCrumb' });
   assert.deepEqual(classify('() => void'), { form: 'event', payload: null });
 });
 
@@ -36,14 +36,14 @@ test('an inbound function that RETURNS a value is the ninth form -- the refusal 
 });
 
 test('an event still reads as an event -- the rule is the return type, not the arrow', () => {
-  assert.deepEqual(classify('(crumb: Crumb) => void'), { form: 'event', payload: 'Crumb' });
+  assert.deepEqual(classify('(crumb: ArenaCrumb) => void'), { form: 'event', payload: 'ArenaCrumb' });
   assert.deepEqual(classify('() => void'), { form: 'event', payload: null });
 });
 
 test('an array is one form discriminated by what it holds', () => {
-  assert.deepEqual(classify('Crumb[]'), { form: 'array', of: 'Crumb' });
+  assert.deepEqual(classify('ArenaCrumb[]'), { form: 'array', of: 'ArenaCrumb' });
   assert.deepEqual(classify('string[]'), { form: 'array', of: 'string' });
-  assert.deepEqual(classify('Array<Crumb>'), { form: 'array', of: 'Crumb' });
+  assert.deepEqual(classify('Array<ArenaCrumb>'), { form: 'array', of: 'ArenaCrumb' });
 });
 
 test('every platform type R4 names is recognised and reported, never thrown', () => {
@@ -111,7 +111,7 @@ test('angularSurface reads input, input.required, output and a defaulted bare in
       readonly dim = input<string>();
       readonly size = input<Size>('md');
       readonly separator = input('/');
-      readonly navigate = output<Crumb>();
+      readonly navigate = output<ArenaCrumb>();
       protected readonly styles = computed(() => xStyles({ size: this.size() }));
     }
   `;
@@ -123,7 +123,7 @@ test('angularSurface reads input, input.required, output and a defaulted bare in
     ['separator', 'primitive', false],
     ['navigate', 'event', false],
   ]);
-  assert.equal(members.find((m) => m.name === 'navigate').payload, 'Crumb');
+  assert.equal(members.find((m) => m.name === 'navigate').payload, 'ArenaCrumb');
 });
 
 test('angularSurface ignores protected and private members -- they are not the public API', () => {
@@ -134,8 +134,8 @@ test('angularSurface ignores protected and private members -- they are not the p
 test('angularSurface steps over a method body without mistaking its remains for a member', () => {
   const src = `
     export class X {
-      readonly navigate = output<Crumb>();
-      protected onClick(crumb: Crumb, event: MouseEvent): void {
+      readonly navigate = output<ArenaCrumb>();
+      protected onClick(crumb: ArenaCrumb, event: MouseEvent): void {
         this.navigate.emit(crumb);
       }
     }
@@ -161,7 +161,7 @@ test('a bare input() with no argument at all still throws -- no generic and no d
 });
 
 test('classify strips a leading readonly modifier before the array check -- Angular\'s input<readonly T[]>', () => {
-  assert.deepEqual(classify('readonly ActivityItem[]'), { form: 'array', of: 'ActivityItem' });
+  assert.deepEqual(classify('readonly ArenaActivityItem[]'), { form: 'array', of: 'ArenaActivityItem' });
 });
 
 test('a bare ng-content is the default slot, named content; an attribute selector names its own', () => {
@@ -226,7 +226,7 @@ test('angularSurface skips a protected computed with a multi-statement body -- i
         const a = 1;
         return a;
       });
-      readonly navigate = output<Crumb>();
+      readonly navigate = output<ArenaCrumb>();
     }
   `;
   const { members } = angularSurface(src, 'X');
@@ -254,7 +254,7 @@ test('angularSurface does not cut a member at a template-literal interpolation\'
     export class X {
       readonly open = input(false, { transform: booleanAttribute });
       private readonly uid = \`arena-command-palette-\${nextId++}\`;
-      readonly commands = input<Command[]>([]);
+      readonly commands = input<ArenaCommand[]>([]);
     }
   `;
   const { members } = angularSurface(src, 'X');
@@ -384,7 +384,7 @@ test('classify reads an array of consumer data, which is how a row list is spell
 
 test('classify still refuses a record of a known type rather than calling it consumer data', () => {
   assert.deepEqual(classify('Record<string, Widget>'), { form: 'platform', type: 'Record<string, Widget>' });
-  assert.throws(() => classify('TableColumn<T>'), /unreadable type annotation/);
+  assert.throws(() => classify('ArenaTableColumn<T>'), /unreadable type annotation/);
 });
 
 test('an event payload may be consumer data, in either layer\'s spelling', () => {

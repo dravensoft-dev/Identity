@@ -5,11 +5,11 @@
   "api": {
     "open": { "form": "primitive", "type": "boolean", "required": true,
               "description": "Whether the tour is shown. Closed renders nothing, scrim included." },
-    "steps": { "form": "array", "of": "OnboardingStep", "required": true,
+    "steps": { "form": "array", "of": "ArenaOnboardingStep", "required": true,
                "description": "The tour, in order. An empty tour renders nothing." },
     "index": { "form": "primitive", "type": "number", "default": 0,
                "description": "Which step is current. The host owns it and answers next/back." },
-    "anchor": { "form": "object", "type": "OnboardingAnchor",
+    "anchor": { "form": "object", "type": "ArenaOnboardingAnchor",
                 "description": "Where to attach the coachmark, as the two viewport coordinates it positions from. Absent floats it bottom-right." },
     "next": { "form": "event",
               "description": "Next was activated on a step that is not the last." },

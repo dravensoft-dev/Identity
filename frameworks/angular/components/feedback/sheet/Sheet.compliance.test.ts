@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { assertNoNode, assertSameNode } from '../../../test/NodeAssert';
-import type { SheetPlacement } from '../../../Api.generated';
+import type { ArenaSheetPlacement } from '../../../Api.generated';
 import { ArenaFooter } from '../../../ProjectionMarkers';
 import { Sheet } from './Sheet';
 import { assertPattern, isFocusable, ANGULAR_COMPONENTS } from '../../../test/Compliance';
@@ -33,7 +33,7 @@ const BINDING = join(ANGULAR_COMPONENTS, 'feedback/sheet/Sheet.behaviour.json');
 })
 class SheetHost {
   open = true;
-  placement: SheetPlacement = 'end';
+  placement: ArenaSheetPlacement = 'end';
   title = 'Cart';
   collapsed = false;
   dismissible = false;

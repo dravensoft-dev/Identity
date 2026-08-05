@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy, Component, DestroyRef, ElementRef, afterRenderEffect, booleanAttribute,
   computed, inject, input, output, signal, viewChild,
 } from '@angular/core';
-import type { CatSlot } from '../../../Api.generated';
+import type { ArenaCatSlot } from '../../../Api.generated';
 import { catColor } from '../../../DataVisuals';
 import { IconButton } from '../../forms/icon-button/IconButton';
 import { CalendarState } from '../calendar/CalendarState';
@@ -88,7 +88,7 @@ export class CalendarEvent {
   /** ISO datetime the event ends. */
   readonly end = input.required<string>();
   /** Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. */
-  readonly colorId = input<CatSlot>();
+  readonly colorId = input<ArenaCatSlot>();
   /** Whether the chip can be activated. A boolean rather than "is `click` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. */
   readonly interactive = input(false, { transform: booleanAttribute });
   /** Whether the chip shows its action button. A boolean rather than "is the actions slot filled?": Arena never derives what it draws from what a consumer listens for, because projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. */

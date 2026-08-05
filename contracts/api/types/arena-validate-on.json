@@ -1,0 +1,6 @@
+{
+  "name": "ArenaValidateOn",
+  "kind": "enum",
+  "description": "When Input runs `validate`: on blur, or on every change.",
+  "values": ["blur", "change"]
+}

@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy, Component, ElementRef, afterNextRender, booleanAttribute, computed,
   input, output, viewChild,
 } from '@angular/core';
-import type { ButtonType, ButtonVariant, ControlSize } from '../../../Api.generated';
+import type { ArenaButtonType, ArenaButtonVariant, ArenaControlSize } from '../../../Api.generated';
 import { buttonStyles } from './Button.variants';
 
 @Component({
@@ -31,9 +31,9 @@ import { buttonStyles } from './Button.variants';
 })
 export class Button {
   /** Which action this is. Danger is outline, never filled. */
-  readonly variant = input<ButtonVariant>('primary');
+  readonly variant = input<ArenaButtonVariant>('primary');
   /** Height, from the density tokens, so the button re-densifies inside .arena-compact. */
-  readonly size = input<ControlSize>('md');
+  readonly size = input<ArenaControlSize>('md');
   /** Phosphor class name drawn before the label. Replaced by the spinner while loading. */
   readonly icon = input<string>();
   /** Phosphor class name drawn after the label: a caret on a menu trigger, an arrow on a next action. */
@@ -45,7 +45,7 @@ export class Button {
   /** Blocks activation and dims the control. Implied by loading. */
   readonly disabled = input(false, { transform: booleanAttribute });
   /** Native button behaviour. Defaults to 'button' so a button inside a form does not submit it by accident. */
-  readonly type = input<ButtonType>('button');
+  readonly type = input<ArenaButtonType>('button');
   /** Submitted with the form, when the button submits one. */
   readonly name = input<string>();
   /** The value submitted under `name`. */

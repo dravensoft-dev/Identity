@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import type { NumberFormat, SeriesTone, Tone } from './Api.generated';
+import type { ArenaNumberFormat, ArenaSeriesTone, ArenaTone } from './Api.generated';
 import { warnOnce } from './WarnOnce.ts';
 import {
   chartHeight, chartPadTop, chartPadRight, chartPadBottom, chartPadLeft, catSlots,
@@ -39,7 +39,7 @@ export function areaFill(colour: string): string {
   return `color-mix(in oklab, ${colour} ${tintArea}%, transparent)`;
 }
 
-const TONE_VARS: Record<Tone, string> = {
+const TONE_VARS: Record<ArenaTone, string> = {
   neutral: 'var(--text-body)',
   accent: 'var(--accent)',
   gold: 'var(--gold)',
@@ -49,14 +49,14 @@ const TONE_VARS: Record<Tone, string> = {
   info: 'var(--info)',
 };
 
-export function toneColor(tone: Tone): string {
+export function toneColor(tone: ArenaTone): string {
   return TONE_VARS[tone];
 }
 
 export interface ResolveColorsOptions {
   slot?: number;
   slots?: readonly number[];
-  tone?: SeriesTone;
+  tone?: ArenaSeriesTone;
   count: number;
 }
 
@@ -75,7 +75,7 @@ export function resolveColors({ slot, slots, tone, count }: ResolveColorsOptions
 export interface ValueWriterOptions {
   prefix?: string;
   suffix?: string;
-  format?: NumberFormat;
+  format?: ArenaNumberFormat;
 }
 
 export function valueWriter({ prefix, suffix, format }: ValueWriterOptions): (value: number) => string {

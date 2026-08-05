@@ -15,7 +15,7 @@ const places = new Map([
 ]);
 
 const contracts = new Map([
-  ['Badge', { api: { tone: { form: 'enum', type: 'Tone' }, content: { form: 'slot' } } }],
+  ['Badge', { api: { tone: { form: 'enum', type: 'ArenaTone' }, content: { form: 'slot' } } }],
   ['Table', { api: { label: { form: 'primitive', type: 'string' }, content: { form: 'slot' } } }],
 ]);
 
@@ -34,7 +34,7 @@ const model = {
   affordances: [],
   knobs: [
     knob({ member: 'title', bind: 'pinned' }),
-    knob({ member: 'tone', form: 'enum', type: 'Tone', bind: 'defaulted', control: 'select', options: ['neutral'] }),
+    knob({ member: 'tone', form: 'enum', type: 'ArenaTone', bind: 'defaulted', control: 'select', options: ['neutral'] }),
     knob({ member: 'content', form: 'slot', type: null, control: 'slotText', initial: 'Body.', nodes: [{ text: 'Body.' }] }),
     knob({
       member: 'action', form: 'slot', type: null, control: 'slotPresence', codec: 'flag', initial: true,
@@ -43,7 +43,7 @@ const model = {
   ],
   events: [
     { name: 'click', payload: null, bind: null, doc: 'Clicked.' },
-    { name: 'sortChange', payload: 'TableSort', bind: 'sort', doc: 'Sorted.' },
+    { name: 'sortChange', payload: 'ArenaTableSort', bind: 'sort', doc: 'Sorted.' },
   ],
   host: null,
   uses: ['Badge'],
@@ -71,7 +71,7 @@ test('every marker the real source declares is found, or a projected slot would 
 });
 
 test('a type expression follows the form, the same way the other layer\'s does', () => {
-  assert.equal(typeExpr(knob({ form: 'array', type: 'TableColumn' })), 'TableColumn[]');
+  assert.equal(typeExpr(knob({ form: 'array', type: 'ArenaTableColumn' })), 'ArenaTableColumn[]');
   assert.equal(typeExpr(knob({ form: 'slot', control: 'slotPresence' })), 'boolean');
 });
 

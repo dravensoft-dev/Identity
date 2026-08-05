@@ -17,7 +17,7 @@
     },
     "options": {
       "form": "array",
-      "of": "SelectOption",
+      "of": "ArenaSelectOption",
       "default": [],
       "description": "The choices, drawn as native options."
     },

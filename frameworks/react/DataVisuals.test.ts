@@ -3,17 +3,17 @@ import assert from 'node:assert/strict';
 import {
   CAT_SLOTS, catColor, catSlotFor, catSurface, areaFill, toneColor,
 } from './DataVisuals.ts';
-import type { SeriesTone, Tone } from './Api.generated';
+import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
 
 test('every tone in the union resolves to a token reference', () => {
-  const tones: Tone[] = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
+  const tones: ArenaTone[] = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
   for (const tone of tones) assert.match(toneColor(tone), /^var\(--[a-z-]+\)$/);
   assert.equal(new Set(tones.map(toneColor)).size, tones.length, 'tones must not share a colour');
 });
 
-test('every SeriesTone is a Tone, so a chart keeps reaching the same colour it always did', () => {
-  const series: SeriesTone[] = ['success', 'warning', 'danger', 'info'];
-  for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as Tone));
+test('every ArenaSeriesTone is an ArenaTone, so a chart keeps reaching the same colour it always did', () => {
+  const series: ArenaSeriesTone[] = ['success', 'warning', 'danger', 'info'];
+  for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as ArenaTone));
 });
 
 test('catSlotFor lands inside the ramp for every key, including an empty one', () => {

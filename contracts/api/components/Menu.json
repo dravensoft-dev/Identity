@@ -5,11 +5,11 @@
   "api": {
     "trigger": { "form": "slot", "required": true,
                  "description": "The element that opens the menu. The consumer draws it -- an IconButton with ph-dots-three-vertical, a secondary Button -- so it is a slot, and it carries its own accessible name." },
-    "items": { "form": "array", "of": "MenuItem", "required": true,
+    "items": { "form": "array", "of": "ArenaMenuItem", "required": true,
                "description": "The entries, in order: activatable rows, dividers and group headers." },
-    "align": { "form": "enum", "type": "MenuAlign", "default": "start",
+    "align": { "form": "enum", "type": "ArenaMenuAlign", "default": "start",
                "description": "Which edge of the trigger the panel lines up with." },
-    "select": { "form": "event", "payload": "MenuItem",
+    "select": { "form": "event", "payload": "ArenaMenuItem",
                 "description": "An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all." }
   }
 }

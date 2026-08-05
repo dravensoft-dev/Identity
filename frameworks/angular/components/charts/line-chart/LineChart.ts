@@ -7,7 +7,7 @@ import {
   CHART_HEIGHT, PAD, RAIL_STYLE, SR_ONLY, areaFill, niceMax, plotWidth, resolveColors, ticks,
   valueWriter,
 } from '../../../DataVisuals';
-import type { NumberFormat, SeriesTone } from '../../../Api.generated';
+import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
@@ -157,7 +157,7 @@ export class LineChart {
   /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */
   readonly slot = input<number>();
   /** Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. */
-  readonly tone = input<SeriesTone>();
+  readonly tone = input<ArenaSeriesTone>();
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   readonly area = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
@@ -165,7 +165,7 @@ export class LineChart {
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
-  readonly valueFormat = input<NumberFormat>();
+  readonly valueFormat = input<ArenaNumberFormat>();
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
   readonly height = input<number>(CHART_HEIGHT);
   /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */

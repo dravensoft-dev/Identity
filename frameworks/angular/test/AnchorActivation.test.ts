@@ -12,7 +12,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { Command, Crumb } from '../Api.generated';
+import type { ArenaCommand, ArenaCrumb } from '../Api.generated';
 import { Card } from '../components/display/card/Card';
 import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs';
 import { CommandPalette } from '../components/navigation/command-palette/CommandPalette';
@@ -74,7 +74,7 @@ class DisabledCardHost { readonly hits = signal(0); }
 })
 class CrumbHost {
   readonly hits = signal(0);
-  readonly items: Crumb[] = [{ label: 'Clients', href: '/clients' }, { label: 'Acme' }];
+  readonly items: ArenaCrumb[] = [{ label: 'Clients', href: '/clients' }, { label: 'Acme' }];
 }
 
 @Component({
@@ -94,7 +94,7 @@ class NavHost { readonly hits = signal(0); }
 })
 class PaletteHost {
   readonly hits = signal(0);
-  readonly commands: Command[] = [
+  readonly commands: ArenaCommand[] = [
     { id: 'clients', label: 'Clients', route: '/clients' },
     { id: 'new', label: 'New invoice' },
   ];
@@ -137,7 +137,7 @@ test('a disabled href Card reports nothing at all', () => {
   } finally { destroy(); }
 });
 
-test('a Crumb reports the primary click and leaves every other one to the browser', () => {
+test('an ArenaCrumb reports the primary click and leaves every other one to the browser', () => {
   const { host, instance, destroy } = render(CrumbHost);
   try {
     assertConvention('Breadcrumbs', () => host.querySelector('a')!, () => instance.hits());
@@ -151,7 +151,7 @@ test('SideNavItem with href reports the primary click and leaves every other one
   } finally { destroy(); }
 });
 
-test('a Command with route reports the primary click and leaves every other one alone', () => {
+test('an ArenaCommand with route reports the primary click and leaves every other one alone', () => {
   const { host, instance, destroy } = render(PaletteHost);
   try {
     assertConvention('CommandPalette', () => host.querySelector('a[role="option"]')!,
@@ -180,7 +180,7 @@ test('a SideNavItem WITHOUT href still activates on a modified click', () => {
   } finally { destroy(); }
 });
 
-test('a Command WITHOUT route still runs on a modified click', () => {
+test('an ArenaCommand WITHOUT route still runs on a modified click', () => {
   const { host, instance, destroy } = render(PaletteHost);
   try {
     click(host.querySelector('button[role="option"]')!, { metaKey: true });

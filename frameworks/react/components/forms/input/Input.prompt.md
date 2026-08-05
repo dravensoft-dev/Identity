@@ -20,8 +20,8 @@ Text field with validation (H5). Focus = gold ring, error = crimson with icon, v
 | `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
 | `required` | primitive | `boolean` | `false` | Marks the label and the control required. |
 | `validate` | functionInput | `(value: string) => string` |  | Called on the value; returns the error message, or empty for valid. |
-| `validateOn` | enum | `ValidateOn` | `"blur"` | When `validate` runs. |
-| `type` | enum | `InputType` | `"text"` | Native input type. |
+| `validateOn` | enum | `ArenaValidateOn` | `"blur"` | When `validate` runs. |
+| `type` | enum | `ArenaInputType` | `"text"` | Native input type. |
 | `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
 | `prefix` | primitive | `string` |  | Static text Arena draws before the value, e.g. `git@`. |
 | `value` | primitive | `string` |  | The controlled text. |
@@ -64,7 +64,7 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 <Input label="Cutover" type="datetime-local" error="Pick a date in the future" />
 ```
 
-`type` is the `InputType` enum: `text`, `email`, `password`, `search`, `tel`, `url`, `number`, `date`, `time`, `datetime-local`. `checkbox` and `radio` are not among them: those are `Checkbox` and `Radio`, their own components.
+`type` is the `ArenaInputType` enum: `text`, `email`, `password`, `search`, `tel`, `url`, `number`, `date`, `time`, `datetime-local`. `checkbox` and `radio` are not among them: those are `Checkbox` and `Radio`, their own components.
 
 **Do**
 - Use `type="date"` / `"time"` / `"datetime-local"`. Label, focus ring, error and valid states all work on them.

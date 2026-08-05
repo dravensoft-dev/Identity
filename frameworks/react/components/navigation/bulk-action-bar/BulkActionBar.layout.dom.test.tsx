@@ -8,13 +8,13 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup } from '../../../test/Harness.tsx';
 import { BulkActionBar } from './BulkActionBar.tsx';
-import type { BulkAction, BulkActionBarLayout } from '../../../Api.generated';
+import type { ArenaBulkAction, ArenaBulkActionBarLayout } from '../../../Api.generated';
 
 afterEach(cleanup);
 
 const NARROW_WIDTH = 390;
 
-const ACTIONS: BulkAction[] = [
+const ACTIONS: ArenaBulkAction[] = [
   { id: 'export', label: 'Export' },
   { id: 'archive', label: 'Archive' },
   { id: 'delete', label: 'Delete', destructive: true },
@@ -38,7 +38,7 @@ function narrowWidths<T>(width: number, body: () => T): T {
   }
 }
 
-function render(layout?: BulkActionBarLayout) {
+function render(layout?: ArenaBulkActionBarLayout) {
   return mount(<BulkActionBar count={3} noun="sales" actions={ACTIONS} layout={layout} />);
 }
 

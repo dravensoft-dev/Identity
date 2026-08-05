@@ -17,10 +17,10 @@ the accessible name and the focus ring.
 
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
-| `options*` | array | `readonly SegmentOption[]` |  | The options, in order. Two to four with one-word labels. |
+| `options*` | array | `readonly ArenaSegmentOption[]` |  | The options, in order. Two to four with one-word labels. |
 | `value` | primitive | `string` |  | The selected option's value. Omit and pass `defaultValue` to let it govern itself. |
 | `defaultValue` | primitive | `string` |  | The initially selected value when uncontrolled. Defaults to the first option. |
-| `size` | enum | `SegmentedControlSize` | `"md"` | Compact or default. |
+| `size` | enum | `ArenaSegmentedControlSize` | `"md"` | Compact or default. |
 | `ariaLabel*` | primitive | `string` |  | Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. |
 | `name` | primitive | `string` |  | Shared name for the underlying radios; generated when omitted. |
 | `change` | event | `string` |  | A different option was chosen; carries its value. |
@@ -28,7 +28,7 @@ the accessible name and the focus ring.
 <!-- @api end -->
 
 ```ts
-readonly ranges: SegmentOption[] = [
+readonly ranges: ArenaSegmentOption[] = [
   { value: '24h', label: '24h' },
   { value: '7d', label: '7d' },
   { value: '30d', label: '30d' },

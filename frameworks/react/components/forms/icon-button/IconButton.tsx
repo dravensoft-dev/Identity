@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './IconButton.classes.generated.ts';
 
-import type { ButtonType, ControlSize, IconButtonVariant } from '../../../Api.generated';
+import type { ArenaButtonType, ArenaControlSize, ArenaIconButtonVariant } from '../../../Api.generated';
 
 export interface IconButtonProps {
 
@@ -12,9 +12,9 @@ export interface IconButtonProps {
   /** The accessible name, present in every state. Also the visible text when showLabel is set, and the title attribute when it is not. */
   label: string;
   /** Height, from the density tokens: the same scale Button uses, so the two re-densify together in a toolbar. */
-  size?: ControlSize;
+  size?: ArenaControlSize;
   /** Visual treatment. */
-  variant?: IconButtonVariant;
+  variant?: ArenaIconButtonVariant;
 
   /** Whether this control is a toggle, and whether it is currently on. Present, Arena writes aria-pressed and draws the on state with the same accent tint a current SideNav item takes, so "this one is on" is one statement across the library; absent, the control is not a toggle at all. The tri-state is the point and a default of false would destroy it: aria-pressed="false" on a plain button announces a toggle that is off rather than a button, so every IconButton in the system would announce as an unpressed toggle. The label does NOT change with the state, which is what the button pattern means by a toggle: a control that renames itself is announced as a different control rather than as the same one in another state. */
   pressed?: boolean;
@@ -25,7 +25,7 @@ export interface IconButtonProps {
   disabled?: boolean;
 
   /** Native button behaviour. Defaults to 'button' so an icon button inside a form does not submit it by accident. */
-  type?: ButtonType;
+  type?: ArenaButtonType;
 
   /** Submitted with the form, when the button submits one. */
   name?: string;

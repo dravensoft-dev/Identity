@@ -30,8 +30,8 @@ the column its parent lays out. The control is a real `<input>`, named by a real
 | `valid` | primitive | `boolean` | `false` | Force the valid (green check) state. |
 | `required` | primitive | `boolean` | `false` | Marks the label and the control required. |
 | `validate` | functionInput | `(value: string) => string` |  | Called on the value; returns the error message, or empty for valid. |
-| `validateOn` | enum | `ValidateOn` | `"blur"` | When `validate` runs. |
-| `type` | enum | `InputType` | `"text"` | Native input type. |
+| `validateOn` | enum | `ArenaValidateOn` | `"blur"` | When `validate` runs. |
+| `type` | enum | `ArenaInputType` | `"text"` | Native input type. |
 | `icon` | primitive | `string` |  | Phosphor class name drawn at the field's start. |
 | `prefix` | primitive | `string` |  | Static text Arena draws before the value, e.g. `git@`. |
 | `value` | primitive | `string` |  | The controlled text. |
@@ -87,7 +87,7 @@ Return the message, or the empty string when the value is good.
   ligature beside the message it duplicates.
 - The error line **replaces** the hint rather than stacking under it. Two lines of guidance under
   one field is one too many.
-- `type` is the `InputType` enum. `checkbox` and `radio` are not among them: those are
+- `type` is the `ArenaInputType` enum. `checkbox` and `radio` are not among them: those are
   `<arena-checkbox>` and `Radio`, their own components.
 - Don't reach for `change` to run an expensive query. It fires per keystroke by design; debounce
   in the consumer, where the interval is a decision about that query rather than about the field.

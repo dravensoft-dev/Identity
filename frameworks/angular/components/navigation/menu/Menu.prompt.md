@@ -21,14 +21,14 @@ unpositioned.
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `trigger*` | slot |  |  | The element that opens the menu. The consumer draws it -- an IconButton with ph-dots-three-vertical, a secondary Button -- so it is a slot, and it carries its own accessible name. |
-| `items*` | array | `readonly MenuItem[]` |  | The entries, in order: activatable rows, dividers and group headers. |
-| `align` | enum | `MenuAlign` | `"start"` | Which edge of the trigger the panel lines up with. |
-| `select` | event | `MenuItem` |  | An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. |
+| `items*` | array | `readonly ArenaMenuItem[]` |  | The entries, in order: activatable rows, dividers and group headers. |
+| `align` | enum | `ArenaMenuAlign` | `"start"` | Which edge of the trigger the panel lines up with. |
+| `select` | event | `ArenaMenuItem` |  | An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. |
 
 <!-- @api end -->
 
 ```ts
-protected readonly rowActions: MenuItem[] = [
+protected readonly rowActions: ArenaMenuItem[] = [
   { header: 'Build 482' },
   { label: 'Promote', icon: 'ph-bold ph-rocket-launch', shortcut: 'P' },
   { divider: true },
@@ -49,7 +49,7 @@ also synthesize a click and open the menu twice. Escape closes and returns focus
 a pointer press outside the host **and** outside the pane closes without moving focus. Opening
 moves focus to the first enabled row.
 
-`select` carries the **whole item**, not a key, since `MenuItem` deliberately has no `id`. A divider
+`select` carries the **whole item**, not a key, since `ArenaMenuItem` deliberately has no `id`. A divider
 and a header are not rows at all and render no `menuitem`; a disabled row renders one and reports
 nothing.
 
@@ -69,7 +69,7 @@ nothing.
   the viewport on its own.
 - **Don't** use `shortcut` expecting Arena to bind the key. It is display only, and the contract
   says so; the host binds it or nothing does.
-- **Don't** put a form, a submenu or anything focusable beyond the rows into `items`. `MenuItem`
+- **Don't** put a form, a submenu or anything focusable beyond the rows into `items`. `ArenaMenuItem`
   is three shapes and none of them projects content; a menu that needs more is a dialog.
 
 **By hand, in real Chromium**: none of this is provable in happy-dom, which has no layout and no

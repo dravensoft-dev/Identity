@@ -2,9 +2,9 @@ import React, { useId } from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Select.classes.generated.ts';
 
-import type { SelectOption } from '../../../Api.generated';
+import type { ArenaSelectOption } from '../../../Api.generated';
 
-export type { SelectOption };
+export type { ArenaSelectOption };
 export interface SelectProps {
 
   /** Field label above the control. */
@@ -14,7 +14,7 @@ export interface SelectProps {
   placeholder?: string;
 
   /** The choices, drawn as native options. */
-  options?: readonly SelectOption[];
+  options?: readonly ArenaSelectOption[];
 
   /** The selected option's value. */
   value?: string;

@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Toast.classes.generated.ts';
 
-import type { ToastTone } from '../../../Api.generated';
+import type { ArenaToastTone } from '../../../Api.generated';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js';
 
 export interface ToastProps {
@@ -14,7 +14,7 @@ export interface ToastProps {
   message?: string;
 
   /** The side bar's colour, and whether the toast announces assertively. */
-  tone?: ToastTone;
+  tone?: ArenaToastTone;
 
   /** The label of the single inline action: Undo, Retry, View logs. Absent renders no action. */
   actionLabel?: string;
@@ -36,9 +36,9 @@ export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActio
 
 const toastStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);
-type Tone = keyof typeof manifest.variants.tone;
-const toneOf = (tone: string | undefined): Tone =>
-  (tone && TONES.includes(tone) ? tone as Tone : 'neutral');
+type ArenaTone = keyof typeof manifest.variants.tone;
+const toneOf = (tone: string | undefined): ArenaTone =>
+  (tone && TONES.includes(tone) ? tone as ArenaTone : 'neutral');
 
 export function Toast({ title, message, tone = 'neutral', actionLabel, onAction, dismissible = false, onClose, persist = false }: ToastProps) {
   const pinned = persist || tone === 'danger';

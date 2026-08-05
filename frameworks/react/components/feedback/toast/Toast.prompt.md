@@ -13,7 +13,7 @@ Ephemeral notification. Use `actionLabel` + `onAction` to give the user an out: 
 |---|---|---|---|---|
 | `title` | primitive | `string` |  | The bold lead line. |
 | `message` | primitive | `string` |  | The body. |
-| `tone` | enum | `ToastTone` | `"neutral"` | The side bar's colour, and whether the toast announces assertively. |
+| `tone` | enum | `ArenaToastTone` | `"neutral"` | The side bar's colour, and whether the toast announces assertively. |
 | `actionLabel` | primitive | `string` |  | The label of the single inline action: Undo, Retry, View logs. Absent renders no action. |
 | `onAction` | event |  |  | The inline action was activated. |
 | `persist` | primitive | `boolean` | `false` | Disables the host's auto-dismiss and shows the Pinned marker. **Implied by `tone: "danger"`, which ignores `false`**: a critical message that vanishes on a timer is one a user can miss entirely, and this was documented as mandatory in an error state while nothing enforced it. Set it explicitly for any other tone that must not disappear on its own. |

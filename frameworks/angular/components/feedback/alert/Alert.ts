@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output } from '@angular/core';
 import { alertStyles } from './Alert.variants';
-import type { AlertTone } from '../../../Api.generated';
+import type { ArenaAlertTone } from '../../../Api.generated';
 
-const TONE_ICONS: Record<AlertTone, string> = {
+const TONE_ICONS: Record<ArenaAlertTone, string> = {
   info: 'ph-fill ph-info',
   success: 'ph-fill ph-check-circle',
   warning: 'ph-fill ph-warning',
@@ -39,7 +39,7 @@ const TONE_ICONS: Record<AlertTone, string> = {
 })
 export class Alert {
   /** The severity: colour, default icon, and (for danger) the alert role. */
-  readonly tone = input<AlertTone>('info');
+  readonly tone = input<ArenaAlertTone>('info');
   /** An optional bold lead line above the message. */
   readonly title = input<string>();
   /** A Phosphor class name overriding the tone's default glyph. Arena draws it. */

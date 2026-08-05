@@ -3,7 +3,7 @@
   "description": "A loading placeholder that reserves the space real content will take.",
   "affordances": [],
   "api": {
-    "variant": { "form": "enum", "type": "SkeletonVariant", "default": "block",
+    "variant": { "form": "enum", "type": "ArenaSkeletonVariant", "default": "block",
                  "description": "The shape the placeholder reserves." },
     "width": { "form": "primitive", "type": "string",
                "description": "CSS width, e.g. \"100%\" or \"12rem\". Defaults to full width." },

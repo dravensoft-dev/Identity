@@ -3,7 +3,7 @@
  * dangling id counts as unmet -- which is why the active-descendant id is emitted
  * only while the index is in range. The empty-result render is the case that
  * would dangle, and it is asserted here rather than left to the evaluator. */
-import type { Command } from '../../../Api.generated';
+import type { ArenaCommand } from '../../../Api.generated';
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
@@ -79,7 +79,7 @@ test('a query matching nothing leaves no dangling active-descendant behind', () 
 
 test('Escape and Enter both report through the palette own channels', () => {
   let closed = 0;
-  let ran: Command | null = null;
+  let ran: ArenaCommand | null = null;
   const root = mount(
     <CommandPalette open commands={COMMANDS} onClose={() => { closed += 1; }} onRun={(c) => { ran = c; }} />,
   );
@@ -91,6 +91,6 @@ test('Escape and Enter both report through the palette own channels', () => {
 
   const enter = press(input!, 'Enter');
   assert.equal(enter.defaultPrevented, true, 'Enter was not claimed');
-  assert.equal((ran as Command | null)?.id, 'deploy', 'Enter did not run the active command');
+  assert.equal((ran as ArenaCommand | null)?.id, 'deploy', 'Enter did not run the active command');
   assert.equal(closed, 2, 'Enter ran the command without closing, so the palette stays over the result');
 });

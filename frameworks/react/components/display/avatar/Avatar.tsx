@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Avatar.classes.generated.ts';
 
-import type { AvatarSize, AvatarShape, AvatarStatus } from '../../../Api.generated';
+import type { ArenaAvatarSize, ArenaAvatarShape, ArenaAvatarStatus } from '../../../Api.generated';
 
 export interface AvatarProps {
   /** Image URL. Absent renders initials from `name`. */
@@ -10,11 +10,11 @@ export interface AvatarProps {
   /** The person or entity name. Its first two words' initials render when there is no `src`, and it is the image's alt text. */
   name?: string;
   /** The avatar's diameter. */
-  size?: AvatarSize;
+  size?: ArenaAvatarSize;
   /** Circle for a person, rounded for a team. */
-  shape?: AvatarShape;
+  shape?: ArenaAvatarShape;
   /** A presence dot in the state's colour. `offline` is a visible muted dot; omit `status` entirely for no dot. Optional: there is no invisible enum value. */
-  status?: AvatarStatus;
+  status?: ArenaAvatarStatus;
 }
 
 const avatarStyles = arenaStyles(manifest);

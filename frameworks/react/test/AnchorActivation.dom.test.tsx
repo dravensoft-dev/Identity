@@ -55,7 +55,7 @@ test('Card.href reports the primary click and leaves every other one to the brow
   assertConvention('Card', () => root.firstElementChild!, () => clicked);
 });
 
-test('a Crumb reports the primary click and leaves every other one to the browser', () => {
+test('an ArenaCrumb reports the primary click and leaves every other one to the browser', () => {
   let navigated = 0;
   const root = mount(
     <Breadcrumbs ariaLabel="Project navigation" onNavigate={() => { navigated += 1; }}
@@ -73,7 +73,7 @@ test('SideNavItem with href reports the primary click and leaves every other one
   assertConvention('SideNavItem', () => root.querySelector('a')!, () => navigated);
 });
 
-test('a Command with route reports the primary click and leaves every other one alone', () => {
+test('an ArenaCommand with route reports the primary click and leaves every other one alone', () => {
   let ran = 0;
   const root = mount(
     <CommandPalette open commands={[{ id: 'clients', label: 'Clients', route: '/clients' }]}
@@ -104,7 +104,7 @@ test('a SideNavItem WITHOUT href still activates on a modified click', () => {
     'a button has no navigation to leave to the browser, so the convention must not reach it');
 });
 
-test('a Command WITHOUT route still runs on a modified click', () => {
+test('an ArenaCommand WITHOUT route still runs on a modified click', () => {
   let ran = 0;
   const root = mount(
     <CommandPalette open commands={[{ id: 'new', label: 'New invoice' }]}

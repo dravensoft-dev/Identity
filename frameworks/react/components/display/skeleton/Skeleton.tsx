@@ -2,11 +2,11 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Skeleton.classes.generated.ts';
 
-import type { SkeletonVariant } from '../../../Api.generated';
+import type { ArenaSkeletonVariant } from '../../../Api.generated';
 
 export interface SkeletonProps {
   /** The shape the placeholder reserves. */
-  variant?: SkeletonVariant;
+  variant?: ArenaSkeletonVariant;
 
   /** CSS width, e.g. "100%" or "12rem". Defaults to full width. */
   width?: string;

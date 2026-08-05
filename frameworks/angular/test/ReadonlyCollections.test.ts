@@ -22,8 +22,8 @@ import { SegmentedControl } from '../components/navigation/segmented-control/Seg
 import { Select } from '../components/forms/select/Select';
 import { Table } from '../components/display/table/Table';
 import type {
-  ActivityItem, BulkAction, Command, Crumb, MenuItem, OnboardingStep, SegmentOption, SelectOption,
-  TableColumn,
+  ArenaActivityItem, ArenaBulkAction, ArenaCommand, ArenaCrumb, ArenaMenuItem, ArenaOnboardingStep, ArenaSegmentOption, ArenaSelectOption,
+  ArenaTableColumn,
 } from '../Api.generated';
 
 useTestEnvironment();
@@ -54,15 +54,15 @@ const SLOTS: readonly number[] = Object.freeze([1, 2]);
   `,
 })
 class FrozenDataHost {
-  readonly items: readonly ActivityItem[] = Object.freeze([{ id: '1', actor: 'Marta', action: 'deployed' }]);
-  readonly crumbs: readonly Crumb[] = Object.freeze([{ label: 'Clients', href: '/clients' }]);
-  readonly actions: readonly BulkAction[] = Object.freeze([{ id: 'archive', label: 'Archive' }]);
-  readonly commands: readonly Command[] = Object.freeze([{ id: 'open', label: 'Open project' }]);
-  readonly menuItems: readonly MenuItem[] = Object.freeze([{ id: 'rename', label: 'Rename' }]);
-  readonly steps: readonly OnboardingStep[] = Object.freeze([{ title: 'Welcome', body: 'Start here' }]);
-  readonly segments: readonly SegmentOption[] = Object.freeze([{ value: 'grid', label: 'Grid' }]);
-  readonly selectOptions: readonly SelectOption[] = Object.freeze([{ value: 'a', label: 'A' }]);
-  readonly columns: readonly TableColumn[] = Object.freeze([{ header: 'Build' }]);
+  readonly items: readonly ArenaActivityItem[] = Object.freeze([{ id: '1', actor: 'Marta', action: 'deployed' }]);
+  readonly crumbs: readonly ArenaCrumb[] = Object.freeze([{ label: 'Clients', href: '/clients' }]);
+  readonly actions: readonly ArenaBulkAction[] = Object.freeze([{ id: 'archive', label: 'Archive' }]);
+  readonly commands: readonly ArenaCommand[] = Object.freeze([{ id: 'open', label: 'Open project' }]);
+  readonly menuItems: readonly ArenaMenuItem[] = Object.freeze([{ id: 'rename', label: 'Rename' }]);
+  readonly steps: readonly ArenaOnboardingStep[] = Object.freeze([{ title: 'Welcome', body: 'Start here' }]);
+  readonly segments: readonly ArenaSegmentOption[] = Object.freeze([{ value: 'grid', label: 'Grid' }]);
+  readonly selectOptions: readonly ArenaSelectOption[] = Object.freeze([{ value: 'a', label: 'A' }]);
+  readonly columns: readonly ArenaTableColumn[] = Object.freeze([{ header: 'Build' }]);
   readonly labels = LABELS;
   readonly values = VALUES;
   readonly slots = SLOTS;

@@ -2,9 +2,9 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './StatCard.classes.generated.ts';
 
-import type { StatDelta, Tone } from '../../../Api.generated';
+import type { ArenaStatDelta, ArenaTone } from '../../../Api.generated';
 
-export type { StatDelta };
+export type { ArenaStatDelta };
 
 export interface StatCardProps {
 
@@ -15,9 +15,9 @@ export interface StatCardProps {
   value: string;
 
   /** What state the number IS in right now, as against how it moved. Badge's vocabulary. */
-  tone?: Tone;
+  tone?: ArenaTone;
   /** How the number moved. Absent renders no pill. */
-  delta?: StatDelta;
+  delta?: ArenaStatDelta;
 
   /** Small muted line under the value: context, e.g. "vs last week". */
   sub?: string;

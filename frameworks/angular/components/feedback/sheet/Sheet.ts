@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, contentChild, input, output } from '@angular/core';
-import type { SheetPlacement } from '../../../Api.generated';
+import type { ArenaSheetPlacement } from '../../../Api.generated';
 import { ArenaFooter } from '../../../ProjectionMarkers';
 import { sheetStyles } from './Sheet.variants';
 
@@ -43,7 +43,7 @@ export class Sheet {
   /** Whether the panel is on the page at all. The host owns it, the same way it owns a dialog's. Closed renders nothing, which is what distinguishes it from collapsed. */
   readonly open = input.required<boolean, unknown>({ transform: booleanAttribute });
   /** The edge the panel is anchored to. It spans that edge and stands off the device's own inset there, so a bottom sheet on a phone clears the home indicator. */
-  readonly placement = input<SheetPlacement>('bottom');
+  readonly placement = input<ArenaSheetPlacement>('bottom');
   /** Names the panel for assistive technology and heads it visually. It is also the accessible name of the fold control, so a reader hears which panel is being folded rather than the word Toggle. Required and **guarded at runtime** rather than defaulted: what this panel is showing is editorial, and a constant fallback would satisfy the pattern mechanically while telling a screen-reader user nothing. */
   readonly title = input.required<string>();
   /** Whether the body is folded away. The header stays visible either way: a collapsed panel is still on the page and still says what it is, which is why folding is not the same act as closing. The body is hidden rather than removed, so the fold control's reference to it never points at nothing. */

@@ -3,7 +3,7 @@ import {
   booleanAttribute, computed, contentChild, contentChildren, inject, input, linkedSignal,
   numberAttribute, output, signal, viewChild,
 } from '@angular/core';
-import type { CalendarView } from '../../../Api.generated';
+import type { ArenaCalendarView } from '../../../Api.generated';
 import { containerWidth, readBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { CalendarEvent } from '../calendar-event/CalendarEvent';
@@ -101,7 +101,7 @@ export class Calendar {
   /** ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. */
   readonly anchorDate = input<string>();
   /** Omit to derive from the CONTAINER width: day below --bp-md, else week. */
-  readonly view = input<CalendarView>();
+  readonly view = input<ArenaCalendarView>();
   /** HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. */
   readonly dayStart = input<string>();
   /** HH:MM the grid ends at. */
@@ -135,7 +135,7 @@ export class Calendar {
 
   protected readonly anchor = linkedSignal(() => this.anchorDate() ?? todayIso(this.zone()));
 
-  protected readonly activeView = computed<CalendarView>(() => {
+  protected readonly activeView = computed<ArenaCalendarView>(() => {
     const chosen = this.view();
     if (chosen) return chosen;
     const width = this.measured();

@@ -19,7 +19,7 @@ One event on a `Calendar`'s schedule. It is a child of `Calendar` and nothing el
 | `title*` | primitive | `string` |  | What the chip reads. |
 | `start*` | primitive | `string` |  | ISO datetime the event begins. |
 | `end*` | primitive | `string` |  | ISO datetime the event ends. |
-| `colorId` | enum | `CatSlot` |  | Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. |
+| `colorId` | enum | `ArenaCatSlot` |  | Identity colour. Give the same entity the same slot everywhere and it keeps its colour across views. |
 | `interactive` | primitive | `boolean` | `false` | Whether the chip can be activated. A boolean rather than "is `click` bound?", because Arena never derives what it draws from what a consumer listens for, and the same member `TableRow.interactive` is for the same reason. An interactive chip is a <button> a keyboard user reaches with Enter from the hour cell it overlaps; a non-interactive one draws the same chip with no role and no activation, so a read-only schedule announces events rather than a screenful of buttons that do nothing. |
 | `actionsEnabled` | primitive | `boolean` | `false` | Whether the chip shows its action button. A boolean rather than "is the actions slot filled?": Arena never derives what it draws from what a consumer listens for, because projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. |
 | `actions` | slot |  |  | The action panel's content, revealed by the chip's action button. Rendered only while the panel is open, so a consumer's own controls never sit permanently in the grid's Tab sequence. |

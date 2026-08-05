@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './SegmentedControl.classes.generated.ts';
 
-import type { SegmentOption, SegmentedControlSize } from '../../../Api.generated';
+import type { ArenaSegmentOption, ArenaSegmentedControlSize } from '../../../Api.generated';
 
-export type { SegmentOption };
+export type { ArenaSegmentOption };
 export interface SegmentedControlProps {
 
   /** The options, in order. Two to four with one-word labels. */
-  options: readonly SegmentOption[];
+  options: readonly ArenaSegmentOption[];
 
   /** The selected option's value. Omit and pass `defaultValue` to let it govern itself. */
   value?: string;
@@ -17,7 +17,7 @@ export interface SegmentedControlProps {
   defaultValue?: string;
 
   /** Compact or default. */
-  size?: SegmentedControlSize;
+  size?: ArenaSegmentedControlSize;
 
   /** Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. */
   ariaLabel: string;

@@ -25,8 +25,8 @@ supplies the state.
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `state` | primitive | `boolean` | `false` | The current on/off value. Controlled: the consumer owns it and pushes it each render. |
-| `orientation` | enum | `Orientation` | `"horizontal"` | Whether the switch lies horizontally or stands vertically. |
-| `size` | enum | `SwitchSize` | `"md"` | The switch's overall size. |
+| `orientation` | enum | `ArenaOrientation` | `"horizontal"` | Whether the switch lies horizontally or stands vertically. |
+| `size` | enum | `ArenaSwitchSize` | `"md"` | The switch's overall size. |
 | `iconOn` | primitive | `string` |  | A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`. |
 | `iconOff` | primitive | `string` |  | A Phosphor class name for the glyph shown while off. |
 | `label*` | primitive | `string` |  | The accessible name for the switch, also drawn beside it. |

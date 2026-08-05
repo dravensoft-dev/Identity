@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 import { TableState } from '../table/TableState';
 import { TableRowState } from '../table-row/TableRowState';
 import { tableCellStyles } from './TableCell.variants';
 
-const PLAIN: TableColumn = { header: '' };
+const PLAIN: ArenaTableColumn = { header: '' };
 
 @Component({
   selector: 'arena-table-cell',

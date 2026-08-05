@@ -5,7 +5,7 @@ import {
   catColor, catSlotFor, catSurface, areaFill, toneColor, resolveColors, niceMax, ticks,
   barPath, arcPath,
 } from './DataVisuals';
-import type { SeriesTone, Tone } from './Api.generated';
+import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
 import { forgetWarnings } from './WarnOnce';
 
 test('niceMax returns 1 for every input that is not a positive number', () => {
@@ -74,14 +74,14 @@ test('catColor rounds a fractional slot rather than truncating it', () => {
 });
 
 test('every tone in the union resolves to a token reference', () => {
-  const tones: Tone[] = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
+  const tones: ArenaTone[] = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
   for (const tone of tones) assert.match(toneColor(tone), /^var\(--[a-z-]+\)$/);
   assert.equal(new Set(tones.map(toneColor)).size, tones.length, 'tones must not share a colour');
 });
 
-test('every SeriesTone is a Tone, so a chart keeps reaching the same colour it always did', () => {
-  const series: SeriesTone[] = ['success', 'warning', 'danger', 'info'];
-  for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as Tone));
+test('every ArenaSeriesTone is an ArenaTone, so a chart keeps reaching the same colour it always did', () => {
+  const series: ArenaSeriesTone[] = ['success', 'warning', 'danger', 'info'];
+  for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as ArenaTone));
 });
 
 test('catSlotFor lands inside the ramp for every key, including an empty one', () => {
@@ -188,7 +188,7 @@ test('the mutually-exclusive warning fires once, and only when both are passed',
 
 test('a tone outside the union falls back to slot 1 instead of yielding undefined', () => {
 
-  const rogue = 'critical' as unknown as SeriesTone;
+  const rogue = 'critical' as unknown as ArenaSeriesTone;
   assert.deepEqual(resolveColors({ count: 2, tone: rogue }), ['var(--color-cat-1)', 'var(--color-cat-1)']);
 });
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { ButtonType, ButtonVariant, ControlSize } from '../../../Api.generated';
+import type { ArenaButtonType, ArenaButtonVariant, ArenaControlSize } from '../../../Api.generated';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Button.classes.generated.ts';
 
@@ -9,9 +9,9 @@ export interface ButtonProps {
   /** The button's label. Sits between the two icons when both are given. */
   children?: React.ReactNode;
   /** Which action this is. Danger is outline, never filled. */
-  variant?: ButtonVariant;
+  variant?: ArenaButtonVariant;
   /** Height, from the density tokens, so the button re-densifies inside .arena-compact. */
-  size?: ControlSize;
+  size?: ArenaControlSize;
 
   /** Phosphor class name drawn before the label. Replaced by the spinner while loading. */
   icon?: string;
@@ -28,7 +28,7 @@ export interface ButtonProps {
   disabled?: boolean;
 
   /** Native button behaviour. Defaults to 'button' so a button inside a form does not submit it by accident. */
-  type?: ButtonType;
+  type?: ArenaButtonType;
 
   /** Submitted with the form, when the button submits one. */
   name?: string;

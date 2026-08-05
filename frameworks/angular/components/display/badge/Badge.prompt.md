@@ -15,7 +15,7 @@ The host **is** the chip: it binds the root slot, so an attribute you write on
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `content` | slot |  |  | The label text. Short: a badge is a chip, not a sentence. |
-| `tone` | enum | `Tone` | `"neutral"` | System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight. |
+| `tone` | enum | `ArenaTone` | `"neutral"` | System status (success/warning/danger/info) reflects an object's actual state; emphasis (accent, gold) is editorial; neutral carries no semantic weight. |
 | `dot` | primitive | `boolean` | `false` | Draws a filled dot in the tone colour before the label. |
 
 <!-- @api end -->

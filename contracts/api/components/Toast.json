@@ -7,7 +7,7 @@
                "description": "The bold lead line." },
     "message": { "form": "primitive", "type": "string",
                  "description": "The body." },
-    "tone": { "form": "enum", "type": "ToastTone", "default": "neutral",
+    "tone": { "form": "enum", "type": "ArenaToastTone", "default": "neutral",
               "description": "The side bar's colour, and whether the toast announces assertively." },
     "actionLabel": { "form": "primitive", "type": "string",
                      "description": "The label of the single inline action: Undo, Retry, View logs. Absent renders no action." },

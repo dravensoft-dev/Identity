@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Sheet.classes.generated.ts';
 
-import type { SheetPlacement } from '../../../Api.generated';
+import type { ArenaSheetPlacement } from '../../../Api.generated';
 
 export interface SheetProps {
 
@@ -10,7 +10,7 @@ export interface SheetProps {
   open: boolean;
 
   /** The edge the panel is anchored to. It spans that edge and stands off the device's own inset there, so a bottom sheet on a phone clears the home indicator. */
-  placement?: SheetPlacement;
+  placement?: ArenaSheetPlacement;
 
   /** Names the panel for assistive technology and heads it visually. It is also the accessible name of the fold control, so a reader hears which panel is being folded rather than the word Toggle. Required and **guarded at runtime** rather than defaulted: what this panel is showing is editorial, and a constant fallback would satisfy the pattern mechanically while telling a screen-reader user nothing. */
   title: string;

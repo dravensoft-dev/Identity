@@ -6,9 +6,9 @@ import {
 } from '../../../DataVisuals.ts';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
 
-import type { NumberFormat, SeriesTone } from '../../../Api.generated';
+import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 
-export type { SeriesTone };
+export type { ArenaSeriesTone };
 
 export interface LineChartProps {
 
@@ -25,7 +25,7 @@ export interface LineChartProps {
   slot?: number;
 
   /** Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. */
-  tone?: SeriesTone;
+  tone?: ArenaSeriesTone;
 
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   area?: boolean;
@@ -37,7 +37,7 @@ export interface LineChartProps {
   valuePrefix?: string;
 
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
-  valueFormat?: NumberFormat;
+  valueFormat?: ArenaNumberFormat;
 
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
   height?: number;

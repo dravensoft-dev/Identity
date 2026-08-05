@@ -1,17 +1,17 @@
 import {
   ChangeDetectionStrategy, Component, booleanAttribute, computed, input, output,
 } from '@angular/core';
-import type { Orientation, SwitchSize } from '../../../Api.generated';
+import type { ArenaOrientation, ArenaSwitchSize } from '../../../Api.generated';
 import { switchStyles } from './Switch.variants';
 
-export type SwitchFootprint = `${Orientation}-${SwitchSize}`;
-export type SwitchThumb = `${'on' | 'off'}-${Orientation}`;
+export type SwitchFootprint = `${ArenaOrientation}-${ArenaSwitchSize}`;
+export type SwitchThumb = `${'on' | 'off'}-${ArenaOrientation}`;
 
-export function footprintFor(orientation: Orientation, size: SwitchSize): SwitchFootprint {
+export function footprintFor(orientation: ArenaOrientation, size: ArenaSwitchSize): SwitchFootprint {
   return `${orientation}-${size}`;
 }
 
-export function thumbFor(state: boolean, orientation: Orientation): SwitchThumb {
+export function thumbFor(state: boolean, orientation: ArenaOrientation): SwitchThumb {
   return `${state ? 'on' : 'off'}-${orientation}`;
 }
 
@@ -42,9 +42,9 @@ export class Switch {
   /** The current on/off value. Controlled: the consumer owns it and pushes it each render. */
   readonly state = input(false, { transform: booleanAttribute });
   /** Whether the switch lies horizontally or stands vertically. */
-  readonly orientation = input<Orientation>('horizontal');
+  readonly orientation = input<ArenaOrientation>('horizontal');
   /** The switch's overall size. */
-  readonly size = input<SwitchSize>('md');
+  readonly size = input<ArenaSwitchSize>('md');
   /** A Phosphor class name for the glyph shown while on. Arena draws the aria-hidden `<i>`. */
   readonly iconOn = input<string>();
   /** A Phosphor class name for the glyph shown while off. */

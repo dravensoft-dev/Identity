@@ -121,12 +121,12 @@ test('a compiled module with no declaration beside it never ships', () => {
 
 test('an extensionless specifier gains .js, because node16 infers no extension from a declaration', () => {
   assert.equal(
-    rewriteSourceSpecifiers("import type { Tone } from '../../../Api.generated';"),
-    "import type { Tone } from '../../../Api.generated.js';",
+    rewriteSourceSpecifiers("import type { ArenaTone } from '../../../Api.generated';"),
+    "import type { ArenaTone } from '../../../Api.generated.js';",
   );
   assert.equal(
-    rewriteSourceSpecifiers("import type { CatSlot } from './Api.generated';"),
-    "import type { CatSlot } from './Api.generated.js';",
+    rewriteSourceSpecifiers("import type { ArenaCatSlot } from './Api.generated';"),
+    "import type { ArenaCatSlot } from './Api.generated.js';",
   );
   assert.equal(rewriteSourceSpecifiers("from './Api.generated.js'"), "from './Api.generated.js'",
     'a dotted stem is not an extension, so the rewrite is idempotent rather than a doubling');
@@ -134,8 +134,8 @@ test('an extensionless specifier gains .js, because node16 infers no extension f
 
 test('a type-position dynamic import is a specifier too, and tsc writes them into declarations', () => {
   assert.equal(
-    rewriteSourceSpecifiers("declare const x: import('./Api.generated').Tone;"),
-    "declare const x: import('./Api.generated.js').Tone;",
+    rewriteSourceSpecifiers("declare const x: import('./Api.generated').ArenaTone;"),
+    "declare const x: import('./Api.generated.js').ArenaTone;",
   );
   assert.deepEqual(relativeSpecifiers("import('./A.js');\nexport * from './B.js';\nimport 'react';"),
     ['./A.js', './B.js']);
@@ -146,10 +146,10 @@ test('a specifier naming nothing in the package fails the build rather than the 
   try {
     mkdirSync(join(dir, 'components'), { recursive: true });
     writeFileSync(join(dir, 'Api.generated.js'), 'export const a = 1;\n');
-    writeFileSync(join(dir, 'components', 'A.d.ts'), "export type { Tone } from '../Api.generated.js';\n");
+    writeFileSync(join(dir, 'components', 'A.d.ts'), "export type { ArenaTone } from '../Api.generated.js';\n");
     assert.deepEqual(unresolvedProblems(dir), []);
 
-    writeFileSync(join(dir, 'components', 'B.d.ts'), "export type { Tone } from '../Api.generated';\n");
+    writeFileSync(join(dir, 'components', 'B.d.ts'), "export type { ArenaTone } from '../Api.generated';\n");
     const problems = unresolvedProblems(dir);
     assert.equal(problems.length, 1);
     assert.match(problems[0], /B\.d\.ts names \.\.\/Api\.generated, which resolves to no file/);

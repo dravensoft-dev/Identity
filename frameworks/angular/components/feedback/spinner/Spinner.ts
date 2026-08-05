@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { ControlSize, SpinnerTone } from '../../../Api.generated';
+import type { ArenaControlSize, ArenaSpinnerTone } from '../../../Api.generated';
 import { spinnerStyles } from './Spinner.variants';
 
 @Component({
@@ -16,9 +16,9 @@ import { spinnerStyles } from './Spinner.variants';
 })
 export class Spinner {
   /** Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text. */
-  readonly size = input<ControlSize>('md');
+  readonly size = input<ArenaControlSize>('md');
   /** Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface. */
-  readonly tone = input<SpinnerTone>('accent');
+  readonly tone = input<ArenaSpinnerTone>('accent');
   /** Accessible name, announced by the status role. Say what is loading when you can. */
   readonly label = input('Loading');
 

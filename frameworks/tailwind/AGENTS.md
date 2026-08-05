@@ -85,7 +85,7 @@ for the same reason the keyframes are, that it belongs to no surface. A manifest
 surface and this is a treatment, applied to whatever figure a consumer is drawing themselves,
 in a definition list, a KPI or a cart line.
 
-It exists because `TableColumn.mono` does two things, the mono face **and** the gold ink, and
+It exists because `ArenaTableColumn.mono` does two things, the mono face **and** the gold ink, and
 the ink is what stops the treatment travelling: gold reads as an identifier, so a sale total in
 gold inside a card says the wrong thing. `mono` is this utility plus the ink, and
 `Table.manifest.json`'s mono slots carry the same `tabular-nums`, so a column of figures aligns

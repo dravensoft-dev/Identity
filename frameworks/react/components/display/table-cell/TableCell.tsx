@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../table/Table.classes.generated.ts';
 
@@ -12,7 +12,7 @@ export interface TableCellProps {
 }
 
 export interface TableCellInjected {
-  column: TableColumn;
+  column: ArenaTableColumn;
   layout: 'table' | 'card';
   tabIndex: number | undefined;
   onCellFocus: (() => void) | undefined;
@@ -24,7 +24,7 @@ export function TableCell({
   children, column, layout = 'table', tabIndex, onCellFocus,
 }: TableCellProps & Partial<TableCellInjected>) {
 
-  const c: Partial<TableColumn> = column ?? {};
+  const c: Partial<ArenaTableColumn> = column ?? {};
 
   if (layout === 'card') {
     if (c.mobileLayout === 'block') {

@@ -30,7 +30,7 @@ Two things this default is not. It is not a `'UTC'` fallback, which would be arb
 | `children` | slot |  |  | One CalendarEvent per event. Calendar reads each one's start, end and colorId and settles where the chip goes, what colour it takes and how the keyboard reaches it; the chip itself is CalendarEvent's. |
 | `timeZone` | primitive | `string` |  | IANA zone name. Defaults to the reader's own resolved zone, which is right whenever the schedule belongs to the person looking at it. Pass it when the calendar has a zone of its own that differs (a Madrid timetable read from Tokyo), and when server-rendering, where the reader's zone is not knowable. |
 | `anchorDate` | primitive | `string` |  | ISO date the view opens on. Defaults to today in `timeZone`; pass and change it to drive the date yourself. |
-| `view` | enum | `CalendarView` |  | Omit to derive from the CONTAINER width: day below --bp-md, else week. |
+| `view` | enum | `ArenaCalendarView` |  | Omit to derive from the CONTAINER width: day below --bp-md, else week. |
 | `dayStart` | primitive | `string` |  | HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. |
 | `dayEnd` | primitive | `string` | `"23:00"` | HH:MM the grid ends at. |
 | `weekStartsOn` | primitive | `number` | `1` | 0 = Sunday … 6 = Saturday. |

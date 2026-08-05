@@ -25,7 +25,7 @@ popup this component does not own.
 |---|---|---|---|---|
 | `label` | primitive | `string` |  | Field label above the control. |
 | `placeholder` | primitive | `string` |  | An empty-valued first option, drawn before the choices and unselectable once a real one is made -- "Choose a customer". It is an option rather than an attribute because a native select has no placeholder, and it is what makes "nothing chosen yet" distinguishable from "the first choice". |
-| `options` | array | `readonly SelectOption[]` | `[]` | The choices, drawn as native options. |
+| `options` | array | `readonly ArenaSelectOption[]` | `[]` | The choices, drawn as native options. |
 | `value` | primitive | `string` |  | The selected option's value. |
 | `disabled` | primitive | `boolean` | `false` | Blocks the control and dims it. |
 | `required` | primitive | `boolean` | `false` | Must have a value for the form to submit. |
@@ -58,7 +58,7 @@ none. It is disabled once a real choice is made, which is what keeps "nothing ch
 distinguishable from "the first choice".
 
 ```ts
-protected readonly environments: SelectOption[] = [
+protected readonly environments: ArenaSelectOption[] = [
   { value: 'staging', label: 'Staging' },
   { value: 'production', label: 'Production' },
 ];

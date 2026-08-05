@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { Grid } from './Grid.tsx';
-import type { GridGap } from '../../../Api.generated';
+import type { ArenaGridGap } from '../../../Api.generated';
 
 const GAPS = ['none', 'sm', 'md', 'lg'] as const;
 
@@ -45,14 +45,14 @@ test('a min wider than any card still yields one clamped column rather than an o
   assert.match(tracks, /min\(calc\(var\(--sp-1\) \* 400\), 100%\)/);
 });
 
-const gapOf = (step: GridGap) =>
+const gapOf = (step: ArenaGridGap) =>
   (/class="([^"]*)"/.exec(renderToStaticMarkup(<Grid gap={step} />))?.[1] ?? '')
     .split(/\s+/).find((c) => c.startsWith('arena-grid__root--gap-')) ?? '';
 
 test('the four named steps are four distinct scale values, growing in the order they are named', () => {
   const seen = GAPS.map(gapOf);
   assert.equal(new Set(seen).size, GAPS.length, `two steps resolve to the same value: ${seen.join(', ')}`);
-  const step = (value: string) => GAPS.indexOf(/--gap-([a-z]+)$/.exec(value)![1] as GridGap);
+  const step = (value: string) => GAPS.indexOf(/--gap-([a-z]+)$/.exec(value)![1] as ArenaGridGap);
   const steps = seen.map(step);
   assert.equal(steps[0], 0, 'the none step must be the zero of the scale');
   assert.ok(steps[1]! < steps[2]! && steps[2]! < steps[3]!,
@@ -64,7 +64,7 @@ test('the default gap is md, matching the contract', () => {
 });
 
 test('an unknown gap falls back to the default rather than rendering with none at all', () => {
-  assert.equal(gapOf('huge' as GridGap), gapOf('md'));
+  assert.equal(gapOf('huge' as ArenaGridGap), gapOf('md'));
 });
 
 test('maxWidth caps and centres, and its absence leaves the grid filling its container', () => {

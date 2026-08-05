@@ -18,10 +18,10 @@ import { Avatar } from '../components/display/avatar/Avatar';
 import { avatarStyles } from '../components/display/avatar/Avatar.variants';
 import { BarChart } from '../components/charts/bar-chart/BarChart';
 import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs';
-import type { Crumb } from '../Api.generated';
+import type { ArenaCrumb } from '../Api.generated';
 import { breadcrumbsStyles } from '../components/navigation/breadcrumbs/Breadcrumbs.variants';
 import { BulkActionBar } from '../components/navigation/bulk-action-bar/BulkActionBar';
-import type { BulkAction } from '../Api.generated';
+import type { ArenaBulkAction } from '../Api.generated';
 import { bulkActionBarStyles } from '../components/navigation/bulk-action-bar/BulkActionBar.variants';
 import { ChartCard } from '../components/charts/chart-card/ChartCard';
 import { chartCardStyles } from '../components/charts/chart-card/ChartCard.variants';
@@ -37,7 +37,7 @@ import { Skeleton } from '../components/display/skeleton/Skeleton';
 import { skeletonStyles } from '../components/display/skeleton/Skeleton.variants';
 import { StatCard } from '../components/display/stat-card/StatCard';
 import { statCardStyles } from '../components/display/stat-card/StatCard.variants';
-import type { StatDelta } from '../Api.generated';
+import type { ArenaStatDelta } from '../Api.generated';
 import { Tag } from '../components/display/tag/Tag';
 import { tagStyles } from '../components/display/tag/Tag.variants';
 import { UnauthCard } from '../components/display/unauth-card/UnauthCard';
@@ -80,10 +80,10 @@ class SkeletonHost {}
   template: `<arena-breadcrumbs class="consumer-class" ariaLabel="Project navigation" [items]="items" />`,
 })
 class BreadcrumbsHost {
-  items: Crumb[] = [];
+  items: ArenaCrumb[] = [];
 }
 
-function createBreadcrumbsHost(items: Crumb[] = []) {
+function createBreadcrumbsHost(items: ArenaCrumb[] = []) {
   const fixture = TestBed.createComponent(BreadcrumbsHost);
   fixture.componentInstance.items = items;
   return fixture;
@@ -96,7 +96,7 @@ function createBreadcrumbsHost(items: Crumb[] = []) {
 })
 class StatCardHost {}
 
-function renderStatCard(label: string, value: string, delta?: StatDelta, icon?: string) {
+function renderStatCard(label: string, value: string, delta?: ArenaStatDelta, icon?: string) {
   const fixture = TestBed.createComponent(StatCard);
   fixture.componentRef.setInput('label', label);
   fixture.componentRef.setInput('value', value);
@@ -127,7 +127,7 @@ test('arena-stat-card: a static "label"/"value" attribute satisfies the required
 })
 class BulkActionBarHost {
   count = 0;
-  actions: BulkAction[] = [];
+  actions: ArenaBulkAction[] = [];
 }
 
 function createBulkActionBarHost() {
@@ -489,22 +489,22 @@ test('arena-breadcrumbs: a real <nav> carries the landmark, rather than role="na
   fixture.destroy();
 });
 
-test('arena-breadcrumbs: a crumb click emits the clicked Crumb alone through navigate', async () => {
+test('arena-breadcrumbs: a crumb click emits the clicked ArenaCrumb alone through navigate', async () => {
   const fixture = createBreadcrumbsHost();
   fixture.detectChanges();
   await fixture.whenStable();
   const breadcrumbs = fixture.debugElement.query(By.directive(Breadcrumbs)).componentInstance as Breadcrumbs;
 
-  let received: Crumb | undefined;
+  let received: ArenaCrumb | undefined;
   breadcrumbs.navigate.subscribe((payload) => {
     received = payload;
   });
 
-  const crumb: Crumb = { label: 'Clients', href: '/clients' };
+  const crumb: ArenaCrumb = { label: 'Clients', href: '/clients' };
   const event = new (fixture.nativeElement as Element).ownerDocument.defaultView!.MouseEvent(
     'click', { cancelable: true },
   );
-  (breadcrumbs as unknown as { onCrumbClick(crumb: Crumb, event: MouseEvent): void })
+  (breadcrumbs as unknown as { onCrumbClick(crumb: ArenaCrumb, event: MouseEvent): void })
     .onCrumbClick(crumb, event);
 
   assert.ok(received, 'navigate did not emit');

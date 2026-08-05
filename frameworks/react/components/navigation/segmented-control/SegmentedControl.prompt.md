@@ -12,10 +12,10 @@ A compact inline filter over mutually exclusive options: a scope, a range, a den
 
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
-| `options*` | array | `readonly SegmentOption[]` |  | The options, in order. Two to four with one-word labels. |
+| `options*` | array | `readonly ArenaSegmentOption[]` |  | The options, in order. Two to four with one-word labels. |
 | `value` | primitive | `string` |  | The selected option's value. Omit and pass `defaultValue` to let it govern itself. |
 | `defaultValue` | primitive | `string` |  | The initially selected value when uncontrolled. Defaults to the first option. |
-| `size` | enum | `SegmentedControlSize` | `"md"` | Compact or default. |
+| `size` | enum | `ArenaSegmentedControlSize` | `"md"` | Compact or default. |
 | `ariaLabel*` | primitive | `string` |  | Names what is being filtered: "Time range", not "Filter". A radio group with no accessible name is announced unlabelled. |
 | `name` | primitive | `string` |  | Shared name for the underlying radios; generated when omitted. |
 | `onChange` | event | `string` |  | A different option was chosen; carries its value. |

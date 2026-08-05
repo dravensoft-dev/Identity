@@ -8,9 +8,9 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CommandPalette, capCommands, orderCommands, commandGroups } from './CommandPalette.tsx';
-import type { Command } from '../../../Api.generated';
+import type { ArenaCommand } from '../../../Api.generated';
 
-const COMMANDS: Command[] = [
+const COMMANDS: ArenaCommand[] = [
   { id: 'sale', label: 'New sale', group: 'Actions' },
   { id: 'help', label: 'Help' },
   { id: 'acme', label: 'Acme Corp', group: 'Customers', route: '/customers/acme' },
@@ -34,7 +34,7 @@ test('a group is one contiguous run, and every row keeps its index in the ordere
 });
 
 test('a list with no groups at all is one unnamed run, which is the shape it always had', () => {
-  const flat: Command[] = [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }];
+  const flat: ArenaCommand[] = [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }];
   const groups = commandGroups(orderCommands(flat));
   assert.equal(groups.length, 1);
   assert.equal(groups[0]?.name, null);

@@ -17,18 +17,18 @@ import { SegmentedControl } from './components/navigation/segmented-control/Segm
 import { Select } from './components/forms/select/Select.tsx';
 import { Table } from './components/display/table/Table.tsx';
 import type {
-  ActivityItem, BulkAction, Crumb, SegmentOption, SelectOption, TableColumn,
+  ArenaActivityItem, ArenaBulkAction, ArenaCrumb, ArenaSegmentOption, ArenaSelectOption, ArenaTableColumn,
 } from './Api.generated.ts';
 
 const LABELS: readonly string[] = Object.freeze(['Mon', 'Tue']);
 const VALUES: readonly number[] = Object.freeze([1, 2]);
 const SLOTS: readonly number[] = Object.freeze([1, 2]);
-const ITEMS: readonly ActivityItem[] = Object.freeze([{ id: '1', actor: 'Marta', action: 'deployed' }]);
-const CRUMBS: readonly Crumb[] = Object.freeze([{ label: 'Clients', href: '/clients' }]);
-const ACTIONS: readonly BulkAction[] = Object.freeze([{ id: 'archive', label: 'Archive' }]);
-const SEGMENTS: readonly SegmentOption[] = Object.freeze([{ value: 'grid', label: 'Grid' }]);
-const OPTIONS: readonly SelectOption[] = Object.freeze([{ value: 'a', label: 'A' }]);
-const COLUMNS: readonly TableColumn[] = Object.freeze([{ header: 'Build' }]);
+const ITEMS: readonly ArenaActivityItem[] = Object.freeze([{ id: '1', actor: 'Marta', action: 'deployed' }]);
+const CRUMBS: readonly ArenaCrumb[] = Object.freeze([{ label: 'Clients', href: '/clients' }]);
+const ACTIONS: readonly ArenaBulkAction[] = Object.freeze([{ id: 'archive', label: 'Archive' }]);
+const SEGMENTS: readonly ArenaSegmentOption[] = Object.freeze([{ value: 'grid', label: 'Grid' }]);
+const OPTIONS: readonly ArenaSelectOption[] = Object.freeze([{ value: 'a', label: 'A' }]);
+const COLUMNS: readonly ArenaTableColumn[] = Object.freeze([{ header: 'Build' }]);
 
 test('every collection prop takes data the consumer holds as readonly, and nothing writes to it', () => {
   const markup = [

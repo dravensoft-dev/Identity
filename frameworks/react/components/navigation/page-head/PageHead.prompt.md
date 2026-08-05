@@ -23,7 +23,7 @@ The title block at the top of a page: an `h1`, an optional muted subtitle, and t
 | `title*` | primitive | `string` |  | The page title. Required: a page head with no title is a bug, not a state. |
 | `subtitle` | primitive | `string` |  | A muted line under the title. |
 | `actions` | slot |  |  | Page-level controls, right-aligned in the head. |
-| `align` | enum | `PageHeadAlign` | `"start"` | Cross-axis alignment of the actions block against the title, wide layout only. |
+| `align` | enum | `ArenaPageHeadAlign` | `"start"` | Cross-axis alignment of the actions block against the title, wide layout only. |
 
 <!-- @api end -->
 

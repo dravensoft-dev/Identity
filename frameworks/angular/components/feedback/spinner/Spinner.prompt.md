@@ -13,8 +13,8 @@ and the accessible name all sit on it, with the spinning ring a decorative `aria
 
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
-| `size` | enum | `ControlSize` | `"md"` | Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text. |
-| `tone` | enum | `SpinnerTone` | `"accent"` | Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface. |
+| `size` | enum | `ArenaControlSize` | `"md"` | Diameter. 'sm' is --icon-sm exactly, so a spinner at that size sits inline with control text. |
+| `tone` | enum | `ArenaSpinnerTone` | `"accent"` | Colour of the ring. 'on-accent' inside a filled button; 'accent' on a page surface. |
 | `label` | primitive | `string` | `"Loading"` | Accessible name, announced by the status role. Say what is loading when you can. |
 
 <!-- @api end -->

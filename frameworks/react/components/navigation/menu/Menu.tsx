@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Menu.classes.generated.ts';
 
-import type { MenuItem, MenuAlign } from '../../../Api.generated';
+import type { ArenaMenuItem, ArenaMenuAlign } from '../../../Api.generated';
 
-export type { MenuItem };
+export type { ArenaMenuItem };
 
 export interface MenuProps {
 
@@ -12,13 +12,13 @@ export interface MenuProps {
   trigger: React.ReactNode;
 
   /** The entries, in order: activatable rows, dividers and group headers. */
-  items: readonly MenuItem[];
+  items: readonly ArenaMenuItem[];
 
   /** Which edge of the trigger the panel lines up with. */
-  align?: MenuAlign;
+  align?: ArenaMenuAlign;
 
   /** An entry was activated; carries the whole item. A disabled entry reports nothing, and a divider or a header cannot be activated at all. */
-  onSelect?: (item: MenuItem) => void;
+  onSelect?: (item: ArenaMenuItem) => void;
 }
 
 
@@ -63,7 +63,7 @@ export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
     if (first) first.focus();
   }, [open]);
 
-  const run = (it: MenuItem) => { if (it.disabled) return; close(true); onSelect && onSelect(it); };
+  const run = (it: ArenaMenuItem) => { if (it.disabled) return; close(true); onSelect && onSelect(it); };
 
   useEffect(() => {
     const el = triggerEl();
@@ -103,7 +103,7 @@ export function Menu({ trigger, items, align = 'start', onSelect }: MenuProps) {
   );
 }
 
-function MenuRow({ item, onRun }: { item: MenuItem; onRun: () => void }) {
+function MenuRow({ item, onRun }: { item: ArenaMenuItem; onRun: () => void }) {
   const styles = menuStyles();
   const state = item.disabled
     ? styles.itemDisabled()

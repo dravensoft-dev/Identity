@@ -2,7 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './Input.classes.generated.ts';
 
-import type { InputType, ValidateOn } from '../../../Api.generated';
+import type { ArenaInputType, ArenaValidateOn } from '../../../Api.generated';
 
 export interface InputProps {
 
@@ -28,10 +28,10 @@ export interface InputProps {
   validate?: (value: string) => string | null | undefined;
 
   /** When `validate` runs. */
-  validateOn?: ValidateOn;
+  validateOn?: ArenaValidateOn;
 
   /** Native input type. */
-  type?: InputType;
+  type?: ArenaInputType;
 
   /** Phosphor class name drawn at the field's start. */
   icon?: string;

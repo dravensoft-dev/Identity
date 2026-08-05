@@ -6,9 +6,9 @@ import manifest from './Calendar.classes.generated.ts';
 import { catColor } from '../../../DataVisuals.ts';
 import { calendarGutterW, calendarHourH } from '../../../Tokens.generated.js';
 
-import type { CalendarView, CatSlot } from '../../../Api.generated';
+import type { ArenaCalendarView, ArenaCatSlot } from '../../../Api.generated';
 
-export type { CatSlot };
+export type { ArenaCatSlot };
 
 export interface CalendarProps {
 
@@ -22,7 +22,7 @@ export interface CalendarProps {
   anchorDate?: string;
 
   /** Omit to derive from the CONTAINER width: day below --bp-md, else week. */
-  view?: CalendarView;
+  view?: ArenaCalendarView;
 
   /** HH:MM the grid starts at. Defaults to the earliest visible event's hour, floored. */
   dayStart?: string;

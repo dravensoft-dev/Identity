@@ -11,12 +11,12 @@ import { mount, cleanup } from '../../../test/Harness.tsx';
 import { Table } from './Table.tsx';
 import { TableRow } from '../table-row/TableRow.tsx';
 import { TableCell } from '../table-cell/TableCell.tsx';
-import type { TableColumn } from '../../../Api.generated';
+import type { ArenaTableColumn } from '../../../Api.generated';
 
 afterEach(cleanup);
 
 const LABEL = 'Recent deployments';
-const COLUMNS: TableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
+const COLUMNS: ArenaTableColumn[] = [{ header: 'Service' }, { header: 'Status' }];
 
 const rows = (n: number) => Array.from({ length: n }, (_, i) => (
   <TableRow key={i}><TableCell>svc-{i}</TableCell><TableCell>Healthy</TableCell></TableRow>
