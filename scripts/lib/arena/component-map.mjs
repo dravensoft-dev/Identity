@@ -1,0 +1,124 @@
+/* What a consumer writes, and the component sheets it costs. Each package carries one of these so
+ * `arena-to-prod` can resolve `"components": "auto"` without guessing: the name in a template is
+ * not the name of a sheet, since 43 sheets dress 55 components and a row, an item and a tab wear
+ * their parent's. Both layers declare the link the same way, through the manifest a component's
+ * styles read, whether it names it directly or reaches it through the sibling that does, so a
+ * sheet is derived rather than conventional and a component with neither draws no classes at all,
+ * which is what a chart is. `needs` is the other half, closed here where the sources are, so the
+ * command only unions: Arena draws components a consumer never names, and a subset missing one is
+ * a render with no border and no colour. Each layer gets its own map because they differ in fact:
+ * React's confirm dialog renders a Button, Angular's draws one out of its own manifest. */
+
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { repoRoot } from './repo-root.mjs';
+import { kebab } from './layers.mjs';
+
+export const MAP_FILE = 'components.json';
+
+export const SKIPPED_SOURCE = /\.(test|spec|demo|entry|prompt|card)\.|\.generated\.|\.variants\./;
+
+export const MANIFEST_IMPORT = /import manifest from '[^']*?([A-Za-z0-9]+)\.classes\.generated[^']*'/;
+export const VARIANTS_IMPORT = /from '(\.[^']*\.variants)'/;
+export const SELECTOR = /selector: '(arena-[a-z0-9-]+)'/g;
+export const DECORATOR_IMPORTS = /imports: \[([^\]]*)\]/g;
+export const EXPORTED = /export (?:function|const) ([A-Za-z0-9_]+)/g;
+export const COMPONENT_NAME = /^[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*$/;
+export const LAYER_IMPORT = /from '\.\.\/\.\.\/[a-z-]+\/[a-z-]+\/([A-Z][A-Za-z0-9]*)\.tsx?'/g;
+
+export function componentFiles(layer, extension, root = repoRoot) {
+  const base = join(root, 'frameworks', layer, 'components');
+  const found = [];
+  if (!existsSync(base)) return found;
+  for (const category of readdirSync(base, { withFileTypes: true })) {
+    if (!category.isDirectory()) continue;
+    for (const directory of readdirSync(join(base, category.name), { withFileTypes: true })) {
+      if (!directory.isDirectory()) continue;
+      const at = join(base, category.name, directory.name);
+      for (const name of readdirSync(at).sort()) {
+        if (!name.endsWith(extension) || SKIPPED_SOURCE.test(name) || name === `index${extension}`) continue;
+        found.push({ at, file: join(at, name), symbol: name.slice(0, -extension.length) });
+      }
+    }
+  }
+  return found;
+}
+
+export function sheetOf(file, source) {
+  const direct = MANIFEST_IMPORT.exec(source);
+  if (direct) return kebab(direct[1]);
+  const variants = VARIANTS_IMPORT.exec(source);
+  if (!variants) return null;
+  for (const extension of ['.ts', '.tsx']) {
+    const named = join(file, '..', `${variants[1]}${extension}`);
+    if (!existsSync(named)) continue;
+    const manifest = MANIFEST_IMPORT.exec(readFileSync(named, 'utf8'));
+    return manifest ? kebab(manifest[1]) : null;
+  }
+  return null;
+}
+
+export function close(needs) {
+  const closed = {};
+  for (const sheet of Object.keys(needs)) {
+    const reached = new Set();
+    const pending = [...needs[sheet]];
+    while (pending.length) {
+      const one = pending.pop();
+      if (one === sheet || reached.has(one)) continue;
+      reached.add(one);
+      pending.push(...(needs[one] ?? []));
+    }
+    if (reached.size) closed[sheet] = [...reached].sort();
+  }
+  return closed;
+}
+
+function mapFrom(entries, edges) {
+  const draws = {};
+  const needs = {};
+  for (const { keys, sheet } of entries) {
+    for (const key of keys) draws[key] = sheet;
+  }
+  for (const { symbol, sheet, uses } of entries) {
+    if (!sheet) continue;
+    const bySymbol = new Map(entries.map((e) => [e.symbol, e.sheet]));
+    const pulled = uses.map((name) => bySymbol.get(name)).filter((s) => s && s !== sheet);
+    if (pulled.length) needs[sheet] = [...new Set([...(needs[sheet] ?? []), ...pulled])].sort();
+  }
+  return { match: edges, draws, needs: close(needs) };
+}
+
+export function angularComponentMap(root = repoRoot) {
+  const entries = componentFiles('angular', '.ts', root).map(({ file, symbol }) => {
+    const source = readFileSync(file, 'utf8');
+    return {
+      symbol,
+      keys: [...source.matchAll(SELECTOR)].map(([, selector]) => selector),
+      sheet: sheetOf(file, source),
+      uses: [...source.matchAll(DECORATOR_IMPORTS)]
+        .flatMap(([, list]) => list.split(',').map((name) => name.trim()))
+        .filter((name) => /^[A-Z][A-Za-z0-9]*$/.test(name)),
+    };
+  });
+  return mapFrom(entries.filter((e) => e.keys.length), 'selector');
+}
+
+export function reactComponentMap(root = repoRoot) {
+  const entries = componentFiles('react', '.tsx', root).map(({ file, symbol }) => {
+    const source = readFileSync(file, 'utf8');
+    return {
+      symbol,
+      keys: [...source.matchAll(EXPORTED)].map(([, name]) => name).filter((name) => COMPONENT_NAME.test(name)),
+      sheet: sheetOf(file, source),
+      uses: [...source.matchAll(LAYER_IMPORT)].map(([, name]) => name),
+    };
+  });
+  return mapFrom(entries.filter((e) => e.keys.length), 'symbol');
+}
+
+export function componentMap(layer, root = repoRoot) {
+  if (layer === 'angular') return angularComponentMap(root);
+  if (layer === 'react') return reactComponentMap(root);
+  throw new Error(`component-map: no map is derived for a layer called "${layer}"`);
+}

@@ -40,10 +40,27 @@ So the packages ship everything that is invariant, and the consumer declares the
   derives the muted text levels from `--color-base-content`.
 - **The consumer's, in `arena.config.json`**: the palettes and the fonts.
 
-A command in each package, `arena-theme`, turns that JSON into the missing stylesheet. Its
-source is `scripts/generate/core/arena-theme/`, described in
-[`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md),
-copied whole into `dist/bin/`.
+One command travels in each package, `arena-to-prod`, and `CLI_BINS` in
+[`scripts/lib/arena/package-assembly.mjs`](../scripts/lib/arena/package-assembly.mjs) is the
+list both manifests take their `bin` from. Its source is its own directory under
+`scripts/generate/core/`, described in
+[`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md), copied whole into
+`dist/bin/`. **That copy is flat**, so two CLI trees may not share a filename and a command may
+only import a sibling of its own; `copyCli` refuses either.
+
+It does the two jobs a project always did together, and a failure in the first stops the second:
+
+- **The theme** turns the consumer's JSON into the missing stylesheet, `arena.generated.css`.
+  When their config carries a `stylesheet` key it writes the layer chain and the named component
+  sheets in place of the `arena.css` barrel, reading both lists off the package it is running
+  from rather than from a copy of them that could age. `"components": "auto"` resolves that list
+  from their own sources against `components.json`, which each package carries and
+  [`scripts/lib/arena/component-map.mjs`](../scripts/lib/arena/component-map.mjs) derives from the
+  layer: what a consumer writes is not what dresses it, since 43 sheets dress 55 components, and
+  the closure matters more than the mapping because Arena draws components nobody named.
+- **The icons** write the Phosphor subset a project draws, `icons.generated.css`, reading the
+  consumer's sources and the package it ships in, since a component renders icons the consumer
+  never names.
 
 **Import order is what makes it work.** The consumer's generated file comes last, and its
 first line is an `@import` of the package's own `arena.css`. Both files declare into `:root`,
@@ -211,7 +228,7 @@ name is not the API" above before treating a manifest edit as a break.
 ## What `check:packages` holds
 
 **That the two palette emitters agree.** There are now two things that turn a palette into
-CSS: Style Dictionary, which serves this repository, and `arena-theme`, which serves a
+CSS: Style Dictionary, which serves this repository, and `arena-to-prod`, which serves a
 consumer who has no repository. The gate builds a config out of Arena's own skin, runs the
 CLI over it, and asserts every `--color-*` declaration matches
 `contracts/design-generated/palette.generated.css` in both blocks. A comparison that looked

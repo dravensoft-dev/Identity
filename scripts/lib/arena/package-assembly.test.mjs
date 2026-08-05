@@ -5,8 +5,10 @@ import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 import {
   EXCLUDED_NAMES, EXCLUDED_PATTERNS, CSS_CHAIN, arenaCssHeader, excluded,
-  collectFiles, reset, write, copyTree, baseManifest, version, componentSheets, writeCssChain,
+  collectFiles, reset, write, copyTree, copyCli, CLI_BINS, baseManifest, version, componentSheets, writeCssChain,
+  writeComponentMap,
 } from './package-assembly.mjs';
+import { MAP_FILE } from './component-map.mjs';
 import { repoRoot } from './repo-root.mjs';
 
 function tree(files) {
@@ -105,7 +107,42 @@ test('the manifest takes its version and its identity from plugin.json, never fr
   assert.equal(base.version, version(repoRoot));
   assert.equal(base.publishConfig.access, 'public');
   assert.match(base.repository.url, /^git\+https:\/\/github\.com\//);
-  assert.equal(base.bin['arena-theme'], './bin/arena-theme.mjs');
+  assert.deepEqual(base.bin, CLI_BINS);
+});
+
+test('every command the manifest declares is copied, flat, and no two of them share a filename', () => {
+  const to = mkdtempSync(join(tmpdir(), 'arena-assembly-cli-'));
+  const written = copyCli(to, repoRoot);
+  for (const target of Object.values(CLI_BINS)) {
+    assert.ok(written.includes(target), `${target} is declared and was not copied`);
+    assert.equal(existsSync(join(to, target)), true);
+  }
+  assert.equal(new Set(written).size, written.length, 'bin/ is flat, so a shared filename loses a file');
+  rmSync(to, { recursive: true });
+});
+
+test('each package carries the map its own layer derives, under the one name the command reads', () => {
+  const to = mkdtempSync(join(tmpdir(), 'arena-assembly-map-'));
+  const angular = JSON.parse(readFileSync(writeComponentMap(to, 'angular', repoRoot), 'utf8'));
+  const react = JSON.parse(readFileSync(writeComponentMap(join(to, 'react'), 'react', repoRoot), 'utf8'));
+  assert.equal(existsSync(join(to, MAP_FILE)), true);
+  assert.equal(angular.match, 'selector');
+  assert.equal(react.match, 'symbol');
+  assert.notDeepEqual(angular.draws, react.draws, 'one map for two layers is a map wrong for one of them');
+  rmSync(to, { recursive: true });
+});
+
+test('a map that claims no sheet at all is refused, because auto would then unstyle every screen', () => {
+  const to = mkdtempSync(join(tmpdir(), 'arena-assembly-map-'));
+  assert.throws(() => writeComponentMap(to, 'angular', mkdtempSync(join(tmpdir(), 'arena-empty-'))),
+    /derived no component sheet for angular/);
+  rmSync(to, { recursive: true });
+});
+
+test('a command whose directory moved is reported rather than shipped missing', () => {
+  const to = mkdtempSync(join(tmpdir(), 'arena-assembly-cli-'));
+  assert.throws(() => copyCli(to, mkdtempSync(join(tmpdir(), 'arena-empty-'))), /copied 0 files for arena-to-prod/);
+  rmSync(to, { recursive: true });
 });
 
 test('write creates the directories leading to a file nobody made yet', () => {

@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import {
   PACKAGES, GENERATED_PALETTE, distDir, stripAtStatements,
   paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect, styleProblems,
+  componentMapProblems,
 } from './check-packages.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -19,24 +20,24 @@ test('an equal pair reports nothing and says how much it looked at', () => {
 
 test('a value that differs names both emitters and both values', () => {
   const { problems } = paletteEquivalenceProblems(generated, ':root{--color-primary:#ff0000;--color-base-100:#141010;}');
-  assert.deepEqual(problems, ['\:root --color-primary: Style Dictionary says #b52a20, arena-theme says #ff0000']);
+  assert.deepEqual(problems, ['\:root --color-primary: Style Dictionary says #b52a20, arena-to-prod says #ff0000']);
 });
 
 test('a missing declaration is reported as emitting nothing rather than as absent', () => {
   const { problems } = paletteEquivalenceProblems(generated, ':root{--color-base-100:#141010;}');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /--color-primary: .* arena-theme says \(nothing\)/);
+  assert.match(problems[0], /--color-primary: .* arena-to-prod says \(nothing\)/);
 });
 
 test('a colour the CLI invents is a problem in the other direction', () => {
   const { problems } = paletteEquivalenceProblems(generated, `${generated.slice(0, -1)}--color-brand:#000000;}`);
-  assert.deepEqual(problems, ['\:root --color-brand: arena-theme emits it and Style Dictionary does not']);
+  assert.deepEqual(problems, ['\:root --color-brand: arena-to-prod emits it and Style Dictionary does not']);
 });
 
 test('a whole missing block is one problem, not one per declaration', () => {
   const { problems } = paletteEquivalenceProblems(`${generated}.arena-light{--color-primary:#b52a20;}`, generated);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /declares \.arena-light and arena-theme emits no such block/);
+  assert.match(problems[0], /declares \.arena-light and arena-to-prod emits no such block/);
 });
 
 test('a comparison that looked at nothing fails rather than passing vacuously', () => {
@@ -151,9 +152,45 @@ test('a wildcard matches one path segment, the way Node resolves an exports patt
 test('a package exposing nothing is a problem, and so is a bin that was never emitted', () => {
   const dir = assembled({ 'README.md': '#', 'Index.d.ts': '' });
   assert.match(exportProblems(PACKAGES[0], manifest(), dir)[0], /no exports target resolves/);
-  const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-theme': './bin/arena-theme.mjs' } });
+  const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-to-prod': './bin/arena-to-prod.mjs' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
-    ['@dravensoft/arena-react: bin arena-theme points at ./bin/arena-theme.mjs, which was never emitted']);
+    ['@dravensoft/arena-react: bin arena-to-prod points at ./bin/arena-to-prod.mjs, which was never emitted']);
+  rmSync(dir, { recursive: true });
+});
+
+test('a package carrying no component map cannot answer auto, and that is caught before a release', () => {
+  const dir = assembled({ 'css/components/button.css': '' });
+  assert.deepEqual(componentMapProblems(PACKAGES[0], dir),
+    ['@dravensoft/arena-react: no components.json, so "components": "auto" has nothing to resolve a template against']);
+  rmSync(dir, { recursive: true });
+});
+
+test('a map is held to the sheets beside it in both directions', () => {
+  const named = assembled({
+    'css/components/button.css': '',
+    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'button', 'arena-tag': 'tag' } }),
+  });
+  assert.deepEqual(componentMapProblems(PACKAGES[0], named),
+    ['@dravensoft/arena-react: components.json names tag, and no such sheet was emitted']);
+
+  const short = assembled({
+    'css/components/button.css': '',
+    'css/components/tag.css': '',
+    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'button' } }),
+  });
+  assert.deepEqual(componentMapProblems(PACKAGES[0], short),
+    ['@dravensoft/arena-react: components.json reaches no key for tag, so auto can never put it in a subset']);
+
+  rmSync(named, { recursive: true });
+  rmSync(short, { recursive: true });
+});
+
+test('a map that resolves everything to nothing is a failure, not an empty subset', () => {
+  const dir = assembled({
+    'css/components/button.css': '',
+    'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-bar-chart': null } }),
+  });
+  assert.ok(componentMapProblems(PACKAGES[0], dir).some((m) => m.includes('names no component sheet')));
   rmSync(dir, { recursive: true });
 });
 

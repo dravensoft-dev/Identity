@@ -47,7 +47,7 @@ Three things at once, from the same tree:
 
 **A published Arena carries the language and never the skin**, which is the decision the whole
 npm channel follows from: the palettes and the fonts arrive as an `arena.config.json` the
-consuming project writes, and the `arena-theme` command each package ships turns it into the one
+consuming project writes, and the `arena-to-prod` command each package ships turns it into the one
 stylesheet a package cannot carry. Two couplings are part of the adoption contract: Phosphor for
 iconography, and Tailwind, whose compiled sheet both packages carry inside `arena.css`.
 

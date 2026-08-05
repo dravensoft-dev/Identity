@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSy
 import { join, dirname, relative, sep, basename } from 'node:path';
 import { repoRoot } from './repo-root.mjs';
 import { kebab } from './layers.mjs';
+import { componentMap, MAP_FILE } from './component-map.mjs';
 import { manifestFiles } from '../tailwind/tailwind-compile.mjs';
 import { CONSUME, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
 
@@ -36,7 +37,7 @@ export const CSS_CHAIN = [
 
 export const arenaCssHeader = (name) => [
   `/* ${name} -- the invariant half of Arena's stylesheet.`,
-  '   Import this FIRST, then the file arena-theme wrote from your arena.config.json,',
+  '   Import this FIRST, then the file arena-to-prod wrote from your arena.config.json,',
   '   whose palette and font values are meant to win. reset.css leads so anything can',
   '   override it, and colors.css derives its muted levels from --color-base-content,',
   '   so it follows the palette rather than defining one. environment.css composes the',
@@ -142,11 +143,38 @@ export function componentSheets(css, split, root = repoRoot) {
   ];
 }
 
+export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.mjs' };
+
 export function copyCli(dir, root = repoRoot) {
-  const from = join(root, 'scripts', 'generate', 'core', 'arena-theme');
-  const written = copyTree(from, dir, 'bin');
-  if (written.length === 0) throw new Error('package-assembly: copied 0 CLI files; the arena-theme directory moved');
-  return written.map((p) => relative(dir, p));
+  const written = [];
+  for (const name of Object.keys(CLI_BINS)) {
+    const from = join(root, 'scripts', 'generate', 'core', name);
+    const copied = copyTree(from, dir, 'bin').map((p) => `./${relative(dir, p).split(sep).join('/')}`);
+    if (copied.length === 0) throw new Error(`package-assembly: copied 0 files for ${name}; its directory moved`);
+    for (const one of copied) {
+      if (written.includes(one)) {
+        throw new Error(`package-assembly: two CLI trees both hold ${basename(one)}, and bin/ is flat, so one `
+          + 'overwrites the other and a command ends up importing a sibling that is not its own');
+      }
+      written.push(one);
+    }
+  }
+  for (const [name, target] of Object.entries(CLI_BINS)) {
+    if (!written.includes(target)) {
+      throw new Error(`package-assembly: the manifest declares ${name} at ${target} and nothing was copied there`);
+    }
+  }
+  return written;
+}
+
+export function writeComponentMap(dir, layer, root = repoRoot) {
+  const map = componentMap(layer, root);
+  const claimed = new Set(Object.values(map.draws).filter(Boolean));
+  if (claimed.size === 0) {
+    throw new Error(`package-assembly: derived no component sheet for ${layer}, so "components": "auto" `
+      + 'would resolve every project to an empty subset and every screen would render unstyled');
+  }
+  return write(dir, MAP_FILE, `${JSON.stringify(map, null, 2)}\n`);
 }
 
 export function version(root = repoRoot) {
@@ -162,7 +190,7 @@ export function baseManifest(root = repoRoot) {
     repository: { type: 'git', url: `git+${plugin.repository}.git` },
     author: plugin.author,
     publishConfig: { access: 'public' },
-    bin: { 'arena-theme': './bin/arena-theme.mjs' },
+    bin: { ...CLI_BINS },
     engines: { node: '>=20' },
   };
 }

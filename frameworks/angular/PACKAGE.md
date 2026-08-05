@@ -5,17 +5,20 @@ Arena is Dravensoft's design system. This package is its Angular layer: 50 stand
 component, and shipped in Angular Package Format.
 
 **The package carries the language. It does not carry a skin.** Your palettes and your fonts
-are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
-that file into the stylesheet Arena reads.
+are yours, declared in one JSON file, and the `arena-to-prod` command that ships here turns
+that file into the stylesheets Arena reads.
+
+**What comes down with it.** `@angular/core`, `@angular/common` and `@angular/platform-browser`,
+which you already have; `@angular/cdk`, because `arena-tooltip` and `arena-menu` use its overlay
+to position themselves, and for position only, since the roles, the keys and the focus are
+Arena's own; and `@phosphor-icons/web`, which you may not have: Arena's icons are Phosphor class
+names a component renders, never SVGs it bundles, so the font is installed alongside the package
+rather than bundled inside it. `tslib` is the only runtime dependency this package declares.
 
 **You do not need to run Tailwind, and running your own cannot collide with this one.** Every
 component's CSS ships compiled, so one `@import` is enough and you compile nothing. The rules
 are written against Arena's own class names and read Arena's own tokens: Tailwind is how they
-were authored and nothing more, so a `--spacing` of your own moves nothing here. The only
-runtime dependency this package declares is `tslib`.
-
-**You can pay for only what you render.** `css/components/<name>.css` is one component and
-imports the prelude it needs itself, so importing one alone is safe.
+were authored and nothing more, so a `--spacing` of your own moves nothing here.
 
 ## It works with the repository, and that is the point
 
@@ -35,25 +38,14 @@ The package is the code. The repository is the criterion.
 
 ```bash
 bun add @dravensoft/arena-angular
-bun add @angular/core @angular/common @angular/platform-browser @angular/cdk @phosphor-icons/web
 ```
 
-`@angular/cdk` is a peer because two components, `arena-tooltip` and `arena-menu`, use its
-overlay to position themselves. Arena uses the CDK for **position only**: the roles, the keys
-and the focus are Arena's own.
+That is the whole install. Angular, the CDK and `@phosphor-icons/web` are peer dependencies, so
+your package manager brings down whichever of them the project does not already have.
 
-`@phosphor-icons/web` is **required**, not optional. Arena's single-icon convention is a
-Phosphor class name that a component renders, never an SVG it bundles, so without that
-stylesheet every icon is an empty box. Import it once from your global stylesheet:
-
-```css
-@import '@phosphor-icons/web/bold';
-@import '@phosphor-icons/web/fill';
-```
-
-Those are the subpaths Phosphor exports, and they are what a bundler resolves. A deeper path
-into the package, `@phosphor-icons/web/src/bold/style.css`, goes through its catch-all export
-instead and resolves to `src/src/bold/style.css`, which is not there.
+**An icon is a class name, not an element.** Every `icon` input takes a Phosphor class list,
+`"ph-bold ph-bell"`, and the component renders it. The stylesheet that turns those classes into
+glyphs is not the one Phosphor ships: it is the subset `arena-to-prod` writes for you, below.
 
 ## Declare your skin
 
@@ -122,101 +114,90 @@ What each part means:
 - **`fonts`** fills the three families Arena reads. `src` takes either a stylesheet URL, as
   above, or a font binary you host yourself, which becomes an `@font-face`:
   `{ "family": "Archivo", "src": "/fonts/archivo.woff2", "weight": "400 900" }`.
+- **`stylesheet`** is optional and names what you render, so you send nothing else. See
+  Build to production, below.
 
-## Generate the stylesheet
+# Build to production
 
 ```bash
-bunx arena-theme arena.config.json -o src/arena.generated.css
+bunx arena-to-prod
 ```
 
-Wire it into your build so it can never go stale:
+One command, no arguments. It reads `arena.config.json` and your `src` tree, and writes two
+files into `src`:
+
+- **`arena.generated.css`**, your palettes and your `@font-face` rules, led by an `@import` of
+  the package's own stylesheet. Both declare into `:root` at equal specificity, so source order
+  decides and your values win.
+- **`icons.generated.css`**, the Phosphor subset in `woff2` alone: every glyph your sources draw
+  and every glyph Arena draws for you. It exists because a whole Phosphor weight carries every
+  icon Phosphor has and a screen draws a handful, which makes it the largest thing an Arena
+  project would send that nothing on it reads. Counting what Arena draws is the part you cannot
+  do by hand: a component renders icons you never wrote, and leaving those out is an empty box
+  in a menu you did not know had one.
+
+Import both from `src/styles.css`, and import them **last**:
+
+```css
+@import './icons.generated.css';
+@import './arena.generated.css';
+@import '@dravensoft/arena-angular/css/arena-cdk.css';
+```
+
+Add that third line when you first use `arena-tooltip` or `arena-menu`: it re-bases the CDK
+overlay onto Arena's `--z-*` scale, without which a menu opened inside a dialog paints behind it.
+
+| flag | what it does |
+| --- | --- |
+| `--strict` | Exit 1 on a contrast report, a ramp report or a glyph Phosphor does not have, rather than writing anyway. Use it in CI if you want that discipline. |
+| `--no-import` | Omit the `@import` of the package stylesheet, for when you would rather import `@dravensoft/arena-angular/arena.css` yourself. |
+| `--config`, `--src`, `--out` | The config file, the trees to scan and where the two files go. They default to `arena.config.json`, `src` and `src`. |
+
+**It reports rather than refuses.** If a text colour lands under 4.5:1, if two ramp slots are
+too close to tell apart with a common colour vision deficiency, or if you name a glyph Phosphor
+does not have, it says so on stderr and writes the files anyway. Your brand is yours; Arena's
+job is to tell you what it costs. A malformed config is a different matter and always fails,
+naming the key.
+
+**`stylesheet` in `arena.config.json` is how you pay for only what you render.** Set
+`"components": "auto"` and the command reads your templates and works the list out:
+
+```json
+{ "stylesheet": { "components": "auto", "preflight": false } }
+```
+
+It counts a component as drawn when its element appears in a template, and it adds what Arena
+draws on your behalf, because `<arena-table>` renders a pagination and a select you never wrote.
+It tells you both counts on stderr, and names any `arena-` element it saw and could not place.
+`preflight: false` is separate: set it when your project already ships an equivalent browser
+reset.
+
+**What a scan cannot see, it cannot send.** A component reached only through a value your code
+computes is a component this misses, and a missing sheet renders with no border, no padding and
+no colour, with nothing to tell you. Naming the sheets yourself is still there, and is the honest
+choice for a project that renders through indirection:
+
+```json
+{ "stylesheet": { "components": ["button", "page-head", "side-nav", "stat-card", "table"] } }
+```
+
+A name this package does not ship fails the command and lists the ones it does, so a typo stops
+the build instead. That list is then yours to keep current.
+
+## Run it before your build
 
 ```json
 {
   "scripts": {
-    "prebuild": "arena-theme arena.config.json -o src/arena.generated.css",
-    "prestart": "arena-theme arena.config.json -o src/arena.generated.css"
+    "prebuild": "arena-to-prod",
+    "prestart": "arena-to-prod"
   }
 }
 ```
 
-| command | what it does |
-| --- | --- |
-| `arena-theme <config.json> -o <output.css>` | Reads the config, writes the stylesheet. Also accepts `--out` and `--out=`. |
-| `arena-theme --help` | Prints the usage above. |
-| `--strict` | Turns the contrast and ramp reports into a failure. Use it in CI if you want that discipline. |
-| `--no-import` | Omits the `@import '@dravensoft/arena-angular/arena.css';` line, for when you would rather import the package stylesheet yourself. |
-
-The command **reports rather than refuses**. If a text colour lands under 4.5:1, or two ramp
-slots are too close to tell apart with a common colour vision deficiency, it says so on stderr
-and writes the file anyway. Your brand is yours; Arena's job is to tell you what it costs.
-
-A malformed config is a different matter and always fails, naming the key.
-
-Then import it from `src/styles.css`, and import it **last**:
-
-```css
-@import './arena.generated.css';
-@import '@dravensoft/arena-angular/css/arena-cdk.css';
-```
-
-`arena.generated.css` pulls in the package's own stylesheet first, which is why your values
-win. Add `css/arena-cdk.css` when you first use `arena-tooltip` or `arena-menu`: it re-bases
-the CDK overlay onto Arena's `--z-*` scale, without which a menu opened inside a dialog paints
-behind it.
-
-### If your app already runs Tailwind
-
-There are two ways out of importing a second copy of what you already have, and they cost
-different things.
-
-The bundled sheet is two files, so you can take one without the other. `css/base.css` is
-Tailwind's preflight and nothing of Arena's; `css/components.css` is every component Arena
-draws, and `css/components/<name>.css` is one of them. Your project already ships a
-preflight, so import the utilities alone:
-
-```css
-@import '@dravensoft/arena-angular/css/components.css';
-@import './arena.generated.css';
-@import '@dravensoft/arena-angular/css/arena-cdk.css';
-```
-
-There is nothing to compile yourself: no file in this package carries a Tailwind class, so
-pointing a `@source` at it would produce an empty sheet.
-
-Two things become yours either way. **Order**, because nothing composes it for you: Arena's
-components have to come before your own rules if you want yours to win. And **the preflight
-itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
-a control falls back to the browser's 13.33px Arial and every control in the library is 20%
-off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
-
-## Use it
-
-Every component is standalone, so import the ones a component template uses:
-
-```ts
-import { Component, signal } from '@angular/core';
-import { Button, Tag, StatCard } from '@dravensoft/arena-angular';
-
-@Component({
-  selector: 'app-fleet',
-  standalone: true,
-  imports: [Button, Tag, StatCard],
-  template: `
-    <arena-stat-card label="Rotors in service" [value]="rotors().length" tone="success" />
-
-    @for (rotor of rotors(); track rotor.id) {
-      <arena-tag [tone]="rotor.grounded ? 'danger' : 'success'">{{ rotor.status }}</arena-tag>
-    }
-
-    <arena-button icon="ph-plus" (click)="add()">Add a rotor</arena-button>
-  `,
-})
-export class Fleet {
-  readonly rotors = signal<Rotor[]>([]);
-  add(): void {}
-}
-```
+Both bun and npm run a `pre<name>` script ahead of the script it names, so wiring it once is
+what keeps the two files from ever going stale. They are build products of your config and your
+sources, so ignore them in version control the way you ignore the rest of your build.
 
 ## Switch palettes
 
@@ -236,9 +217,9 @@ bootstrapApplication(App, {
 });
 ```
 
-Pass the same palettes your config declares. Then inject `ThemeService` and call
-`set('light')`, or `toggle()` to walk them in order. `theme` is a signal, so a template reads
-it directly. With no providers the service answers `dark` and `light`.
+Pass the same palettes your config declares. Then inject `ThemeService` and call `set('light')`,
+or `toggle()` to walk them in order. `theme` is a signal, so a template reads it directly. With
+no providers the service answers `dark` and `light`.
 
 To avoid a flash on first paint, apply the class in `index.html` before your stylesheet:
 
@@ -255,12 +236,12 @@ To avoid a flash on first paint, apply the class in `index.html` before your sty
 </script>
 ```
 
-## What the package exports besides components
+## What the package ships besides the components
 
-Five small surfaces reach the package root beside the components, each answering a question a
-consumer cannot answer from outside. Everything here imports from `@dravensoft/arena-angular`.
+Every component is standalone, so import the ones a template uses. Five other surfaces reach the
+package root, each answering a question a consumer cannot answer from outside.
 
-**The projection markers, and one of them is not optional.** `ArenaAction`, `ArenaActions`,
+**The projection markers, and they are not optional.** `ArenaAction`, `ArenaActions`,
 `ArenaBrand`, `ArenaFooter` and `ArenaSecondaryAction` are the directives behind the `[action]`,
 `[actions]`, `[brand]`, `[footer]` and `[secondaryAction]` attributes. **Put the marker your
 template writes in that component's own `imports`.** A component detects a projected slot with a
@@ -269,59 +250,35 @@ silently unrendered: no error and no template diagnostic, because a bare `footer
 `<div>` is valid HTML whether or not a directive matches it. The component cannot tell an
 un-imported marker from an unfilled slot, so nothing can warn you.
 
-**The theme surface**, above: `provideArenaThemes`, `ThemeService`, `themeClass` and the
-`ArenaPalette` / `ArenaThemeConfig` types.
+| export | what it is |
+| --- | --- |
+| `provideArenaThemes`, `ThemeService`, `themeClass`, `ArenaPalette`, `ArenaThemeConfig` | the theme surface above |
+| `containerWidth(ref?)` | `Signal<number \| null>` over the host's own box, or the `ElementRef` you pass. For a component or a panel that has to fit the room it was given. **The width is `null` until the first measurement**, so render the wide branch while it is: a panel that flashes into its phone shape on every mount is worse than one that settles into it |
+| `viewportBelow(name)` | `Signal<boolean>` over `not all and (min-width: N)`, where `name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components branch on. For a page's own layout, and **never for a component**: that is wrong the first time somebody puts it in a narrow column. Call `forgetBreakpoints()` if your app swaps its stylesheet at runtime |
+| `catColor(slot)`, `catSurface(slot)`, `catSlotFor(key)`, `CAT_SLOTS` | the chart ramp, for a legend or a chip you draw yourself. The ramp's order is its identity, so a slot means the same thing in every chart on the screen |
+| `isPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
+| `ARENA_ICONS` | the role-to-Phosphor map Arena's own components draw from, as `{ role, phosphor, weight }`. Read it when you want your icon for a role to match Arena's |
 
-**Two measurements, and they answer different questions.**
+Call either measurement from an injection context, a field initializer or the constructor:
+`DestroyRef` disconnects the observer and `afterNextRender` decides when there is a box to
+measure at all. Every other symbol reaching the root is an internal of this layer, exported
+because the barrel is not curated, and carries no compatibility promise.
 
-| | returns | reach for it |
-| --- | --- | --- |
-| `containerWidth(ref?)` | `Signal<number \| null>` over the host's own box, or the `ElementRef` you pass | a component or a panel that has to fit the room it was given |
-| `viewportBelow(name)` | `Signal<boolean>` over `not all and (min-width: N)` | a page's own layout |
+The stylesheets are a tree, and you pick your depth. `arena.css` is all of it and the
+zero-friction path:
 
-Call either from an injection context, a field initializer or the constructor: `DestroyRef`
-disconnects the observer and `afterNextRender` decides when there is a box to measure at all.
-**The width is `null` until the first measurement**, so render the wide branch while it is,
-rather than the narrow one: a panel that flashes into its phone shape on every mount is worse
-than one that settles into it.
+| stylesheet | what it is |
+| --- | --- |
+| `css/base.css` | Tailwind's preflight and nothing of Arena's. Arena needs one: without `button, input, select, textarea { font: inherit }` a control falls back to the browser's 13.33px Arial and every control in the library is 20% off, with nothing to tell you. Keep yours or keep this one, but keep one |
+| `css/components.css` | every component Arena draws |
+| `css/components/<name>.css` | one component. Each imports the prelude it needs itself, so importing one alone is safe |
+| `css/numerals.css` | `.arena-num`, the mono face and `tabular-nums` and no colour. Put it on a figure you draw yourself and a column of them aligns by digit the way a table's does |
+| `css/arena-cdk.css` | the CDK overlay, re-based onto Arena's layering |
 
-`name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token
-Arena's own components branch on, which is the point: a media query condition holds no `var()`,
-so a threshold cannot be named from a stylesheet at all, and an app writing CSS in a `styles:`
-block has no other way to reach it. `viewportBelow` is the exact complement of the `md:` variant
-rather than a `max-width` an epsilon short of it. **Never branch a component on the viewport**:
-it is wrong the first time somebody puts it in a narrow column. If your app swaps its stylesheet
-at runtime, call `forgetBreakpoints()` afterwards to drop the cached thresholds.
-
-**The chart ramp, for a legend or a chip you draw yourself.** `catColor(slot)` returns the
-custom property for a slot, `catSurface(slot)` the fill and border pair for a chip carrying that
-identity, `catSlotFor(key)` assigns a stable slot from a string, and `CAT_SLOTS` is how many
-there are. The ramp's order is its identity, so a slot means the same thing in every chart on
-the screen.
-
-**`isPrimaryActivation(event)`**, the predicate behind the anchor rule: true for a primary
-click with no modifier, false for every modified click, middle click and context menu. Use it if
-you draw an anchor of your own beside Arena's and want the same split.
-
-`ARENA_ICONS` is the role-to-Phosphor map Arena's own components draw from, as
-`{ role, phosphor, weight }`. Read it when you want your icon for a role to match Arena's.
-
-Every other symbol reaching the root is an internal of this layer, exported because the barrel
-is not curated, and carries no compatibility promise.
-
-## One stylesheet gives you a treatment, not a component
-
-`css/numerals.css` holds `.arena-num`: the mono face and `tabular-nums`, and no colour. Put it
-on a figure you draw yourself, in a definition list, a KPI or a cart line, and a column of them
-aligns by digit the way a table's does.
-
-`arena.css` already imports it, so the separate file is only for an app importing the halves
-by hand.
-## What is in the package
-
-Every component in Angular Package Format, the shared Tailwind recipes they read, the
-compiled utility sheet, the invariant stylesheets, and the `arena-theme` command. No tests,
-no demo pages, no font binaries, and no icons.
+Importing the halves rather than `arena.css` makes **order** yours: Arena's components have to
+come before your own rules if you want yours to win. There is nothing to compile either way: no
+file in this package carries a Tailwind class, so pointing a `@source` at it produces an empty
+sheet.
 
 ## Why might this package's latest version not match Arena's latest version?
 

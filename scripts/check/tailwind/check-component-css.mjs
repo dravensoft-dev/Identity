@@ -25,7 +25,7 @@ export const THEME_NAMESPACES = [
 ];
 
 export const EXTERNAL_PROPERTIES = new Map([
-  ['picker-invert', 'written by arena-theme into the consuming project\'s own stylesheet, never by the package'],
+  ['picker-invert', 'written by arena-to-prod into the consuming project\'s own stylesheet, never by the package'],
 ]);
 
 export function selectorsIn(css) {

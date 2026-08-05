@@ -1,15 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import {
-  manifest, ngPackageConfig, libTsconfig, withAssets, ngPackagrBin,
-  NAME, RUNTIME_DEPENDENCIES, STAGING, LAYER,
+  manifest, ngPackageConfig, libTsconfig, withAssets, ngPackagrBin, annotatePure,
+  NAME, RUNTIME_DEPENDENCIES, STAGING, LAYER, VARIANTS,
 } from './build-angular-package.mjs';
-import { version } from '../../lib/arena/package-assembly.mjs';
+import { version, collectFiles, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-
-const variants = "import manifest from '../../../../tailwind/components/display/tag/Tag.manifest.generated';";
 
 test('ng-packagr is pointed at the entry file and told where the package lands', () => {
   const config = ngPackageConfig();
@@ -60,11 +58,34 @@ test('the assets are added to what ng-packagr wrote without losing its own entry
   assert.deepEqual(final.exports['.'], emitted.exports['.']);
   assert.deepEqual(final.exports['./arena.css'], { default: './arena.css' });
   assert.deepEqual(final.exports['./css/*'], { default: './css/*' });
-  assert.equal(final.bin['arena-theme'], './bin/arena-theme.mjs');
+  assert.deepEqual(final.bin, CLI_BINS, 'ng-packagr emits no bin, so this is the only place the commands survive');
 });
 
 test('the staging tree is the layer\'s own build/, git-ignored and excluded by an anchored path in every walker that reaches it', () => {
   assert.equal(STAGING, 'frameworks/angular/build/package');
+});
+
+test('a style factory is marked pure where it is declared, so a bundler may drop the one nothing renders', () => {
+  const source = "import manifest from './Tag.classes.generated';\n\nexport const tagStyles = arenaStyles(manifest);\n";
+  assert.equal(annotatePure(source),
+    "import manifest from './Tag.classes.generated';\n\nexport const tagStyles = /*@__PURE__*/arenaStyles(manifest);\n");
+});
+
+test('nothing else in a variants file is touched, and the suffix is the one the staging matches on', () => {
+  assert.equal(VARIANTS, '.variants.ts');
+  assert.equal(annotatePure('const inner = arenaStyles(manifest);'), 'const inner = arenaStyles(manifest);');
+  assert.equal(annotatePure('export const a = arenaStyles(m);\nexport const b = other(m);\n'),
+    'export const a = /*@__PURE__*/arenaStyles(m);\nexport const b = other(m);\n');
+});
+
+test('every variants file the layer ships is one the annotation matches', () => {
+  const layer = join(repoRoot, LAYER, 'components');
+  const files = collectFiles(layer, (p) => p.endsWith(VARIANTS));
+  assert.ok(files.length > 0, 'a layer with no style factory has moved, and the staging throws on that');
+  for (const file of files) {
+    const source = readFileSync(file, 'utf8');
+    assert.notEqual(annotatePure(source), source, `${file} declares no style factory the staging can mark pure`);
+  }
 });
 
 test('a missing ng-packagr is reported rather than assumed', () => {

@@ -1,21 +1,22 @@
-/* Three claims. First, that the CLI shipped inside both packages emits what Style Dictionary
- * emits: a second emitter exists, so something has to hold the two together, and without
- * this the sentence "the package emits what Arena emits" is only a sentence. Second, when
+/* Four claims. First, that the CLI shipped inside both packages emits what Style Dictionary
+ * emits: a second emitter exists, so something has to hold the two together. Second, when
  * dist/ has been assembled, that each package is registry-standard: the version comes from
  * plugin.json, every exports target resolves to a file that is there and every wildcard one
- * matches at least one, the entry declaration is advertised at the root as well, and no peer leaked
- * into dependencies. Third, that the stylesheets resolve: an exports target is opened and
- * followed, because a sheet that is there and imports 43 files that are not passes the second
- * claim and fails in the consumer's bundler. dist/ is git-ignored, so the last two are skipped
- * on a fresh clone and say so; the first runs anywhere. */
+ * matches at least one, the entry declaration is advertised at the root, and no peer leaked into
+ * dependencies. Third, that the stylesheets resolve, because a sheet that imports 43 files that
+ * are not there passes the second claim and fails in the consumer's bundler. Fourth, that the
+ * component map is there and reaches every sheet both ways: it is all that stands between
+ * "components": "auto" and a subset resolved from nothing, which is every screen unstyled with
+ * the build green. dist/ is git-ignored, so all but the first are skipped on a fresh clone. */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, dirname, sep } from 'node:path';
+import { join, dirname, basename, sep } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
-import { themeCss } from '../../generate/core/arena-theme/theme-css.mjs';
+import { themeCss } from '../../generate/core/arena-to-prod/theme-css.mjs';
+import { MAP_FILE } from '../../lib/arena/component-map.mjs';
 
 export const PACKAGES = [
   { layer: 'react', name: '@dravensoft/arena-react' },
@@ -41,18 +42,18 @@ export function paletteEquivalenceProblems(generatedCss, cliCss) {
   for (const [selector, decls] of expected) {
     const mine = actual.get(selector);
     if (!mine) {
-      problems.push(`${GENERATED_PALETTE} declares ${selector} and arena-theme emits no such block`);
+      problems.push(`${GENERATED_PALETTE} declares ${selector} and arena-to-prod emits no such block`);
       continue;
     }
     for (const [name, value] of decls) {
       if (!isColour(name)) continue;
       compared += 1;
       if (mine.get(name) !== value) {
-        problems.push(`${selector} --${name}: Style Dictionary says ${value}, arena-theme says ${mine.get(name) ?? '(nothing)'}`);
+        problems.push(`${selector} --${name}: Style Dictionary says ${value}, arena-to-prod says ${mine.get(name) ?? '(nothing)'}`);
       }
     }
     for (const name of mine.keys()) {
-      if (isColour(name) && !decls.has(name)) problems.push(`${selector} --${name}: arena-theme emits it and Style Dictionary does not`);
+      if (isColour(name) && !decls.has(name)) problems.push(`${selector} --${name}: arena-to-prod emits it and Style Dictionary does not`);
     }
   }
 
@@ -140,6 +141,34 @@ export function exportProblems(pkg, manifest, dir) {
   return problems;
 }
 
+export function componentMapProblems(pkg, dir) {
+  const at = join(dir, MAP_FILE);
+  if (!existsSync(at)) {
+    return [`${pkg.name}: no ${MAP_FILE}, so "components": "auto" has nothing to resolve a template against`];
+  }
+  let map;
+  try {
+    map = JSON.parse(readFileSync(at, 'utf8'));
+  } catch (error) {
+    return [`${pkg.name}: ${MAP_FILE} does not parse: ${error.message}`];
+  }
+  const sheets = existsSync(join(dir, 'css', 'components'))
+    ? readdirSync(join(dir, 'css', 'components')).filter((n) => n.endsWith('.css')).map((n) => basename(n, '.css'))
+    : [];
+  const claimed = new Set(Object.values(map.draws ?? {}).filter(Boolean));
+  const problems = [];
+  if (!map.match || claimed.size === 0) {
+    problems.push(`${pkg.name}: ${MAP_FILE} names no component sheet, so auto would resolve every project to nothing`);
+  }
+  for (const sheet of [...claimed].sort()) {
+    if (!sheets.includes(sheet)) problems.push(`${pkg.name}: ${MAP_FILE} names ${sheet}, and no such sheet was emitted`);
+  }
+  for (const sheet of sheets.filter((s) => !claimed.has(s)).sort()) {
+    problems.push(`${pkg.name}: ${MAP_FILE} reaches no key for ${sheet}, so auto can never put it in a subset`);
+  }
+  return problems;
+}
+
 const RELATIVE_IMPORT = /@import\s+(?:url\(\s*)?['"](\.[^'"]*)['"]/g;
 
 export function importsIn(css) {
@@ -192,6 +221,7 @@ export function collect(base = root) {
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
     problems.push(...manifestProblems(pkg, manifest, version));
     problems.push(...exportProblems(pkg, manifest, dir));
+    problems.push(...componentMapProblems(pkg, dir));
     problems.push(...styleProblems(pkg, dir).problems);
   }
 
@@ -210,7 +240,7 @@ function main() {
   const built = assembled.length
     ? `${assembled.length} package(s) assembled at ${version}: ${assembled.join(', ')}`
     : 'no package assembled; run bun run build:packages to check the manifests too';
-  console.log(`check-packages: arena-theme matches ${GENERATED_PALETTE} across ${compared} declaration(s); ${built}`);
+  console.log(`check-packages: arena-to-prod matches ${GENERATED_PALETTE} across ${compared} declaration(s); ${built}`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

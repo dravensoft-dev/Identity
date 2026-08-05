@@ -17,6 +17,7 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
   collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,
+  writeComponentMap,
 } from '../../lib/arena/package-assembly.mjs';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 
@@ -166,6 +167,7 @@ export async function buildReactPackage(root = repoRoot) {
 
   for (const rel of copyCli(dir, root)) written.push(join(dir, rel));
 
+  written.push(writeComponentMap(dir, 'react', root));
   written.push(write(dir, 'arena.config.example.json', `${JSON.stringify(arenaConfig(root), null, 2)}\n`));
   written.push(copy(join(layer, 'PACKAGE.md'), dir, 'README.md'));
   written.push(copy(join(root, 'LICENSE'), dir, 'LICENSE'));

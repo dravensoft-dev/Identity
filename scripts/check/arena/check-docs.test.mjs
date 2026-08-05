@@ -499,3 +499,22 @@ test('an entry no document on its own branch states fails as a stale registratio
   assert.match(problems[0], /outlived the rule it was written for/);
   rmSync(root, { recursive: true });
 });
+
+test('a consumer output is allowed by its whole name, so a build product of this repository still fails', () => {
+  const root = tree({
+    'frameworks/react/PACKAGE.md': 'Import ./icons.generated.css beside ./arena.generated.css.',
+    'frameworks/angular/PACKAGE.md': 'Import ./Tokens.generated.ts, which is ours and not theirs.',
+  });
+  const { problems } = consumerBranchProblems(root);
+  assert.equal(problems.length, 1, 'both names a consumer writes are allowed, and the one they never see is not');
+  assert.match(problems[0], /Tokens\.generated/);
+  rmSync(root, { recursive: true });
+});
+
+test('every allowed consumer output carries a reason, because a bare exemption cannot be argued with', () => {
+  assert.ok(CONSUMER_OWN_OUTPUT.size > 0);
+  for (const [name, reason] of CONSUMER_OWN_OUTPUT) {
+    assert.match(name, /\.generated\.[a-z]+$/, `${name} is registered and is not a generated name`);
+    assert.ok(reason.includes('CONSUMER'), `${name} is registered with no statement of whose output it is`);
+  }
+});

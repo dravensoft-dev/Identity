@@ -2,7 +2,9 @@
  * rather than built in place because ng-packagr needs its own `ng-package.json`,
  * `tsconfig.lib.json` and `package.json` at the root it compiles from, and writing those into
  * the tracked layer would leave build files beside the source. It no longer stages anything of
- * another layer: a component composes its own class names, so nothing reaches out. */
+ * another layer: a component composes its own class names, so nothing reaches out. Staging
+ * is also where each style factory is marked pure, because the annotation belongs to what
+ * ships and a component directory is the one place a bare block comment is refused. */
 
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -12,6 +14,7 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {
   collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,
+  writeComponentMap, CLI_BINS,
 } from '../../lib/arena/package-assembly.mjs';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
 
@@ -74,15 +77,34 @@ export function libTsconfig() {
   };
 }
 
+export const VARIANTS = '.variants.ts';
+export const STYLE_FACTORY = /^(export const \w+ = )(arenaStyles\()/gm;
+
+export function annotatePure(source) {
+  return source.replace(STYLE_FACTORY, '$1/*@__PURE__*/$2');
+}
+
 function stage(root) {
   const dir = join(root, STAGING);
   reset(dir);
 
   const layer = join(root, LAYER);
   const staged = [];
+  let variants = 0;
+  let annotated = 0;
   for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html') && !p.includes('/playground/'))) {
     const rel = relative(layer, file).split(sep).join('/');
-    staged.push(write(dir, rel, readFileSync(file, 'utf8')));
+    const source = readFileSync(file, 'utf8');
+    if (!rel.endsWith(VARIANTS)) { staged.push(write(dir, rel, source)); continue; }
+    const pure = annotatePure(source);
+    variants += 1;
+    if (pure !== source) annotated += 1;
+    staged.push(write(dir, rel, pure));
+  }
+  if (variants === 0 || annotated !== variants) {
+    throw new Error(`build-angular-package: marked ${annotated} of ${variants} style factories pure. `
+      + 'What ships is one FESM module, so a factory the bundler must keep drags every class name of a '
+      + 'component nobody renders into the consumer\'s initial chunk, and nothing fails.');
   }
 
 
@@ -124,6 +146,7 @@ export function buildAngularPackage(root = repoRoot) {
 
   for (const rel of copyCli(dist, root)) written.push(join(dist, rel));
 
+  written.push(writeComponentMap(dist, 'angular', root));
   written.push(write(dist, 'arena.config.example.json', `${JSON.stringify(arenaConfig(root), null, 2)}\n`));
   written.push(copy(join(root, LAYER, 'PACKAGE.md'), dist, 'README.md'));
   written.push(copy(join(root, 'LICENSE'), dist, 'LICENSE'));
@@ -144,7 +167,7 @@ export function withAssets(emitted) {
       './css/components/*': { default: './css/components/*' },
       './arena.config.example.json': { default: './arena.config.example.json' },
     },
-    bin: { 'arena-theme': './bin/arena-theme.mjs' },
+    bin: { ...CLI_BINS },
     sideEffects: emitted.sideEffects ?? false,
   };
 }

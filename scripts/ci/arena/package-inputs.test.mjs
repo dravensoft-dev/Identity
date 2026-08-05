@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { PACKAGE_INPUTS, SHARED_INPUTS, pathspecs, uncoveredChainEntries } from './package-inputs.mjs';
-import { CSS_CHAIN } from '../../lib/arena/package-assembly.mjs';
+import { CSS_CHAIN, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('every file the CSS chain copies is covered, so a chain that grows fails here', () => {
@@ -16,9 +16,12 @@ test('every file the CSS chain copies is covered, so a chain that grows fails he
 });
 
 test('the CLI each package ships as its bin is covered', () => {
-  assert.ok('scripts/generate/core/arena-theme/' in SHARED_INPUTS);
-  assert.ok(existsSync(join(repoRoot, 'scripts', 'generate', 'core', 'arena-theme')),
-    'copyCli reads this directory, and the guard names it by that path');
+  for (const name of Object.keys(CLI_BINS)) {
+    assert.ok(`scripts/generate/core/${name}/` in SHARED_INPUTS,
+      `${name} ships in both packages and a change to it would not trip the republish guard`);
+    assert.ok(existsSync(join(repoRoot, 'scripts', 'generate', 'core', name)),
+      'copyCli reads this directory, and the guard names it by that path');
+  }
 });
 
 test('each package names its own layer, and both name the Tailwind layer they draw from', () => {

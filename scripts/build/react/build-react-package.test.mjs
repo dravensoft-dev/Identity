@@ -7,7 +7,7 @@ import {
   rewriteSourceSpecifiers, untypedProblems, unresolvedProblems, relativeSpecifiers,
   isSource, manifest, NAME, ROOT_JS, ROOT_TS, LAYER,
 } from './build-react-package.mjs';
-import { version } from '../../lib/arena/package-assembly.mjs';
+import { version, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('a relative source specifier becomes .js, because the package holds no JSX and no TypeScript', () => {
@@ -68,6 +68,10 @@ test('react, react-dom and Phosphor are the peers, and nothing at all is a depen
   assert.equal(m.dependencies, undefined,
     'a component composes its own class names, so no recipe library ships with it; the two that '
     + 'used to were 15,834 bytes gzipped and are the reason the package is lighter than the CSS grew');
+});
+
+test('the command the package ships is declared, and it is the one both packages declare', () => {
+  assert.deepEqual(manifest(repoRoot).bin, CLI_BINS);
 });
 
 test('the stylesheet and the example config are reachable by subpath', () => {
