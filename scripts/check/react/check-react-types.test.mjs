@@ -7,20 +7,13 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { PROJECTS, tscBin, zeroProjectProblems } from './check-react-types.mjs';
+import { PROJECTS } from './check-react-types.mjs';
 
 const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0].project), 'utf8'));
 
-test('the gate names a project that exists, and compiling nothing is a failure', () => {
+test('the gate names a project that exists', () => {
   for (const { project: path } of PROJECTS)
     assert.ok(existsSync(join(repoRoot, path)), `${path} does not exist`);
-  assert.equal(zeroProjectProblems(0).length, 1);
-  assert.match(zeroProjectProblems(0)[0], /reports clean by construction/);
-  assert.deepEqual(zeroProjectProblems(1), []);
-});
-
-test('tsc runs under plain node, so this gate has no skip path to take', () => {
-  assert.ok(tscBin(repoRoot).endsWith(join('typescript', 'lib', 'tsc.js')));
 });
 
 test('verbatimModuleSyntax is on, because Bun keeps a value-form import of a type', () => {

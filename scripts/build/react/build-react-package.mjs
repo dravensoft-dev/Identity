@@ -12,7 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, dirname, sep } from 'node:path';
-import { tscBin } from '../../check/react/check-react-types.mjs';
+import { tscBin } from '../../lib/arena/typecheck.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import {

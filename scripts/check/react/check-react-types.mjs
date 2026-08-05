@@ -2,38 +2,12 @@
  * disagreeing with the interface beside it, which is what 54 hand-written .d.ts could not.
  * tsc runs under plain node, so unlike check:demos and check:vendor this gate never skips. */
 
-import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
-
-const MAX_BUFFER = 32 * 1024 * 1024;
-
-export function tscBin(root = repoRoot) {
-  const bin = join(root, 'node_modules/typescript/lib/tsc.js');
-  if (!existsSync(bin))
-    throw new Error(`typescript is not installed at ${bin} — run \`bun install\` before check:react-types`);
-  return bin;
-}
+import { typecheck, zeroProjectProblems } from '../../lib/arena/typecheck.mjs';
 
 export const PROJECTS = [
   { project: 'frameworks/react/tsconfig.check.json', reaches: 'every component, helper and suite in the layer' },
 ];
-
-export function typecheck(opts = {}) {
-  const root = opts.root ?? repoRoot;
-  const bin = tscBin(root);
-  const project = join(root, opts.project ?? PROJECTS[0].project);
-  const r = spawnSync(process.execPath, [bin, '--noEmit', '-p', project], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
-  if (r.error) throw new Error(`tsc failed to spawn: ${r.error.message || r.error}`);
-  return { status: r.status ?? 1, output: `${r.stdout || ''}${r.stderr || ''}` };
-}
-
-export function zeroProjectProblems(count) {
-  if (count > 0) return [];
-  return ['found 0 projects to typecheck; a gate that compiles nothing reports clean by construction'];
-}
 
 function main() {
   const empty = zeroProjectProblems(PROJECTS.length);

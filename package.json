@@ -51,6 +51,7 @@
     "check:demos": "bun scripts/check/react/check-demos-generated.mjs",
     "check:react-barrel": "bun scripts/check/react/check-react-barrel.mjs",
     "check:react-types": "bun scripts/check/react/check-react-types.mjs",
+    "check:script-types": "bun scripts/check/arena/check-script-types.mjs",
     "check:vendor": "bun scripts/check/react/check-vendor-generated.mjs",
     "check:angular": "bun scripts/check/angular/check-angular.mjs",
     "check:angular-demos": "bun scripts/check/angular/check-angular-demos.mjs",
