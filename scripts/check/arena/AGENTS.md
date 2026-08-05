@@ -64,11 +64,21 @@ rather than a count. A stale exemption fails the gate itself, and a change to `E
 on both maps by name.
 
 Every `X.test.mjs` beside a gate covers that gate. Three suites here name no gate:
-`browser-modules.test.mjs` covers the `intro/` runtime modules,
+`browser-modules.test.mjs` covers the `intro/` runtime modules and the two `scripts/`
+modules they reach,
 `components-categories.test.mjs` covers `frameworks/Components.json`, and
 `script-imports.test.mjs` covers every non-suite script's relative specifiers and the shape of
 its main guard. All three are claims about the repository root, which is what makes them
 `arena`.
+
+**A module an `intro/` page imports stays `.mjs`, and nothing there may be TypeScript.**
+Those pages are ES modules a browser loads over HTTP, and there is no build step between the
+git tag and the page, which is the reason `contracts/design-generated/` is tracked in the
+first place. Two modules are reached that way today, `lib/arena/css-decls.mjs` and
+`lib/core/token-preview.mjs`, and `browser-modules.test.mjs` reads that list off the imports
+rather than carrying a typed copy. This is the one rule here a passing suite could otherwise
+hide: node strips types and would resolve a `.ts` import happily, while the browser gets a
+file `static-server.mjs` has no MIME type for and the page fails with every gate green.
 
 **A script decides it is the program by comparing `process.argv[1]` to
 `fileURLToPath(import.meta.url)`, never by matching its own filename.** The second form reads
