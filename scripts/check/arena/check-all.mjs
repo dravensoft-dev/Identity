@@ -62,6 +62,7 @@ export const GATES = [
   { name: 'check:focus-trap', file: 'arena/check-focus-trap.mjs' },
   { name: 'check:shared-arithmetic', file: 'arena/check-shared-arithmetic.mjs' },
   { name: 'check:packages', file: 'arena/check-packages.mjs' },
+  { name: 'check:consumer', file: 'arena/check-consumer.mjs' },
   { name: 'check:angular', file: 'angular/check-angular.mjs' },
   { name: 'check:angular-demos', file: 'angular/check-angular-demos.mjs' },
   { name: 'check:assertions', file: 'angular/check-assertions.mjs' },

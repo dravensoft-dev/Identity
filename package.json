@@ -87,6 +87,7 @@
     "check:cards": "bun scripts/check/arena/check-card-viewports.mjs",
     "check:shared-arithmetic": "bun scripts/check/arena/check-shared-arithmetic.mjs",
     "check:packages": "bun scripts/check/arena/check-packages.mjs",
+    "check:consumer": "bun scripts/check/arena/check-consumer.mjs",
     "check": "bun scripts/check/arena/check-all.mjs",
     "ci:summarize": "bun scripts/ci/arena/summarize-tests.mjs",
     "test:scripts": "bun test scripts",
