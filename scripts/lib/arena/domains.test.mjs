@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { DOMAINS, domainOfTestPath } from './domains.mjs';
+import { DOMAINS, SCRIPT_EXTENSIONS, domainOfTestPath, isScript, isSuite } from './domains.mjs';
 import { LAYERS } from './layers.mjs';
 import { repoRoot } from './repo-root.mjs';
 
@@ -66,4 +66,30 @@ test('every suite under scripts/ classifies, so the summary can never silently d
     .map((p) => relative(repoRoot, p))
     .filter((rel) => domainOfTestPath(rel) === null);
   assert.deepEqual(unclassified, []);
+});
+
+test('a suite is one in either extension, and a script is what is left over', () => {
+  for (const name of ['a.test.mjs', 'a.test.ts', 'check-docs.test.ts'])
+    assert.equal(isSuite(name), true, `${name} is a suite`);
+  for (const name of ['a.mjs', 'a.ts', 'serve.mjs', 'ArenaButton.test.tsx', 'notes.md'])
+    assert.equal(isSuite(name), false, `${name} is not a suite this tree runs`);
+
+  for (const name of ['a.mjs', 'a.ts', 'serve.mjs'])
+    assert.equal(isScript(name), true, `${name} is a script`);
+  for (const name of ['a.test.mjs', 'a.test.ts', 'notes.md', 'Components.json'])
+    assert.equal(isScript(name), false, `${name} is not a script`);
+});
+
+test('the two predicates never both hold, or a file would be scanned as its own suite', () => {
+  for (const name of ['a.mjs', 'a.ts', 'a.test.mjs', 'a.test.ts', 'x.md'])
+    assert.equal(isScript(name) && isSuite(name), false, name);
+});
+
+test('both extensions are declared, since dropping either silently narrows all three scanners', () => {
+  assert.deepEqual(SCRIPT_EXTENSIONS, ['.mjs', '.ts']);
+});
+
+test('a .ts path classifies by its directory, so the domain survives the rename', () => {
+  assert.equal(domainOfTestPath('scripts/check/tailwind/check-radius-tokens.test.ts'), 'tailwind');
+  assert.equal(domainOfTestPath('scripts/lib/arena/domains.test.ts'), 'arena');
 });

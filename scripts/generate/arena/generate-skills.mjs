@@ -6,6 +6,7 @@
  * runs a build, and they carry no frontmatter: a nested file is reached by link rather than
  * registered, and the plugin root's SKILL.md is the one that is a skill. */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -252,4 +253,4 @@ function main() {
   }
 }
 
-if (process.argv[1] && process.argv[1].endsWith('generate-skills.mjs')) main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

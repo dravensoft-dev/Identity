@@ -14,7 +14,7 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { DOMAINS } from '../../lib/arena/domains.mjs';
+import { DOMAINS, isSuite } from '../../lib/arena/domains.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const checkRoot = join(here, '..');
@@ -105,7 +105,8 @@ export function testStep({ isBun, testFiles }) {
     { name: 'test (React DOM suites, isolated)',
       args: ['test', '--preload', './frameworks/react/test/Preload.js', '.dom.test.'] },
   ];
-  return [{ name: 'test (node --test over every scripts/**/*.test.mjs)', args: ['--test', ...testFiles] }];
+  return [{ name: `test (node --test over every suite under scripts/, ${testFiles.length} found)`,
+            args: ['--test', ...testFiles] }];
 }
 
 export function stepStatus(code) {
@@ -140,7 +141,7 @@ export function testFilesUnder(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) found.push(...testFilesUnder(full));
-    else if (entry.name.endsWith('.test.mjs')) found.push(full);
+    else if (isSuite(entry.name)) found.push(full);
   }
   return found;
 }

@@ -10,7 +10,7 @@ import { mkdirSync, readFileSync, existsSync, appendFileSync, readdirSync } from
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { testStep } from '../../check/arena/check-all.mjs';
-import { DOMAINS, domainOfTestPath } from '../../lib/arena/domains.mjs';
+import { DOMAINS, domainOfTestPath, isSuite } from '../../lib/arena/domains.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const REPORT_DIR = join('.cache', 'junit');
@@ -67,7 +67,7 @@ export function suiteDomains(dir) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (entry.isDirectory()) { walk(full); continue; }
-      if (!/\.test\.mjs$/.test(entry.name)) continue;
+      if (!isSuite(entry.name)) continue;
       const domain = domainOfTestPath(relative(repoRoot, full));
       if (domain) found.add(domain);
     }

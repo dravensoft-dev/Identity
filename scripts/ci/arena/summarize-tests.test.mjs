@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
-  EXPECTED_ROOTS, coverageProblems, parseJunit, renderSummary, stepsWithJunit, tally,
+  EXPECTED_ROOTS, coverageProblems, parseJunit, renderSummary, stepsWithJunit, suiteDomains, tally,
 } from './summarize-tests.mjs';
 import { testStep } from '../../check/arena/check-all.mjs';
 import { DOMAINS } from '../../lib/arena/domains.mjs';
@@ -98,4 +101,33 @@ test('the summary names every domain and totals them', () => {
   const summary = renderSummary(tally(parseJunit(XML)));
   for (const domain of DOMAINS) assert.match(summary, new RegExp(`\\| ${domain} \\|`), `${domain} is missing`);
   assert.match(summary, /\| \*\*total\*\* \| \*\*2\*\* \| \*\*1\*\* \| \*\*1\*\* \|/);
+});
+
+test('suiteDomains reads a domain off a suite in either extension, which is what expects its cases', () => {
+  const root = mkdtempSync(join(tmpdir(), 'summarize-ext-'));
+  try {
+    mkdirSync(join(root, 'scripts', 'check', 'tailwind'), { recursive: true });
+    mkdirSync(join(root, 'scripts', 'lib', 'core'), { recursive: true });
+    writeFileSync(join(root, 'scripts', 'check', 'tailwind', 'a.test.mjs'), '// suite');
+    writeFileSync(join(root, 'scripts', 'lib', 'core', 'b.test.ts'), '// suite');
+    writeFileSync(join(root, 'scripts', 'lib', 'core', 'c.ts'), '// not a suite');
+    assert.deepEqual(suiteDomains(join(root, 'scripts')), ['core', 'tailwind']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a domain whose suites are all .ts still expects its cases, so the reporter cannot drop them unnoticed', () => {
+  const root = mkdtempSync(join(tmpdir(), 'summarize-ts-'));
+  try {
+    mkdirSync(join(root, 'scripts', 'check', 'react'), { recursive: true });
+    writeFileSync(join(root, 'scripts', 'check', 'react', 'only.test.ts'), '// suite');
+    const expected = suiteDomains(join(root, 'scripts'));
+    assert.deepEqual(expected, ['react']);
+    const counted = tally([]);
+    assert.equal(coverageProblems(counted, expected, []).length, 1,
+      'react owns a suite and reported nothing, and that has to be a problem rather than a clean run');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

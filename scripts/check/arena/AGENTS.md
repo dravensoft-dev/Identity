@@ -63,7 +63,18 @@ rather than a count. A stale exemption fails the gate itself, and a change to `E
 `PASSTHROUGH` is a change to `check-dimension-literals.test.mjs` too, since that suite asserts
 on both maps by name.
 
-Every `X.test.mjs` beside a gate covers that gate. Two suites here name no gate:
-`browser-modules.test.mjs` covers the `intro/` runtime modules, and
-`components-categories.test.mjs` covers `frameworks/Components.json`, and both are claims about
-the repository root, which is what makes them `arena`.
+Every `X.test.mjs` beside a gate covers that gate. Three suites here name no gate:
+`browser-modules.test.mjs` covers the `intro/` runtime modules,
+`components-categories.test.mjs` covers `frameworks/Components.json`, and
+`script-imports.test.mjs` covers every non-suite script's relative specifiers and the shape of
+its main guard. All three are claims about the repository root, which is what makes them
+`arena`.
+
+**A script decides it is the program by comparing `process.argv[1]` to
+`fileURLToPath(import.meta.url)`, never by matching its own filename.** The second form reads
+as equivalent and is not: it is a claim about the file's own name, so renaming the file makes
+it false, `main()` stops running, the process exits 0 having read nothing, and `check-all`
+reports that as PASS. `script-imports.test.mjs` holds the rule and carries the only exemption,
+the two `validate-palette.mjs` copies, which are vendored verbatim and re-vendored rather than
+patched; that exemption fails if either stops carrying the guard or stops saying it is
+vendored.

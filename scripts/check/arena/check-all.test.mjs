@@ -109,6 +109,23 @@ test('testFilesUnder finds a suite nested several directories deep, which a flat
   }
 });
 
+test('testFilesUnder collects both extensions, so a suite renamed to .ts does not leave the run', () => {
+  const root = mkdtempSync(join(tmpdir(), 'check-all-ext-'));
+  try {
+    for (const name of ['a.test.mjs', 'b.test.ts', 'c.mjs', 'd.ts', 'notes.md'])
+      writeFileSync(join(root, name), '// fixture');
+    assert.deepEqual(testFilesUnder(root).map((p) => relative(root, p)).sort(),
+      ['a.test.mjs', 'b.test.ts']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('the node step names how many suites it found, because a narrowed run and a full one read alike', () => {
+  const step = testStep({ isBun: false, testFiles: ['/repo/scripts/a.test.mjs'] });
+  assert.match(step[0].name, /1 found/);
+});
+
 test('the four Angular-layer gates run last -- the compile gate, the demo pages, the assertion shape, then the one dependency bridge left', () => {
   assert.deepEqual(
     GATES.slice(-4).map((g) => g.name),

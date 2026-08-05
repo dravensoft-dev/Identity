@@ -12,19 +12,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
-import { join, dirname, relative } from 'node:path';
+import { join, dirname, relative, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { literalRanges, insideLiteral } from '../../lib/arena/comments.mjs';
+import { isScript, isSuite } from '../../lib/arena/domains.mjs';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]*)['"]/g;
+
+const EXTENSION_COUPLED_GUARD = /process\.argv\[1\]\s*(?:&&\s*process\.argv\[1\]\s*)?\.endsWith\(/;
+
+export const VENDORED_VERBATIM = new Set([
+  'scripts/lib/core/validate-palette.mjs',
+  'scripts/generate/core/arena-to-prod/validate-palette.mjs',
+]);
+
+export function guardProblems(paths, root = repoRoot) {
+  return paths
+    .map((p) => relative(root, p).split(sep).join('/'))
+    .filter((rel) => !VENDORED_VERBATIM.has(rel))
+    .filter((rel) => EXTENSION_COUPLED_GUARD.test(readFileSync(join(root, rel), 'utf8')))
+    .map((rel) => `${rel} decides whether it is the program by matching its own filename`);
+}
 
 export function scriptsUnder(dir) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) { found.push(...scriptsUnder(full)); continue; }
-    if (!entry.name.endsWith('.mjs') || entry.name.endsWith('.test.mjs')) continue;
+    if (!isScript(entry.name)) continue;
     found.push(full);
   }
   return found;
@@ -65,9 +81,37 @@ test('serve.mjs is in scope, and it is the reason this suite exists', () => {
 
 test('a suite is out of scope, because its fixtures are imports inside strings', () => {
   const scripts = scriptsUnder(join(repoRoot, 'scripts')).map((p) => relative(repoRoot, p));
-  assert.equal(scripts.some((p) => p.endsWith('.test.mjs')), false);
+  assert.equal(scripts.some((p) => isSuite(p)), false);
   assert.deepEqual(unresolvedSpecifiers(join(repoRoot, 'scripts/check/arena/script-imports.test.mjs')), [],
     'and this suite is its own witness: scanned directly it is clean, so exclusion is not hiding a break');
+});
+
+test('no script decides it is the program by matching its own filename, which a rename silently falsifies', () => {
+  const problems = guardProblems(scriptsUnder(join(repoRoot, 'scripts')));
+  assert.deepEqual(problems, [],
+    'compare process.argv[1] to fileURLToPath(import.meta.url) instead: a gate whose main() stops '
+    + 'running exits 0 having read nothing, and check-all reports that as PASS');
+});
+
+test('the two vendored copies are exempt on the record, because re-vendoring is the only edit they take', () => {
+  for (const rel of VENDORED_VERBATIM) {
+    const source = readFileSync(join(repoRoot, rel), 'utf8');
+    assert.match(source, EXTENSION_COUPLED_GUARD,
+      `${rel} no longer carries the guard this exemption exists for, so the exemption is stale`);
+    assert.match(source, /Vendored verbatim/,
+      `${rel} is exempt only for as long as it says it is vendored`);
+  }
+});
+
+test('a .ts script is in scope and a .ts suite is not, so a renamed file keeps its coverage', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'arena-imports-ext-'));
+  try {
+    for (const name of ['a.mjs', 'b.ts', 'a.test.mjs', 'b.test.ts', 'notes.md'])
+      writeFileSync(join(dir, name), '// fixture\n');
+    assert.deepEqual(scriptsUnder(dir).map((p) => relative(dir, p)).sort(), ['a.mjs', 'b.ts']);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('a real import that resolves to nothing is still caught, which is what the blanking must not cost', () => {

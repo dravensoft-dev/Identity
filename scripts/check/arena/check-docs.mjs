@@ -8,6 +8,7 @@
  * falls back inside the shared limit after being raised fails, so a ceiling
  * cannot quietly become permanent. A generated file is never read here. */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
 import { findComments } from '../../lib/arena/comments.mjs';
@@ -388,4 +389,4 @@ function main() {
   );
 }
 
-if (process.argv[1] && process.argv[1].endsWith('check-docs.mjs')) main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

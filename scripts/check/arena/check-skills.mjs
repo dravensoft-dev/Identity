@@ -5,6 +5,7 @@
  * assert because check:generated scans no .md and the ignore pattern over frameworks/ reaches
  * only a .generated. name, so nothing else would notice one falling out of the index. */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
@@ -72,4 +73,4 @@ function main() {
   console.log(`check-skills: ${emitted} index page(s) match a fresh emit over ${declared} declared component(s)`);
 }
 
-if (process.argv[1] && process.argv[1].endsWith('check-skills.mjs')) main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();

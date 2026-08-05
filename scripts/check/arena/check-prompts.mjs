@@ -5,6 +5,7 @@
  * contract and then bun run generate:api, never the table. Whether a component is contracted
  * at all is check:api's question, so an uncontracted one is counted here rather than failed. */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
@@ -69,4 +70,4 @@ function main() {
   );
 }
 
-if (process.argv[1] && process.argv[1].endsWith('check-prompts.mjs')) main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) main();
