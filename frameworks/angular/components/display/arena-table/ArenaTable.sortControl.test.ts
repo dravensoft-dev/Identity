@@ -13,8 +13,8 @@ import assert from 'node:assert/strict';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import type { ArenaTableColumn, ArenaTableSort, ArenaTableSortControl } from '../../../Api.generated';
-import { ArenaTable, parseSortOption, sortOptionValue } from './ArenaTable';
-import { forgetWarnings } from '../../../WarnOnce';
+import { ArenaTable, arenaParseSortOption, arenaSortOptionValue } from './ArenaTable';
+import { forgetArenaWarnings } from '../../../WarnOnce';
 import { ArenaTableRow } from '../arena-table-row/ArenaTableRow';
 import { ArenaTableCell } from '../arena-table-cell/ArenaTableCell';
 
@@ -83,11 +83,11 @@ function select(fixture: ComponentFixture<SortControlHost>): HTMLSelectElement |
 }
 
 test('the option value round-trips, so the control edits the same ArenaTableSort the header does', () => {
-  assert.equal(sortOptionValue(2, 'desc'), '2:desc');
-  assert.deepEqual(parseSortOption('2:desc'), { column: 2, direction: 'desc' });
-  assert.deepEqual(parseSortOption('0:asc'), { column: 0, direction: 'asc' });
-  assert.equal(parseSortOption('2:sideways'), null);
-  assert.equal(parseSortOption('nope:asc'), null);
+  assert.equal(arenaSortOptionValue(2, 'desc'), '2:desc');
+  assert.deepEqual(arenaParseSortOption('2:desc'), { column: 2, direction: 'desc' });
+  assert.deepEqual(arenaParseSortOption('0:asc'), { column: 0, direction: 'asc' });
+  assert.equal(arenaParseSortOption('2:sideways'), null);
+  assert.equal(arenaParseSortOption('nope:asc'), null);
 });
 
 test('card mode draws a sort control, and picking one emits the same sortChange a header would', async () => {
@@ -161,7 +161,7 @@ test('a sort aimed at a column that is not sortable warns once, instead of drawi
   console.warn = (...args: unknown[]) => { messages.push(args.map(String).join(' ')); };
   let fixture: ComponentFixture<SortControlHost> | null = null;
   try {
-    forgetWarnings();
+    forgetArenaWarnings();
     fixture = TestBed.createComponent(SortControlHost);
     fixture.componentInstance.sort.set({ column: 1, direction: 'asc' });
     fixture.detectChanges();
@@ -177,6 +177,6 @@ test('a sort aimed at a column that is not sortable warns once, instead of drawi
   } finally {
     console.warn = original;
     fixture?.destroy();
-    forgetWarnings();
+    forgetArenaWarnings();
   }
 });

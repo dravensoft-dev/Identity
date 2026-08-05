@@ -130,7 +130,7 @@ test('disabled reflects onto the native attribute and blocks the emission', () =
   try {
     assert.equal(control.disabled, true);
     assert.ok(control.hasAttribute('disabled'),
-      'the attribute is what the disabled: variants style and what removes the control from the ArenaTab sequence');
+      'the attribute is what the disabled: variants style and what removes the control from the Tab sequence');
 
     control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     fixture.detectChanges();

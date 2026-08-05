@@ -1,4 +1,4 @@
-export interface ActivationModifiers {
+export interface ArenaActivationModifiers {
   button: number;
   metaKey: boolean;
   ctrlKey: boolean;
@@ -6,7 +6,7 @@ export interface ActivationModifiers {
   altKey: boolean;
 }
 
-export function isArenaPrimaryActivation(event: ActivationModifiers): boolean {
+export function isArenaPrimaryActivation(event: ArenaActivationModifiers): boolean {
   return event.button === 0
     && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }

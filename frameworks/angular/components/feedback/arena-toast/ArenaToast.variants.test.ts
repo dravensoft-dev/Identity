@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { arenaToastStyles } from './ArenaToast.variants';
-import { TOAST_DISMISS } from './ArenaToast';
+import { ARENA_TOAST_DISMISS } from './ArenaToast';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated';
 
 function tokens(classString: string): string[] {
@@ -16,8 +16,8 @@ test('only root and action vary with tone -- the body, title, pinned marker, mes
   }
 });
 
-test('TOAST_DISMISS carries the two token intervals, and the actionable one is the longer', () => {
-  assert.deepEqual({ ...TOAST_DISMISS }, { default: dismissDefault, actionable: dismissActionable });
-  assert.ok(TOAST_DISMISS.actionable > TOAST_DISMISS.default,
+test('ARENA_TOAST_DISMISS carries the two token intervals, and the actionable one is the longer', () => {
+  assert.deepEqual({ ...ARENA_TOAST_DISMISS }, { default: dismissDefault, actionable: dismissActionable });
+  assert.ok(ARENA_TOAST_DISMISS.actionable > ARENA_TOAST_DISMISS.default,
     'a notice carrying a button asks the reader to decide rather than only to read, so it lives longer');
 });

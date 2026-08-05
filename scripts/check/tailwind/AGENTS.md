@@ -11,7 +11,7 @@
 | `check-style-parity.mjs` | an element carrying the Arena class names does not compute the same style as one carrying the recipe's own class string, in a real browser, for any slot of any variant, at rest or under reduced motion. `Utilities.generated.css` is the oracle, which is why it survives as a build-time artifact once it stops being published. |
 
 `check-style-parity` is the one that would catch the change nothing else can see, and it is
-also the reason the recipe stays buildable: it compares what `tv()` produces against what the
+also the reason the recipe stays buildable: it compares what `arenaTv()` produces against what the
 emitted CSS paints, so it is a claim about **rendering** where every other gate here is a
 claim about text. It needs a browser and reports `SKIP` without one.
 
@@ -25,7 +25,7 @@ narrow slice that is machine-checked lives elsewhere, as `check:states` in `../a
 
 Every `X.test.mjs` beside a gate covers that gate. Three suites here name no gate:
 `manifest-classes.test.mjs` covers `frameworks/tailwind/ManifestClasses.js`,
-`tv-merge.test.mjs` covers the shared `Tv.ts`, and `theme-namespaces.test.mjs` covers
+`arenaTv-merge.test.mjs` covers the shared `Tv.ts`, and `theme-namespaces.test.mjs` covers
 `Theme.css` itself, asserting that every namespaced property in it is attributed to a
 namespace or listed with a reason. All three are claims about the layer this domain gates
 rather than about any one gate, and the third is deliberately independent of the other two:

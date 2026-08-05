@@ -2,7 +2,7 @@
  * is native sequential focus navigation, which happy-dom does not have -- a suite asserting it
  * there passes identically against a perfect trap and against none, which is why the record said
  * a person had to check it. check:cards already drives real Chromium over CDP, and the same
- * connection presses a real ArenaTab. TRAPS names a page per layer that binds dialog-modal, because
+ * connection presses a real Tab. TRAPS names a page per layer that binds dialog-modal, because
  * the contract is the authority and each layer answers it separately. Each page opens its panel
  * from its own fixture, so no button has to be found by its text: a demo page whose copy moved
  * used to walk a page with nothing open and report a trap that holds. FOCUSABLE repeats :not([tabindex="-1"]) on every clause because a selector list
@@ -45,23 +45,23 @@ export function walkProblems(name, walk) {
   const problems = [];
   if (!walk.panel) return [`${name}: no ${PANEL} rendered, so nothing was walked`];
   if (walk.focusables === 0) {
-    return [`${name}: the panel holds no ArenaTab stop at all, so a keyboard user who reaches it cannot act`];
+    return [`${name}: the panel holds no Tab stop at all, so a keyboard user who reaches it cannot act`];
   }
   if (!walk.startsInside) problems.push(`${name}: focus did not start inside the panel, so the trap never claimed it`);
 
   const escaped = walk.forward.filter((s) => !s.inside);
   if (escaped.length) {
-    problems.push(`${name}: focus left the panel on ArenaTab ${escaped.map((s) => s.press).join(', ')} -- the interior is not trapped`);
+    problems.push(`${name}: focus left the panel on Tab ${escaped.map((s) => s.press).join(', ')} -- the interior is not trapped`);
   }
   if (walk.visited < walk.focusables) {
     problems.push(
-      `${name}: ${walk.focusables} focusable element(s) in the panel and ArenaTab reached ${walk.visited} -- `
+      `${name}: ${walk.focusables} focusable element(s) in the panel and Tab reached ${walk.visited} -- `
       + 'a trap that clamps on one control is not the same as one a user can move through',
     );
   }
   if (walk.focusables === 1) return problems;
-  if (!walk.wrapsForward) problems.push(`${name}: ArenaTab from the last focusable did not return to the first`);
-  if (!walk.wrapsBackward) problems.push(`${name}: Shift+ArenaTab from the first focusable did not reach the last`);
+  if (!walk.wrapsForward) problems.push(`${name}: Tab from the last focusable did not return to the first`);
+  if (!walk.wrapsBackward) problems.push(`${name}: Shift+Tab from the first focusable did not reach the last`);
   return problems;
 }
 
@@ -162,7 +162,7 @@ async function main() {
     for (const p of problems) console.error(`  ${p}`);
     process.exit(1);
   }
-  console.log(`check-focus-trap: ${TRAPS.length} trap(s) walked with real ArenaTab presses — focus stayed inside, reached every control and wrapped both ways`);
+  console.log(`check-focus-trap: ${TRAPS.length} trap(s) walked with real Tab presses — focus stayed inside, reached every control and wrapped both ways`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

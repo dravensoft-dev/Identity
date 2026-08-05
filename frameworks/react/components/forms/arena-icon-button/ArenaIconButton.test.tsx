@@ -54,7 +54,7 @@ test('tabStop defaults to true and emits no tabindex at all', () => {
   assert.doesNotMatch(html, /tabindex/i, 'a default ArenaIconButton wrote a tabindex it does not need');
 });
 
-test('tabStop={false} takes the control out of the page ArenaTab sequence', () => {
+test('tabStop={false} takes the control out of the page Tab sequence', () => {
   const html = renderToStaticMarkup(<ArenaIconButton icon="ph-bold ph-plus" label="Add" tabStop={false} />);
   assert.match(html, /tabindex="-1"/, 'tabStop={false} did not write tabindex="-1"');
 });

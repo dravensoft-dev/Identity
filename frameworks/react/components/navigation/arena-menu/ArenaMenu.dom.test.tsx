@@ -133,7 +133,7 @@ test('ArenaMenu meets the menu-button pattern it binds', () => {
   assert.equal(trigger!.getAttribute('aria-expanded'), 'true', 'the open state did not reach the trigger');
   const first = panel.querySelector<HTMLElement>('[role="menuitem"]');
   assert.equal(document.activeElement, first,
-    'opening left focus on the trigger, so a keyboard user reaches the panel only by ArenaTab');
+    'opening left focus on the trigger, so a keyboard user reaches the panel only by Tab');
 
   press(first!, 'Escape');
   assert.equal(root.querySelector<HTMLElement>('[role="menu"]')!, null, 'Escape did not close the menu');

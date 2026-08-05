@@ -5,8 +5,8 @@ import {
 import type { ArenaCatSlot } from '../../../Api.generated';
 import { arenaCatColor } from '../../../DataVisuals';
 import { ArenaIconButton } from '../../forms/arena-icon-button/ArenaIconButton';
-import { CalendarState } from '../arena-calendar/CalendarState';
-import { formatDate, formatHM, showsTime, stacksActions } from '../arena-calendar/CalendarInternals';
+import { ArenaCalendarState } from '../arena-calendar/ArenaCalendarState';
+import { arenaFormatDate, arenaFormatHM, arenaShowsTime, arenaStacksActions } from '../arena-calendar/CalendarInternals';
 import { arenaCalendarEventStyles } from './ArenaCalendarEvent.variants';
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -93,14 +93,14 @@ export class ArenaCalendarEvent {
   readonly interactive = input(false, { transform: booleanAttribute });
   /** Whether the chip shows its action button. A boolean rather than "is the actions slot filled?": Arena never derives what it draws from what a consumer listens for, because projected content is not inspectable in at least one platform, so gating the drawing on it is a divergence waiting to happen. */
   readonly actionsEnabled = input(false, { transform: booleanAttribute });
-  /** Whether the chip is drawn but cannot be activated: an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving ArenaTab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. */
+  /** Whether the chip is drawn but cannot be activated: an event a consumer's rules lock, such as one already past or owned by someone else. It reflects through `aria-disabled` rather than the native `disabled` attribute, so the chip keeps its place in the grid's roving Tab sequence and is announced as unavailable instead of disappearing from it. With `interactive` false there is nothing to activate and the chip is inert already. */
   readonly disabled = input(false, { transform: booleanAttribute });
   /** The chip was activated. No payload: the consumer wrote this element, so they already hold the event this is about. Never emitted while `disabled`. */
   readonly click = output<void>();
 
   protected readonly domId = `arena-calendar-event-${seq++}`;
 
-  private readonly state = inject(CalendarState);
+  private readonly state = inject(ArenaCalendarState);
   private readonly destroyRef = inject(DestroyRef);
   private readonly focusable = viewChild<ElementRef<HTMLElement>>('focusable');
   private readonly kebabWrap = viewChild<ElementRef<HTMLElement>>('kebabWrap');
@@ -134,12 +134,12 @@ export class ArenaCalendarEvent {
 
   protected readonly showTime = computed(() => {
     const at = this.placement();
-    return at !== null && showsTime(this.heightPx(), this.state.slotWidth(at.cols));
+    return at !== null && arenaShowsTime(this.heightPx(), this.state.slotWidth(at.cols));
   });
 
   protected readonly actionsBelow = computed(() => {
     const at = this.placement();
-    return at !== null && stacksActions(this.heightPx(), this.state.slotWidth(at.cols));
+    return at !== null && arenaStacksActions(this.heightPx(), this.state.slotWidth(at.cols));
   });
 
   protected readonly ink = computed(() => arenaCatColor(this.colorId() ?? 1));
@@ -150,13 +150,13 @@ export class ArenaCalendarEvent {
 
   protected readonly timeLabel = computed(() => {
     const at = this.placement();
-    return at ? `${formatHM(at.startMin)} – ${formatHM(at.endMin)}` : '';
+    return at ? `${arenaFormatHM(at.startMin)} – ${arenaFormatHM(at.endMin)}` : '';
   });
 
   protected readonly label = computed(() => {
     const at = this.placement();
     if (!at) return null;
-    const day = formatDate(at.dayIso, { weekday: 'long', day: 'numeric', month: 'long' });
+    const day = arenaFormatDate(at.dayIso, { weekday: 'long', day: 'numeric', month: 'long' });
     return `${this.heading()}, ${day}, ${this.timeLabel()}`;
   });
 

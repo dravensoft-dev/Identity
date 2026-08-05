@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { ArenaCalendar } from './ArenaCalendar.tsx';
 import { ArenaCalendarEvent } from '../arena-calendar-event/ArenaCalendarEvent.tsx';
-import { formatDate, showsTime, stacksActions } from './CalendarInternals.ts';
+import { arenaFormatDate, arenaShowsTime, arenaStacksActions } from './CalendarInternals.ts';
 
 const EVENTS: React.ComponentProps<typeof ArenaCalendarEvent>[] = [
   { id: 'a', title: 'Standup', start: '2026-07-20T09:00:00Z', end: '2026-07-20T09:30:00Z', colorId: 1 },
@@ -114,7 +114,7 @@ test('an event colours its chip from colorId, not from the old slot field', () =
 });
 
 test('the day affordance follows dayInteractive and never the listener -- R6', () => {
-  const dayLabel = formatDate('2026-07-20', { weekday: 'long', day: 'numeric', month: 'long' });
+  const dayLabel = arenaFormatDate('2026-07-20', { weekday: 'long', day: 'numeric', month: 'long' });
   const head = new RegExp(`<button[^>]*aria-label="${dayLabel}"`);
   const column = /role="row"[^>]*arena-calendar__column--day-interactive-true/;
 
@@ -165,7 +165,7 @@ test('the kebab renders only when actionsEnabled, and never as a tab stop', () =
   );
   assert.match(on, /ph-dots-three/, 'actionsEnabled drew no kebab');
   assert.match(on, /aria-label="Actions"[^>]*tabindex="-1"|tabindex="-1"[^>]*aria-label="Actions"/,
-    'the kebab is not out of the ArenaTab sequence');
+    'the kebab is not out of the Tab sequence');
 });
 
 test('the action panel content is absent while the panel is closed', () => {
@@ -270,21 +270,21 @@ test('a day header cell has no bottom padding, and the scroller keeps its top pa
 });
 
 test('a chip draws its time label only when it has room in both axes', () => {
-  assert.equal(showsTime(66, 166), true, 'a tall chip in a full-width slot drew no time label');
-  assert.equal(showsTime(22, 166), false, 'a 30-minute chip drew a time label it has no height for');
-  assert.equal(showsTime(66, 83), false, 'a tall chip in a half-width slot drew a label that cannot fit on one line');
-  assert.equal(showsTime(22, 83), false, 'a chip failing both terms drew a time label');
+  assert.equal(arenaShowsTime(66, 166), true, 'a tall chip in a full-width slot drew no time label');
+  assert.equal(arenaShowsTime(22, 166), false, 'a 30-minute chip drew a time label it has no height for');
+  assert.equal(arenaShowsTime(66, 83), false, 'a tall chip in a half-width slot drew a label that cannot fit on one line');
+  assert.equal(arenaShowsTime(22, 83), false, 'a chip failing both terms drew a time label');
 });
 
 test('the thresholds are inclusive, so a chip exactly at one still draws', () => {
-  assert.equal(showsTime(32, 100), true, 'a chip exactly at both thresholds was refused its time label');
-  assert.equal(showsTime(31.9, 100), false, 'the height threshold is not being applied');
-  assert.equal(showsTime(32, 99.9), false, 'the width threshold is not being applied');
+  assert.equal(arenaShowsTime(32, 100), true, 'a chip exactly at both thresholds was refused its time label');
+  assert.equal(arenaShowsTime(31.9, 100), false, 'the height threshold is not being applied');
+  assert.equal(arenaShowsTime(32, 99.9), false, 'the width threshold is not being applied');
 });
 
 test('an unmeasured container satisfies the width term, so the static render is unchanged', () => {
-  assert.equal(showsTime(66, null), true, 'a server render lost its time label');
-  assert.equal(showsTime(22, null), false, 'the height term stopped applying when the width is unknown');
+  assert.equal(arenaShowsTime(66, null), true, 'a server render lost its time label');
+  assert.equal(arenaShowsTime(22, null), false, 'the height term stopped applying when the width is unknown');
 });
 
 test('the static render still draws its time labels, because nothing has measured yet', () => {
@@ -294,16 +294,16 @@ test('the static render still draws its time labels, because nothing has measure
 });
 
 test('a chip stacks its kebab below only when it is narrow and tall enough', () => {
-  assert.equal(stacksActions(66, 83), true, 'a tall chip in a half-width slot did not stack its kebab');
-  assert.equal(stacksActions(44, 83), false, 'a 60-minute chip stacked a kebab that would overlap its title');
-  assert.equal(stacksActions(66, 166), false, 'a full-width chip stacked its kebab, which it has room not to');
-  assert.equal(stacksActions(26, 83), false, 'the shortest chip stacked its kebab');
+  assert.equal(arenaStacksActions(66, 83), true, 'a tall chip in a half-width slot did not stack its kebab');
+  assert.equal(arenaStacksActions(44, 83), false, 'a 60-minute chip stacked a kebab that would overlap its title');
+  assert.equal(arenaStacksActions(66, 166), false, 'a full-width chip stacked its kebab, which it has room not to');
+  assert.equal(arenaStacksActions(26, 83), false, 'the shortest chip stacked its kebab');
 });
 
 test('the stacking threshold is inclusive, and an unmeasured container never stacks', () => {
-  assert.equal(stacksActions(56, 83), true, 'a chip exactly at the threshold was refused');
-  assert.equal(stacksActions(55.9, 83), false, 'the height threshold is not being applied');
-  assert.equal(stacksActions(66, null), false, 'a server render stacked, so the static markup would move');
+  assert.equal(arenaStacksActions(56, 83), true, 'a chip exactly at the threshold was refused');
+  assert.equal(arenaStacksActions(55.9, 83), false, 'the height threshold is not being applied');
+  assert.equal(arenaStacksActions(66, null), false, 'a server render stacked, so the static markup would move');
 });
 
 test('a stacked chip anchors its kebab to the bottom and reserves no lateral band', () => {

@@ -4,8 +4,8 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  CHART_HEIGHT, PAD, RAIL_STYLE, SR_ONLY, barPath, niceMax, plotWidth, resolveColors, ticks,
-  valueWriter,
+  ARENA_CHART_HEIGHT, ARENA_PAD, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaBarPath, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
+  arenaValueWriter,
 } from '../../../DataVisuals';
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated';
@@ -39,8 +39,8 @@ const TOOLTIP_VALUE_STYLE = {
   fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)',
 } as const satisfies Readonly<Record<string, string>>;
 
-export function barValueY(value: number, max: number, innerHeight: number): number {
-  return PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
+export function arenaBarValueY(value: number, max: number, innerHeight: number): number {
+  return ARENA_PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
 }
 
 export interface ArenaBarColumn {
@@ -52,16 +52,16 @@ export interface ArenaBarColumn {
   midX: number;
 }
 
-export function barColumns(count: number, width: number): {
+export function arenaBarColumns(count: number, width: number): {
   step: number;
   barWidth: number;
   columns: ArenaBarColumn[];
 } {
-  const innerWidth = Math.max(1, width - PAD.l - PAD.r);
+  const innerWidth = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
   const step = innerWidth / Math.max(1, count);
   const barWidth = Math.max(1, step - BAR_GAP);
   const columns = Array.from({ length: count }, (_, index) => {
-    const hitX = PAD.l + index * step;
+    const hitX = ARENA_PAD.l + index * step;
     return { hitX, x: hitX + (step - barWidth) / 2, midX: hitX + step / 2 };
   });
   return { step, barWidth, columns };
@@ -76,7 +76,7 @@ export function barColumns(count: number, width: number): {
     '[style.height.px]': 'height()',
   },
   template: `
-    <div #rail [style]="railStyle" [attr.tabindex]="scrolls() ? 0 : null"
+    <div #rail [style]="arenaRailStyle" [attr.tabindex]="scrolls() ? 0 : null"
          [attr.role]="scrolls() ? 'group' : null" [attr.aria-label]="scrolls() ? name() : null">
     <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="height()" role="img" [attr.aria-label]="name()"
          style="display:block;overflow:visible" (mouseleave)="hover.set(null)">
@@ -118,7 +118,7 @@ export function barColumns(count: number, width: number): {
       </div>
     }
 
-    <table [style]="srOnly">
+    <table [style]="arenaSrOnly">
       <caption>{{ name() }}</caption>
       <thead><tr><th>Category</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
@@ -142,20 +142,20 @@ export class ArenaBarChart {
   readonly slots = input<readonly number[]>();
   /** Semantic colour, for a series that IS a state. Mutually exclusive with slot/slots; passing both warns in development and tone wins. */
   readonly tone = input<ArenaSeriesTone>();
-  /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
+  /** Appended verbatim to every number the chart draws: the axis arenaTicks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
   readonly valueFormat = input<ArenaNumberFormat>();
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
-  readonly height = input<number>(CHART_HEIGHT);
+  readonly height = input<number>(ARENA_CHART_HEIGHT);
   /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
   readonly minPointSpacing = input<number>();
 
-  protected readonly pad = PAD;
-  protected readonly srOnly = SR_ONLY;
-  protected readonly railStyle = RAIL_STYLE;
+  protected readonly pad = ARENA_PAD;
+  protected readonly arenaSrOnly = ARENA_SR_ONLY;
+  protected readonly arenaRailStyle = ARENA_RAIL_STYLE;
   protected readonly lineStyle = LINE_STYLE;
   protected readonly tickLabelStyle = TICK_LABEL_STYLE;
   protected readonly categoryLabelStyle = CATEGORY_LABEL_STYLE;
@@ -163,11 +163,11 @@ export class ArenaBarChart {
   protected readonly tooltipStyle = TOOLTIP_STYLE;
   protected readonly tooltipLabelStyle = TOOLTIP_LABEL_STYLE;
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
-  protected readonly tickLabelX = PAD.l - chartLabelGap;
+  protected readonly tickLabelX = ARENA_PAD.l - chartLabelGap;
   protected readonly categoryLabelY = computed(() => this.height() - chartLabelGap);
   protected readonly hover = signal<number | null>(null);
 
-  private readonly write = computed(() => valueWriter({
+  private readonly write = computed(() => arenaValueWriter({
     prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
   }));
 
@@ -176,7 +176,7 @@ export class ArenaBarChart {
   private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
   protected readonly width = computed(
-    () => plotWidth(this.available(), this.values().length, this.minPointSpacing()),
+    () => arenaPlotWidth(this.available(), this.values().length, this.minPointSpacing()),
   );
 
   protected readonly scrolls = computed(() => this.width() > this.available());
@@ -188,35 +188,35 @@ export class ArenaBarChart {
     return `${series} — bar chart`;
   });
 
-  private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));
-  protected readonly innerHeight = computed(() => Math.max(1, this.height() - PAD.t - PAD.b));
-  private readonly layout = computed(() => barColumns(this.values().length, this.width()));
+  private readonly max = computed(() => arenaNiceMax(Math.max(0, ...this.values())));
+  protected readonly innerHeight = computed(() => Math.max(1, this.height() - ARENA_PAD.t - ARENA_PAD.b));
+  private readonly layout = computed(() => arenaBarColumns(this.values().length, this.width()));
   protected readonly step = computed(() => this.layout().step);
-  protected readonly baseline = computed(() => PAD.t + this.innerHeight());
+  protected readonly baseline = computed(() => ARENA_PAD.t + this.innerHeight());
 
   protected readonly gridLines = computed(() => {
     const max = this.max();
     const innerHeight = this.innerHeight();
     const write = this.write();
-    return ticks(max).map((value) => ({ value, y: barValueY(value, max, innerHeight), label: write(value) }));
+    return arenaTicks(max).map((value) => ({ value, y: arenaBarValueY(value, max, innerHeight), label: write(value) }));
   });
 
   protected readonly bars = computed(() => {
     const values = this.values();
-    const colors = resolveColors({ slot: this.slot(), slots: this.slots(), tone: this.tone(), count: values.length });
+    const colors = arenaResolveColors({ slot: this.slot(), slots: this.slots(), tone: this.tone(), count: values.length });
     const { barWidth, columns } = this.layout();
     const max = this.max();
     const innerHeight = this.innerHeight();
     const baseline = this.baseline();
     const write = this.write();
     return values.map((value, index) => {
-      const y = barValueY(value, max, innerHeight);
+      const y = arenaBarValueY(value, max, innerHeight);
       return {
         index,
         hitX: columns[index].hitX,
         midX: columns[index].midX,
         y,
-        path: barPath(columns[index].x, y, barWidth, baseline - y, BAR_RADIUS),
+        path: arenaBarPath(columns[index].x, y, barWidth, baseline - y, BAR_RADIUS),
         color: colors[index],
         label: this.labels()[index] ?? '',
         value: write(value),

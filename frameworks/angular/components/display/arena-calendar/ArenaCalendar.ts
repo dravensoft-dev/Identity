@@ -4,13 +4,13 @@ import {
   numberAttribute, output, signal, viewChild,
 } from '@angular/core';
 import type { ArenaCalendarView } from '../../../Api.generated';
-import { arenaContainerWidth, readBreakpoint } from '../../../ContainerSize';
+import { arenaContainerWidth, arenaReadBreakpoint } from '../../../ContainerSize';
 import { ArenaActions } from '../../../ProjectionMarkers';
 import { ArenaCalendarEvent } from '../arena-calendar-event/ArenaCalendarEvent';
-import { CalendarState, type ChipPlacement, type HourSlot } from './CalendarState';
+import { ArenaCalendarState, type ChipPlacement, type HourSlot } from './ArenaCalendarState';
 import {
-  addDays, defaultDayStart, formatDate, formatHM, layoutDay, nowMinutes, parseHM, placeEvents,
-  rangeTitle, startOfWeek, todayIso, weekdayOf,
+  arenaAddDays, arenaDefaultDayStart, arenaFormatDate, arenaFormatHM, arenaLayoutDay, arenaNowMinutes, arenaParseHM, arenaPlaceEvents,
+  arenaRangeTitle, arenaStartOfWeek, arenaTodayIso, arenaWeekdayOf,
 } from './CalendarInternals';
 import { arenaCalendarStyles } from './ArenaCalendar.variants';
 
@@ -20,7 +20,7 @@ const MINUTE = 60000;
   selector: 'arena-calendar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CalendarState],
+  providers: [ArenaCalendarState],
   host: { style: 'display: contents' },
   template: `
     <section #frame [class]="styles().root()" [attr.aria-label]="'Schedule, ' + title()">
@@ -43,12 +43,12 @@ const MINUTE = 60000;
           @if (dayInteractive()) {
             <button type="button" [class]="dayHeadClass()" [attr.aria-label]="dayLabel(day)"
                     (click)="onDateClick(day)">
-              <div [class]="styles().weekday()">{{ weekdayOf(day) }}</div>
+              <div [class]="styles().weekday()">{{ arenaWeekdayOf(day) }}</div>
               <div [class]="dayNumberClass(day)">{{ dayNumberOf(day) }}</div>
             </button>
           } @else {
             <div [class]="dayHeadClass()">
-              <div [class]="styles().weekday()">{{ weekdayOf(day) }}</div>
+              <div [class]="styles().weekday()">{{ arenaWeekdayOf(day) }}</div>
               <div [class]="dayNumberClass(day)">{{ dayNumberOf(day) }}</div>
             </div>
           }
@@ -117,13 +117,13 @@ export class ArenaCalendar {
   /** The anchor moved via prev/Today/next; carries the new ISO date. A date rather than a delta, because Today is not a delta. */
   readonly rangeChange = output<string>();
 
-  protected readonly state = inject(CalendarState);
+  protected readonly state = inject(ArenaCalendarState);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly frame = viewChild.required<ElementRef<HTMLElement>>('frame');
   private readonly measured = arenaContainerWidth(() => this.frame().nativeElement);
-  private readonly medium = readBreakpoint('md');
+  private readonly medium = arenaReadBreakpoint('md');
   private readonly tick = signal(0);
 
   protected readonly actionsSlot = contentChild(ArenaActions);
@@ -133,7 +133,7 @@ export class ArenaCalendar {
     () => this.timeZone() || Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
 
-  protected readonly anchor = linkedSignal(() => this.anchorDate() ?? todayIso(this.zone()));
+  protected readonly anchor = linkedSignal(() => this.anchorDate() ?? arenaTodayIso(this.zone()));
 
   protected readonly activeView = computed<ArenaCalendarView>(() => {
     const chosen = this.view();
@@ -142,17 +142,17 @@ export class ArenaCalendar {
     return width !== null && width < this.medium ? 'day' : 'week';
   });
 
-  private readonly placed = computed(() => placeEvents(
+  private readonly placed = computed(() => arenaPlaceEvents(
     this.chips().map((chip) => ({ id: chip.id(), start: chip.start(), end: chip.end(), chip })),
     this.zone(),
   ));
 
   protected readonly days = computed<readonly string[]>(() => {
     if (this.activeView() === 'day') return [this.anchor()];
-    const first = startOfWeek(this.anchor(), this.weekStartsOn());
-    const all = Array.from({ length: 7 }, (_, i) => addDays(first, i));
+    const first = arenaStartOfWeek(this.anchor(), this.weekStartsOn());
+    const all = Array.from({ length: 7 }, (_, i) => arenaAddDays(first, i));
     if (!this.hideEmptyWeekend()) return all;
-    return all.filter((d) => weekdayOf(d) !== 0 || this.placed().some((p) => p.dayIso === d));
+    return all.filter((d) => arenaWeekdayOf(d) !== 0 || this.placed().some((p) => p.dayIso === d));
   });
 
   private readonly visible = computed(
@@ -160,7 +160,7 @@ export class ArenaCalendar {
   );
 
   private readonly byDay = computed(
-    () => this.days().map((d) => layoutDay(this.visible().filter((p) => p.dayIso === d))),
+    () => this.days().map((d) => arenaLayoutDay(this.visible().filter((p) => p.dayIso === d))),
   );
 
   private readonly placements = computed<ReadonlyMap<object, ChipPlacement>>(() => {
@@ -176,11 +176,11 @@ export class ArenaCalendar {
     return out;
   });
 
-  private readonly endMin = computed(() => parseHM(this.dayEnd(), 23 * 60));
+  private readonly endMin = computed(() => arenaParseHM(this.dayEnd(), 23 * 60));
 
   private readonly firstMin = computed(() => {
     const declared = this.dayStart();
-    const raw = declared !== undefined ? parseHM(declared, 8 * 60) : defaultDayStart(this.visible());
+    const raw = declared !== undefined ? arenaParseHM(declared, 8 * 60) : arenaDefaultDayStart(this.visible());
     return Math.max(0, Math.min(raw, this.endMin() - 60));
   });
 
@@ -197,11 +197,11 @@ export class ArenaCalendar {
       .filter((slot) => slot.end > slot.start);
   });
 
-  protected readonly today = computed(() => todayIso(this.zone()));
+  protected readonly today = computed(() => arenaTodayIso(this.zone()));
 
   protected readonly nowMin = computed(() => {
     this.tick();
-    return nowMinutes(this.zone());
+    return arenaNowMinutes(this.zone());
   });
 
   protected readonly showNow = computed(
@@ -209,7 +209,7 @@ export class ArenaCalendar {
       && this.nowMin() >= this.firstMin() && this.nowMin() <= this.endMin(),
   );
 
-  protected readonly title = computed(() => rangeTitle(this.days()));
+  protected readonly title = computed(() => arenaRangeTitle(this.days()));
 
   protected readonly tracks = computed(
     () => `repeat(${this.days().length}, minmax(0, 1fr))`,
@@ -246,19 +246,19 @@ export class ArenaCalendar {
   }
 
   protected hm(min: number): string {
-    return formatHM(min);
+    return arenaFormatHM(min);
   }
 
-  protected weekdayOf(day: string): string {
-    return formatDate(day, { weekday: 'short' });
+  protected arenaWeekdayOf(day: string): string {
+    return arenaFormatDate(day, { weekday: 'short' });
   }
 
   protected dayNumberOf(day: string): string {
-    return formatDate(day, { day: 'numeric' });
+    return arenaFormatDate(day, { day: 'numeric' });
   }
 
   protected dayLabel(day: string): string {
-    return formatDate(day, { weekday: 'long', day: 'numeric', month: 'long' });
+    return arenaFormatDate(day, { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
   protected dayNumberClass(day: string): string {
@@ -281,7 +281,7 @@ export class ArenaCalendar {
   }
 
   protected step(direction: number): void {
-    this.goto(addDays(this.anchor(), direction * (this.activeView() === 'day' ? 1 : 7)));
+    this.goto(arenaAddDays(this.anchor(), direction * (this.activeView() === 'day' ? 1 : 7)));
   }
 
   protected onDateClick(day: string): void {

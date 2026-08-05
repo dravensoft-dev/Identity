@@ -8,7 +8,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tv } from '../../../frameworks/tailwind/Tv.ts';
+import { arenaTv } from '../../../frameworks/tailwind/Tv.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 
 const manifests = new Map([...layerManifests().values()].map((m) => [m.component, m]));
@@ -16,7 +16,7 @@ const manifests = new Map([...layerManifests().values()].map((m) => [m.component
 export function resolve(component, chosen, slot) {
   const manifest = manifests.get(component);
   if (!manifest) throw new Error(`manifest-claims: no manifest called ${component}`);
-  const styles = tv(manifest)(chosen);
+  const styles = arenaTv(manifest)(chosen);
   if (!styles[slot]) throw new Error(`manifest-claims: ${component} has no slot called ${slot}`);
   return styles[slot]().split(/\s+/).filter(Boolean);
 }

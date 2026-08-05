@@ -15,7 +15,7 @@ import { arenaMenuStyles } from './ArenaMenu.variants';
 const TRIGGER_SELECTOR =
   'button:not([tabindex="-1"]), a[href]:not([tabindex="-1"]), [role="button"]:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
 
-export const MENU_POSITIONS: Record<ArenaMenuAlign, ConnectedPosition[]> = {
+export const ARENA_MENU_POSITIONS: Record<ArenaMenuAlign, ConnectedPosition[]> = {
   start: [
     { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: sp1 * 1.5 },
     { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -sp1 * 1.5 },
@@ -26,11 +26,11 @@ export const MENU_POSITIONS: Record<ArenaMenuAlign, ConnectedPosition[]> = {
   ],
 };
 
-export function isActivatable(item: ArenaMenuItem): boolean {
+export function isArenaActivatable(item: ArenaMenuItem): boolean {
   return !item.divider && item.header === undefined;
 }
 
-export function rowState(item: ArenaMenuItem): 'disabled' | 'destructive' | 'default' {
+export function arenaRowState(item: ArenaMenuItem): 'disabled' | 'destructive' | 'default' {
   if (item.disabled) return 'disabled';
   return item.destructive ? 'destructive' : 'default';
 }
@@ -103,7 +103,7 @@ export class ArenaMenu {
 
   protected rowClass(item: ArenaMenuItem): string {
     const styles = this.styles();
-    const state = rowState(item);
+    const state = arenaRowState(item);
     const modifier = state === 'disabled' ? styles.itemDisabled()
       : state === 'destructive' ? styles.itemDestructive() : styles.itemDefault();
     return `${styles.item()} ${modifier}`;
@@ -156,7 +156,7 @@ export class ArenaMenu {
     if (this.ref) return;
     const ref = createOverlayRef(this.injector, {
       positionStrategy: createFlexibleConnectedPositionStrategy(this.injector, this.host)
-        .withPositions(MENU_POSITIONS[this.align()])
+        .withPositions(ARENA_MENU_POSITIONS[this.align()])
         .withPush(false),
       scrollStrategy: createRepositionScrollStrategy(this.injector),
     });

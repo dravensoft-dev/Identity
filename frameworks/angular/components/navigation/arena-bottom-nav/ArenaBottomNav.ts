@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { BottomNavState } from './BottomNavState';
+import { ArenaBottomNavState } from './ArenaBottomNavState';
 import { arenaBottomNavStyles } from './ArenaBottomNav.variants';
 
 @Component({
   selector: 'arena-bottom-nav',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [BottomNavState],
+  providers: [ArenaBottomNavState],
   host: {
     '[class]': 'styles().root()',
     role: 'navigation',
@@ -22,7 +22,7 @@ export class ArenaBottomNav {
   /** A destination was activated, carrying its id. Where the item has an href, Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate; a modified click, a middle click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a bar of real links. */
   readonly nav = output<string>();
 
-  private readonly state = inject(BottomNavState);
+  private readonly state = inject(ArenaBottomNavState);
 
   protected readonly name = computed(() => {
     const label = this.ariaLabel();

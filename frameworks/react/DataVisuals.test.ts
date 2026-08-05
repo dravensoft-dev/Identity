@@ -1,19 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ARENA_CAT_SLOTS, arenaCatColor, arenaCatSlotFor, arenaCatSurface, areaFill, toneColor,
+  ARENA_CAT_SLOTS, arenaCatColor, arenaCatSlotFor, arenaCatSurface, arenaAreaFill, arenaToneColor,
 } from './DataVisuals.ts';
 import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
 
 test('every tone in the union resolves to a token reference', () => {
   const tones: ArenaTone[] = ['neutral', 'accent', 'gold', 'success', 'warning', 'danger', 'info'];
-  for (const tone of tones) assert.match(toneColor(tone), /^var\(--[a-z-]+\)$/);
-  assert.equal(new Set(tones.map(toneColor)).size, tones.length, 'tones must not share a colour');
+  for (const tone of tones) assert.match(arenaToneColor(tone), /^var\(--[a-z-]+\)$/);
+  assert.equal(new Set(tones.map(arenaToneColor)).size, tones.length, 'tones must not share a colour');
 });
 
 test('every ArenaSeriesTone is an ArenaTone, so a chart keeps reaching the same colour it always did', () => {
   const series: ArenaSeriesTone[] = ['success', 'warning', 'danger', 'info'];
-  for (const tone of series) assert.equal(toneColor(tone), toneColor(tone as ArenaTone));
+  for (const tone of series) assert.equal(arenaToneColor(tone), arenaToneColor(tone as ArenaTone));
 });
 
 test('arenaCatSlotFor lands inside the ramp for every key, including an empty one', () => {
@@ -43,6 +43,6 @@ test('arenaCatSurface tints from the slot colour, and the edge is the stronger o
   assert.equal(surface.border, `color-mix(in oklab, ${arenaCatColor(3)} 26%, transparent)`);
 });
 
-test('areaFill is the tint ArenaLineChart draws under its series', () => {
-  assert.equal(areaFill('var(--success)'), 'color-mix(in oklab, var(--success) 18%, transparent)');
+test('arenaAreaFill is the tint ArenaLineChart draws under its series', () => {
+  assert.equal(arenaAreaFill('var(--success)'), 'color-mix(in oklab, var(--success) 18%, transparent)');
 });

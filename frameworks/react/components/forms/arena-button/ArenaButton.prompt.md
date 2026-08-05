@@ -27,7 +27,7 @@ Action button. The main action uses `variant="primary"` (crimson), maximum one p
 | `value` | primitive | `string` |  | The value submitted under `name`. |
 | `autoFocus` | primitive | `boolean` | `false` | Focused on mount. |
 | `form` | primitive | `string` |  | The id of the form this button belongs to, when it is not a descendant of it. |
-| `tabStop` | primitive | `boolean` | `true` | Whether the control is reached from the page's ArenaTab sequence. Set false when it lives inside a composite that manages its own focus (a grid with a roving tab stop, a menu), where reaching it by ArenaTab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. ArenaTable's actions column is where this one is needed: an ArenaButton inside a row of a grid. |
+| `tabStop` | primitive | `boolean` | `true` | Whether the control is reached from the page's Tab sequence. Set false when it lives inside a composite that manages its own focus (a grid with a roving tab stop, a menu), where reaching it by Tab would be a second way in. Arena writes tabindex="-1" and the control stays programmatically focusable; a positive tab order is not expressible and never should be. ArenaTable's actions column is where this one is needed: an ArenaButton inside a row of a grid. |
 | `onClick` | event |  |  | The button was activated, by pointer or by keyboard. |
 
 <!-- @api end -->

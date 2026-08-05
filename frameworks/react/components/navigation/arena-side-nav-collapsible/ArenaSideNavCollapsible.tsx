@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import type { SideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
-import { indentFor, injectInto } from '../arena-side-nav/SideNavInject.tsx';
+import type { ArenaSideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
+import { arenaIndentFor, arenaInjectInto } from '../arena-side-nav/SideNavInject.tsx';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../arena-side-nav/ArenaSideNav.classes.generated.ts';
 import { ArenaSideNavItem } from '../arena-side-nav-item/ArenaSideNavItem.tsx';
@@ -29,13 +29,13 @@ export interface ArenaSideNavCollapsibleProps {
 
 const arenaSideNavStyles = arenaStyles(manifest);
 
-export function subtreeHasItem(children: React.ReactNode, id: string | undefined): boolean {
+export function arenaSubtreeHasItem(children: React.ReactNode, id: string | undefined): boolean {
   if (!id) return false;
   for (const child of React.Children.toArray(children)) {
     if (!React.isValidElement(child)) continue;
     const props = child.props as { id?: string; children?: React.ReactNode };
     if (child.type === ArenaSideNavItem && props.id === id) return true;
-    if (subtreeHasItem(props.children, id)) return true;
+    if (arenaSubtreeHasItem(props.children, id)) return true;
   }
   return false;
 }
@@ -43,12 +43,12 @@ export function subtreeHasItem(children: React.ReactNode, id: string | undefined
 export function ArenaSideNavCollapsible({
   id, label, icon, defaultExpanded = false, children, onToggle,
   depth = 0, activeId, indentStep = 3, onActivate,
-}: ArenaSideNavCollapsibleProps & Partial<SideNavInjected>) {
+}: ArenaSideNavCollapsibleProps & Partial<ArenaSideNavInjected>) {
 
   if (!id) throw new Error('ArenaSideNavCollapsible: `id` is required');
   if (!label) throw new Error('ArenaSideNavCollapsible: `label` is required');
 
-  const holdsActive = subtreeHasItem(children, activeId);
+  const holdsActive = arenaSubtreeHasItem(children, activeId);
 
   const [expanded, setExpanded] = useState(defaultExpanded || holdsActive);
   useEffect(() => { if (holdsActive) setExpanded(true); }, [holdsActive]);
@@ -73,7 +73,7 @@ export function ArenaSideNavCollapsible({
       <button id={triggerId} type="button" aria-expanded={expanded} aria-controls={regionId}
         onClick={press}
         className={styles.trigger()}
-        style={{ paddingInlineStart: indentFor(indentStep, depth) }}>
+        style={{ paddingInlineStart: arenaIndentFor(indentStep, depth) }}>
         {glyph}
         <span className={styles.triggerLabel()}>{label}</span>
         <i className={`${expanded ? 'ph-bold ph-caret-down' : 'ph-bold ph-caret-right'} ${styles.caret()}`}
@@ -83,7 +83,7 @@ export function ArenaSideNavCollapsible({
 }
       <div id={regionId} role="group" aria-labelledby={triggerId} hidden={!expanded}
         className={styles.region()}>
-        {injectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
+        {arenaInjectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
       </div>
     </div>
   );

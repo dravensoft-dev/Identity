@@ -137,7 +137,7 @@ test('ArenaOnboarding restores focus to the invoker on close -- focus.onClose is
   assert.equal(document.activeElement, invoker, 'focus was not restored to the invoker that opened the coachmark');
 });
 
-test('ArenaOnboarding wraps Shift+ArenaTab from the first focusable to the last -- focus.trap is met at the boundary', () => {
+test('ArenaOnboarding wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
   const container = mount(
     <ArenaOnboarding open steps={THREE_STEPS} index={1} onSkip={() => {}} onBack={() => {}} onNext={() => {}} />,
   );
@@ -149,10 +149,10 @@ test('ArenaOnboarding wraps Shift+ArenaTab from the first focusable to the last 
   act(() => { first!.focus(); });
   assert.equal(document.activeElement, first, 'precondition: the first focusable holds focus');
   press(first!, 'Tab', { shiftKey: true });
-  assert.equal(document.activeElement, last, 'Shift+ArenaTab at the first boundary did not wrap to the last');
+  assert.equal(document.activeElement, last, 'Shift+Tab at the first boundary did not wrap to the last');
 });
 
-test('ArenaOnboarding wraps ArenaTab from the last focusable to the first -- the other boundary', () => {
+test('ArenaOnboarding wraps Tab from the last focusable to the first -- the other boundary', () => {
   const container = mount(
     <ArenaOnboarding open steps={THREE_STEPS} index={1} onSkip={() => {}} onBack={() => {}} onNext={() => {}} />,
   );
@@ -163,7 +163,7 @@ test('ArenaOnboarding wraps ArenaTab from the last focusable to the first -- the
   act(() => { last!.focus(); });
   assert.equal(document.activeElement, last, 'precondition: the last focusable holds focus');
   press(last!, 'Tab');
-  assert.equal(document.activeElement, first, 'ArenaTab at the last boundary did not wrap to the first');
+  assert.equal(document.activeElement, first, 'Tab at the last boundary did not wrap to the first');
 });
 
 test('ArenaOnboarding falls back to the step eyebrow when the step has no title -- roles.label is met on an untitled step', () => {

@@ -5,19 +5,19 @@ import {
 import type {
   ArenaSelectOption, ArenaTableColumn, ArenaTablePage, ArenaTableSort, ArenaTableSortControl,
 } from '../../../Api.generated';
-import { arenaContainerWidth, readBreakpoint } from '../../../ContainerSize';
-import { warnOnce } from '../../../WarnOnce';
+import { arenaContainerWidth, arenaReadBreakpoint } from '../../../ContainerSize';
+import { arenaWarnOnce } from '../../../WarnOnce';
 import { ArenaPagination } from '../../navigation/arena-pagination/ArenaPagination';
 import { ArenaSelect } from '../../forms/arena-select/ArenaSelect';
 import { ArenaTableRow } from '../arena-table-row/ArenaTableRow';
-import { TableState } from './TableState';
+import { ArenaTableState } from './ArenaTableState';
 import { arenaTableStyles } from './ArenaTable.variants';
 
-export function sortOptionValue(column: number, direction: ArenaTableSort['direction']): string {
+export function arenaSortOptionValue(column: number, direction: ArenaTableSort['direction']): string {
   return `${column}:${direction}`;
 }
 
-export function parseSortOption(value: string): ArenaTableSort | null {
+export function arenaParseSortOption(value: string): ArenaTableSort | null {
   const [column, direction] = value.split(':');
   const index = Number.parseInt(column ?? '', 10);
   if (!Number.isInteger(index) || (direction !== 'asc' && direction !== 'desc')) return null;
@@ -28,7 +28,7 @@ export function parseSortOption(value: string): ArenaTableSort | null {
   selector: 'arena-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TableState],
+  providers: [ArenaTableState],
   imports: [ArenaPagination, ArenaSelect],
   host: { '[class]': 'styles().root()' },
   template: `
@@ -84,11 +84,11 @@ export class ArenaTable {
   /** A page was chosen, carrying the new 1-based page. It also fires with 1 when the current page has gone PAST THE END, which is the only reset ArenaTable performs; a filter that leaves the page in range is silent, so returning the reader to page one on a change of criterion stays the consumer's, beside the criterion they hold. */
   readonly pageChange = output<number>();
 
-  protected readonly state = inject(TableState);
+  protected readonly state = inject(ArenaTableState);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly measured = arenaContainerWidth();
-  private readonly medium = readBreakpoint('md');
+  private readonly medium = arenaReadBreakpoint('md');
 
   protected readonly rows = contentChildren(ArenaTableRow);
 
@@ -128,18 +128,18 @@ export class ArenaTable {
 
   protected readonly sortOptions = computed<ArenaSelectOption[]>(() => this.sortable().flatMap(
     ({ column, index }) => [
-      { value: sortOptionValue(index, 'asc'), label: `${column.header} \u2191` },
-      { value: sortOptionValue(index, 'desc'), label: `${column.header} \u2193` },
+      { value: arenaSortOptionValue(index, 'asc'), label: `${column.header} \u2191` },
+      { value: arenaSortOptionValue(index, 'desc'), label: `${column.header} \u2193` },
     ],
   ));
 
   protected readonly sortValue = computed(() => {
     const current = this.sort();
-    return current ? sortOptionValue(current.column, current.direction) : undefined;
+    return current ? arenaSortOptionValue(current.column, current.direction) : undefined;
   });
 
   protected onSortPick(value: string): void {
-    const picked = parseSortOption(value);
+    const picked = arenaParseSortOption(value);
     if (picked) this.sortChange.emit(picked);
   }
 
@@ -187,7 +187,7 @@ export class ArenaTable {
       const column = columns[current.column];
       if (column?.sortable) return;
       const name = column ? `"${column.header}"` : 'no column at all';
-      warnOnce(`ArenaTable "${untracked(() => this.label())}": sort.column ${current.column} is ${name},`
+      arenaWarnOnce(`ArenaTable "${untracked(() => this.label())}": sort.column ${current.column} is ${name},`
         + ' which does not declare `sortable`, so no header is a target and the caret is not drawn.'
         + ' ArenaTableSort.column is an INDEX, so moving a column reorders the rows in silence; keep the'
         + ' sort field inside the column entry it belongs to and the two move together.');

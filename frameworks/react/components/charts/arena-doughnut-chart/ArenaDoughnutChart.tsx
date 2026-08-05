@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
-import { resolveColors, arcPath, srOnly, valueWriter, CHART_HEIGHT } from '../../../DataVisuals.ts';
+import { arenaResolveColors, arenaArcPath, arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
 
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
@@ -47,10 +47,10 @@ export function ArenaDoughnutChart({
   const [hover, setHover] = useState<number | null>(null);
 
   const width = measured ?? 600;
-  const height = CHART_HEIGHT;
+  const height = ARENA_CHART_HEIGHT;
   const n = values.length;
-  const fmt = valueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
-  const colors = resolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
+  const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
+  const colors = arenaResolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
 
   const total = values.reduce((a, b) => a + Math.max(0, b), 0);
 
@@ -78,7 +78,7 @@ export function ArenaDoughnutChart({
       <svg width={plotW} height={height} role="img" aria-label={name}
         onMouseLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
         {segments.map(({ i, a0, a1 }) => a1 > a0 && (
-          <path key={i} d={arcPath(cx, cy, rOuter, rInner, a0, a1)} fill={colors[i]}
+          <path key={i} d={arenaArcPath(cx, cy, rOuter, rInner, a0, a1)} fill={colors[i]}
 
             stroke="var(--surface-card)"
             opacity={hover === null || hover === i ? 1 : 0.55}
@@ -114,7 +114,7 @@ export function ArenaDoughnutChart({
         ))}
       </div>
 
-      <table style={srOnly}>
+      <table style={arenaSrOnly}>
         <caption>{name}</caption>
         <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
         <tbody>

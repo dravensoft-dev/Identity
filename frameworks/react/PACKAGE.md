@@ -264,7 +264,9 @@ answering a question a consumer cannot answer from outside.
 | `isArenaPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
 
 Every other symbol reaching the root is an internal of this layer, exported because the barrel
-is generated wholesale rather than curated, and **carries no compatibility promise**. What this
+is generated wholesale rather than curated, and **carries no compatibility promise**. It carries
+the prefix too, since the convention is about the name and not about the promise, so reading
+`Arena` on a symbol tells you where it comes from and never that it is yours to depend on. What this
 page names is what you may lean on; a symbol you found by autocomplete is not.
 
 The stylesheets are a tree, and you pick your depth. `arena.css` is all of it and the

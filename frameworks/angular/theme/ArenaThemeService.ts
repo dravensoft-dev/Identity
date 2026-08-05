@@ -12,14 +12,14 @@ export interface ArenaThemeConfig {
   default?: string;
 }
 
-export const DEFAULT_THEMES: ArenaThemeConfig = {
+export const ARENA_DEFAULT_THEMES: ArenaThemeConfig = {
   palettes: [{ name: 'dark', polarity: 'dark' }, { name: 'light', polarity: 'light' }],
   default: 'dark',
 };
 
 export const ARENA_THEMES = new InjectionToken<ArenaThemeConfig>('ARENA_THEMES', {
   providedIn: 'root',
-  factory: () => DEFAULT_THEMES,
+  factory: () => ARENA_DEFAULT_THEMES,
 });
 
 export function provideArenaThemes(config: ArenaThemeConfig): Provider {

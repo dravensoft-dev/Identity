@@ -1,4 +1,4 @@
-/* Every chip is mounted INSIDE a calendar: CalendarState is a non-optional injection, so a
+/* Every chip is mounted INSIDE a calendar: ArenaCalendarState is a non-optional injection, so a
  * bare chip throws NG0201, and that is asserted here rather than designed away. The three
  * cases are picked by `interactive` and by `actionsEnabled`, never by whether (click) is
  * subscribed. `heard` counts what a CONSUMER hears through a template (click) binding, and
@@ -206,7 +206,7 @@ test('the panel opens onto its own controls, arrows reach the kebab, and Escape 
     assertNoNode(chip.querySelector('button[actions]'),
       'the consumer\'s controls must not be in the tree while the panel is shut -- that is what keeps '
       + 'the schedule at one tab stop');
-    assert.equal(kebab.getAttribute('tabindex'), '-1', 'the kebab is reached by arrows, never by ArenaTab');
+    assert.equal(kebab.getAttribute('tabindex'), '-1', 'the kebab is reached by arrows, never by Tab');
 
     body.focus();
     body.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
@@ -235,7 +235,7 @@ test('the panel opens onto its own controls, arrows reach the kebab, and Escape 
 });
 
 test('a chip outside a calendar throws rather than rendering an unplaced one', () => {
-  assert.throws(() => TestBed.createComponent(ArenaCalendarEvent), /NG0201|No provider|CalendarState/,
-    'CalendarState is not optional on purpose: a chip has no geometry of its own, and a silent '
+  assert.throws(() => TestBed.createComponent(ArenaCalendarEvent), /NG0201|No provider|ArenaCalendarState/,
+    'ArenaCalendarState is not optional on purpose: a chip has no geometry of its own, and a silent '
     + 'unplaced render is worse than the injector error');
 });

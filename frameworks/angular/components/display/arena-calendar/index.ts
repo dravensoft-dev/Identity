@@ -1,3 +1,3 @@
 export * from './ArenaCalendar';
-export * from './CalendarState';
+export * from './ArenaCalendarState';
 export * from './ArenaCalendar.variants';

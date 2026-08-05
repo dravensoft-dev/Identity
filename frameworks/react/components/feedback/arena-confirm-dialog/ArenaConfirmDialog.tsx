@@ -2,7 +2,7 @@ import React, { useId, useRef, useState } from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaConfirmDialog.classes.generated.ts';
 import { ArenaButton } from '../../forms/arena-button/ArenaButton.tsx';
-import { useDialogModal } from '../../../UseDialogModal.ts';
+import { useArenaDialogModal } from '../../../UseDialogModal.ts';
 
 export interface ArenaConfirmDialogProps {
   /** Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let an ArenaConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog. */
@@ -39,7 +39,7 @@ export function ArenaConfirmDialog({ open, onCancel, onConfirm, title, eyebrow =
   const [typed, setTyped] = useState('');
 
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const onKeyDown = useDialogModal({ open, panelRef, onDismiss: onCancel });
+  const onKeyDown = useArenaDialogModal({ open, panelRef, onDismiss: onCancel });
 
   const titleId = useId();
   if (!open) return null;

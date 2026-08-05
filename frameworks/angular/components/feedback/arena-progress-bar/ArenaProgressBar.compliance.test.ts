@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { assertNoNode } from '../../../test/NodeAssert';
 import { assertPatternCases, ANGULAR_COMPONENTS } from '../../../test/Compliance';
-import { ArenaProgressBar, clampPercentage } from './ArenaProgressBar';
+import { ArenaProgressBar, arenaClampPercentage } from './ArenaProgressBar';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'feedback/arena-progress-bar/ArenaProgressBar.behaviour.json');
 
@@ -73,10 +73,10 @@ test('a determinate bar reports its value; an indeterminate one omits it, which 
 });
 
 test('the value is clamped and rounded, so a caller cannot report 143% or -8%', () => {
-  assert.equal(clampPercentage(-8), 0);
-  assert.equal(clampPercentage(143), 100);
-  assert.equal(clampPercentage(41.6), 42);
-  assert.equal(clampPercentage(0), 0);
+  assert.equal(arenaClampPercentage(-8), 0);
+  assert.equal(arenaClampPercentage(143), 100);
+  assert.equal(arenaClampPercentage(41.6), 42);
+  assert.equal(arenaClampPercentage(0), 0);
 
   const fixture = renderBar({ progressPercentage: 143, label: 'Uploading' });
   try {

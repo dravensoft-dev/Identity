@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy, Component, booleanAttribute, computed, contentChildren, effect,
   forwardRef, inject, input, output, signal, untracked,
 } from '@angular/core';
-import { SideNavChild, SideNavState, indentFor } from '../arena-side-nav/SideNavState';
+import { ArenaSideNavChild, ArenaSideNavState, arenaIndentFor } from '../arena-side-nav/ArenaSideNavState';
 import { arenaSideNavStyles } from '../arena-side-nav/ArenaSideNav.variants';
 import { ArenaSideNavItem } from '../arena-side-nav-item/ArenaSideNavItem';
 
@@ -11,8 +11,8 @@ import { ArenaSideNavItem } from '../arena-side-nav-item/ArenaSideNavItem';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    SideNavState,
-    { provide: SideNavChild, useExisting: forwardRef(() => ArenaSideNavCollapsible) },
+    ArenaSideNavState,
+    { provide: ArenaSideNavChild, useExisting: forwardRef(() => ArenaSideNavCollapsible) },
   ],
   host: {
     '[class]': 'styles().section()',
@@ -47,8 +47,8 @@ export class ArenaSideNavCollapsible {
   /** The trigger was pressed, carrying the state it moved to. It fires on a press ONLY: the automatic expansion that follows the active destination is Arena's decision rather than the user's, and reporting it here would be a lie a consumer persists. */
   readonly toggle = output<boolean>();
 
-  private readonly parent = inject(SideNavState, { skipSelf: true });
-  private readonly own = inject(SideNavState);
+  private readonly parent = inject(ArenaSideNavState, { skipSelf: true });
+  private readonly own = inject(ArenaSideNavState);
   private readonly items = contentChildren(ArenaSideNavItem, { descendants: true });
   private readonly open = signal<boolean | null>(null);
 
@@ -70,7 +70,7 @@ export class ArenaSideNavCollapsible {
     return text;
   });
 
-  protected readonly indent = computed(() => indentFor(this.parent.indentStep(), this.parent.depth()));
+  protected readonly indent = computed(() => arenaIndentFor(this.parent.indentStep(), this.parent.depth()));
   protected readonly styles = computed(() => arenaSideNavStyles());
 
   constructor() {

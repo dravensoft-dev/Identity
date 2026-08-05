@@ -4,7 +4,7 @@ import manifest from './ArenaOnboarding.classes.generated.ts';
 import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated.js';
 
 const SSR_VIEWPORT_H = 900;
-import { useDialogModal } from '../../../UseDialogModal.ts';
+import { useArenaDialogModal } from '../../../UseDialogModal.ts';
 
 import type { ArenaOnboardingStep, ArenaOnboardingAnchor } from '../../../Api.generated';
 
@@ -45,7 +45,7 @@ export function ArenaOnboarding({ open, steps, index = 0, onNext, onBack, onSkip
   if (steps == null) throw new Error('ArenaOnboarding: `steps` is required');
 
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const onKeyDown = useDialogModal({ open, panelRef, onDismiss: onSkip });
+  const onKeyDown = useArenaDialogModal({ open, panelRef, onDismiss: onSkip });
   if (!open || !steps.length) return null;
   const step = steps[index] || {};
   const last = index === steps.length - 1;

@@ -7,7 +7,7 @@ useTestEnvironment();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TestBed } from '@angular/core/testing';
-import { ArenaThemeService, provideArenaThemes, arenaThemeClass, DEFAULT_THEMES, ArenaThemeConfig } from './ArenaThemeService';
+import { ArenaThemeService, provideArenaThemes, arenaThemeClass, ARENA_DEFAULT_THEMES, ArenaThemeConfig } from './ArenaThemeService';
 
 const THREE: ArenaThemeConfig = {
   palettes: [
@@ -128,9 +128,9 @@ test('polarity is what a palette answers prefers-color-scheme with', () => {
 });
 
 test('the shipped default is two palettes, which is what the package carries', () => {
-  assert.deepEqual(DEFAULT_THEMES.palettes, [
+  assert.deepEqual(ARENA_DEFAULT_THEMES.palettes, [
     { name: 'dark', polarity: 'dark' },
     { name: 'light', polarity: 'light' },
   ]);
-  assert.equal(DEFAULT_THEMES.default, 'dark');
+  assert.equal(ARENA_DEFAULT_THEMES.default, 'dark');
 });

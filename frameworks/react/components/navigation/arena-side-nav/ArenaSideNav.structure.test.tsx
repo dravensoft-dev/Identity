@@ -5,7 +5,7 @@ import React from 'react';
 import { ArenaSideNav } from './ArenaSideNav.tsx';
 import { ArenaSideNavItem } from '../arena-side-nav-item/ArenaSideNavItem.tsx';
 import { ArenaSideNavSection } from '../arena-side-nav-section/ArenaSideNavSection.tsx';
-import { ArenaSideNavCollapsible, subtreeHasItem } from '../arena-side-nav-collapsible/ArenaSideNavCollapsible.tsx';
+import { ArenaSideNavCollapsible, arenaSubtreeHasItem } from '../arena-side-nav-collapsible/ArenaSideNavCollapsible.tsx';
 
 const section = (extra = {}) => (
   <ArenaSideNav ariaLabel="Primary" active="prod" {...extra}>
@@ -139,18 +139,18 @@ test('ArenaSideNavCollapsible: `id` and `label` are required, blank included', (
 
 const item = <ArenaSideNavItem id="prod" label="Production" href="#prod" />;
 
-test('subtreeHasItem matches an ArenaSideNavItem by TYPE, so a group named after a destination is not one', () => {
+test('arenaSubtreeHasItem matches an ArenaSideNavItem by TYPE, so a group named after a destination is not one', () => {
 
-  assert.equal(subtreeHasItem(item, 'prod'), true);
-  assert.equal(subtreeHasItem(
+  assert.equal(arenaSubtreeHasItem(item, 'prod'), true);
+  assert.equal(arenaSubtreeHasItem(
     <ArenaSideNavCollapsible id="inner" label="Inner">{item}</ArenaSideNavCollapsible>, 'prod'), true,
     'a destination nested inside a collapsible was not found');
 
-  assert.equal(subtreeHasItem(
+  assert.equal(arenaSubtreeHasItem(
     <ArenaSideNavCollapsible id="inner" label="Inner">{item}</ArenaSideNavCollapsible>, 'inner'), false,
     'a collapsible carrying the active id counted as holding it -- the type check is gone');
 
-  assert.equal(subtreeHasItem(
+  assert.equal(arenaSubtreeHasItem(
     <ArenaSideNavSection label="Workspace">{item}</ArenaSideNavSection>, 'prod'), true);
 });
 

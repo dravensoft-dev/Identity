@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { pageWindow } from './PaginationWindow';
+import { arenaPageWindow } from './PaginationWindow';
 import { arenaPaginationStyles } from './ArenaPagination.variants';
 
 @Component({
@@ -52,7 +52,7 @@ export class ArenaPagination {
     if (!Number.isInteger(total) || total < 1) {
       throw new Error('ArenaPagination: `pageCount` is required, and is a whole number of at least 1');
     }
-    return pageWindow(this.page(), total);
+    return arenaPageWindow(this.page(), total);
   });
 
   protected readonly styles = computed(() => arenaPaginationStyles());

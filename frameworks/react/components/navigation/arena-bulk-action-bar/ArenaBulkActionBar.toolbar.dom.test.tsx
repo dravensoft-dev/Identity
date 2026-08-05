@@ -2,7 +2,7 @@
  * pattern cannot apply to an empty render, and the repo's precedent for a
  * renders-nothing branch is ArenaCommandPalette's closed state, which declares no case
  * either. What IS asserted below is that the roving stop is a stop -- exactly one
- * control in the ArenaTab sequence at a time, and it follows focus rather than being
+ * control in the Tab sequence at a time, and it follows focus rather than being
  * pinned to the first button. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -45,7 +45,7 @@ test('ArenaBulkActionBar is a toolbar with one tab stop, roved by the arrow keys
   const right = press(controls[0]!, 'ArrowRight');
   assert.equal(document.activeElement, controls[1], 'ArrowRight did not move to the next control');
   assert.equal(right.defaultPrevented, true, 'ArrowRight was not claimed by the toolbar');
-  assert.equal(stops().length, 1, 'the stop did not rove -- two controls are in the ArenaTab sequence');
+  assert.equal(stops().length, 1, 'the stop did not rove -- two controls are in the Tab sequence');
   assert.equal(stops()[0], controls[1], 'the tab stop did not follow focus');
 
   press(controls[1]!, 'ArrowLeft');

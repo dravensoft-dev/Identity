@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { inputIdFor } from './ArenaInput';
+import { arenaInputIdFor } from './ArenaInput';
 import { arenaInputStyles } from './ArenaInput.variants';
 
 test('the default is a neutral, enabled, editable field', () => {
@@ -15,10 +15,10 @@ test('the default is a neutral, enabled, editable field', () => {
   );
 });
 
-test('inputIdFor prefers an explicit id and otherwise derives the contracted in- slug', () => {
-  assert.equal(inputIdFor('project-name', 'Project name'), 'project-name');
-  assert.equal(inputIdFor(undefined, 'Project name'), 'in-project-name');
-  assert.equal(inputIdFor(undefined, 'Repository   URL'), 'in-repository-url');
-  assert.equal(inputIdFor(undefined, undefined), null,
+test('arenaInputIdFor prefers an explicit id and otherwise derives the contracted in- slug', () => {
+  assert.equal(arenaInputIdFor('project-name', 'Project name'), 'project-name');
+  assert.equal(arenaInputIdFor(undefined, 'Project name'), 'in-project-name');
+  assert.equal(arenaInputIdFor(undefined, 'Repository   URL'), 'in-repository-url');
+  assert.equal(arenaInputIdFor(undefined, undefined), null,
     'with neither, the label has nothing to point at and the attribute must be absent rather than empty');
 });

@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, Component, computed, contentChildren, forwardRef, inject, input,
 } from '@angular/core';
-import { SideNavChild, SideNavState, indentFor } from '../arena-side-nav/SideNavState';
+import { ArenaSideNavChild, ArenaSideNavState, arenaIndentFor } from '../arena-side-nav/ArenaSideNavState';
 import { arenaSideNavStyles } from '../arena-side-nav/ArenaSideNav.variants';
 
 let nextId = 0;
@@ -11,8 +11,8 @@ let nextId = 0;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    SideNavState,
-    { provide: SideNavChild, useExisting: forwardRef(() => ArenaSideNavSection) },
+    ArenaSideNavState,
+    { provide: ArenaSideNavChild, useExisting: forwardRef(() => ArenaSideNavSection) },
   ],
   host: {
     '[class]': 'styles().section()',
@@ -28,11 +28,11 @@ export class ArenaSideNavSection {
   /** Names the group, both on screen and to assistive technology. Required, and guarded at runtime: a blank label leaves the group with no accessible name, which is the defect the guard exists to prevent arriving through a value that is present, so the guard trims before it decides. */
   readonly label = input.required<string>();
 
-  private readonly parent = inject(SideNavState, { skipSelf: true });
-  private readonly own = inject(SideNavState);
+  private readonly parent = inject(ArenaSideNavState, { skipSelf: true });
+  private readonly own = inject(ArenaSideNavState);
 
   protected readonly labelId = `arena-side-nav-section-${nextId++}`;
-  protected readonly children = contentChildren(SideNavChild);
+  protected readonly children = contentChildren(ArenaSideNavChild);
 
   protected readonly heading = computed(() => {
     const text = this.label();
@@ -42,7 +42,7 @@ export class ArenaSideNavSection {
     return text;
   });
 
-  protected readonly indent = computed(() => indentFor(this.parent.indentStep(), this.parent.depth()));
+  protected readonly indent = computed(() => arenaIndentFor(this.parent.indentStep(), this.parent.depth()));
   protected readonly styles = computed(() => arenaSideNavStyles());
 
   constructor() {

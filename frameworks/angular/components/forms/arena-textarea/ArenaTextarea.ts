@@ -4,18 +4,18 @@ import {
 } from '@angular/core';
 import { arenaTextareaStyles } from './ArenaTextarea.variants';
 
-export const COUNTER_WARNING_SHARE = 0.9;
+export const ARENA_COUNTER_WARNING_SHARE = 0.9;
 
-export function textareaIdFor(id: string | undefined, label: string | undefined): string | null {
+export function arenaTextareaIdFor(id: string | undefined, label: string | undefined): string | null {
   if (id) return id;
   return label ? `ta-${label.replace(/\s+/g, '-').toLowerCase()}` : null;
 }
 
-export function counterIsNear(length: number, maxLength: number): boolean {
-  return length > maxLength * COUNTER_WARNING_SHARE;
+export function arenaCounterIsNear(length: number, maxLength: number): boolean {
+  return length > maxLength * ARENA_COUNTER_WARNING_SHARE;
 }
 
-export function borderBoxSlack(element: HTMLElement): number {
+export function arenaBorderBoxSlack(element: HTMLElement): number {
   return element.offsetHeight - element.clientHeight;
 }
 
@@ -85,7 +85,7 @@ export class ArenaTextarea {
   /** Edited; carries the new text. */
   readonly change = output<string>();
 
-  protected readonly controlId = computed(() => textareaIdFor(this.id(), this.label()));
+  protected readonly controlId = computed(() => arenaTextareaIdFor(this.id(), this.label()));
   protected readonly shownError = computed(() => this.error() ?? null);
   protected readonly hasError = computed(() => Boolean(this.shownError()));
 
@@ -106,7 +106,7 @@ export class ArenaTextarea {
 
   protected readonly counterClass = computed(() => {
     const cap = this.maxLength();
-    return cap !== undefined && counterIsNear(this.length(), cap)
+    return cap !== undefined && arenaCounterIsNear(this.length(), cap)
       ? this.styles().counterNear()
       : this.styles().counter();
   });
@@ -137,6 +137,6 @@ export class ArenaTextarea {
 
   private fit(element: HTMLTextAreaElement): void {
     element.style.height = 'auto';
-    element.style.height = `${element.scrollHeight + borderBoxSlack(element)}px`;
+    element.style.height = `${element.scrollHeight + arenaBorderBoxSlack(element)}px`;
   }
 }

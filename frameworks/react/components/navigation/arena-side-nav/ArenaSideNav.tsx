@@ -1,5 +1,5 @@
 import React from 'react';
-import { injectInto } from './SideNavInject.tsx';
+import { arenaInjectInto } from './SideNavInject.tsx';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaSideNav.classes.generated.ts';
 
@@ -29,7 +29,7 @@ export function ArenaSideNav({ children, active, ariaLabel, indentStep = 3, onNa
   if (!ariaLabel?.trim()) throw new Error('ArenaSideNav: `ariaLabel` is required');
   return (
     <nav aria-label={ariaLabel} className={arenaSideNavStyles().root()}>
-      {injectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav })}
+      {arenaInjectInto(children, { depth: 0, activeId: active, indentStep, onActivate: onNav })}
     </nav>
   );
 }

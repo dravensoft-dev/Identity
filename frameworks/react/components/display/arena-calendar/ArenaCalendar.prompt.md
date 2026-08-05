@@ -76,7 +76,7 @@ The anchor is internal, so prev/Today/next work with nothing wired. `onRangeChan
 
 **Two accepted limits, both measured rather than argued.**
 
-`showsTime()` compares a chip's column share against **one** threshold and never asks whether the
+`arenaShowsTime()` compares a chip's column share against **one** threshold and never asks whether the
 chip has a kebab. A chip without actions has a content box of its share less 18px; one with them
 has its share less 46px, because the kebab's 34px reserve comes out too. So the kebab-safe
 threshold is 124.02px where the plain one is 96.02px, and `--calendar-time-min-w` is set at the

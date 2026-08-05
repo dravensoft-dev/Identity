@@ -1,6 +1,6 @@
 /* The two container components of the family, together, because what they have to prove is
  * what happens BETWEEN them. Depth could be pushed down a level at a time;
- * Angular cannot, so each container provides a fresh SideNavState whose depth is the parent's
+ * Angular cannot, so each container provides a fresh ArenaSideNavState whose depth is the parent's
  * plus one and the leaf pulls from the nearest ancestor. That is the whole design, no gate can
  * see it, and every indent assertion below is what stands in for one. keyboard.Enter and
  * keyboard.Space are earned by the interception test; the rest of `disclosure` is decidable. */

@@ -64,8 +64,8 @@ test('the loader follows the file rather than the call site, so both extensions 
 
 test('a .ts specifier is rewritten too, because a browser cannot execute TypeScript', () => {
   assert.equal(
-    rewriteRelativeSourceImports('import { useDialogModal } from "../../../UseDialogModal.ts";\n'),
-    'import { useDialogModal } from "../../../UseDialogModal.generated.js";\n',
+    rewriteRelativeSourceImports('import { useArenaDialogModal } from "../../../UseDialogModal.ts";\n'),
+    'import { useArenaDialogModal } from "../../../UseDialogModal.generated.js";\n',
   );
   assert.equal(
     rewriteRelativeSourceImports('import { sp1 } from "../../../Tokens.generated.js";\n'),

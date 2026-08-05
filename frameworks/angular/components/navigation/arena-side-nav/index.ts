@@ -1,3 +1,3 @@
 export * from './ArenaSideNav';
-export * from './SideNavState';
+export * from './ArenaSideNavState';
 export * from './ArenaSideNav.variants';

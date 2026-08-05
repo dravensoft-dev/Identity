@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input, 
 import type { ArenaControlSize, ArenaProgressTone } from '../../../Api.generated';
 import { arenaProgressBarStyles } from './ArenaProgressBar.variants';
 
-export function clampPercentage(value: number): number {
+export function arenaClampPercentage(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
@@ -45,7 +45,7 @@ export class ArenaProgressBar {
   /** The bar's thickness. */
   readonly size = input<ArenaControlSize>('md');
 
-  protected readonly percentage = computed(() => clampPercentage(this.progressPercentage()));
+  protected readonly percentage = computed(() => arenaClampPercentage(this.progressPercentage()));
   protected readonly showsValue = computed(() => this.showPercentage() && !this.indeterminate());
 
   protected readonly styles = computed(() => arenaProgressBarStyles({ tone: this.tone(), size: this.size() }));

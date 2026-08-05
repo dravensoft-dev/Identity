@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { warnOnce } from '../../../WarnOnce.ts';
-import { useArenaContainerWidth, readBreakpoint } from '../../../UseArenaContainerWidth.ts';
+import { arenaWarnOnce } from '../../../WarnOnce.ts';
+import { useArenaContainerWidth, arenaReadBreakpoint } from '../../../UseArenaContainerWidth.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaTable.classes.generated.ts';
 
@@ -47,11 +47,11 @@ export interface ArenaTableProps {
 }
 
 
-export function sortOptionValue(column: number, direction: ArenaTableSort['direction']): string {
+export function arenaSortOptionValue(column: number, direction: ArenaTableSort['direction']): string {
   return `${column}:${direction}`;
 }
 
-export function parseSortOption(value: string): ArenaTableSort | null {
+export function arenaParseSortOption(value: string): ArenaTableSort | null {
   const [column, direction] = value.split(':');
   const index = Number.parseInt(column ?? '', 10);
   if (!Number.isInteger(index) || (direction !== 'asc' && direction !== 'desc')) return null;
@@ -68,7 +68,7 @@ export function ArenaTable({
   if (columns == null) throw new Error('ArenaTable: `columns` is required');
   const [ref, width] = useArenaContainerWidth();
 
-  const narrow = responsive && width !== null && width < readBreakpoint('md');
+  const narrow = responsive && width !== null && width < arenaReadBreakpoint('md');
 
   const rowEls = React.Children.toArray(children);
   const bare = rowEls.length === 0;
@@ -84,7 +84,7 @@ export function ArenaTable({
     const column = columns[sort.column];
     if (column?.sortable) return;
     const name = column ? `"${column.header}"` : 'no column at all';
-    warnOnce(`ArenaTable "${label}": sort.column ${sort.column} is ${name}, which does not declare`
+    arenaWarnOnce(`ArenaTable "${label}": sort.column ${sort.column} is ${name}, which does not declare`
       + ' `sortable`, so no header is a target and the caret is not drawn. ArenaTableSort.column is an'
       + ' INDEX, so moving a column reorders the rows in silence; keep the sort field inside the'
       + ' column entry it belongs to and the two move together.');
@@ -173,10 +173,10 @@ export function ArenaTable({
   const sortable = columns.map((column, index) => ({ column, index })).filter((c) => c.column.sortable);
   const sortBar = narrow && !bare && sortControl !== 'none' && Boolean(sort) && sortable.length > 0;
   const sortOptions: ArenaSelectOption[] = sortable.flatMap(({ column, index }) => [
-    { value: sortOptionValue(index, 'asc'), label: `${column.header} \u2191` },
-    { value: sortOptionValue(index, 'desc'), label: `${column.header} \u2193` },
+    { value: arenaSortOptionValue(index, 'asc'), label: `${column.header} \u2191` },
+    { value: arenaSortOptionValue(index, 'desc'), label: `${column.header} \u2193` },
   ]);
-  const sortValue = sort ? sortOptionValue(sort.column, sort.direction) : undefined;
+  const sortValue = sort ? arenaSortOptionValue(sort.column, sort.direction) : undefined;
 
   const headerClass = (c: ArenaTableColumn): string => {
     const base = arenaTableStyles({ narrow: false, align: c.align || 'left' }).th();
@@ -189,7 +189,7 @@ export function ArenaTable({
         <div className={arenaTableStyles({ narrow: true }).grid()}>
           {sortBar && (
             <ArenaSelect label="Sort by" options={sortOptions} value={sortValue}
-              onChange={(picked) => { const next = parseSortOption(picked); if (next) onSortChange?.(next); }} />
+              onChange={(picked) => { const next = arenaParseSortOption(picked); if (next) onSortChange?.(next); }} />
           )}
           {bare && (
             <div className={arenaTableStyles({ narrow: true }).empty()}>{empty}</div>

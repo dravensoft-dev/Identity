@@ -61,7 +61,7 @@ test('ArenaTableRow meets all three of its declared shapes', () => {
         const el = root.firstElementChild;
 
         assert.equal(el!.tagName, 'DIV', 'the card shape is a div, which is why it CAN take role="button"');
-        assert.equal(el!.getAttribute('tabindex'), '0', 'a card row is reached by ArenaTab, unlike the wide row');
+        assert.equal(el!.getAttribute('tabindex'), '0', 'a card row is reached by Tab, unlike the wide row');
         assert.match(el!.textContent, /checkout-api/,
           'the button pattern accepts text content as its name, and the cells are that text');
 

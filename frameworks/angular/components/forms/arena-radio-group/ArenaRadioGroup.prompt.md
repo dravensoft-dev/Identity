@@ -26,7 +26,7 @@ the accessible name and the column layout, so there is no wrapper inside it.
 <!-- @api end -->
 
 **The children pull; the parent does not push.** `arena-radio` injects a
-`RadioGroupState` the group provides and reads the shared name and the selected value from it,
+`ArenaRadioGroupState` the group provides and reads the shared name and the selected value from it,
 reporting a choice back through it. Nothing is injected into the option, which is why none of that
 coordination is a member of either contract and why an option outside a group is a DI error rather
 than a silently inert control.

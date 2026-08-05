@@ -6,7 +6,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ELLIPSIS, pageWindow } from './PaginationWindow';
+import { ELLIPSIS, arenaPageWindow } from './PaginationWindow';
 import { limitPaginationSiblings } from '../../../Tokens.generated';
 
 test('the pinned windows are written for a sibling count of one', () => {
@@ -14,25 +14,25 @@ test('the pinned windows are written for a sibling count of one', () => {
 });
 
 test('seven pages fit whole, and eight do not', () => {
-  assert.deepEqual(pageWindow(1, 7), [1, 2, 3, 4, 5, 6, 7]);
-  assert.ok(pageWindow(1, 8).includes(ELLIPSIS));
+  assert.deepEqual(arenaPageWindow(1, 7), [1, 2, 3, 4, 5, 6, 7]);
+  assert.ok(arenaPageWindow(1, 8).includes(ELLIPSIS));
 });
 
 test('a window in the middle elides on both sides', () => {
-  assert.deepEqual(pageWindow(10, 20), [1, ELLIPSIS, 9, 10, 11, ELLIPSIS, 20]);
+  assert.deepEqual(arenaPageWindow(10, 20), [1, ELLIPSIS, 9, 10, 11, ELLIPSIS, 20]);
 });
 
 test('a window at the start elides on the right only', () => {
-  assert.deepEqual(pageWindow(1, 20), [1, 2, ELLIPSIS, 20]);
+  assert.deepEqual(arenaPageWindow(1, 20), [1, 2, ELLIPSIS, 20]);
 });
 
 test('a window at the end elides on the left only', () => {
-  assert.deepEqual(pageWindow(20, 20), [1, ELLIPSIS, 19, 20]);
+  assert.deepEqual(arenaPageWindow(20, 20), [1, ELLIPSIS, 19, 20]);
 });
 
 test('the window is the one ArenaPagination.json contracts, page for page', () => {
   for (const [current, total] of [[1, 7], [1, 8], [10, 20], [1, 20], [20, 20], [4, 12], [1, 1]]) {
-    const window = pageWindow(current, total);
+    const window = arenaPageWindow(current, total);
     const numbers = window.filter((slot): slot is number => slot !== ELLIPSIS);
     assert.equal(numbers[0], 1, `page ${current} of ${total}: the first page must always be reachable`);
     assert.equal(numbers[numbers.length - 1], total, `page ${current} of ${total}: the last page must always be reachable`);

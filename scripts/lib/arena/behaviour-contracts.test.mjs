@@ -200,7 +200,7 @@ test('the Angular inventory finds every component, no category and no bare modul
   assert.ok(found.includes('arena-calendar'));
   assert.ok(found.includes('arena-calendar-event'));
   assert.ok(!found.includes('CalendarInternals.ts'));
-  assert.ok(!found.includes('CalendarState.ts'));
+  assert.ok(!found.includes('ArenaCalendarState.ts'));
   for (const category of ['brand', 'charts', 'display', 'feedback', 'forms', 'layout', 'navigation'])
     assert.ok(!found.includes(category), `${category} is a category, not a component`);
   assert.ok(!found.includes('ChartDataTable.test.ts'));

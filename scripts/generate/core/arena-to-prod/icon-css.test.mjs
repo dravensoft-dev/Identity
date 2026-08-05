@@ -37,7 +37,7 @@ test('the regular weight is read only when a glyph sits beside it', () => {
 });
 
 test('a weight named on its own ships nothing, because a list of weights is not a rendering', () => {
-  assert.deepEqual(list(scan("export const WEIGHTS = ['ph-thin', 'ph-light', 'ph-bold'];")), []);
+  assert.deepEqual(list(scan("export const ARENA_WEIGHTS = ['ph-thin', 'ph-light', 'ph-bold'];")), []);
 });
 
 test('a word merely ending in ph is not a class list', () => {

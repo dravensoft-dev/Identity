@@ -24,7 +24,7 @@ of authored ARIA.
 
 **Do / Don't**
 - It has **no `checked` and no event**, and that is the contract rather than an omission. The
-  option reads the selected value from the `RadioGroupState` its group provides and reports a
+  option reads the selected value from the `ArenaRadioGroupState` its group provides and reports a
   choice back through it, so there is nothing for a consumer to wire per option. Bind
   `(change)` on the group.
 - `value` is required and is what the group's `change` carries. Two options with the same value in

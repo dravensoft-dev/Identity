@@ -26,7 +26,7 @@ export interface ChipEntry {
 }
 
 @Injectable()
-export class CalendarState {
+export class ArenaCalendarState {
   zone: Signal<string> = signal('UTC');
   days: Signal<readonly string[]> = signal([]);
   slots: Signal<readonly HourSlot[]> = signal([]);

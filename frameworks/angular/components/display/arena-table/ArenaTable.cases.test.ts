@@ -1,5 +1,5 @@
 /* Reaching the card case needs two levers: happy-dom ships no ResizeObserver that ever fires,
- * so the width stays null and every render is wide; and readBreakpoint reads --bp-md through
+ * so the width stays null and every render is wide; and arenaReadBreakpoint reads --bp-md through
  * getComputedStyle, which is empty here and returns NaN. Both are undone in a finally -- the
  * document and the breakpoint CACHE are shared by the whole run, which is why this file caches
  * 768 and no other number: ArenaPageHead.variants.test.ts asserts that value on a cache hit. No key

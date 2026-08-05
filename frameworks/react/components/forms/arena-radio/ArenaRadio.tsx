@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaRadio.classes.generated.ts';
 
-export interface RadioInjected {
+export interface ArenaRadioInjected {
   name: string;
   checked: boolean;
   onSelect: (value: string) => void;
@@ -26,7 +26,7 @@ export interface ArenaRadioProps {
 
 const arenaRadioStyles = arenaStyles(manifest);
 
-export function ArenaRadio({ value, label, hint, name, checked = false, onSelect, disabled = false }: ArenaRadioProps & Partial<RadioInjected>) {
+export function ArenaRadio({ value, label, hint, name, checked = false, onSelect, disabled = false }: ArenaRadioProps & Partial<ArenaRadioInjected>) {
   if (!value) throw new Error('ArenaRadio: `value` is required');
   const styles = arenaRadioStyles({ checked, disabled });
   return (

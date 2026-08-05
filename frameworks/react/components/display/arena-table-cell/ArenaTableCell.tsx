@@ -11,7 +11,7 @@ export interface ArenaTableCellProps {
   children?: React.ReactNode;
 }
 
-export interface TableCellInjected {
+export interface ArenaTableCellInjected {
   column: ArenaTableColumn;
   layout: 'table' | 'card';
   tabIndex: number | undefined;
@@ -22,7 +22,7 @@ export interface TableCellInjected {
 
 export function ArenaTableCell({
   children, column, layout = 'table', tabIndex, onCellFocus,
-}: ArenaTableCellProps & Partial<TableCellInjected>) {
+}: ArenaTableCellProps & Partial<ArenaTableCellInjected>) {
 
   const c: Partial<ArenaTableColumn> = column ?? {};
 

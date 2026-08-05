@@ -3,7 +3,7 @@ import type { ArenaToastTone } from '../../../Api.generated';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated';
 import { arenaToastStyles } from './ArenaToast.variants';
 
-export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
+export const ARENA_TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
 
 @Component({
   selector: 'arena-toast',

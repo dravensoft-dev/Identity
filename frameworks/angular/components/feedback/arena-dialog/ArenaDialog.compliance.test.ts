@@ -74,12 +74,12 @@ test('arena-dialog meets the dialog-modal pattern it binds', () => {
 
     promote.focus();
     const forward = press(promote, 'Tab');
-    assert.equal(forward.defaultPrevented, true, 'focus.trap: ArenaTab off the last control was not intercepted');
-    assertSameNode(document.activeElement, cancel, 'focus.trap: ArenaTab off the last control did not wrap to the first');
+    assert.equal(forward.defaultPrevented, true, 'focus.trap: Tab off the last control was not intercepted');
+    assertSameNode(document.activeElement, cancel, 'focus.trap: Tab off the last control did not wrap to the first');
 
     const backward = press(cancel, 'Tab', true);
-    assert.equal(backward.defaultPrevented, true, 'focus.trap: Shift+ArenaTab off the first control was not intercepted');
-    assertSameNode(document.activeElement, promote, 'focus.trap: Shift+ArenaTab off the first control did not wrap to the last');
+    assert.equal(backward.defaultPrevented, true, 'focus.trap: Shift+Tab off the first control was not intercepted');
+    assertSameNode(document.activeElement, promote, 'focus.trap: Shift+Tab off the first control did not wrap to the last');
 
     const escape = press(document.activeElement as Element, 'Escape');
     assert.equal(escape.defaultPrevented, true, 'keyboard.Escape: Escape was not intercepted');

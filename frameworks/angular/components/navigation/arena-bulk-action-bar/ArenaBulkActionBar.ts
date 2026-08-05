@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { arenaContainerWidth, readBreakpoint } from '../../../ContainerSize';
+import { arenaContainerWidth, arenaReadBreakpoint } from '../../../ContainerSize';
 import { arenaBulkActionBarStyles } from './ArenaBulkActionBar.variants';
 import type { ArenaBulkAction, ArenaBulkActionBarLayout } from '../../../Api.generated';
 
@@ -61,7 +61,7 @@ export class ArenaBulkActionBar {
   });
 
   private readonly measured = arenaContainerWidth();
-  private readonly small = readBreakpoint('sm');
+  private readonly small = arenaReadBreakpoint('sm');
 
   protected readonly narrow = computed(() => {
     const width = this.measured();

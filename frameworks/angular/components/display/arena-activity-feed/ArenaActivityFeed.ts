@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, input } from '@angular/core';
 import type { ArenaActivityItem } from '../../../Api.generated';
-import { focusableElements } from '../../../FocusTrap';
+import { arenaFocusableElements } from '../../../FocusTrap';
 import { arenaActivityFeedStyles } from './ArenaActivityFeed.variants';
 import manifest from './ArenaActivityFeed.classes.generated';
 
@@ -15,7 +15,7 @@ export interface ActivityFeedRow {
   dotClass: string;
 }
 
-export function resolveActivityFeedRows(items: readonly ArenaActivityItem[]): ActivityFeedRow[] {
+export function arenaResolveActivityFeedRows(items: readonly ArenaActivityItem[]): ActivityFeedRow[] {
   return items.map((item, index) => {
     const resolved = arenaActivityFeedStyles({ tone: toneOf(item.tone), divided: index > 0 });
     return { item, itemClass: resolved.item(), dotClass: resolved.dot() };
@@ -65,13 +65,13 @@ export class ArenaActivityFeed {
   });
 
   protected readonly base = computed(() => arenaActivityFeedStyles());
-  protected readonly rows = computed(() => resolveActivityFeedRows(this.items()));
+  protected readonly rows = computed(() => arenaResolveActivityFeedRows(this.items()));
 
   protected onKeydown(event: KeyboardEvent): void {
     const feed = event.currentTarget as HTMLElement;
     if (event.ctrlKey && (event.key === 'End' || event.key === 'Home')) {
       const after = event.key === 'End';
-      const outside = focusableElements(feed.ownerDocument.body).filter((el) => !feed.contains(el));
+      const outside = arenaFocusableElements(feed.ownerDocument.body).filter((el) => !feed.contains(el));
       const position = after ? Node.DOCUMENT_POSITION_FOLLOWING : Node.DOCUMENT_POSITION_PRECEDING;
       const reachable = outside.filter((el) => feed.compareDocumentPosition(el) & position);
       const target = after ? reachable[0] : reachable[reachable.length - 1];

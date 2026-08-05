@@ -151,7 +151,7 @@ test('one layer importing the token does not excuse the other, which is the whol
 test('a different number is not a shadow, and neither is a non-numeric constant', () => {
   const layers = [layerWith('react', [], [
     { name: 'OTHER', value: '9', path: 'a.jsx' },
-    { name: 'PAD', value: '{t:8,r:8}', path: 'b.jsx' },
+    { name: 'ARENA_PAD', value: '{t:8,r:8}', path: 'b.jsx' },
   ])];
   assert.deepEqual(shadowedTokenProblems([sp2], layers), []);
 });

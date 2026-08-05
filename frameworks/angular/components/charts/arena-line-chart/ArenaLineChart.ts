@@ -4,8 +4,8 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  CHART_HEIGHT, PAD, RAIL_STYLE, SR_ONLY, areaFill, niceMax, plotWidth, resolveColors, ticks,
-  valueWriter,
+  ARENA_CHART_HEIGHT, ARENA_PAD, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
+  arenaValueWriter,
 } from '../../../DataVisuals';
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
@@ -45,15 +45,15 @@ export interface ArenaLinePoint {
   y: number;
 }
 
-export function lineX(index: number, count: number, innerWidth: number): number {
-  return PAD.l + (count <= 1 ? innerWidth / 2 : (innerWidth / (count - 1)) * index);
+export function arenaLineX(index: number, count: number, innerWidth: number): number {
+  return ARENA_PAD.l + (count <= 1 ? innerWidth / 2 : (innerWidth / (count - 1)) * index);
 }
 
-export function lineValueY(value: number, max: number, innerHeight: number): number {
-  return PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
+export function arenaLineValueY(value: number, max: number, innerHeight: number): number {
+  return ARENA_PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
 }
 
-export function nearestPointIndex(points: readonly ArenaLinePoint[], x: number): number {
+export function arenaNearestPointIndex(points: readonly ArenaLinePoint[], x: number): number {
   if (points.length === 0) return -1;
   let best = 0;
   for (let i = 1; i < points.length; i++) {
@@ -62,11 +62,11 @@ export function nearestPointIndex(points: readonly ArenaLinePoint[], x: number):
   return best;
 }
 
-export function linePoints(points: readonly ArenaLinePoint[]): string {
+export function arenaLinePoints(points: readonly ArenaLinePoint[]): string {
   return points.map((point) => `${point.x},${point.y}`).join(' ');
 }
 
-export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number): string {
+export function arenaLineAreaPath(points: readonly ArenaLinePoint[], baseline: number): string {
   if (points.length === 0) return '';
   const line = points.map((point) => `${point.x},${point.y}`).join(' L');
   return `M${points[0].x},${baseline} L${line} L${points[points.length - 1].x},${baseline} Z`;
@@ -81,7 +81,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
     '[style.height.px]': 'height()',
   },
   template: `
-    <div #rail [style]="railStyle" [attr.tabindex]="scrolls() ? 0 : null"
+    <div #rail [style]="arenaRailStyle" [attr.tabindex]="scrolls() ? 0 : null"
          [attr.role]="scrolls() ? 'group' : null" [attr.aria-label]="scrolls() ? name() : null">
     <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="height()" role="img" [attr.aria-label]="name()"
          style="display:block;overflow:visible">
@@ -98,7 +98,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
             stroke="var(--line-strong)" [style]="lineStyle" />
 
       @if (area() && points().length > 0) {
-        <path [attr.d]="areaPath()" [attr.fill]="areaFill()" stroke="none" />
+        <path [attr.d]="areaPath()" [attr.fill]="arenaAreaFill()" stroke="none" />
       }
 
       @if (active(); as point) {
@@ -136,7 +136,7 @@ export function lineAreaPath(points: readonly ArenaLinePoint[], baseline: number
       </div>
     }
 
-    <table [style]="srOnly">
+    <table [style]="arenaSrOnly">
       <caption>{{ name() }}</caption>
       <thead><tr><th>Point</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
@@ -160,20 +160,20 @@ export class ArenaLineChart {
   readonly tone = input<ArenaSeriesTone>();
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   readonly area = input(false, { transform: booleanAttribute });
-  /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
+  /** Appended verbatim to every number the chart draws: the axis arenaTicks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
   readonly valueFormat = input<ArenaNumberFormat>();
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
-  readonly height = input<number>(CHART_HEIGHT);
+  readonly height = input<number>(ARENA_CHART_HEIGHT);
   /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
   readonly minPointSpacing = input<number>();
 
-  protected readonly pad = PAD;
-  protected readonly srOnly = SR_ONLY;
-  protected readonly railStyle = RAIL_STYLE;
+  protected readonly pad = ARENA_PAD;
+  protected readonly arenaSrOnly = ARENA_SR_ONLY;
+  protected readonly arenaRailStyle = ARENA_RAIL_STYLE;
   protected readonly lineStyle = LINE_STYLE;
   protected readonly seriesStrokeStyle = SERIES_STROKE_STYLE;
   protected readonly tickLabelStyle = TICK_LABEL_STYLE;
@@ -183,11 +183,11 @@ export class ArenaLineChart {
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
   protected readonly pointR = POINT_R;
   protected readonly pointRHover = POINT_R_HOVER;
-  protected readonly tickLabelX = PAD.l - chartLabelGap;
+  protected readonly tickLabelX = ARENA_PAD.l - chartLabelGap;
   protected readonly pointLabelY = computed(() => this.height() - chartLabelGap);
   protected readonly hover = signal<number | null>(null);
 
-  private readonly write = computed(() => valueWriter({
+  private readonly write = computed(() => arenaValueWriter({
     prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
   }));
 
@@ -196,32 +196,32 @@ export class ArenaLineChart {
   private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
   protected readonly width = computed(
-    () => plotWidth(this.available(), this.values().length, this.minPointSpacing()),
+    () => arenaPlotWidth(this.available(), this.values().length, this.minPointSpacing()),
   );
 
   protected readonly scrolls = computed(() => this.width() > this.available());
 
   private readonly rail = viewChild<ElementRef<HTMLElement>>('rail');
 
-  protected readonly color = computed(() => resolveColors({ slot: this.slot(), tone: this.tone(), count: 1 })[0]);
+  protected readonly color = computed(() => arenaResolveColors({ slot: this.slot(), tone: this.tone(), count: 1 })[0]);
 
-  protected readonly areaFill = computed(() => areaFill(this.color()));
+  protected readonly arenaAreaFill = computed(() => arenaAreaFill(this.color()));
 
   protected readonly name = computed(() => {
     const series = this.seriesLabel();
     return `${series} — line chart`;
   });
 
-  private readonly max = computed(() => niceMax(Math.max(0, ...this.values())));
-  protected readonly innerWidth = computed(() => Math.max(1, this.width() - PAD.l - PAD.r));
-  protected readonly innerHeight = computed(() => Math.max(1, this.height() - PAD.t - PAD.b));
-  protected readonly baseline = computed(() => PAD.t + this.innerHeight());
+  private readonly max = computed(() => arenaNiceMax(Math.max(0, ...this.values())));
+  protected readonly innerWidth = computed(() => Math.max(1, this.width() - ARENA_PAD.l - ARENA_PAD.r));
+  protected readonly innerHeight = computed(() => Math.max(1, this.height() - ARENA_PAD.t - ARENA_PAD.b));
+  protected readonly baseline = computed(() => ARENA_PAD.t + this.innerHeight());
 
   protected readonly gridLines = computed(() => {
     const max = this.max();
     const innerHeight = this.innerHeight();
     const write = this.write();
-    return ticks(max).map((value) => ({ value, y: lineValueY(value, max, innerHeight), label: write(value) }));
+    return arenaTicks(max).map((value) => ({ value, y: arenaLineValueY(value, max, innerHeight), label: write(value) }));
   });
 
   protected readonly points = computed(() => {
@@ -232,15 +232,15 @@ export class ArenaLineChart {
     const write = this.write();
     return values.map((value, index) => ({
       index,
-      x: lineX(index, values.length, innerWidth),
-      y: lineValueY(value, max, innerHeight),
+      x: arenaLineX(index, values.length, innerWidth),
+      y: arenaLineValueY(value, max, innerHeight),
       label: this.labels()[index] ?? '',
       formatted: write(value),
     }));
   });
 
-  protected readonly polyline = computed(() => linePoints(this.points()));
-  protected readonly areaPath = computed(() => lineAreaPath(this.points(), this.baseline()));
+  protected readonly polyline = computed(() => arenaLinePoints(this.points()));
+  protected readonly areaPath = computed(() => arenaLineAreaPath(this.points(), this.baseline()));
 
   protected readonly active = computed(() => {
     const index = this.hover();
@@ -260,7 +260,7 @@ export class ArenaLineChart {
 
     const box = (event.currentTarget as SVGRectElement).ownerSVGElement?.getBoundingClientRect();
     if (!box) return;
-    const index = nearestPointIndex(this.points(), event.clientX - box.left);
+    const index = arenaNearestPointIndex(this.points(), event.clientX - box.left);
     if (index >= 0) this.hover.set(index);
   }
 }

@@ -2,7 +2,7 @@
  * here, so no value is duplicated. This flips nothing on its own: happy-dom has
  * a ResizeObserver that never fires, so useArenaContainerWidth's width stays null and
  * every responsive branch stays wide -- a suite wanting the narrow one stubs the
- * observer. Without this, readBreakpoint() reads '', returns NaN and warns, and
+ * observer. Without this, arenaReadBreakpoint() reads '', returns NaN and warns, and
  * `width < NaN` is false, so every suite would assert around a wide-only tree. */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

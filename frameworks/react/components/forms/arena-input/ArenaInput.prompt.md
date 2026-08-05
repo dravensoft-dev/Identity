@@ -81,7 +81,7 @@ Use the native types. Arena deliberately ships **no `DatePicker` and no `TimePic
 querying the real `<input>` out of the DOM, which is Arena's markup and can move:
 
 ```tsx
-const search = useRef<InputHandle>(null);
+const search = useRef<ArenaInputHandle>(null);
 
 function completeSale() {
   record();

@@ -1,3 +1,3 @@
 export * from './ArenaTableRow';
 export * from './ArenaTableRow.variants';
-export * from './TableRowState';
+export * from './ArenaTableRowState';

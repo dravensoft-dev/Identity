@@ -56,7 +56,7 @@ test('arena-bulk-action-bar is a toolbar with one tab stop, roved by the arrow k
     fixture.detectChanges();
     assertSameNode(document.activeElement, controls[1], 'ArrowRight did not move to the next control');
     assert.equal(right.defaultPrevented, true, 'ArrowRight was not claimed by the toolbar');
-    assert.equal(stops().length, 1, 'the stop did not rove -- two controls are in the ArenaTab sequence');
+    assert.equal(stops().length, 1, 'the stop did not rove -- two controls are in the Tab sequence');
     assert.equal(stops()[0], controls[1], 'the tab stop did not follow focus');
 
     press(controls[1], 'ArrowLeft');

@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { COUNTER_WARNING_SHARE, borderBoxSlack, counterIsNear, textareaIdFor } from './ArenaTextarea';
+import { ARENA_COUNTER_WARNING_SHARE, arenaBorderBoxSlack, arenaCounterIsNear, arenaTextareaIdFor } from './ArenaTextarea';
 import { arenaTextareaStyles } from './ArenaTextarea.variants';
 
 test('the default is a neutral, vertically resizable, enabled, editable field', () => {
@@ -15,23 +15,23 @@ test('the default is a neutral, vertically resizable, enabled, editable field', 
   );
 });
 
-test('counterIsNear turns over at nine tenths of the cap, exclusive', () => {
-  assert.equal(COUNTER_WARNING_SHARE, 0.9);
-  assert.equal(counterIsNear(89, 100), false);
-  assert.equal(counterIsNear(90, 100), false, 'exactly at the share is not yet near -- ArenaTextarea.json contracts STRICTLY past nine tenths');
-  assert.equal(counterIsNear(91, 100), true);
-  assert.equal(counterIsNear(100, 100), true);
+test('arenaCounterIsNear turns over at nine tenths of the cap, exclusive', () => {
+  assert.equal(ARENA_COUNTER_WARNING_SHARE, 0.9);
+  assert.equal(arenaCounterIsNear(89, 100), false);
+  assert.equal(arenaCounterIsNear(90, 100), false, 'exactly at the share is not yet near -- ArenaTextarea.json contracts STRICTLY past nine tenths');
+  assert.equal(arenaCounterIsNear(91, 100), true);
+  assert.equal(arenaCounterIsNear(100, 100), true);
 });
 
-test('textareaIdFor derives the contracted ta- slug, which is a different prefix from ArenaInput\'s', () => {
-  assert.equal(textareaIdFor('release-notes', 'Release notes'), 'release-notes');
-  assert.equal(textareaIdFor(undefined, 'Release notes'), 'ta-release-notes');
-  assert.equal(textareaIdFor(undefined, undefined), null);
+test('arenaTextareaIdFor derives the contracted ta- slug, which is a different prefix from ArenaInput\'s', () => {
+  assert.equal(arenaTextareaIdFor('release-notes', 'Release notes'), 'release-notes');
+  assert.equal(arenaTextareaIdFor(undefined, 'Release notes'), 'ta-release-notes');
+  assert.equal(arenaTextareaIdFor(undefined, undefined), null);
 });
 
-test('borderBoxSlack is the border, which scrollHeight leaves out and a border-box height needs', () => {
-  assert.equal(borderBoxSlack({ offsetHeight: 82, clientHeight: 80 } as HTMLElement), 2,
+test('arenaBorderBoxSlack is the border, which scrollHeight leaves out and a border-box height needs', () => {
+  assert.equal(arenaBorderBoxSlack({ offsetHeight: 82, clientHeight: 80 } as HTMLElement), 2,
     'the Tailwind layer is border-box, so height must cover the border; scrollHeight covers only '
     + 'content plus padding, and the two-pixel shortfall is exactly one hairline top and bottom');
-  assert.equal(borderBoxSlack({ offsetHeight: 80, clientHeight: 80 } as HTMLElement), 0);
+  assert.equal(arenaBorderBoxSlack({ offsetHeight: 80, clientHeight: 80 } as HTMLElement), 0);
 });

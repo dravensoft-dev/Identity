@@ -156,7 +156,7 @@ test('dropping a tab does not migrate a surviving panel\'s typed input into the 
       <>
         <button type="button" data-drop onClick={() => setKeys(['b', 'c'])}>drop</button>
         <ArenaTabs defaultValue="b">
-          {keys.map((k) => <ArenaTab key={k} value={k} label={`ArenaTab ${k}`}><input data-for={k} /></ArenaTab>)}
+          {keys.map((k) => <ArenaTab key={k} value={k} label={`Tab ${k}`}><input data-for={k} /></ArenaTab>)}
         </ArenaTabs>
       </>
     );

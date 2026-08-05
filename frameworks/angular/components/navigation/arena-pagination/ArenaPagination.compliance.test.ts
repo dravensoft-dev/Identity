@@ -113,7 +113,7 @@ test('the current page is marked, and only it', () => {
   }
 });
 
-test('the ellipsis is not a control, so nothing lands on it in the ArenaTab sequence', () => {
+test('the ellipsis is not a control, so nothing lands on it in the Tab sequence', () => {
   const { fixture, read } = render(10, 20);
   try {
     const { nav } = read();

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
-import { CHART_HEIGHT, SR_ONLY, arcPath, resolveColors, valueWriter } from '../../../DataVisuals';
+import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaArcPath, arenaResolveColors, arenaValueWriter } from '../../../DataVisuals';
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
 import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
 
@@ -74,7 +74,7 @@ export interface ArenaDoughnutSlice {
   percent: number;
 }
 
-export function doughnutSlices(values: readonly number[]): ArenaDoughnutSlice[] {
+export function arenaDoughnutSlices(values: readonly number[]): ArenaDoughnutSlice[] {
   const total = values.reduce((sum, value) => sum + Math.max(0, value), 0);
   let angle = START_ANGLE;
   return values.map((value, index) => {
@@ -86,16 +86,16 @@ export function doughnutSlices(values: readonly number[]): ArenaDoughnutSlice[] 
   });
 }
 
-export function doughnutLegendWidth(width: number): number {
+export function arenaDoughnutLegendWidth(width: number): number {
   return Math.min(LEGEND_MAX, Math.max(LEGEND_MIN, width * LEGEND_SHARE));
 }
 
-export function doughnutPlotWidth(width: number): number {
-  return Math.max(1, width - doughnutLegendWidth(width) - LEGEND_GAP);
+export function arenaDoughnutPlotWidth(width: number): number {
+  return Math.max(1, width - arenaDoughnutLegendWidth(width) - LEGEND_GAP);
 }
 
-export function doughnutRadii(plotWidth: number, height: number): { outer: number; inner: number } {
-  const outer = Math.max(1, Math.min(plotWidth, height) / 2 - chartRingInset);
+export function arenaDoughnutRadii(arenaPlotWidth: number, height: number): { outer: number; inner: number } {
+  const outer = Math.max(1, Math.min(arenaPlotWidth, height) / 2 - chartRingInset);
   return { outer, inner: outer * INNER_RATIO };
 }
 
@@ -108,7 +108,7 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
     '[style.height.px]': 'height',
   },
   template: `
-    <svg [attr.width]="plotWidth()" [attr.height]="height" role="img" [attr.aria-label]="name()"
+    <svg [attr.width]="arenaPlotWidth()" [attr.height]="height" role="img" [attr.aria-label]="name()"
          [style]="svgStyle" (mouseleave)="hover.set(null)">
       @for (segment of segments(); track segment.index) {
         @if (segment.path) {
@@ -140,7 +140,7 @@ export function doughnutRadii(plotWidth: number, height: number): { outer: numbe
       }
     </div>
 
-    <table [style]="srOnly">
+    <table [style]="arenaSrOnly">
       <caption>{{ name() }}</caption>
       <thead><tr><th>Category</th><th>{{ seriesLabel() }}</th></tr></thead>
       <tbody>
@@ -171,8 +171,8 @@ export class ArenaDoughnutChart {
   /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
   readonly sliceActivate = output<number>();
 
-  protected readonly height = CHART_HEIGHT;
-  protected readonly srOnly = SR_ONLY;
+  protected readonly height = ARENA_CHART_HEIGHT;
+  protected readonly arenaSrOnly = ARENA_SR_ONLY;
   protected readonly svgStyle = SVG_STYLE;
   protected readonly segmentStyle = SEGMENT_STYLE;
   protected readonly centreLabelStyle = CENTRE_LABEL_STYLE;
@@ -184,7 +184,7 @@ export class ArenaDoughnutChart {
   protected readonly dimOpacity = DIM_OPACITY;
   protected readonly hover = signal<number | null>(null);
 
-  private readonly write = computed(() => valueWriter({
+  private readonly write = computed(() => arenaValueWriter({
     prefix: this.valuePrefix(), suffix: this.valueSuffix(), format: this.valueFormat(),
   }));
 
@@ -195,7 +195,7 @@ export class ArenaDoughnutChart {
   protected readonly stacked = computed(() => {
     const choice = this.legendLayout();
     if (choice !== 'auto') return choice === 'stacked';
-    return doughnutLegendWidth(this.width()) < LEGEND_STACK_BELOW;
+    return arenaDoughnutLegendWidth(this.width()) < LEGEND_STACK_BELOW;
   });
 
   protected readonly legendTextStyle = computed(
@@ -207,27 +207,27 @@ export class ArenaDoughnutChart {
     return `${series} — doughnut chart`;
   });
 
-  protected readonly plotWidth = computed(() => doughnutPlotWidth(this.width()));
-  protected readonly centreX = computed(() => this.plotWidth() / 2);
+  protected readonly arenaPlotWidth = computed(() => arenaDoughnutPlotWidth(this.width()));
+  protected readonly centreX = computed(() => this.arenaPlotWidth() / 2);
   protected readonly centreY = computed(() => this.height / 2);
 
   protected readonly segments = computed(() => {
     const values = this.values();
 
-    const colors = resolveColors({
+    const colors = arenaResolveColors({
       slots: this.slots() ?? values.map((_, index) => index + 1),
       count: values.length,
     });
     const write = this.write();
     const centreX = this.centreX();
     const centreY = this.centreY();
-    const { outer, inner } = doughnutRadii(this.plotWidth(), this.height);
-    return doughnutSlices(values).map((slice) => ({
+    const { outer, inner } = arenaDoughnutRadii(this.arenaPlotWidth(), this.height);
+    return arenaDoughnutSlices(values).map((slice) => ({
       ...slice,
       color: colors[slice.index],
       label: this.labels()[slice.index] ?? '',
       formatted: write(values[slice.index]),
-      path: slice.to > slice.from ? arcPath(centreX, centreY, outer, inner, slice.from, slice.to) : '',
+      path: slice.to > slice.from ? arenaArcPath(centreX, centreY, outer, inner, slice.from, slice.to) : '',
     }));
   });
 

@@ -1,41 +1,41 @@
-export type SlotClasses = Record<string, string>;
-export type VariantGroups = Record<string, Record<string, Partial<SlotClasses>>>;
-export type Choice = string | boolean | undefined;
+export type ArenaSlotClasses = Record<string, string>;
+export type ArenaVariantGroups = Record<string, Record<string, Partial<ArenaSlotClasses>>>;
+export type ArenaChoice = string | boolean | undefined;
 
-export interface CompoundVariant {
-  readonly class: Partial<SlotClasses>;
-  readonly [condition: string]: Choice | Partial<SlotClasses>;
+export interface ArenaCompoundVariant {
+  readonly class: Partial<ArenaSlotClasses>;
+  readonly [condition: string]: ArenaChoice | Partial<ArenaSlotClasses>;
 }
 
-export interface ClassManifest {
+export interface ArenaClassManifest {
   readonly component: string;
-  readonly slots: SlotClasses;
-  readonly variants?: VariantGroups;
-  readonly defaultVariants?: Record<string, Choice>;
-  readonly compoundVariants?: readonly CompoundVariant[];
+  readonly slots: ArenaSlotClasses;
+  readonly variants?: ArenaVariantGroups;
+  readonly defaultVariants?: Record<string, ArenaChoice>;
+  readonly compoundVariants?: readonly ArenaCompoundVariant[];
 }
 
-export type Selection = Record<string, Choice>;
-export type Slots<M extends ClassManifest> = { readonly [K in keyof M['slots']]: () => string };
+export type ArenaSelection = Record<string, ArenaChoice>;
+export type ArenaSlots<M extends ArenaClassManifest> = { readonly [K in keyof M['slots']]: () => string };
 
-export function arenaStyles<M extends ClassManifest>(manifest: M) {
+export function arenaStyles<M extends ArenaClassManifest>(manifest: M) {
   const slotNames = Object.keys(manifest.slots);
 
-  return (chosen: Selection = {}): Slots<M> => {
+  return (chosen: ArenaSelection = {}): ArenaSlots<M> => {
     const applied = new Map<string, string[]>();
     for (const slot of slotNames) {
       const base = manifest.slots[slot];
       applied.set(slot, base ? [base] : []);
     }
 
-    const append = (classes: Partial<SlotClasses> | undefined) => {
+    const append = (classes: Partial<ArenaSlotClasses> | undefined) => {
       for (const [slot, name] of Object.entries(classes ?? {})) {
         const into = applied.get(slot);
         if (name && into) into.push(name);
       }
     };
 
-    const resolved = (group: string): Choice =>
+    const resolved = (group: string): ArenaChoice =>
       (chosen[group] ?? manifest.defaultVariants?.[group]);
 
     for (const [group, values] of Object.entries(manifest.variants ?? {})) {
@@ -61,6 +61,6 @@ export function arenaStyles<M extends ClassManifest>(manifest: M) {
       const names = applied.get(slot) ?? [];
       out[slot] = () => names.join(' ');
     }
-    return out as Slots<M>;
+    return out as ArenaSlots<M>;
   };
 }

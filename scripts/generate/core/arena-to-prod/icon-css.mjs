@@ -15,7 +15,7 @@ export const WEIGHT_CLASSES = {
   fill: 'ph-fill',
 };
 
-export const WEIGHTS = Object.keys(WEIGHT_CLASSES);
+export const ARENA_WEIGHTS = Object.keys(WEIGHT_CLASSES);
 
 const CLASS_TOKENS = new Set(Object.values(WEIGHT_CLASSES));
 const GROUP = /(?<![\w-])ph(?:-[a-z0-9]+)*(?:\s+ph(?:-[a-z0-9]+)*)*(?![\w-])/g;
@@ -27,7 +27,7 @@ export function scan(source, found = { pairs: new Map(), loose: new Set() }) {
     const weights = [];
     const glyphs = [];
     for (const token of group.split(/\s+/)) {
-      if (CLASS_TOKENS.has(token)) weights.push(WEIGHTS.find((weight) => WEIGHT_CLASSES[weight] === token));
+      if (CLASS_TOKENS.has(token)) weights.push(ARENA_WEIGHTS.find((weight) => WEIGHT_CLASSES[weight] === token));
       else glyphs.push(token);
     }
     if (glyphs.length === 0) continue;
@@ -41,7 +41,7 @@ export function scan(source, found = { pairs: new Map(), loose: new Set() }) {
 }
 
 export function drawn(found) {
-  return WEIGHTS.filter((weight) => found.pairs.has(weight))
+  return ARENA_WEIGHTS.filter((weight) => found.pairs.has(weight))
     .map((weight) => ({ weight, glyphs: new Set([...found.pairs.get(weight), ...found.loose]) }));
 }
 

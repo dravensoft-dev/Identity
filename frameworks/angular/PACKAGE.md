@@ -283,7 +283,9 @@ un-imported marker from an unfilled slot, so nothing can warn you.
 Call either measurement from an injection context, a field initializer or the constructor:
 `DestroyRef` disconnects the observer and `afterNextRender` decides when there is a box to
 measure at all. Every other symbol reaching the root is an internal of this layer, exported
-because the barrel is not curated, and carries no compatibility promise.
+because the barrel is not curated, and carries no compatibility promise. It carries the prefix
+too, since the convention is about the name and not about the promise, so reading `Arena` on a
+symbol tells you where it comes from and never that it is yours to depend on.
 
 The stylesheets are a tree, and you pick your depth. `arena.css` is all of it and the
 zero-friction path:

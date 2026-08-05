@@ -76,7 +76,7 @@ test('arena-onboarding is a labelled modal that takes focus on open and gives it
     assert.ok(panel, 'an open onboarding must render its panel');
     assert.equal(panel.getAttribute('aria-modal'), 'true');
     assert.ok(panel.contains(document.activeElement),
-      'opening left focus outside the panel, so the first ArenaTab goes back into the page behind it');
+      'opening left focus outside the panel, so the first Tab goes back into the page behind it');
 
     assertPattern({
       root: host,

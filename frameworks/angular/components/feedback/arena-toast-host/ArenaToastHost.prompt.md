@@ -35,7 +35,7 @@ under it, and nothing about the device's own geometry is retyped.
 **It owns no clock, and it counts nothing.** The queue that produced these notices already holds
 their ids, their order and how many there are, so the timer and any ceiling stay there. Read
 `data-persist` off each notice and skip the timer for the ones that carry it, and take the interval
-from `TOAST_DISMISS`, exported beside `arena-toast`:
+from `ARENA_TOAST_DISMISS`, exported beside `arena-toast`:
 `.default` for a notice that only has to be read, `.actionable` for one carrying a button.
 
 **Do / Don't**

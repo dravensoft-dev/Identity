@@ -4,7 +4,7 @@ element you place.
 
 It positions nothing and owns no clock. The host decides where the stack sits and when each
 notice goes: `arena-toast-host` is the box that places it, and the clock stays with whatever queue
-raised the notice. `TOAST_DISMISS`, exported beside the component, carries the two intervals to run
+raised the notice. `ARENA_TOAST_DISMISS`, exported beside the component, carries the two intervals to run
 it off: `.default` for a notice that only has to be read, `.actionable` for one carrying a button,
 which asks the reader to decide rather than only to read. They are tokens, so a host that reads
 them stays in step with a release that moves one; a host that retypes 4200 does not. The

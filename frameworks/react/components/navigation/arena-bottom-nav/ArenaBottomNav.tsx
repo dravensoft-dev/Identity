@@ -1,5 +1,5 @@
 import React from 'react';
-import { injectInto } from './BottomNavInject.tsx';
+import { arenaInjectInto } from './BottomNavInject.tsx';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaBottomNav.classes.generated.ts';
 
@@ -25,7 +25,7 @@ export function ArenaBottomNav({ active, ariaLabel, children, onNav }: ArenaBott
   if (!ariaLabel?.trim()) throw new Error('ArenaBottomNav: `ariaLabel` is required, and names which navigation this landmark is');
   return (
     <nav aria-label={ariaLabel} className={arenaBottomNavStyles().root()}>
-      {injectInto(children, { activeId: active, onActivate: onNav })}
+      {arenaInjectInto(children, { activeId: active, onActivate: onNav })}
     </nav>
   );
 }

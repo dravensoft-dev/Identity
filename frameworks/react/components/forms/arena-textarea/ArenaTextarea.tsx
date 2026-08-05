@@ -51,14 +51,14 @@ export interface ArenaTextareaProps {
 }
 
 
-export function borderBoxSlack(element: HTMLElement): number {
+export function arenaBorderBoxSlack(element: HTMLElement): number {
   return element.offsetHeight - element.clientHeight;
 }
 
-export function fitToContent(element: HTMLElement | null): void {
+export function arenaFitToContent(element: HTMLElement | null): void {
   if (!element) return;
   element.style.height = 'auto';
-  element.style.height = `${element.scrollHeight + borderBoxSlack(element)}px`;
+  element.style.height = `${element.scrollHeight + arenaBorderBoxSlack(element)}px`;
 }
 
 const arenaTextareaStyles = arenaStyles(manifest);
@@ -77,7 +77,7 @@ export function ArenaTextarea({
     readonly: readOnly,
   });
   useEffect(() => {
-    if (autoResize) fitToContent(boxRef.current);
+    if (autoResize) arenaFitToContent(boxRef.current);
   }, [autoResize, value, rows]);
   return (
     <div className={styles.root()}>
@@ -89,7 +89,7 @@ export function ArenaTextarea({
       <textarea ref={boxRef} id={taId} rows={rows} maxLength={maxLength} disabled={disabled} required={required}
         readOnly={readOnly} placeholder={placeholder} name={name}
         aria-invalid={!!error} value={value}
-        onChange={(e) => { if (autoResize) fitToContent(e.target); onChange && onChange(e.target.value); }}
+        onChange={(e) => { if (autoResize) arenaFitToContent(e.target); onChange && onChange(e.target.value); }}
         className={styles.field()} />
       <div className={styles.foot()}>
         {error ? <span className={styles.error()}>{error}</span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { focusableElements } from '../../../UseDialogModal.ts';
+import { arenaFocusableElements } from '../../../UseDialogModal.ts';
 
 import type { ArenaActivityItem } from '../../../Api.generated';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
@@ -37,7 +37,7 @@ export function ArenaActivityFeed({ items, label, busy = false }: ArenaActivityF
     if (!feed) return;
     if (e.ctrlKey && (e.key === 'End' || e.key === 'Home')) {
       const after = e.key === 'End';
-      const outside = focusableElements(feed.ownerDocument.body).filter((el) => !feed.contains(el));
+      const outside = arenaFocusableElements(feed.ownerDocument.body).filter((el) => !feed.contains(el));
       const position = after ? Node.DOCUMENT_POSITION_FOLLOWING : Node.DOCUMENT_POSITION_PRECEDING;
       const reachable = outside.filter((el) => feed.compareDocumentPosition(el) & position);
       const target = after ? reachable[0] : reachable[reachable.length - 1];

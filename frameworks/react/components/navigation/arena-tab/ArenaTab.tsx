@@ -2,7 +2,7 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../arena-tabs/ArenaTabs.classes.generated.ts';
 
-export interface TabInjected {
+export interface ArenaTabInjected {
   selected: boolean;
   tabStop: boolean;
   tabId: string;
@@ -28,7 +28,7 @@ const arenaTabsStyles = arenaStyles(manifest);
 export function ArenaTab({
   value, label,
   selected = false, tabStop = false, tabId, panelId, onSelect,
-}: ArenaTabProps & Partial<TabInjected>) {
+}: ArenaTabProps & Partial<ArenaTabInjected>) {
 
   if (!value) throw new Error('ArenaTab: `value` is required');
   if (!label) throw new Error('ArenaTab: `label` is required');

@@ -12,7 +12,7 @@ import { Component } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ArenaSideNav } from '../arena-side-nav/ArenaSideNav';
 import { ArenaSideNavItem } from './ArenaSideNavItem';
-import { activeWeight } from '../../../NavRow';
+import { arenaActiveWeight } from '../../../NavRow';
 
 @Component({
   standalone: true,
@@ -33,13 +33,13 @@ function render(active: string): ComponentFixture<NavHost> {
   return fixture;
 }
 
-test('activeWeight swaps the weight it finds, adds one where there is none, and repeats safely', () => {
-  assert.equal(activeWeight('ph-bold ph-house'), 'ph-fill ph-house');
-  assert.equal(activeWeight('ph-thin ph-house'), 'ph-fill ph-house');
-  assert.equal(activeWeight('ph-house'), 'ph-fill ph-house');
-  assert.equal(activeWeight('ph-fill ph-house'), 'ph-fill ph-house',
+test('arenaActiveWeight swaps the weight it finds, adds one where there is none, and repeats safely', () => {
+  assert.equal(arenaActiveWeight('ph-bold ph-house'), 'ph-fill ph-house');
+  assert.equal(arenaActiveWeight('ph-thin ph-house'), 'ph-fill ph-house');
+  assert.equal(arenaActiveWeight('ph-house'), 'ph-fill ph-house');
+  assert.equal(arenaActiveWeight('ph-fill ph-house'), 'ph-fill ph-house',
     'a caller who already asked for fill gets exactly what they passed');
-  assert.equal(activeWeight(activeWeight('ph-bold ph-house')), 'ph-fill ph-house');
+  assert.equal(arenaActiveWeight(arenaActiveWeight('ph-bold ph-house')), 'ph-fill ph-house');
 });
 
 test('the active row is filled and every other row keeps the weight it was given', () => {

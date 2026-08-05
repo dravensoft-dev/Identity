@@ -3,15 +3,15 @@ import {
   inject, input, output,
 } from '@angular/core';
 import { ArenaTableCell } from '../arena-table-cell/ArenaTableCell';
-import { TableState } from '../arena-table/TableState';
-import { TableRowState } from './TableRowState';
+import { ArenaTableState } from '../arena-table/ArenaTableState';
+import { ArenaTableRowState } from './ArenaTableRowState';
 import { arenaTableRowStyles } from './ArenaTableRow.variants';
 
 @Component({
   selector: 'arena-table-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TableRowState],
+  providers: [ArenaTableRowState],
   host: { style: 'display: contents' },
   template: `
     <div [class]="rowClass()" [attr.role]="role()" [attr.aria-disabled]="inert()"
@@ -29,8 +29,8 @@ export class ArenaTableRow {
   /** The row was activated, by pointer or by Enter on one of its cells. No payload, because the consumer wrote this element and already holds the row this is about. */
   readonly click = output<void>();
 
-  private readonly table = inject(TableState);
-  private readonly rowState = inject(TableRowState);
+  private readonly table = inject(ArenaTableState);
+  private readonly arenaRowState = inject(ArenaTableRowState);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly cells = contentChildren(ArenaTableCell);
@@ -52,8 +52,8 @@ export class ArenaTableRow {
   });
 
   constructor() {
-    this.rowState.index = computed(() => this.table.rowIndexOf(this));
-    this.rowState.cells = this.cells;
+    this.arenaRowState.index = computed(() => this.table.rowIndexOf(this));
+    this.arenaRowState.cells = this.cells;
     this.table.registerRow(this, {
       cells: computed(() => this.cells().length),
       activate: () => this.emit(),

@@ -32,7 +32,7 @@ the accessible name and the column layout all sit on it.
 claim and a blank string satisfies it. Two navigation landmarks on one page must not share a name.
 
 **Depth is pulled, not pushed, and that is the whole design.** Each container **provides** a
-fresh `SideNavState` whose depth is its parent's plus one, and a row reads its own indent from
+fresh `ArenaSideNavState` whose depth is its parent's plus one, and a row reads its own indent from
 the nearest ancestor through DI. The consequence is worth knowing: **a consumer's own wrapper
 component between two levels is harmless**, because DI walks past it, and so is a `@for`, and
 so is any depth of projection. Nothing here inspects its own children, so nothing here can be

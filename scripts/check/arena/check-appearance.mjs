@@ -191,7 +191,7 @@ export function adoptionProblems(name) {
   if (react && !reactRendersManifest(readFileSync(react, 'utf8'), manifest)) {
     problems.push(`${name}: ${relative(repoRoot, react)} does not render its manifest -- it has to `
       + `import arenaStyles from ArenaStyles.generated and ${manifest}.classes.generated (or, until it `
-      + `is migrated, tv from Tv.generated and ${manifest}.manifest.generated), and draw its slots`);
+      + `is migrated, arenaTv from Tv.generated and ${manifest}.manifest.generated), and draw its slots`);
   }
   const angular = angularSource(name);
   if (angular && !angularRendersManifest(readFileSync(angular, 'utf8'))) {

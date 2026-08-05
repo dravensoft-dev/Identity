@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { ArenaSideNav } from './ArenaSideNav.tsx';
 import { ArenaSideNavItem } from '../arena-side-nav-item/ArenaSideNavItem.tsx';
-import { indentFor } from './SideNavInject.tsx';
+import { arenaIndentFor } from './SideNavInject.tsx';
 
 const TREE = [
   <ArenaSideNavItem key="dashboard" id="dashboard" icon="ph-bold ph-squares-four" label="Projects" href="/projects" />,
@@ -123,15 +123,15 @@ test('the item text re-densifies with the control scale', () => {
     'the control text step is what .arena-compact re-densifies, and the row reads it as a utility');
 });
 
-test('indentFor returns token arithmetic at every depth, never a bare length', () => {
-  assert.equal(indentFor(3, 0), 'calc(var(--sp-1) * 3)');
-  assert.equal(indentFor(3, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 3)');
-  assert.equal(indentFor(3, 2), 'calc(var(--sp-1) * 3 + var(--sp-1) * 6)');
+test('arenaIndentFor returns token arithmetic at every depth, never a bare length', () => {
+  assert.equal(arenaIndentFor(3, 0), 'calc(var(--sp-1) * 3)');
+  assert.equal(arenaIndentFor(3, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 3)');
+  assert.equal(arenaIndentFor(3, 2), 'calc(var(--sp-1) * 3 + var(--sp-1) * 6)');
 
   for (const depth of [0, 1, 2, 5]) {
-    const out = indentFor(3, depth);
+    const out = arenaIndentFor(3, depth);
     assert.match(out, /var\(--sp-1\)/, 'the indent stopped reading a token');
-    assert.doesNotMatch(out, /\d+(px|rem|em)\b/, `indentFor(3, ${depth}) emitted a bare length: ${out}`);
+    assert.doesNotMatch(out, /\d+(px|rem|em)\b/, `arenaIndentFor(3, ${depth}) emitted a bare length: ${out}`);
   }
 });
 

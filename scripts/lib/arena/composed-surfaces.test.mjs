@@ -11,7 +11,7 @@ import { repoRoot } from './repo-root.mjs';
 test('an import of another component directory is a composition, and nothing else is', () => {
   const path = `${repoRoot}/frameworks/react/components/display/arena-table/ArenaTable.tsx`;
   const text = [
-    "import { warnOnce } from '../../../WarnOnce.ts';",
+    "import { arenaWarnOnce } from '../../../WarnOnce.ts';",
     "import manifest from './ArenaTable.classes.generated.ts';",
     "import { ArenaPagination } from '../../navigation/arena-pagination/ArenaPagination.tsx';",
     "import { ArenaTableRow } from '../arena-table-row/ArenaTableRow.tsx';",

@@ -1,3 +1,3 @@
 export declare const ARENA_SPACING_SUFFIXES: string[];
-export declare function spacingConsumingGroups(): Record<string, Set<string>>;
-export declare const tv: import("tailwind-variants").TV;
+export declare function arenaSpacingConsumingGroups(): Record<string, Set<string>>;
+export declare const arenaTv: import("tailwind-variants").TV;

@@ -301,7 +301,7 @@ test('EXEMPT records the data-to-pixel projections, by name', () => {
     'the hour label offset is the manifest\'s -mt-1 now, so the projection it exempted is gone');
 });
 
-test('EXEMPT records the three SR_ONLY visually-hidden literals, by name', () => {
+test('EXEMPT records the three ARENA_SR_ONLY visually-hidden literals, by name', () => {
   assert.ok(EXEMPT.has("frameworks/angular/DataVisuals.ts:width:'1px'"));
   assert.ok(EXEMPT.has("frameworks/angular/DataVisuals.ts:height:'1px'"));
   assert.ok(EXEMPT.has("frameworks/angular/DataVisuals.ts:margin:'-1px'"));
@@ -317,10 +317,10 @@ test('no exemption names a demo entry, since a hand-written one no longer exists
   }
 });
 
-test('the SR_ONLY object shape produces exactly the raws those keys are cut from', () => {
+test('the ARENA_SR_ONLY object shape produces exactly the raws those keys are cut from', () => {
 
   const hits = scanText(
-    "export const SR_ONLY = { position: 'absolute', width: '1px', height: '1px',"
+    "export const ARENA_SR_ONLY = { position: 'absolute', width: '1px', height: '1px',"
     + " padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0 0 0 0)',"
     + " whiteSpace: 'nowrap', border: '0' };",
   );

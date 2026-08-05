@@ -118,7 +118,7 @@ test('disabled and required reflect onto the native attributes, which is where t
   try {
     assert.equal(control.disabled, true);
     assert.ok(control.hasAttribute('disabled'),
-      'the attribute is what removes the control from the ArenaTab sequence');
+      'the attribute is what removes the control from the Tab sequence');
     assert.equal(control.required, true);
     assert.ok(control.hasAttribute('required'),
       'native required is what maps to required in the accessibility tree; aria-required would be a second claim');

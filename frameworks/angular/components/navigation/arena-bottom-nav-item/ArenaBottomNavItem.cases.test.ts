@@ -2,7 +2,7 @@
  * href it is an <a> and binds `none`, because a link's role, keyboard and focusability are the
  * platform's; without one it is a <button> and binds `button`. `states.disabled` is BEHAVIOURAL,
  * so the verdict is earned by clicking a disabled destination and reading what did not move.
- * The item injects BottomNavState from the nearest arena-bottom-nav, so every case mounts one. */
+ * The item injects ArenaBottomNavState from the nearest arena-bottom-nav, so every case mounts one. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();

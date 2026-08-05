@@ -90,7 +90,7 @@ test('ArenaDialog restores focus to the invoker on close -- focus.onClose is met
   assert.equal(document.activeElement, invoker, 'focus was not restored to the invoker that opened the dialog');
 });
 
-test('ArenaDialog wraps Shift+ArenaTab from the first focusable to the last -- focus.trap is met at the boundary', () => {
+test('ArenaDialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
   const container = mount(
     <ArenaDialog open onClose={() => {}} title="Delete project"
       footer={<><button type="button">Cancel</button><button type="button">Delete</button></>}
@@ -104,10 +104,10 @@ test('ArenaDialog wraps Shift+ArenaTab from the first focusable to the last -- f
   first!.focus();
   assert.equal(document.activeElement, first, 'precondition: the first focusable holds focus');
   press(first!, 'Tab', { shiftKey: true });
-  assert.equal(document.activeElement, last, 'Shift+ArenaTab at the first boundary did not wrap to the last');
+  assert.equal(document.activeElement, last, 'Shift+Tab at the first boundary did not wrap to the last');
 });
 
-test('ArenaDialog wraps ArenaTab from the last focusable to the first -- the other boundary', () => {
+test('ArenaDialog wraps Tab from the last focusable to the first -- the other boundary', () => {
   const container = mount(
     <ArenaDialog open onClose={() => {}} title="Delete project"
       footer={<><button type="button">Cancel</button><button type="button">Delete</button></>}
@@ -120,7 +120,7 @@ test('ArenaDialog wraps ArenaTab from the last focusable to the first -- the oth
   last!.focus();
   assert.equal(document.activeElement, last, 'precondition: the last focusable holds focus');
   press(last!, 'Tab');
-  assert.equal(document.activeElement, first, 'ArenaTab at the last boundary did not wrap to the first');
+  assert.equal(document.activeElement, first, 'Tab at the last boundary did not wrap to the first');
 });
 
 test('ArenaConfirmDialog closes on Escape -- keyboard.Escape is met', () => {
@@ -175,7 +175,7 @@ test('ArenaConfirmDialog DOES focus the confirmation input when requireText is s
   invoker.remove();
 });
 
-test('ArenaConfirmDialog wraps Shift+ArenaTab from the first focusable to the last -- focus.trap is met at the boundary', () => {
+test('ArenaConfirmDialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
   const container = mount(
     <ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project" confirmLabel="Delete" />,
   );
@@ -187,10 +187,10 @@ test('ArenaConfirmDialog wraps Shift+ArenaTab from the first focusable to the la
   first!.focus();
   assert.equal(document.activeElement, first, 'precondition: the first focusable holds focus');
   press(first!, 'Tab', { shiftKey: true });
-  assert.equal(document.activeElement, last, 'Shift+ArenaTab at the first boundary did not wrap to the last');
+  assert.equal(document.activeElement, last, 'Shift+Tab at the first boundary did not wrap to the last');
 });
 
-test('ArenaConfirmDialog wraps ArenaTab from the last focusable to the first -- the other boundary', () => {
+test('ArenaConfirmDialog wraps Tab from the last focusable to the first -- the other boundary', () => {
 
   const container = mount(
     <ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project"
@@ -205,7 +205,7 @@ test('ArenaConfirmDialog wraps ArenaTab from the last focusable to the first -- 
   act(() => { cancel!.focus(); });
   assert.equal(document.activeElement, cancel, 'precondition: the last focusable holds focus');
   press(cancel!, 'Tab');
-  assert.equal(document.activeElement, first, 'ArenaTab at the last boundary did not wrap to the first');
+  assert.equal(document.activeElement, first, 'Tab at the last boundary did not wrap to the first');
 });
 
 function ConfirmDialogHarness() {

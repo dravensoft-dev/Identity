@@ -1,5 +1,5 @@
 One row of an `arena-table`. Write one per row, with one `arena-table-cell` inside it per
-cell. It only makes sense inside a table: it injects the shared `TableState`, and outside one
+cell. It only makes sense inside a table: it injects the shared `ArenaTableState`, and outside one
 that is a DI error rather than a silently inert row.
 
 ```html
@@ -72,6 +72,6 @@ so always-a-button costs no dead stop there, where always-a-div would delete Ent
 ### What is shared, and therefore not yours
 
 Where the row sits, which columns its cells are set against, and where the grid's cursor is
-all live on `TableState`, which the table provides and this component injects. None of it is
+all live on `ArenaTableState`, which the table provides and this component injects. None of it is
 a member of `contracts/api/components/ArenaTableRow.json`, and a consumer never writes one, the
 same shape as `arena-radio` pulling its group's state. Nothing is pushed down: the child asks.

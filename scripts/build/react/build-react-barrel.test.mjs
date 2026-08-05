@@ -47,7 +47,7 @@ test('a helper that is not a component is never exported, because it is not a di
   const root = layer({
     'components/navigation/arena-side-nav/ArenaSideNav.jsx': 'export function ArenaSideNav() {}',
     'components/navigation/arena-side-nav/ArenaSideNav.d.ts': '',
-    'components/navigation/arena-side-nav/SideNavInject.jsx': 'export function injectInto() {}',
+    'components/navigation/arena-side-nav/SideNavInject.jsx': 'export function arenaInjectInto() {}',
   });
   assert.deepEqual(componentModules(root).map((m) => m.component), ['ArenaSideNav']);
   rmSync(root, { recursive: true });

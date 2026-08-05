@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
-import type { SideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
-import { indentFor, injectInto } from '../arena-side-nav/SideNavInject.tsx';
+import type { ArenaSideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
+import { arenaIndentFor, arenaInjectInto } from '../arena-side-nav/SideNavInject.tsx';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../arena-side-nav/ArenaSideNav.classes.generated.ts';
 
@@ -19,7 +19,7 @@ const arenaSideNavStyles = arenaStyles(manifest);
 export function ArenaSideNavSection({
   label, children,
   depth = 0, activeId, indentStep = 3, onActivate,
-}: ArenaSideNavSectionProps & Partial<SideNavInjected>) {
+}: ArenaSideNavSectionProps & Partial<ArenaSideNavInjected>) {
 
   if (!label?.trim()) throw new Error('ArenaSideNavSection: `label` is required');
 
@@ -31,8 +31,8 @@ export function ArenaSideNavSection({
   return (
     <div role="group" aria-labelledby={labelId} className={styles.section()}>
       <div id={labelId} className={styles.sectionLabel()}
-        style={{ paddingInlineStart: indentFor(indentStep, depth) }}>{label}</div>
-      {injectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
+        style={{ paddingInlineStart: arenaIndentFor(indentStep, depth) }}>{label}</div>
+      {arenaInjectInto(children, { depth: depth + 1, activeId, indentStep, onActivate })}
     </div>
   );
 }

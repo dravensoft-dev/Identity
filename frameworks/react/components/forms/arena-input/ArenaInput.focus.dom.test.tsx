@@ -7,12 +7,12 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from '../../../test/Harness.tsx';
-import { ArenaInput, type InputHandle } from './ArenaInput.tsx';
+import { ArenaInput, type ArenaInputHandle } from './ArenaInput.tsx';
 
 afterEach(cleanup);
 
 test('the ref reaches the real input, which is what the component exposes instead of a member', () => {
-  const handle = React.createRef<InputHandle>();
+  const handle = React.createRef<ArenaInputHandle>();
   const root = mount(<ArenaInput ref={handle} label="Search" value="ACME-1042" onChange={() => {}} />);
   const control = root.querySelector('input')!;
 

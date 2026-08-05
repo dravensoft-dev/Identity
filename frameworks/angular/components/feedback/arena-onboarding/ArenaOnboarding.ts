@@ -13,7 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { arenaOnboardingStyles } from './ArenaOnboarding.variants';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
+import { type FocusTrapState, arenaHandleOpenTransition, arenaTrapTabKey } from '../../../FocusTrap';
 import { onboardingWidth, onboardingHeightReserve, sp3, sp4 } from '../../../Tokens.generated';
 
 const SSR_VIEWPORT_H = 900;
@@ -116,7 +116,7 @@ export class ArenaOnboarding {
 
       const isOpen = this.visible();
       untracked(() => {
-        handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
+        arenaHandleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
       });
     });
   }
@@ -134,7 +134,7 @@ export class ArenaOnboarding {
     }
     if (event.key === 'Tab') {
       const panel = this.panel()?.nativeElement;
-      if (panel) trapTabKey(panel, event, this.doc.activeElement);
+      if (panel) arenaTrapTabKey(panel, event, this.doc.activeElement);
     }
   }
 }

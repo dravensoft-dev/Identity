@@ -7,11 +7,11 @@ import { arenaSwitchStyles } from './ArenaSwitch.variants';
 export type SwitchFootprint = `${ArenaOrientation}-${ArenaSwitchSize}`;
 export type SwitchThumb = `${'on' | 'off'}-${ArenaOrientation}`;
 
-export function footprintFor(orientation: ArenaOrientation, size: ArenaSwitchSize): SwitchFootprint {
+export function arenaFootprintFor(orientation: ArenaOrientation, size: ArenaSwitchSize): SwitchFootprint {
   return `${orientation}-${size}`;
 }
 
-export function thumbFor(state: boolean, orientation: ArenaOrientation): SwitchThumb {
+export function arenaThumbFor(state: boolean, orientation: ArenaOrientation): SwitchThumb {
   return `${state ? 'on' : 'off'}-${orientation}`;
 }
 
@@ -69,8 +69,8 @@ export class ArenaSwitch {
     orientation: this.orientation(),
     checked: this.state(),
     disabled: this.disabled(),
-    footprint: footprintFor(this.orientation(), this.size()),
-    thumb: thumbFor(this.state(), this.orientation()),
+    footprint: arenaFootprintFor(this.orientation(), this.size()),
+    thumb: arenaThumbFor(this.state(), this.orientation()),
   }));
 
   protected readonly glyphClass = computed(() => `${this.styles().icon()} ${this.glyph() ?? ''}`.trim());

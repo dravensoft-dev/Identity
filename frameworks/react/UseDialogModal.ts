@@ -13,21 +13,21 @@ const FOCUSABLE_SELECTOR = [
   `[tabindex]${REACHABLE_BY_TAB}`,
 ].join(', ');
 
-export function focusableElements(container: Element): HTMLElement[] {
+export function arenaFocusableElements(container: Element): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
 }
 
-export function focusFirstFocusable(container: HTMLElement): void {
-  const [first] = focusableElements(container);
+export function arenaFocusFirstFocusable(container: HTMLElement): void {
+  const [first] = arenaFocusableElements(container);
   (first ?? container).focus();
 }
 
-export function trapTabKey(
+export function arenaTrapTabKey(
   container: Element,
   event: Pick<KeyboardEvent, 'shiftKey'> & { key?: string; preventDefault(): void },
   activeElement: Element | null,
 ): void {
-  const focusables = focusableElements(container);
+  const focusables = arenaFocusableElements(container);
   const first = focusables[0];
   const last = focusables[focusables.length - 1];
   if (first === undefined || last === undefined) { event.preventDefault(); return; }
@@ -35,13 +35,13 @@ export function trapTabKey(
   else if (!event.shiftKey && activeElement === last) { event.preventDefault(); first.focus(); }
 }
 
-export interface DialogModalOptions {
+export interface ArenaDialogModalOptions {
   open: boolean;
   panelRef: React.RefObject<HTMLElement | null>;
   onDismiss?: () => void;
 }
 
-export function useDialogModal({ open, panelRef, onDismiss }: DialogModalOptions):
+export function useArenaDialogModal({ open, panelRef, onDismiss }: ArenaDialogModalOptions):
 (event: React.KeyboardEvent) => void {
   const restoreTo = useRef<Element | null>(null);
 
@@ -49,7 +49,7 @@ export function useDialogModal({ open, panelRef, onDismiss }: DialogModalOptions
     if (open) {
       restoreTo.current = typeof document === 'undefined' ? null : document.activeElement;
       const panel = panelRef.current;
-      if (panel) focusFirstFocusable(panel);
+      if (panel) arenaFocusFirstFocusable(panel);
       return undefined;
     }
     const target = restoreTo.current;
@@ -62,6 +62,6 @@ export function useDialogModal({ open, panelRef, onDismiss }: DialogModalOptions
     if (event.key === 'Escape') { event.preventDefault(); if (onDismiss) onDismiss(); return; }
     if (event.key !== 'Tab') return;
     const panel = panelRef.current;
-    if (panel) trapTabKey(panel, event, panel.ownerDocument.activeElement);
+    if (panel) arenaTrapTabKey(panel, event, panel.ownerDocument.activeElement);
   };
 }

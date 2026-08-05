@@ -1,7 +1,7 @@
 import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaPagination.classes.generated.ts';
-import { pageWindow } from './PaginationWindow.ts';
+import { arenaPageWindow } from './PaginationWindow.ts';
 
 export interface ArenaPaginationProps {
 
@@ -37,7 +37,7 @@ export function ArenaPagination({ page, pageCount, ariaLabel, onChange }: ArenaP
   return (
     <nav aria-label={ariaLabel} className={styles.root()}>
       {nav(-1, page <= 1)}
-      {pageWindow(page, pageCount).map((p, i) =>
+      {arenaPageWindow(page, pageCount).map((p, i) =>
         p === '\u2026'
           ? <span key={'e' + i} className={styles.ellipsis()}>{'\u2026'}</span>
           : (

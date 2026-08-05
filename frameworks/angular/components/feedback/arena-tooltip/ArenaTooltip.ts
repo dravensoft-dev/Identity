@@ -12,16 +12,16 @@ import { arenaTooltipStyles } from './ArenaTooltip.variants';
 
 let nextId = 0;
 
-export const TOOLTIP_POSITIONS: ConnectedPosition[] = [
+export const ARENA_TOOLTIP_POSITIONS: ConnectedPosition[] = [
   { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -sp2 },
   { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: sp2 },
 ];
 
-export function joinDescribedBy(own: string | null, bubbleId: string): string {
+export function arenaJoinDescribedBy(own: string | null, bubbleId: string): string {
   return own ? `${own} ${bubbleId}` : bubbleId;
 }
 
-export function stripDescribedBy(current: string | null, bubbleId: string): string | null {
+export function arenaStripDescribedBy(current: string | null, bubbleId: string): string | null {
   if (!current) return null;
   const rest = current.split(/\s+/).filter((id) => id && id !== bubbleId);
   return rest.length ? rest.join(' ') : null;
@@ -103,7 +103,7 @@ export class ArenaTooltip {
     if (this.ref) return;
     const ref = createOverlayRef(this.injector, {
       positionStrategy: createFlexibleConnectedPositionStrategy(this.injector, this.host)
-        .withPositions(TOOLTIP_POSITIONS)
+        .withPositions(ARENA_TOOLTIP_POSITIONS)
         .withPush(false),
       scrollStrategy: createRepositionScrollStrategy(this.injector),
     });
@@ -129,14 +129,14 @@ export class ArenaTooltip {
   private describeTrigger(): void {
     const trigger = this.trigger();
     if (trigger) {
-      trigger.setAttribute('aria-describedby', joinDescribedBy(trigger.getAttribute('aria-describedby'), this.bubbleId));
+      trigger.setAttribute('aria-describedby', arenaJoinDescribedBy(trigger.getAttribute('aria-describedby'), this.bubbleId));
     }
   }
 
   private undescribeTrigger(): void {
     const trigger = this.trigger();
     if (!trigger) return;
-    const rest = stripDescribedBy(trigger.getAttribute('aria-describedby'), this.bubbleId);
+    const rest = arenaStripDescribedBy(trigger.getAttribute('aria-describedby'), this.bubbleId);
     if (rest) trigger.setAttribute('aria-describedby', rest);
     else trigger.removeAttribute('aria-describedby');
   }

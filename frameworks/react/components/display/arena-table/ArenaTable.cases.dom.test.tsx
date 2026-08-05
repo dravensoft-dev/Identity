@@ -1,7 +1,7 @@
 /* The card case is the whole reason this binding has cases, and reaching it needs
  * two levers. happy-dom ships a ResizeObserver that never fires, so width stays
  * null and every render is wide -- `narrowWidths` stubs it to report one width
- * and restores it in a finally. And readBreakpoint reads --bp-md through
+ * and restores it in a finally. And arenaReadBreakpoint reads --bp-md through
  * getComputedStyle, which the preload bridges from the token file; without that
  * it is NaN and `width < NaN` is false whatever the observer says.
  * The wide case walks the grid cell by cell, for the reason ArenaCalendar's own grid
@@ -88,7 +88,7 @@ test('ArenaTable meets both of its declared shapes', () => {
             press(step);
             assert.equal(document.activeElement, cells[r]![c]!, `${step} did not land on row ${r} column ${c}`);
             const stops = root.querySelectorAll<HTMLElement>('[tabindex="0"]');
-            assert.equal(stops.length, 1, 'the roving stop did not rove -- two cells are in the ArenaTab sequence');
+            assert.equal(stops.length, 1, 'the roving stop did not rove -- two cells are in the Tab sequence');
             assert.equal(stops[0], document.activeElement, 'the tab stop is not the focused cell');
             visited += 1;
           }

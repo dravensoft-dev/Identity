@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ArenaCalendar } from './ArenaCalendar';
-import { formatDate } from './CalendarInternals';
+import { arenaFormatDate } from './CalendarInternals';
 
 const DAYS = ['2027-03-15', '2027-03-16', '2027-03-17', '2027-03-18', '2027-03-19', '2027-03-20'];
 
@@ -74,7 +74,7 @@ test('with dayInteractive, a day header is a button that reports its own date', 
         `day head ${index} would submit a surrounding form`);
       assert.equal(
         head.getAttribute('aria-label'),
-        formatDate(DAYS[index], { weekday: 'long', day: 'numeric', month: 'long' }),
+        arenaFormatDate(DAYS[index], { weekday: 'long', day: 'numeric', month: 'long' }),
         `day head ${index} announces its two text nodes rather than the date it stands for`,
       );
     });

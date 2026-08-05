@@ -2,11 +2,11 @@ import React from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../arena-table/ArenaTable.classes.generated.ts';
 import type { ArenaTableColumn } from '../../../Api.generated';
-import type { TableCellInjected } from '../arena-table-cell/ArenaTableCell.tsx';
+import type { ArenaTableCellInjected } from '../arena-table-cell/ArenaTableCell.tsx';
 
 const rowStyles = arenaStyles(manifest);
 
-export interface TableRowInjected {
+export interface ArenaTableRowInjected {
   rowIndex: number;
   columns: readonly ArenaTableColumn[];
   layout: 'table' | 'card';
@@ -33,10 +33,10 @@ export interface ArenaTableRowProps {
 export function ArenaTableRow({
   children, onClick, interactive = false, disabled = false,
   rowIndex = 0, columns = [], layout = 'table', cursorCol = null, onCellFocus,
-}: ArenaTableRowProps & Partial<TableRowInjected>) {
+}: ArenaTableRowProps & Partial<ArenaTableRowInjected>) {
 
   const cells = React.Children.toArray(children).map((child, ci) => (
-    React.isValidElement<Partial<TableCellInjected>>(child)
+    React.isValidElement<Partial<ArenaTableCellInjected>>(child)
       ? React.cloneElement(child, {
         column: columns[ci],
         layout,

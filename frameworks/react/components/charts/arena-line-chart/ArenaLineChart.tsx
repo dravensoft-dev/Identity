@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
-  resolveColors, arenaCatColor, niceMax, ticks, srOnly, areaFill, plotWidth, railStyle, valueWriter,
-  PAD, CHART_HEIGHT,
+  arenaResolveColors, arenaCatColor, arenaNiceMax, arenaTicks, arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
+  ARENA_PAD, ARENA_CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
 import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
 
@@ -30,7 +30,7 @@ export interface ArenaLineChartProps {
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   area?: boolean;
 
-  /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
+  /** Appended verbatim to every number the chart draws: the axis arenaTicks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   valueSuffix?: string;
 
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
@@ -49,7 +49,7 @@ export interface ArenaLineChartProps {
 
 export function ArenaLineChart({
   labels, values, seriesLabel, slot, tone, area = false, valueSuffix, valuePrefix, valueFormat,
-  height = CHART_HEIGHT, minPointSpacing,
+  height = ARENA_CHART_HEIGHT, minPointSpacing,
 }: ArenaLineChartProps) {
   if (!seriesLabel) throw new Error('ArenaLineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaLineChart: `labels` is required');
@@ -60,9 +60,9 @@ export function ArenaLineChart({
 
   const available = measured ?? 600;
   const n = values.length;
-  const width = plotWidth(available, n, minPointSpacing);
+  const width = arenaPlotWidth(available, n, minPointSpacing);
   const scrolls = width > available;
-  const fmt = valueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
+  const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
 
   useEffect(() => {
     const box = rail.current;
@@ -70,14 +70,14 @@ export function ArenaLineChart({
     box.scrollLeft = box.scrollWidth - box.clientWidth;
   }, [scrolls, width]);
 
-  const [color = arenaCatColor(1)] = resolveColors({ slot, tone, count: 1 });
+  const [color = arenaCatColor(1)] = arenaResolveColors({ slot, tone, count: 1 });
 
-  const max = niceMax(Math.max(0, ...values));
-  const iw = Math.max(1, width - PAD.l - PAD.r);
-  const ih = Math.max(1, height - PAD.t - PAD.b);
-  const xOf = (i: number) => PAD.l + (n <= 1 ? iw / 2 : (iw / (n - 1)) * i);
-  const yOf = (v: number) => PAD.t + ih - (Math.max(0, v) / max) * ih;
-  const baseline = PAD.t + ih;
+  const max = arenaNiceMax(Math.max(0, ...values));
+  const iw = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
+  const ih = Math.max(1, height - ARENA_PAD.t - ARENA_PAD.b);
+  const xOf = (i: number) => ARENA_PAD.l + (n <= 1 ? iw / 2 : (iw / (n - 1)) * i);
+  const yOf = (v: number) => ARENA_PAD.t + ih - (Math.max(0, v) / max) * ih;
+  const baseline = ARENA_PAD.t + ih;
 
   const points = values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' ');
   const areaPath = n
@@ -98,25 +98,25 @@ export function ArenaLineChart({
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
-      <div ref={rail} style={railStyle} tabIndex={scrolls ? 0 : undefined}
+      <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
         role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
-        {ticks(max).map((t, i) => (
+        {arenaTicks(max).map((t, i) => (
           <g key={i}>
-            <line x1={PAD.l} x2={width - PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
-            <text x={PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
+            <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
+            <text x={ARENA_PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
               fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
           </g>
         ))}
-        <line x1={PAD.l} x2={width - PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
+        <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {}
         {area && n > 0 && (
-          <path d={areaPath} fill={areaFill(color)} stroke="none" />
+          <path d={areaPath} fill={arenaAreaFill(color)} stroke="none" />
         )}
 
         {hover !== null && (
-          <line x1={xOf(hover)} x2={xOf(hover)} y1={PAD.t} y2={baseline}
+          <line x1={xOf(hover)} x2={xOf(hover)} y1={ARENA_PAD.t} y2={baseline}
             stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
         )}
 
@@ -138,7 +138,7 @@ export function ArenaLineChart({
 
         {
 }
-        <rect x={PAD.l} y={PAD.t} width={iw} height={ih} fill="transparent"
+        <rect x={ARENA_PAD.l} y={ARENA_PAD.t} width={iw} height={ih} fill="transparent"
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
       </svg>
       </div>
@@ -155,7 +155,7 @@ export function ArenaLineChart({
         </div>
       )}
 
-      <table style={srOnly}>
+      <table style={arenaSrOnly}>
         <caption>{name}</caption>
         <thead><tr><th>Point</th><th>{seriesLabel}</th></tr></thead>
         <tbody>

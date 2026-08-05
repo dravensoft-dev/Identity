@@ -37,7 +37,7 @@ full-width block, and shows whatever you put in it.
 
 ### What is shared, and therefore not yours
 
-Its column, its layout and its place in the grid's keyboard order come from `TableState` and
-`TableRowState`, which the table and the row provide and this component injects. None of it
+Its column, its layout and its place in the grid's keyboard order come from `ArenaTableState` and
+`ArenaTableRowState`, which the table and the row provide and this component injects. None of it
 is a member of `contracts/api/components/ArenaTableCell.json`, and a consumer never writes one.
 The cell's whole API is what you project into it.

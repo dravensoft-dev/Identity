@@ -1,7 +1,7 @@
 import React, { useId, useRef } from 'react';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaDialog.classes.generated.ts';
-import { useDialogModal } from '../../../UseDialogModal.ts';
+import { useArenaDialogModal } from '../../../UseDialogModal.ts';
 
 export interface ArenaDialogProps {
 
@@ -37,7 +37,7 @@ export function ArenaDialog({ open, onClose, title, eyebrow, children, footer, w
   if (open == null) throw new Error('ArenaDialog: `open` is required');
 
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const onKeyDown = useDialogModal({ open, panelRef, onDismiss: onClose });
+  const onKeyDown = useArenaDialogModal({ open, panelRef, onDismiss: onClose });
 
   const titleId = useId();
   if (!open) return null;

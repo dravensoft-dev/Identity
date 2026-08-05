@@ -82,12 +82,12 @@ export interface ArenaInputProps {
 
 const arenaInputStyles = arenaStyles(manifest);
 
-export interface InputHandle {
+export interface ArenaInputHandle {
   focus(options?: FocusOptions): void;
   select(): void;
 }
 
-export const ArenaInput = forwardRef<InputHandle, ArenaInputProps>(function ArenaInput({
+export const ArenaInput = forwardRef<ArenaInputHandle, ArenaInputProps>(function ArenaInput({
   label, id, hint, error, valid = false, required = false,
   validate, validateOn = 'blur', type = 'text',
   icon, prefix, value, disabled = false, readOnly = false,

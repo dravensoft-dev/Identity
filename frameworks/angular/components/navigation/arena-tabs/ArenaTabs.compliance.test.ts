@@ -135,7 +135,7 @@ test('only the active panel is shown, and the inactive ones are hidden rather th
   }
 });
 
-test('exactly one tab is in the page ArenaTab sequence, and it is the selected one', () => {
+test('exactly one tab is in the page Tab sequence, and it is the selected one', () => {
   const { fixture, read } = render();
   try {
     const { tabs } = read();

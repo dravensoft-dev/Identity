@@ -14,7 +14,7 @@ import { TestBed } from '@angular/core/testing';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../../test/Compliance';
 import { ArenaSideNavItem } from '../arena-side-nav-item/ArenaSideNavItem';
 import { ArenaSideNav } from './ArenaSideNav';
-import { indentFor } from './SideNavState';
+import { arenaIndentFor } from './ArenaSideNavState';
 
 const BINDING = join(ANGULAR_COMPONENTS, 'navigation/arena-side-nav/ArenaSideNav.behaviour.json');
 
@@ -115,14 +115,14 @@ test('a root-level row sits at the flat base, and indentStep multiplies the toke
   }
 });
 
-test('indentFor multiplies the token and never emits a length, at every depth', () => {
-  assert.equal(indentFor(3, 0), 'calc(var(--sp-1) * 3)');
-  assert.equal(indentFor(3, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 3)');
-  assert.equal(indentFor(3, 2), 'calc(var(--sp-1) * 3 + var(--sp-1) * 6)');
-  assert.equal(indentFor(5, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 5)');
-  assert.equal(indentFor(3, 5), 'calc(var(--sp-1) * 3 + var(--sp-1) * 15)');
+test('arenaIndentFor multiplies the token and never emits a length, at every depth', () => {
+  assert.equal(arenaIndentFor(3, 0), 'calc(var(--sp-1) * 3)');
+  assert.equal(arenaIndentFor(3, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 3)');
+  assert.equal(arenaIndentFor(3, 2), 'calc(var(--sp-1) * 3 + var(--sp-1) * 6)');
+  assert.equal(arenaIndentFor(5, 1), 'calc(var(--sp-1) * 3 + var(--sp-1) * 5)');
+  assert.equal(arenaIndentFor(3, 5), 'calc(var(--sp-1) * 3 + var(--sp-1) * 15)');
   for (const depth of [0, 1, 2, 5]) {
-    assert.doesNotMatch(indentFor(3, depth), /\d+(px|rem|em)/,
+    assert.doesNotMatch(arenaIndentFor(3, depth), /\d+(px|rem|em)/,
       'the indent must stay a multiple of --sp-1, so it re-densifies and re-themes with the token');
   }
 });

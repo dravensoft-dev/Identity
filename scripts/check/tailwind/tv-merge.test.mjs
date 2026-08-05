@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tv, ARENA_SPACING_SUFFIXES, spacingConsumingGroups } from '../../../frameworks/tailwind/Tv.ts';
+import { arenaTv, ARENA_SPACING_SUFFIXES, arenaSpacingConsumingGroups } from '../../../frameworks/tailwind/Tv.ts';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { deriveNamespaces } from '../../lib/tailwind/theme-namespaces.mjs';
 
-const merge = (classString) => tv({ slots: { root: classString } })().root();
+const merge = (classString) => arenaTv({ slots: { root: classString } })().root();
 const classes = (s) => s.split(/\s+/);
 
 test('every registered Arena font-size key survives alongside a text color', () => {
@@ -37,9 +37,9 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
   assert.equal(merge('shadow-1 shadow-2'), 'shadow-2');
 });
 
-test("ArenaButton.manifest.json through tv(): text-ctl* and the variant's text color both survive", async () => {
+test("ArenaButton.manifest.json through arenaTv(): text-ctl* and the variant's text color both survive", async () => {
   const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
-  const arenaButtonStyles = tv(manifest);
+  const arenaButtonStyles = arenaTv(manifest);
   const expectSize = { sm: 'text-ctl-md', md: 'text-ctl', lg: 'text-ctl' };
   const expectColor = { primary: 'text-primary-content', danger: 'text-error' };
   for (const variant of ['primary', 'danger']) {
@@ -166,7 +166,7 @@ test('tracking-field-label still coexists with a text color class (registration 
 });
 
 test('Arena spacing suffixes dedupe against each other under every tailwind-merge group that reads the spacing scale', () => {
-  const groups = spacingConsumingGroups();
+  const groups = arenaSpacingConsumingGroups();
   let exercised = 0;
   for (const [groupId, classParts] of Object.entries(groups)) {
     for (const classPart of classParts) {
@@ -177,7 +177,7 @@ test('Arena spacing suffixes dedupe against each other under every tailwind-merg
     }
   }
 
-  assert.ok(exercised >= 40, `expected spacingConsumingGroups() to find most of tailwind-merge's spacing-reading groups, only exercised ${exercised}`);
+  assert.ok(exercised >= 40, `expected arenaSpacingConsumingGroups() to find most of tailwind-merge's spacing-reading groups, only exercised ${exercised}`);
 });
 
 test('the exact cases the coordinator\'s review found broken now behave correctly, h-ctl-h/w-ctl-h stays two classes', () => {
@@ -190,9 +190,9 @@ test('the exact cases the coordinator\'s review found broken now behave correctl
   assert.ok(root.includes('w-ctl-h'), `h-ctl-h w-ctl-h -> "${root.join(' ')}" (width was wrongly eaten)`);
 });
 
-test('ArenaButton.manifest.json\'s three ctl-h heights now dedupe against each other through tv()', async () => {
+test('ArenaButton.manifest.json\'s three ctl-h heights now dedupe against each other through arenaTv()', async () => {
   const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
-  const arenaButtonStyles = tv(manifest);
+  const arenaButtonStyles = arenaTv(manifest);
   const heights = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
   for (const size of ['sm', 'md', 'lg']) {
     const root = classes(arenaButtonStyles({ variant: 'primary', size }).root());

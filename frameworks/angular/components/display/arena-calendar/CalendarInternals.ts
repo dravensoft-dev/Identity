@@ -2,7 +2,7 @@ import {
   calendarActionsBelowMinH, calendarTimeMinH, calendarTimeMinW,
 } from '../../../Tokens.generated';
 
-export interface ZonedParts {
+export interface ArenaZonedParts {
   y: number;
   m: number;
   d: number;
@@ -16,30 +16,30 @@ export interface EventTimes {
   readonly end: string;
 }
 
-export interface Placement<T> {
+export interface ArenaPlacement<T> {
   readonly ev: T;
   readonly dayIso: string;
   readonly startMin: number;
   readonly endMin: number;
 }
 
-export interface LaidOut<T> extends Placement<T> {
+export interface ArenaLaidOut<T> extends ArenaPlacement<T> {
   readonly col: number;
   readonly cols: number;
 }
 
-export function showsTime(chipHeight: number, slotWidth: number | null): boolean {
+export function arenaShowsTime(chipHeight: number, slotWidth: number | null): boolean {
   if (chipHeight < calendarTimeMinH) return false;
   return slotWidth === null || slotWidth >= calendarTimeMinW;
 }
 
-export function stacksActions(chipHeight: number, slotWidth: number | null): boolean {
-  return chipHeight >= calendarActionsBelowMinH && !showsTime(chipHeight, slotWidth);
+export function arenaStacksActions(chipHeight: number, slotWidth: number | null): boolean {
+  return chipHeight >= calendarActionsBelowMinH && !arenaShowsTime(chipHeight, slotWidth);
 }
 
 const warned = new Set<string>();
 
-function warnOnce(message: string): void {
+function arenaWarnOnce(message: string): void {
   if (warned.has(message) || typeof console === 'undefined') return;
   warned.add(message);
   console.warn('[arena] ' + message);
@@ -59,14 +59,14 @@ function partsFormatter(timeZone: string): Intl.DateTimeFormat {
     });
   } catch {
     if (timeZone === 'UTC') throw new Error('[arena] calendar: Intl rejected UTC.');
-    warnOnce(`calendar: unknown timeZone "${timeZone}" — falling back to UTC.`);
+    arenaWarnOnce(`calendar: unknown timeZone "${timeZone}" — falling back to UTC.`);
     formatter = partsFormatter('UTC');
   }
   formatters.set(timeZone, formatter);
   return formatter;
 }
 
-export function zonedParts(iso: string | null | undefined, timeZone: string): ZonedParts | null {
+export function arenaZonedParts(iso: string | null | undefined, timeZone: string): ArenaZonedParts | null {
   const at = new Date(iso ?? '');
   if (Number.isNaN(at.getTime())) return null;
   const out: Record<string, string> = {};
@@ -81,15 +81,15 @@ export function zonedParts(iso: string | null | undefined, timeZone: string): Zo
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 
-export const isoDateOf = (p: ZonedParts): string =>
+export const arenaIsoDateOf = (p: ArenaZonedParts): string =>
   `${String(p.y).padStart(4, '0')}-${pad2(p.m)}-${pad2(p.d)}`;
 
-export const minutesOf = (p: ZonedParts): number => p.hh * 60 + p.mm;
+export const arenaMinutesOf = (p: ArenaZonedParts): number => p.hh * 60 + p.mm;
 
-export const formatHM = (min: number): string =>
+export const arenaFormatHM = (min: number): string =>
   `${pad2(Math.floor(min / 60) % 24)}:${pad2(Math.round(min) % 60)}`;
 
-export function parseHM(value: string | undefined, fallback: number): number {
+export function arenaParseHM(value: string | undefined, fallback: number): number {
   const match = /^(\d{1,2}):(\d{2})$/.exec(String(value ?? ''));
   if (!match) return fallback;
   const min = Number(match[1]) * 60 + Number(match[2]);
@@ -101,51 +101,51 @@ function asUtcDate(isoDate: string): Date {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
-export function addDays(isoDate: string, n: number): string {
+export function arenaAddDays(isoDate: string, n: number): string {
   const at = asUtcDate(isoDate);
   at.setUTCDate(at.getUTCDate() + n);
-  return isoDateOf({
+  return arenaIsoDateOf({
     y: at.getUTCFullYear(), m: at.getUTCMonth() + 1, d: at.getUTCDate(), hh: 0, mm: 0,
   });
 }
 
-export const weekdayOf = (isoDate: string): number => asUtcDate(isoDate).getUTCDay();
+export const arenaWeekdayOf = (isoDate: string): number => asUtcDate(isoDate).getUTCDay();
 
-export function startOfWeek(isoDate: string, weekStartsOn = 1): string {
-  return addDays(isoDate, -(((weekdayOf(isoDate) - weekStartsOn) % 7 + 7) % 7));
+export function arenaStartOfWeek(isoDate: string, weekStartsOn = 1): string {
+  return arenaAddDays(isoDate, -(((arenaWeekdayOf(isoDate) - weekStartsOn) % 7 + 7) % 7));
 }
 
-export function todayIso(timeZone: string): string {
-  return isoDateOf(zonedParts(new Date().toISOString(), timeZone) as ZonedParts);
+export function arenaTodayIso(timeZone: string): string {
+  return arenaIsoDateOf(arenaZonedParts(new Date().toISOString(), timeZone) as ArenaZonedParts);
 }
 
-export function nowMinutes(timeZone: string): number {
-  return minutesOf(zonedParts(new Date().toISOString(), timeZone) as ZonedParts);
+export function arenaNowMinutes(timeZone: string): number {
+  return arenaMinutesOf(arenaZonedParts(new Date().toISOString(), timeZone) as ArenaZonedParts);
 }
 
-export function placeEvents<T extends EventTimes>(
+export function arenaPlaceEvents<T extends EventTimes>(
   events: readonly T[], timeZone: string,
-): Placement<T>[] {
-  const out: Placement<T>[] = [];
+): ArenaPlacement<T>[] {
+  const out: ArenaPlacement<T>[] = [];
   for (const ev of events) {
-    const from = zonedParts(ev.start, timeZone);
-    const to = zonedParts(ev.end, timeZone);
+    const from = arenaZonedParts(ev.start, timeZone);
+    const to = arenaZonedParts(ev.end, timeZone);
     if (!from || !to) {
-      warnOnce(`calendar: event "${ev.id || '?'}" has an unparseable start/end — skipped.`);
+      arenaWarnOnce(`calendar: event "${ev.id || '?'}" has an unparseable start/end — skipped.`);
       continue;
     }
-    const dayIso = isoDateOf(from);
-    const startMin = minutesOf(from);
-    const endMin = isoDateOf(to) === dayIso ? minutesOf(to) : 24 * 60;
+    const dayIso = arenaIsoDateOf(from);
+    const startMin = arenaMinutesOf(from);
+    const endMin = arenaIsoDateOf(to) === dayIso ? arenaMinutesOf(to) : 24 * 60;
     out.push({ ev, dayIso, startMin, endMin: Math.max(endMin, startMin) });
   }
   return out;
 }
 
-export function layoutDay<T>(placements: readonly Placement<T>[]): LaidOut<T>[] {
+export function arenaLayoutDay<T>(placements: readonly ArenaPlacement<T>[]): ArenaLaidOut<T>[] {
   const sorted = [...placements].sort((a, b) => a.startMin - b.startMin || b.endMin - a.endMin);
-  const out: LaidOut<T>[] = [];
-  let cluster: Array<Placement<T> & { col: number }> = [];
+  const out: ArenaLaidOut<T>[] = [];
+  let cluster: Array<ArenaPlacement<T> & { col: number }> = [];
   let colEnds: number[] = [];
   let clusterEnd = -Infinity;
 
@@ -172,7 +172,7 @@ export function layoutDay<T>(placements: readonly Placement<T>[]): LaidOut<T>[] 
   return out;
 }
 
-export function defaultDayStart<T>(placements: readonly Placement<T>[], fallback = 8 * 60): number {
+export function arenaDefaultDayStart<T>(placements: readonly ArenaPlacement<T>[], fallback = 8 * 60): number {
   if (!placements.length) return fallback;
   return Math.max(0, Math.floor(Math.min(...placements.map((p) => p.startMin)) / 60) * 60);
 }
@@ -189,23 +189,23 @@ function dateFormatter(options?: Intl.DateTimeFormatOptions): Intl.DateTimeForma
   return formatter;
 }
 
-export function formatDate(isoDate: string, options?: Intl.DateTimeFormatOptions): string {
+export function arenaFormatDate(isoDate: string, options?: Intl.DateTimeFormatOptions): string {
   return dateFormatter(options).format(asUtcDate(isoDate));
 }
 
-export function rangeTitle(days: readonly string[]): string {
+export function arenaRangeTitle(days: readonly string[]): string {
   if (!days.length) return '';
   const first = days[0];
   const last = days[days.length - 1];
   if (first === last) {
-    return formatDate(first, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    return arenaFormatDate(first, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   }
   const from = asUtcDate(first);
   const to = asUtcDate(last);
   const sameYear = from.getUTCFullYear() === to.getUTCFullYear();
   const sameMonth = sameYear && from.getUTCMonth() === to.getUTCMonth();
-  const left = sameMonth ? formatDate(first, { day: 'numeric' })
-    : sameYear ? formatDate(first, { day: 'numeric', month: 'short' })
-      : formatDate(first, { day: 'numeric', month: 'short', year: 'numeric' });
-  return `${left} – ${formatDate(last, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  const left = sameMonth ? arenaFormatDate(first, { day: 'numeric' })
+    : sameYear ? arenaFormatDate(first, { day: 'numeric', month: 'short' })
+      : arenaFormatDate(first, { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${left} – ${arenaFormatDate(last, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 }

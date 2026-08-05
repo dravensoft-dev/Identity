@@ -32,7 +32,7 @@ export interface ArenaToastProps {
   onClose?: () => void;
 }
 
-export const TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
+export const ARENA_TOAST_DISMISS = { default: dismissDefault, actionable: dismissActionable } as const;
 
 const arenaToastStyles = arenaStyles(manifest);
 const TONES = Object.keys(manifest.variants.tone);

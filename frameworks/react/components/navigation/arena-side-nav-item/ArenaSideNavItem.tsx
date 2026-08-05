@@ -1,8 +1,8 @@
 import React from 'react';
 import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
-import type { SideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
-import { indentFor } from '../arena-side-nav/SideNavInject.tsx';
-import { activeWeight, badgeCount } from '../NavRow.ts';
+import type { ArenaSideNavInjected } from '../arena-side-nav/SideNavInject.tsx';
+import { arenaIndentFor } from '../arena-side-nav/SideNavInject.tsx';
+import { arenaActiveWeight, arenaBadgeCount } from '../NavRow.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../arena-side-nav/ArenaSideNav.classes.generated.ts';
 
@@ -33,7 +33,7 @@ const arenaSideNavStyles = arenaStyles(manifest);
 export function ArenaSideNavItem({
   id, label, icon, badge, href, disabled = false,
   depth = 0, activeId, indentStep = 3, onActivate,
-}: ArenaSideNavItemProps & Partial<SideNavInjected>) {
+}: ArenaSideNavItemProps & Partial<ArenaSideNavInjected>) {
 
   if (!id) throw new Error('ArenaSideNavItem: `id` is required');
   if (!label) throw new Error('ArenaSideNavItem: `label` is required');
@@ -52,13 +52,13 @@ export function ArenaSideNavItem({
       if (onActivate) onActivate(id);
     },
     className: styles.item(),
-    style: { paddingInlineStart: indentFor(indentStep, depth) },
+    style: { paddingInlineStart: arenaIndentFor(indentStep, depth) },
   };
 
   const glyph = icon
-    ? <i className={`${on ? activeWeight(icon) : icon} ${styles.icon()}`} aria-hidden="true" />
+    ? <i className={`${on ? arenaActiveWeight(icon) : icon} ${styles.icon()}`} aria-hidden="true" />
     : null;
-  const count = badgeCount(badge);
+  const count = arenaBadgeCount(badge);
   const tally = count === null ? null : <span className={styles.badge()}>{count}</span>;
   return href
     ? <a href={href} {...shared}>{glyph}{label}{tally}</a>

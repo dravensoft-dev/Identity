@@ -1,12 +1,12 @@
 import React from 'react';
 
-export interface BottomNavInjected {
+export interface ArenaBottomNavInjected {
   activeId?: string;
   onActivate?: (id: string) => void;
 }
 
-export function injectInto(children: React.ReactNode, injected: BottomNavInjected): React.ReactNode[] {
+export function arenaInjectInto(children: React.ReactNode, injected: ArenaBottomNavInjected): React.ReactNode[] {
   return React.Children.toArray(children).map((child) => (
-    React.isValidElement<Partial<BottomNavInjected>>(child) ? React.cloneElement(child, injected) : child
+    React.isValidElement<Partial<ArenaBottomNavInjected>>(child) ? React.cloneElement(child, injected) : child
   ));
 }

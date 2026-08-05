@@ -1,7 +1,7 @@
 import { Injectable, type Signal, signal } from '@angular/core';
 
 @Injectable()
-export class TableRowState {
+export class ArenaTableRowState {
   index: Signal<number> = signal(0);
   cells: Signal<readonly object[]> = signal([]);
 

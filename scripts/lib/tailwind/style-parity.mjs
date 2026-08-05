@@ -5,7 +5,7 @@
  * components concatenate sibling slots by hand and a page mounting one slot per element
  * could not see which of two equal-specificity classes wins. */
 
-import { tv } from '../../../frameworks/tailwind/Tv.ts';
+import { arenaTv } from '../../../frameworks/tailwind/Tv.ts';
 import { arenaStyles } from '../../../frameworks/tailwind/ArenaStyles.ts';
 import { classesManifest } from './component-css.mjs';
 
@@ -17,7 +17,7 @@ export function selections(manifest) {
 }
 
 export function cases(manifest) {
-  const recipe = tv(manifest);
+  const recipe = arenaTv(manifest);
   const styles = arenaStyles(classesManifest(manifest));
   const out = [];
   for (const { name, chosen } of selections(manifest)) {

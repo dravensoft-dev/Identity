@@ -130,7 +130,7 @@
   --calendar-hour-h:44px;
   /*
      The width of the hour-label gutter down the left of the grid.
-     Script-readable because the width term of showsTime() subtracts it from the
+     Script-readable because the width term of arenaShowsTime() subtracts it from the
      measured container to get the grid's width, and no CSS expression hands a
      number to JS. It was calc(var(--sp-1) * 14) rendered inline: the same value in
      two idioms with nothing holding them in step. One token now, read both ways.

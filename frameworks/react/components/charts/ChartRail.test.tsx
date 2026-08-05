@@ -7,25 +7,25 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { plotWidth, PAD } from '../../DataVisuals.ts';
+import { arenaPlotWidth, ARENA_PAD } from '../../DataVisuals.ts';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
 
 test('with no minPointSpacing the plot is exactly the width it was given', () => {
-  assert.equal(plotWidth(390, 30, undefined), 390);
-  assert.equal(plotWidth(390, 30, 0), 390, 'and zero is not a spacing, it is an absence');
+  assert.equal(arenaPlotWidth(390, 30, undefined), 390);
+  assert.equal(arenaPlotWidth(390, 30, 0), 390, 'and zero is not a spacing, it is an absence');
 });
 
 test('above the floor the plot still fits, because the rule is a MINIMUM and not a step', () => {
-  assert.equal(plotWidth(1200, 5, 35), 1200);
+  assert.equal(arenaPlotWidth(1200, 5, 35), 1200);
 });
 
 test('below the floor the plot outgrows its box by exactly what the gaps need', () => {
-  assert.equal(plotWidth(390, 30, 35), PAD.l + PAD.r + 35 * 29);
+  assert.equal(arenaPlotWidth(390, 30, 35), ARENA_PAD.l + ARENA_PAD.r + 35 * 29);
 });
 
 test('one point cannot be too close to anything, so nothing overflows', () => {
-  assert.equal(plotWidth(390, 1, 35), 390);
-  assert.equal(plotWidth(390, 0, 35), 390);
+  assert.equal(arenaPlotWidth(390, 1, 35), 390);
+  assert.equal(arenaPlotWidth(390, 0, 35), 390);
 });
 
 const labels = Array.from({ length: 30 }, (_, i) => `d${i}`);

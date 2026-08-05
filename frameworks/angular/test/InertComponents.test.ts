@@ -3,7 +3,7 @@
  * and binding it therefore verifies NOTHING -- which is why every component here sat outside
  * COVERED. Each renders with no projected content and is asserted INERT, the sentence the
  * pattern's own description makes and no requirement can. ArenaSideNavSection cannot stand alone: it
- * pulls SideNavState from the nearest arena-side-nav, and its items are its CONTENT, so its entry
+ * pulls ArenaSideNavState from the nearest arena-side-nav, and its items are its CONTENT, so its entry
  * excludes that subtree -- the claim is about the affordance the component introduces, never
  * about what a consumer puts inside it. */
 

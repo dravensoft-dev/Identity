@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, Component, computed, inject, input, output, signal,
 } from '@angular/core';
-import { RadioGroupState } from './RadioGroupState';
+import { ArenaRadioGroupState } from './ArenaRadioGroupState';
 import { arenaRadioGroupStyles } from './ArenaRadioGroup.variants';
 
 let nextId = 0;
@@ -10,7 +10,7 @@ let nextId = 0;
   selector: 'arena-radio-group',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [RadioGroupState],
+  providers: [ArenaRadioGroupState],
   host: {
     '[class]': 'styles().group()',
     role: 'radiogroup',
@@ -41,7 +41,7 @@ export class ArenaRadioGroup {
 
   private readonly fallbackName = `arena-radio-group-${nextId++}`;
   private readonly chosen = signal<string | undefined>(undefined);
-  private readonly state = inject(RadioGroupState);
+  private readonly state = inject(ArenaRadioGroupState);
 
   constructor() {
     this.state.groupName = computed(() => this.name() ?? this.fallbackName);

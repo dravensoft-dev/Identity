@@ -20,7 +20,7 @@ export function useArenaContainerWidth<T extends Element = HTMLDivElement>(targe
   return [ref, width];
 }
 
-export type BreakpointName = 'sm' | 'md' | 'lg';
+export type ArenaBreakpointName = 'sm' | 'md' | 'lg';
 
 const cache = new Map<string, number>();
 
@@ -29,7 +29,7 @@ const warned = new Set<string>();
 function warnUnresolved(name: string): void {
   if (warned.has(name) || typeof console === 'undefined') return;
   warned.add(name);
-  console.warn(`[arena] --bp-${name} did not resolve, so readBreakpoint('${name}') is NaN and every`
+  console.warn(`[arena] --bp-${name} did not resolve, so arenaReadBreakpoint('${name}') is NaN and every`
     + ' comparison against it is false: a responsive component stays on its wide branch on a phone.'
     + " Arena's stylesheet is missing, or it loads after this ran.");
 }
@@ -39,9 +39,9 @@ export function forgetArenaBreakpoints(): void {
   warned.clear();
 }
 
-export function useArenaViewportBelow(name: BreakpointName): boolean {
+export function useArenaViewportBelow(name: ArenaBreakpointName): boolean {
   const [below, setBelow] = useState(false);
-  const width = readBreakpoint(name);
+  const width = arenaReadBreakpoint(name);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia || !Number.isFinite(width)) return;
@@ -55,7 +55,7 @@ export function useArenaViewportBelow(name: BreakpointName): boolean {
   return below;
 }
 
-export function readBreakpoint(name: BreakpointName): number {
+export function arenaReadBreakpoint(name: ArenaBreakpointName): number {
   if (typeof document === 'undefined') return NaN;
   const hit = cache.get(name);
   if (hit !== undefined) return hit;

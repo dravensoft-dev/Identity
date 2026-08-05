@@ -24,7 +24,7 @@ const PRIVATE = new Map([
    + 'consumer drives the view through `anchorDate` and `view`, never by computing a week '
    + 'boundary. It is typechecked through the components that import it.'],
   ['navigation/arena-pagination/PaginationWindow.ts',
-   'the same shape one category over, and the standing precedent for it: `pageWindow` decides '
+   'the same shape one category over, and the standing precedent for it: `arenaPageWindow` decides '
    + 'which page numbers elide, which is `arena-pagination`\'s own arithmetic and not a member '
    + 'of its API.'],
 ]);
@@ -38,7 +38,7 @@ const ROOT_PRIVATE = new Map([
   ['ArenaStyles.generated.ts',
    'the factory that composes a component\'s own class names, emitted per layer so nothing '
    + 'imports across one. It replaced the two runtime dependencies, and a consumer has no more '
-   + 'reason to call it than they had to call `tv`: they render a component, not a recipe.'],
+   + 'reason to call it than they had to call `arenaTv`: they render a component, not a recipe.'],
 ]);
 
 const EXPORT = /from '\.\/([A-Za-z0-9.-]+)'/g;

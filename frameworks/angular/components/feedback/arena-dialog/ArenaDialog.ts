@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { ArenaFooter } from '../../../ProjectionMarkers';
 import { arenaDialogStyles } from './ArenaDialog.variants';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
+import { type FocusTrapState, arenaHandleOpenTransition, arenaTrapTabKey } from '../../../FocusTrap';
 
 let nextId = 0;
 
@@ -74,7 +74,7 @@ export class ArenaDialog {
     afterRenderEffect(() => {
       const isOpen = this.open();
       untracked(() => {
-        handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
+        arenaHandleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
       });
     });
   }
@@ -92,7 +92,7 @@ export class ArenaDialog {
     }
     if (event.key === 'Tab') {
       const panel = this.panel()?.nativeElement;
-      if (panel) trapTabKey(panel, event, this.doc.activeElement);
+      if (panel) arenaTrapTabKey(panel, event, this.doc.activeElement);
     }
   }
 }

@@ -6,10 +6,10 @@ import assert from 'node:assert/strict';
 import { assertNotSameNode, assertSameNode } from '../../../test/NodeAssert';
 import {
   type FocusTrapState,
-  focusFirstFocusable,
-  focusableElements,
-  handleOpenTransition,
-  trapTabKey,
+  arenaFocusFirstFocusable,
+  arenaFocusableElements,
+  arenaHandleOpenTransition,
+  arenaTrapTabKey,
 } from '../../../FocusTrap';
 
 function buildPageBehind(): HTMLElement {
@@ -59,7 +59,7 @@ beforeEach(() => {
 
 test('the panel\'s focusable set is Back, Skip, Next in DOM order -- the dots div is not a tab stop', () => {
   const { panel, back, skip, next } = buildPanel();
-  assert.deepEqual(focusableElements(panel), [back, skip, next]);
+  assert.deepEqual(arenaFocusableElements(panel), [back, skip, next]);
 });
 
 test('opening moves focus onto Back, so a keyboard user reaches Next in two keys rather than tabbing the whole page', () => {
@@ -70,7 +70,7 @@ test('opening moves focus onto Back, so a keyboard user reaches Next in two keys
 
   const { panel, back } = buildPanel();
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
-  handleOpenTransition(state, true, panel, document.activeElement);
+  arenaHandleOpenTransition(state, true, panel, document.activeElement);
 
   assertSameNode(document.activeElement, back, 'opening must move focus into the panel');
   assert.equal(state.restoreTo, trigger, 'the element focused before opening must be remembered');
@@ -79,7 +79,7 @@ test('opening moves focus onto Back, so a keyboard user reaches Next in two keys
 
 test('on the first step, where the template omits Back, opening focuses Skip instead', () => {
   const { panel, skip } = buildFirstStepPanel();
-  focusFirstFocusable(panel);
+  arenaFocusFirstFocusable(panel);
   assertSameNode(document.activeElement, skip);
 });
 
@@ -91,12 +91,12 @@ test('closing restores focus to whatever opened the tour, not to whatever was fo
 
   const { panel, next } = buildPanel();
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
-  handleOpenTransition(state, true, panel, document.activeElement);
+  arenaHandleOpenTransition(state, true, panel, document.activeElement);
 
   next.focus();
   assertSameNode(document.activeElement, next);
 
-  handleOpenTransition(state, false, panel, document.activeElement);
+  arenaHandleOpenTransition(state, false, panel, document.activeElement);
 
   assertSameNode(document.activeElement, trigger, 'closing must restore the pre-open element');
   assert.equal(state.restoreTo, null, 'the remembered element must be cleared once restored');
@@ -106,46 +106,46 @@ test('closing restores focus to whatever opened the tour, not to whatever was fo
 test('advancing a step re-runs the transition with open unchanged, and must not yank focus back to Back', () => {
   const { panel, next } = buildPanel();
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
-  handleOpenTransition(state, true, panel, document.activeElement);
+  arenaHandleOpenTransition(state, true, panel, document.activeElement);
 
   next.focus();
-  handleOpenTransition(state, true, panel, document.activeElement);
+  arenaHandleOpenTransition(state, true, panel, document.activeElement);
 
   assertSameNode(document.activeElement, next, 'a same-state re-run must leave focus where the user put it');
 });
 
-test('ArenaTab from Next wraps to Back instead of reaching the page behind the scrim -- the whole point of the trap', () => {
+test('Tab from Next wraps to Back instead of reaching the page behind the scrim -- the whole point of the trap', () => {
   const behind = buildPageBehind();
   const { panel, back, next } = buildPanel();
   next.focus();
 
   const event = keydownTab(false);
-  trapTabKey(panel, event, document.activeElement);
+  arenaTrapTabKey(panel, event, document.activeElement);
 
-  assertSameNode(document.activeElement, back, 'ArenaTab from the last control must wrap to the first');
+  assertSameNode(document.activeElement, back, 'Tab from the last control must wrap to the first');
   assertNotSameNode(document.activeElement, behind, 'focus must never escape an aria-modal panel');
-  assert.ok(event.defaultPrevented, 'the boundary ArenaTab must be consumed, or the browser also moves focus');
+  assert.ok(event.defaultPrevented, 'the boundary Tab must be consumed, or the browser also moves focus');
 });
 
-test('Shift+ArenaTab from Back wraps to Next rather than escaping backwards out of the panel', () => {
+test('Shift+Tab from Back wraps to Next rather than escaping backwards out of the panel', () => {
   const behind = buildPageBehind();
   const { panel, back, next } = buildPanel();
   back.focus();
 
   const event = keydownTab(true);
-  trapTabKey(panel, event, document.activeElement);
+  arenaTrapTabKey(panel, event, document.activeElement);
 
   assertSameNode(document.activeElement, next);
   assertNotSameNode(document.activeElement, behind);
   assert.ok(event.defaultPrevented);
 });
 
-test('ArenaTab from Skip, a middle control, is left to the browser -- the trap only acts at a boundary', () => {
+test('Tab from Skip, a middle control, is left to the browser -- the trap only acts at a boundary', () => {
   const { panel, skip } = buildPanel();
   skip.focus();
 
   const event = keydownTab(false);
-  trapTabKey(panel, event, document.activeElement);
+  arenaTrapTabKey(panel, event, document.activeElement);
 
   assertSameNode(document.activeElement, skip, 'the trap must not move focus away from a non-boundary control');
   assert.ok(!event.defaultPrevented);

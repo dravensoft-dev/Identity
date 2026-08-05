@@ -3,17 +3,17 @@ import {
   tintArea, tintSoft, tintEdge,
 } from './Tokens.generated';
 import type { ArenaNumberFormat, ArenaSeriesTone, ArenaTone } from './Api.generated';
-import { warnOnce } from './WarnOnce';
+import { arenaWarnOnce } from './WarnOnce';
 
 export const ARENA_CAT_SLOTS = catSlots;
 
-export const CHART_HEIGHT = chartHeight;
+export const ARENA_CHART_HEIGHT = chartHeight;
 
-export const PAD = {
+export const ARENA_PAD = {
   t: chartPadTop, r: chartPadRight, b: chartPadBottom, l: chartPadLeft,
 } as const;
 
-export const SR_ONLY = {
+export const ARENA_SR_ONLY = {
   position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px',
   overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: '0',
 } as const satisfies Readonly<Record<string, string>>;
@@ -29,12 +29,12 @@ export function arenaCatSlotFor(key: string): number {
   return (hash % ARENA_CAT_SLOTS) + 1;
 }
 
-export interface CatSurface {
+export interface ArenaCatSurface {
   fill: string;
   border: string;
 }
 
-export function arenaCatSurface(slot: number): CatSurface {
+export function arenaCatSurface(slot: number): ArenaCatSurface {
   const colour = arenaCatColor(slot);
   return {
     fill: `color-mix(in oklab, ${colour} ${tintSoft}%, var(--color-base-100))`,
@@ -42,7 +42,7 @@ export function arenaCatSurface(slot: number): CatSurface {
   };
 }
 
-export function areaFill(colour: string): string {
+export function arenaAreaFill(colour: string): string {
   return `color-mix(in oklab, ${colour} ${tintArea}%, transparent)`;
 }
 
@@ -56,11 +56,11 @@ const TONE_VARS: Record<ArenaTone, string> = {
   info: 'var(--info)',
 };
 
-export function toneColor(tone: ArenaTone): string {
+export function arenaToneColor(tone: ArenaTone): string {
   return TONE_VARS[tone];
 }
 
-export function resolveColors(options: {
+export function arenaResolveColors(options: {
   slot?: number;
   slots?: readonly number[];
   tone?: ArenaSeriesTone;
@@ -68,23 +68,23 @@ export function resolveColors(options: {
 }): string[] {
   const { slot, slots, tone, count } = options;
   if (tone && (slot !== undefined || slots !== undefined)) {
-    warnOnce('chart: `tone` and `slot`/`slots` are mutually exclusive — a chart carries identity or meaning, never both. `tone` wins; remove the other.');
+    arenaWarnOnce('chart: `tone` and `slot`/`slots` are mutually exclusive — a chart carries identity or meaning, never both. `tone` wins; remove the other.');
   }
   if (tone) {
-    const colour = toneColor(tone) || arenaCatColor(1);
+    const colour = arenaToneColor(tone) || arenaCatColor(1);
     return Array.from({ length: count }, () => colour);
   }
   if (slots) return Array.from({ length: count }, (_, i) => arenaCatColor(slots[i] ?? i + 1));
   return Array.from({ length: count }, () => arenaCatColor(slot ?? 1));
 }
 
-export interface ValueWriterOptions {
+export interface ArenaValueWriterOptions {
   prefix?: string;
   suffix?: string;
   format?: ArenaNumberFormat;
 }
 
-export function valueWriter({ prefix, suffix, format }: ValueWriterOptions): (value: number) => string {
+export function arenaValueWriter({ prefix, suffix, format }: ArenaValueWriterOptions): (value: number) => string {
   const head = prefix ?? '';
   const tail = suffix ?? '';
   if (!format) return (value) => `${head}${value}${tail}`;
@@ -101,23 +101,23 @@ export function valueWriter({ prefix, suffix, format }: ValueWriterOptions): (va
   try {
     intl = new Intl.NumberFormat(format.locale, options);
   } catch {
-    warnOnce(`chart: valueFormat.locale "${format.locale}" is not a tag Intl accepts, so every number`
+    arenaWarnOnce(`chart: valueFormat.locale "${format.locale}" is not a tag Intl accepts, so every number`
       + ' the chart writes falls back to the raw JavaScript one. A tick, a tooltip and the accessible'
       + ' table all read differently from the table beside them until it is a BCP-47 tag.');
   }
   return (value) => `${head}${intl ? intl.format(value) : value}${tail}`;
 }
 
-export function plotWidth(available: number, count: number, minPointSpacing: number | undefined): number {
+export function arenaPlotWidth(available: number, count: number, minPointSpacing: number | undefined): number {
   if (!minPointSpacing || !(minPointSpacing > 0) || count < 2) return available;
-  const needed = PAD.l + PAD.r + minPointSpacing * (count - 1);
+  const needed = ARENA_PAD.l + ARENA_PAD.r + minPointSpacing * (count - 1);
   return Math.max(available, needed);
 }
-export const RAIL_STYLE = {
+export const ARENA_RAIL_STYLE = {
   overflowX: 'auto', overflowY: 'hidden', display: 'block',
 } as const satisfies Readonly<Record<string, string>>;
 
-export function niceMax(max: number): number {
+export function arenaNiceMax(max: number): number {
   if (!(max > 0)) return 1;
   const mag = Math.pow(10, Math.floor(Math.log10(max)));
   const norm = max / mag;
@@ -125,20 +125,20 @@ export function niceMax(max: number): number {
   return step * mag;
 }
 
-export function ticks(max: number, count = 4): number[] {
+export function arenaTicks(max: number, count = 4): number[] {
   return Array.from({ length: count + 1 }, (_, i) => (max / count) * i);
 }
 
-export function barPath(x: number, y: number, w: number, h: number, r: number): string {
+export function arenaBarPath(x: number, y: number, w: number, h: number, r: number): string {
   const rr = Math.max(0, Math.min(r, w / 2, h));
   return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y}`
     + ` L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`;
 }
 
-export function arcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number): string {
+export function arenaArcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number): string {
   if (a1 - a0 >= Math.PI * 2 - 1e-6) {
     const mid = a0 + Math.PI;
-    return `${arcPath(cx, cy, rOuter, rInner, a0, mid)} ${arcPath(cx, cy, rOuter, rInner, mid, a1)}`;
+    return `${arenaArcPath(cx, cy, rOuter, rInner, a0, mid)} ${arenaArcPath(cx, cy, rOuter, rInner, mid, a1)}`;
   }
   const large = a1 - a0 > Math.PI ? 1 : 0;
   const pt = (r: number, a: number): [number, number] => [cx + r * Math.cos(a), cy + r * Math.sin(a)];

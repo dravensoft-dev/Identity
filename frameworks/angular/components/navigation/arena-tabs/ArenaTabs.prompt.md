@@ -29,7 +29,7 @@ view and `arena-tabs` draws the tablist, places the panels, and owns the keyboar
 <!-- @api end -->
 
 **The children pull; the parent pushes nothing.** `arena-tabs` provides an injectable
-`TabsState` and each `arena-tab` injects it and pulls, its selected state, and the two ids
+`ArenaTabsState` and each `arena-tab` injects it and pulls, its selected state, and the two ids
 wiring it to its button. Nothing is pushed, and **no member of either contract describes any of it**. The state
 object is not exported from the barrel: it is coordination, not API.
 

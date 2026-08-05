@@ -57,7 +57,7 @@ test('ArenaCard meets both of its declared shapes', () => {
 
         assert.equal(el!.tagName, 'DIV', 'the card is a div, which is why it CAN take role="button"');
         assert.equal(el!.getAttribute('role'), 'button');
-        assert.equal(el!.getAttribute('tabindex'), '0', 'an interactive card is reached by ArenaTab');
+        assert.equal(el!.getAttribute('tabindex'), '0', 'an interactive card is reached by Tab');
         assert.match(el!.textContent, /checkout-api/,
           'the button pattern accepts text content as its name, and the title is that text');
 

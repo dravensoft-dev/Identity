@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, forwardRef, inject, input } from '@angular/core';
 import { isArenaPrimaryActivation } from '../../../AnchorActivation';
-import { SideNavChild, SideNavState, indentFor } from '../arena-side-nav/SideNavState';
-import { activeWeight, badgeCount } from '../../../NavRow';
+import { ArenaSideNavChild, ArenaSideNavState, arenaIndentFor } from '../arena-side-nav/ArenaSideNavState';
+import { arenaActiveWeight, arenaBadgeCount } from '../../../NavRow';
 import { arenaSideNavStyles } from '../arena-side-nav/ArenaSideNav.variants';
 
 @Component({
   selector: 'arena-side-nav-item',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{ provide: SideNavChild, useExisting: forwardRef(() => ArenaSideNavItem) }],
+  providers: [{ provide: ArenaSideNavChild, useExisting: forwardRef(() => ArenaSideNavItem) }],
   host: {
     style: 'display: contents',
     '[attr.id]': 'null',
@@ -55,7 +55,7 @@ export class ArenaSideNavItem {
   /** Whether the destination is drawn but cannot be reached -- one the consumer's rules lock, such as a feature the current plan does not include. It reflects through `aria-disabled` rather than the native attribute, and rather than by not rendering the item at all: an unavailable destination a user can see and hear announced as unavailable is what tells them it exists, which is the whole reason to draw it. The anchor keeps its `href` so the case split stays what it is -- what changes is that activation is refused and the state is announced. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  private readonly nav = inject(SideNavState);
+  private readonly nav = inject(ArenaSideNavState);
 
   protected readonly name = computed(() => {
     const text = this.label();
@@ -76,16 +76,16 @@ export class ArenaSideNavItem {
   protected readonly glyphClass = computed(() => {
     const glyph = this.icon();
     if (!glyph) return null;
-    return `${this.styles().icon()} ${this.on() ? activeWeight(glyph) : glyph}`;
+    return `${this.styles().icon()} ${this.on() ? arenaActiveWeight(glyph) : glyph}`;
   });
 
   protected readonly current = computed(() => (this.on() ? 'page' : null));
-  protected readonly indent = computed(() => indentFor(this.nav.indentStep(), this.nav.depth()));
+  protected readonly indent = computed(() => arenaIndentFor(this.nav.indentStep(), this.nav.depth()));
   protected readonly styles = computed(() => arenaSideNavStyles({ active: this.on() }));
 
   protected readonly off = computed(() => (this.disabled() ? 'true' : null));
 
-  protected readonly count = computed(() => badgeCount(this.badge()));
+  protected readonly count = computed(() => arenaBadgeCount(this.badge()));
 
   protected activate(event: Event): void {
     if (this.disabled()) { event.preventDefault(); return; }

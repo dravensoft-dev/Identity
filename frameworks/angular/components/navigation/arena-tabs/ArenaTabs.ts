@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { FocusKeyManager, type FocusableOption } from '@angular/cdk/a11y';
 import { ArenaTab } from '../arena-tab/ArenaTab';
-import { TabsState } from './TabsState';
+import { ArenaTabsState } from './ArenaTabsState';
 import { arenaTabsStyles } from './ArenaTabs.variants';
 
 let nextId = 0;
@@ -13,7 +13,7 @@ let nextId = 0;
   selector: 'arena-tabs',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TabsState],
+  providers: [ArenaTabsState],
   host: { style: 'display: contents' },
   template: `
     <div role="tablist" [class]="styles().root()" (keydown)="onKeydown($event)">
@@ -38,7 +38,7 @@ export class ArenaTabs {
 
   private readonly base = `arena-tabs-${nextId++}`;
   private readonly chosen = signal<string | undefined>(undefined);
-  private readonly state = inject(TabsState);
+  private readonly state = inject(ArenaTabsState);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
 

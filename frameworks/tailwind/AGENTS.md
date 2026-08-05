@@ -381,9 +381,9 @@ itself. `ArenaCommandPalette`'s `row`/`rowDefault`/`rowActive` and
 `rowLabel`/`rowLabelDefault`/`rowLabelActive` follow the same shape for the
 same reason: a resting row needs its own explicit background and text color,
 not an absence that happens to lose to the active row's tint by alphabetical
-luck. A `tv()` `variants` block does not carry this risk the same way: each of
+luck. A `arenaTv()` `variants` block does not carry this risk the same way: each of
 its slot's classes resolves through one `slot()` call, and the configured
-`tv` (`frameworks/tailwind/Tv.ts`) merges that call's own base and chosen
+`arenaTv` (`frameworks/tailwind/Tv.ts`) merges that call's own base and chosen
 branch with `tailwind-merge`, which resolves same-property conflicts by
 config, not by generation order. The risk above is specifically about **named
 sibling slots**, meaning extra `slots` keys outside any `variants` block that a

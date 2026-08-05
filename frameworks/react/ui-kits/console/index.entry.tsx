@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { LoginScreen } from './LoginScreen.tsx';
 import { DashboardScreen } from './DashboardScreen.tsx';
 import { ProjectScreen } from './ProjectScreen.tsx';
-import { ArenaToast, TOAST_DISMISS } from '../../components/feedback/arena-toast/ArenaToast.tsx';
+import { ArenaToast, ARENA_TOAST_DISMISS } from '../../components/feedback/arena-toast/ArenaToast.tsx';
 import { ArenaToastHost } from '../../components/feedback/arena-toast-host/ArenaToastHost.tsx';
 
 interface ConsoleToast {
@@ -28,7 +28,7 @@ function App(){
 
     if (t.persist) return;
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
-      t.actionLabel ? TOAST_DISMISS.actionable : TOAST_DISMISS.default);
+      t.actionLabel ? ARENA_TOAST_DISMISS.actionable : ARENA_TOAST_DISMISS.default);
   };
 
   const nav = (id: string) => {

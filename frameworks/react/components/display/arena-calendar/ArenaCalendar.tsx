@@ -1,6 +1,6 @@
-import type { ArenaCalendarEventProps, CalendarEventInjected } from '../arena-calendar-event/ArenaCalendarEvent.tsx';
+import type { ArenaCalendarEventProps, ArenaCalendarEventInjected } from '../arena-calendar-event/ArenaCalendarEvent.tsx';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useArenaContainerWidth, readBreakpoint } from '../../../UseArenaContainerWidth.ts';
+import { useArenaContainerWidth, arenaReadBreakpoint } from '../../../UseArenaContainerWidth.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaCalendar.classes.generated.ts';
 import { arenaCatColor } from '../../../DataVisuals.ts';
@@ -50,8 +50,8 @@ export interface ArenaCalendarProps {
 }
 
 import {
-  addDays, defaultDayStart, formatHM, layoutDay, nowMinutes, parseHM,
-  placeEvents, rangeTitle, showsTime, stacksActions, startOfWeek, todayIso, weekdayOf, formatDate,
+  arenaAddDays, arenaDefaultDayStart, arenaFormatHM, arenaLayoutDay, arenaNowMinutes, arenaParseHM,
+  arenaPlaceEvents, arenaRangeTitle, arenaShowsTime, arenaStacksActions, arenaStartOfWeek, arenaTodayIso, arenaWeekdayOf, arenaFormatDate,
 } from './CalendarInternals.ts';
 
 const TRACKS = (n: number) => `repeat(${n}, minmax(0, 1fr))`;
@@ -66,7 +66,7 @@ export function ArenaCalendar({
 
   const zone = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [ref, width] = useArenaContainerWidth<HTMLElement>();
-  const [anchor, setAnchor] = useState(() => anchorDate || todayIso(zone));
+  const [anchor, setAnchor] = useState(() => anchorDate || arenaTodayIso(zone));
 
   useEffect(() => { if (anchorDate) setAnchor(anchorDate); }, [anchorDate]);
 
@@ -76,11 +76,11 @@ export function ArenaCalendar({
     return () => clearInterval(id);
   }, []);
 
-  const narrow = width !== null && width < readBreakpoint('md');
+  const narrow = width !== null && width < arenaReadBreakpoint('md');
   const activeView = view || (narrow ? 'day' : 'week');
 
   type EventElement = React.ReactElement<
-  ArenaCalendarEventProps & Partial<CalendarEventInjected> & React.RefAttributes<HTMLElement>
+  ArenaCalendarEventProps & Partial<ArenaCalendarEventInjected> & React.RefAttributes<HTMLElement>
   >;
   const kids = useMemo(
     () => React.Children.toArray(children)
@@ -90,25 +90,25 @@ export function ArenaCalendar({
   const events = useMemo(() => kids.map((k) => k.props), [kids]);
   const elementOf = useMemo(() => new Map(kids.map((k) => [k.props, k])), [kids]);
 
-  const placed = useMemo(() => placeEvents(events, zone), [events, zone]);
+  const placed = useMemo(() => arenaPlaceEvents(events, zone), [events, zone]);
 
   const days = useMemo(() => {
     if (activeView === 'day') return [anchor];
-    const first = startOfWeek(anchor, weekStartsOn);
-    const all = Array.from({ length: 7 }, (_, i) => addDays(first, i));
+    const first = arenaStartOfWeek(anchor, weekStartsOn);
+    const all = Array.from({ length: 7 }, (_, i) => arenaAddDays(first, i));
     if (!hideEmptyWeekend) return all;
 
-    return all.filter((d) => weekdayOf(d) !== 0 || placed.some((p) => p.dayIso === d));
+    return all.filter((d) => arenaWeekdayOf(d) !== 0 || placed.some((p) => p.dayIso === d));
   }, [activeView, anchor, weekStartsOn, hideEmptyWeekend, placed]);
 
   const visible = useMemo(() => placed.filter((p) => days.includes(p.dayIso)), [placed, days]);
   const byDay = useMemo(
-    () => days.map((d) => layoutDay(visible.filter((p) => p.dayIso === d))),
+    () => days.map((d) => arenaLayoutDay(visible.filter((p) => p.dayIso === d))),
     [days, visible],
   );
 
-  const endMin = parseHM(dayEnd, 23 * 60);
-  const rawStart = dayStart !== undefined ? parseHM(dayStart, 8 * 60) : defaultDayStart(visible);
+  const endMin = arenaParseHM(dayEnd, 23 * 60);
+  const rawStart = dayStart !== undefined ? arenaParseHM(dayStart, 8 * 60) : arenaDefaultDayStart(visible);
 
   const startMin = Math.max(0, Math.min(rawStart, endMin - 60));
 
@@ -123,8 +123,8 @@ export function ArenaCalendar({
   const slotFor = (cols: number) =>
     (width === null ? null : (width - calendarGutterW) / days.length / cols);
 
-  const today = todayIso(zone);
-  const nowMin = useMemo(() => nowMinutes(zone), [zone, tick]);
+  const today = arenaTodayIso(zone);
+  const nowMin = useMemo(() => arenaNowMinutes(zone), [zone, tick]);
   const showNow = days.includes(today) && nowMin >= startMin && nowMin <= endMin;
 
   const step = activeView === 'day' ? 1 : 7;
@@ -200,14 +200,14 @@ export function ArenaCalendar({
   const styles = arenaCalendarStyles({ dayInteractive });
   const navBtn = (dir: number) => (
     <button type="button" aria-label={dir < 0 ? 'Previous' : 'Next'}
-      onClick={() => goto(addDays(anchor, dir * step))}
+      onClick={() => goto(arenaAddDays(anchor, dir * step))}
       className={styles.nav()}>
       <i className={dir < 0 ? 'ph-bold ph-caret-left' : 'ph-bold ph-caret-right'} aria-hidden="true" />
     </button>
   );
 
   return (
-    <section ref={ref} aria-label={`Schedule, ${rangeTitle(days)}`}
+    <section ref={ref} aria-label={`Schedule, ${arenaRangeTitle(days)}`}
       className={styles.root()}>
 
       <div className={styles.toolbar()}>
@@ -216,7 +216,7 @@ export function ArenaCalendar({
           className={styles.today()}>Today</button>
         {navBtn(1)}
         <h2 className={styles.heading()}>
-          {rangeTitle(days)}
+          {arenaRangeTitle(days)}
         </h2>
         {actions && <div className={styles.actions()}>{actions}</div>}
       </div>
@@ -228,11 +228,11 @@ export function ArenaCalendar({
           return (
             <DayHead key={d} onClick={activateDay(d)}
               type={dayInteractive ? 'button' : undefined}
-              aria-label={dayInteractive ? formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }) : undefined}
+              aria-label={dayInteractive ? arenaFormatDate(d, { weekday: 'long', day: 'numeric', month: 'long' }) : undefined}
               className={styles.dayHead()}>
-              <div className={styles.weekday()}>{formatDate(d, { weekday: 'short' })}</div>
+              <div className={styles.weekday()}>{arenaFormatDate(d, { weekday: 'short' })}</div>
               <div className={arenaCalendarStyles({ today: isToday }).dayNumber()}>
-                {formatDate(d, { day: 'numeric' })}
+                {arenaFormatDate(d, { day: 'numeric' })}
               </div>
             </DayHead>
           );
@@ -248,7 +248,7 @@ export function ArenaCalendar({
           <div className={styles.gutter()}>
             {hours.map((m) => (
               <div key={m} className={styles.hourLabel()} style={{ top: y(m) }}>
-                {formatHM(m)}
+                {arenaFormatHM(m)}
               </div>
             ))}
           </div>
@@ -256,7 +256,7 @@ export function ArenaCalendar({
           {
 
 }
-          <div ref={gridRef} role="grid" aria-label={`Schedule grid, ${rangeTitle(days)}`}
+          <div ref={gridRef} role="grid" aria-label={`Schedule grid, ${arenaRangeTitle(days)}`}
             onKeyDown={onGridKeyDown}
             className={styles.grid()} style={{ gridTemplateColumns: TRACKS(days.length) }}>
             {hours.map((m) => (
@@ -265,14 +265,14 @@ export function ArenaCalendar({
 
             {days.map((d, di) => (
               <div key={d} role="row"
-                aria-label={formatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
+                aria-label={arenaFormatDate(d, { weekday: 'long', day: 'numeric', month: 'long' })}
                 aria-owns={ownedIds(di) || undefined}
                 onClick={activateDay(d)}
                 className={arenaCalendarStyles({ firstColumn: di === 0, dayInteractive }).column()}>
                 {slots.map((s, si) => {
                   const isCursor = di === curDay && si === curHour;
                   return (
-                    <div key={s.start} role="gridcell" aria-label={formatHM(s.start)}
+                    <div key={s.start} role="gridcell" aria-label={arenaFormatHM(s.start)}
                       tabIndex={isCursor ? 0 : -1}
 
                       onFocus={() => { if (di !== curDay || si !== curHour) setCursor({ day: di, hour: si }); }}
@@ -304,10 +304,10 @@ export function ArenaCalendar({
                   left: `${leftShare}%`,
                   right: `${100 - leftShare - widthShare}%` },
                 color: arenaCatColor(p.ev.colorId ?? 1),
-                timeLabel: `${formatHM(p.startMin)} – ${formatHM(p.endMin)}`,
-                dateLabel: formatDate(days[di] ?? '', { weekday: 'long', day: 'numeric', month: 'long' }),
-                showTime: showsTime(rawH, slotFor(p.cols)),
-                actionsBelow: stacksActions(rawH, slotFor(p.cols)),
+                timeLabel: `${arenaFormatHM(p.startMin)} – ${arenaFormatHM(p.endMin)}`,
+                dateLabel: arenaFormatDate(days[di] ?? '', { weekday: 'long', day: 'numeric', month: 'long' }),
+                showTime: arenaShowsTime(rawH, slotFor(p.cols)),
+                actionsBelow: arenaStacksActions(rawH, slotFor(p.cols)),
               });
             })}
 

@@ -6,7 +6,7 @@ export type PageSlot = number | typeof ELLIPSIS;
 
 const threshold = () => 2 * limitPaginationSiblings + 5;
 
-export function pageWindow(current: number, total: number): readonly PageSlot[] {
+export function arenaPageWindow(current: number, total: number): readonly PageSlot[] {
   if (total <= threshold()) return Array.from({ length: total }, (_, i) => i + 1);
   const out: PageSlot[] = [1];
   const from = Math.max(2, current - limitPaginationSiblings);

@@ -60,7 +60,7 @@ test('a module constant annotated React.CSSProperties is a style object too', ()
 test('and so is an object a function annotated React.CSSProperties returns', () => {
   const src = [
     'export function rowStyle({ depth }: Options): React.CSSProperties {',
-    "  return { display: 'flex', paddingInlineStart: indentFor(depth) };",
+    "  return { display: 'flex', paddingInlineStart: arenaIndentFor(depth) };",
     '}',
   ].join('\n');
   assert.deepEqual(at('X.tsx', src), ["display='flex'"]);
@@ -96,7 +96,7 @@ test('adoption reads the manifest a component has to render, its own or its pare
 });
 
 test('a source that renders no manifest is what the adoption half reads for', () => {
-  const drawn = "import { tv } from '../../../Tv.generated.ts';\nimport m from './ArenaBadge.manifest.generated.ts';";
+  const drawn = "import { arenaTv } from '../../../Tv.generated.ts';\nimport m from './ArenaBadge.manifest.generated.ts';";
   assert.equal(reactRendersManifest(drawn, 'ArenaBadge'), true);
   assert.equal(reactRendersManifest(drawn, 'ArenaCard'), false, 'it has to be THIS component\'s manifest');
   assert.equal(reactRendersManifest("const S = { background: 'var(--crimson)' };", 'ArenaBadge'), false);

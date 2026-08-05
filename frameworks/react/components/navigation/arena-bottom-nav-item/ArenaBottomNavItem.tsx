@@ -1,7 +1,7 @@
 import React from 'react';
 import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
-import { activeWeight, badgeCount } from '../NavRow.ts';
-import type { BottomNavInjected } from '../arena-bottom-nav/BottomNavInject.tsx';
+import { arenaActiveWeight, arenaBadgeCount } from '../NavRow.ts';
+import type { ArenaBottomNavInjected } from '../arena-bottom-nav/BottomNavInject.tsx';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from '../arena-bottom-nav/ArenaBottomNav.classes.generated.ts';
 
@@ -31,13 +31,13 @@ const arenaBottomNavStyles = arenaStyles(manifest);
 export function ArenaBottomNavItem({
   id, label, icon, badge, href, disabled = false,
   activeId, onActivate,
-}: ArenaBottomNavItemProps & Partial<BottomNavInjected>) {
+}: ArenaBottomNavItemProps & Partial<ArenaBottomNavInjected>) {
 
   if (!id) throw new Error('ArenaBottomNavItem: `id` is required');
   if (!label) throw new Error('ArenaBottomNavItem: `label` is required');
   if (!icon) throw new Error('ArenaBottomNavItem: `icon` is required');
   const on = id === activeId;
-  const tally = badgeCount(badge);
+  const tally = arenaBadgeCount(badge);
   const styles = arenaBottomNavStyles({ active: on });
 
   const shared = {
@@ -57,7 +57,7 @@ export function ArenaBottomNavItem({
   const body = (
     <React.Fragment>
       <span className={styles.glyph()}>
-        <i className={on ? activeWeight(icon) : icon} aria-hidden="true" />
+        <i className={on ? arenaActiveWeight(icon) : icon} aria-hidden="true" />
         {tally !== null && <span className={styles.badge()}>{tally}</span>}
       </span>
       <span className={styles.label()}>{label}</span>

@@ -50,12 +50,12 @@ test('arena-confirm-dialog meets the alertdialog pattern it binds', () => {
 
     confirm.focus();
     const forward = press(confirm, 'Tab');
-    assert.equal(forward.defaultPrevented, true, 'focus.trap: ArenaTab off the last control was not intercepted');
-    assertSameNode(document.activeElement, cancel, 'focus.trap: ArenaTab off the last control did not wrap to the first');
+    assert.equal(forward.defaultPrevented, true, 'focus.trap: Tab off the last control was not intercepted');
+    assertSameNode(document.activeElement, cancel, 'focus.trap: Tab off the last control did not wrap to the first');
 
     const backward = press(cancel, 'Tab', true);
-    assert.equal(backward.defaultPrevented, true, 'focus.trap: Shift+ArenaTab off the first control was not intercepted');
-    assertSameNode(document.activeElement, confirm, 'focus.trap: Shift+ArenaTab off the first control did not wrap to the last');
+    assert.equal(backward.defaultPrevented, true, 'focus.trap: Shift+Tab off the first control was not intercepted');
+    assertSameNode(document.activeElement, confirm, 'focus.trap: Shift+Tab off the first control did not wrap to the last');
 
     let cancelled = 0;
     fixture.componentInstance.cancel.subscribe(() => { cancelled += 1; });

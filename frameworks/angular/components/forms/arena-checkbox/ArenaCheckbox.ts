@@ -3,8 +3,8 @@ import {
 } from '@angular/core';
 import { arenaCheckboxStyles } from './ArenaCheckbox.variants';
 
-export const CHECK_GLYPH_STYLE = { width: 'var(--sp-3)', height: 'var(--sp-3)' };
-export const CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
+export const ARENA_CHECK_GLYPH_STYLE = { width: 'var(--sp-3)', height: 'var(--sp-3)' };
+export const ARENA_CHECK_STROKE_STYLE = { strokeWidth: 'var(--bw-strong)' };
 
 @Component({
   selector: 'arena-checkbox',
@@ -49,8 +49,8 @@ export class ArenaCheckbox {
   /** Toggled; carries the new checked state. */
   readonly change = output<boolean>();
 
-  protected readonly glyph = CHECK_GLYPH_STYLE;
-  protected readonly glyphStroke = CHECK_STROKE_STYLE;
+  protected readonly glyph = ARENA_CHECK_GLYPH_STYLE;
+  protected readonly glyphStroke = ARENA_CHECK_STROKE_STYLE;
 
   protected readonly styles = computed(() => arenaCheckboxStyles({
     checked: this.checked(), disabled: this.disabled(),

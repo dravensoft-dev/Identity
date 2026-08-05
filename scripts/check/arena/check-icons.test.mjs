@@ -12,7 +12,7 @@ import {
   weightsFrom, zeroWeightProblems,
 } from './check-icons.mjs';
 
-const WEIGHTS = new Map([
+const ARENA_WEIGHTS = new Map([
   ['ph', new Set(['ph-house', 'ph-gear', 'ph-acorn'])],
   ['ph-bold', new Set(['ph-house', 'ph-gear', 'ph-acorn'])],
   ['ph-fill', new Set(['ph-house', 'ph-gear'])],
@@ -35,13 +35,13 @@ test('EXEMPT is empty, and staying empty is the point', () => {
 });
 
 test('a glyph that exists in the paired weight is silent', () => {
-  assert.deepEqual(tokenProblems('<i class="ph-bold ph-house"></i>', 'a.html', WEIGHTS), []);
-  assert.deepEqual(tokenProblems("icon: 'ph-fill ph-gear'", 'a.ts', WEIGHTS), []);
-  assert.deepEqual(tokenProblems('<i class="ph ph-acorn"></i>', 'a.html', WEIGHTS), []);
+  assert.deepEqual(tokenProblems('<i class="ph-bold ph-house"></i>', 'a.html', ARENA_WEIGHTS), []);
+  assert.deepEqual(tokenProblems("icon: 'ph-fill ph-gear'", 'a.ts', ARENA_WEIGHTS), []);
+  assert.deepEqual(tokenProblems('<i class="ph ph-acorn"></i>', 'a.html', ARENA_WEIGHTS), []);
 });
 
 test('a name no weight has is reported, which is the typo the gate exists for', () => {
-  const problems = tokenProblems('<i class="ph-bold ph-hosue"></i>', 'a.html', WEIGHTS);
+  const problems = tokenProblems('<i class="ph-bold ph-hosue"></i>', 'a.html', ARENA_WEIGHTS);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /a\.html:1/);
   assert.match(problems[0], /"ph-hosue" is not a Phosphor glyph in any weight/);
@@ -49,30 +49,30 @@ test('a name no weight has is reported, which is the typo the gate exists for', 
 });
 
 test('a real glyph in a weight that does not carry it is reported separately', () => {
-  const problems = tokenProblems('<i class="ph-fill ph-acorn"></i>', 'a.html', WEIGHTS);
+  const problems = tokenProblems('<i class="ph-fill ph-acorn"></i>', 'a.html', ARENA_WEIGHTS);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /not in the "ph-fill" weight/);
 });
 
 test('a bare weight class on its own is fine, since it names no glyph', () => {
-  assert.deepEqual(tokenProblems('const WEIGHT = "ph-bold";', 'a.ts', WEIGHTS), []);
+  assert.deepEqual(tokenProblems('const WEIGHT = "ph-bold";', 'a.ts', ARENA_WEIGHTS), []);
 });
 
 test('the line number is the line the name is on', () => {
-  const problems = tokenProblems('ok\nok\n<i class="ph-bold ph-nope"></i>', 'a.html', WEIGHTS);
+  const problems = tokenProblems('ok\nok\n<i class="ph-bold ph-nope"></i>', 'a.html', ARENA_WEIGHTS);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /a\.html:3/);
 });
 
 test('no stylesheet at all is a failure, not a clean pass over nothing', () => {
-  assert.deepEqual(zeroWeightProblems(WEIGHTS), []);
+  assert.deepEqual(zeroWeightProblems(ARENA_WEIGHTS), []);
   const problems = zeroWeightProblems(new Map());
   assert.equal(problems.length, 1);
   assert.match(problems[0], /vacuous pass/);
 });
 
 test('everyGlyph is the union, so a glyph in one weight is a known name', () => {
-  assert.deepEqual([...everyGlyph(WEIGHTS)].sort(), ['ph-acorn', 'ph-gear', 'ph-house']);
+  assert.deepEqual([...everyGlyph(ARENA_WEIGHTS)].sort(), ['ph-acorn', 'ph-gear', 'ph-house']);
 });
 
 test('the token pattern takes a class name and leaves ordinary prose alone', () => {

@@ -6,7 +6,7 @@ gate**. Across domains the same holds in both directions: `core/arena-tokens.mjs
 `../arena/css-decls.mjs` and nothing forbids it, because a domain is a statement about subject
 matter, not a visibility boundary.
 
-## Placement
+## ArenaPlacement
 
 Everywhere else under `scripts/`, the domain is decided by what a script **touches**. Most of
 `lib/` touches nothing, being pure functions, so the reads-and-writes test cannot separate

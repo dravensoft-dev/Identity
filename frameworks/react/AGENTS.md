@@ -127,7 +127,7 @@ cannot prove is that the browser honours the URL write-back**: happy-dom's
 `history.replaceState` is a no-op, so the suite asserts the call and the real write is the
 smoke pass's.
 
-**`UseArenaContainerWidth.ts`'s `readBreakpoint` warns once per name when a breakpoint token does not
+**`UseArenaContainerWidth.ts`'s `arenaReadBreakpoint` warns once per name when a breakpoint token does not
 resolve, and never caches the failure.** Every comparison against `NaN` is false, so a silent one
 leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on their wide branch on a phone with nothing reported,
 and a cached one pins that for the life of the process. `test/UseArenaContainerWidth.dom.test.tsx`
@@ -157,7 +157,7 @@ holds each activation separately.
 into its own children with `depth + 1`. The shared helper is
 `components/navigation/arena-side-nav/SideNavInject.tsx`, which covers that family and no more, so the
 placement rule sends it to the family's parent directory. **Its `.tsx` extension is
-load-bearing**: `check:dimensions` never opens a `.js`, and its `indentFor()` produces a governed
+load-bearing**: `check:dimensions` never opens a `.js`, and its `arenaIndentFor()` produces a governed
 `padding-inline-start`. It is a `.tsx` under `components/` that is **not a component**, since a
 component is a **directory**, in `reactComponents()` and in every count of the set.
 

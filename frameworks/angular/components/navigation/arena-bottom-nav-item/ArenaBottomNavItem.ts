@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, booleanAttribute, computed, inject, input } from '@angular/core';
 import { isArenaPrimaryActivation } from '../../../AnchorActivation';
-import { BottomNavState } from '../arena-bottom-nav/BottomNavState';
+import { ArenaBottomNavState } from '../arena-bottom-nav/ArenaBottomNavState';
 import { arenaBottomNavStyles } from '../arena-bottom-nav/ArenaBottomNav.variants';
-import { activeWeight, badgeCount } from '../../../NavRow';
+import { arenaActiveWeight, arenaBadgeCount } from '../../../NavRow';
 
 @Component({
   selector: 'arena-bottom-nav-item',
@@ -54,12 +54,12 @@ export class ArenaBottomNavItem {
   /** Whether the destination is drawn but cannot be reached. It reflects through `aria-disabled` rather than the native attribute, and rather than by not rendering the item at all: a destination a user can see and hear announced as unavailable is what tells them it exists. The anchor keeps its `href` so the case split stays what it is; what changes is that activation is refused and the state is announced. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  private readonly nav = inject(BottomNavState);
+  private readonly nav = inject(ArenaBottomNavState);
 
   protected readonly on = computed(() => this.key() === this.nav.activeId());
   protected readonly current = computed(() => (this.on() ? 'page' : null));
   protected readonly off = computed(() => (this.disabled() ? 'true' : null));
-  protected readonly count = computed(() => badgeCount(this.badge()));
+  protected readonly count = computed(() => arenaBadgeCount(this.badge()));
   protected readonly styles = computed(() => arenaBottomNavStyles({ active: this.on() }));
 
   protected readonly name = computed(() => {
@@ -75,7 +75,7 @@ export class ArenaBottomNavItem {
     if (glyph.trim() === '') {
       throw new Error('ArenaBottomNavItem: `icon` is required, and a column of a bar has no room to stand without one');
     }
-    return this.on() ? activeWeight(glyph) : glyph;
+    return this.on() ? arenaActiveWeight(glyph) : glyph;
   });
 
   protected activate(event: Event): void {

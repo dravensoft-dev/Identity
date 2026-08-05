@@ -6,7 +6,7 @@
  * `states.disabled` is BEHAVIOURAL, so the verdict below is earned by rendering a disabled item
  * and acting on it rather than declared. The component gained `disabled` because casing it made
  * the gap visible: bound to `none` the requirement never applied.
- * The item pulls SideNavState from the nearest arena-side-nav, so both cases mount one. */
+ * The item pulls ArenaSideNavState from the nearest arena-side-nav, so both cases mount one. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';
 useTestEnvironment();

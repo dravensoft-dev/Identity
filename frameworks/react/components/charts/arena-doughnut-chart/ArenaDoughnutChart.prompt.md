@@ -27,7 +27,7 @@ Parts of one whole, a share breakdown across a handful of categories. Always dra
 
 **Do**
 - Keep it to a handful of slices. Past five or six, the small ones are unreadable; fold the tail into "Other", or use bars.
-- Let `slots` default. Slots 1..N in order is the rule, not a starting point to tweak.
+- Let `slots` default. ArenaSlots 1..N in order is the rule, not a starting point to tweak.
 - Use it only when the parts genuinely sum to one whole. If they don't, it is a bar chart.
 - Pass `seriesLabel`, because it names the chart for a screen reader, titles the numbers table and names its value column. Without it the chart announces as "Doughnut chart", which identifies the chart *type* and not the chart.
 - Pass `valueSuffix` for units. It reaches the legend and the accessible table, and never the centre percentage.

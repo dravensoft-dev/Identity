@@ -80,7 +80,7 @@ test('ArenaCalendarEvent meets all three of its declared shapes, and `interactiv
         const off = mount(<ArenaCalendarEvent id="a-off" title="Standup" start="2026-07-20T09:00:00Z"
           end="2026-07-20T09:30:00Z" interactive disabled onClick={() => { blocked = true; }} {...CHIP} />);
         assert.equal(off.firstElementChild!.getAttribute('aria-disabled'), 'true',
-          'a disabled chip must say so through aria-disabled, keeping its place in the grid\'s ArenaTab sequence');
+          'a disabled chip must say so through aria-disabled, keeping its place in the grid\'s Tab sequence');
         act(() => { (off.firstElementChild as HTMLElement).click(); });
         assert.equal(blocked, false, 'a disabled chip still reported through onClick');
 

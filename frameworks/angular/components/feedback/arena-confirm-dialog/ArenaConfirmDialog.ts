@@ -14,11 +14,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { arenaConfirmDialogStyles } from './ArenaConfirmDialog.variants';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
+import { type FocusTrapState, arenaHandleOpenTransition, arenaTrapTabKey } from '../../../FocusTrap';
 
 let nextId = 0;
 
-export function isConfirmLocked(required: string | undefined, typed: string): boolean {
+export function isArenaConfirmLocked(required: string | undefined, typed: string): boolean {
   return required !== undefined && required !== '' && typed.trim() !== required;
 }
 
@@ -85,7 +85,7 @@ export class ArenaConfirmDialog {
   protected readonly descId = `${this.uid}-body`;
 
   protected readonly typed = signal('');
-  protected readonly locked = computed(() => isConfirmLocked(this.requireText(), this.typed()));
+  protected readonly locked = computed(() => isArenaConfirmLocked(this.requireText(), this.typed()));
   protected readonly styles = computed(() => arenaConfirmDialogStyles({
     destructive: this.destructive(),
     invalid: this.locked() && this.typed().length > 0,
@@ -98,7 +98,7 @@ export class ArenaConfirmDialog {
     afterRenderEffect(() => {
       const isOpen = this.open();
       untracked(() => {
-        handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
+        arenaHandleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
       });
     });
   }
@@ -116,7 +116,7 @@ export class ArenaConfirmDialog {
     }
     if (event.key === 'Tab') {
       const panel = this.panel()?.nativeElement;
-      if (panel) trapTabKey(panel, event, this.doc.activeElement);
+      if (panel) arenaTrapTabKey(panel, event, this.doc.activeElement);
     }
   }
 }

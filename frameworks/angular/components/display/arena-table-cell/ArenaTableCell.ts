@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import type { ArenaTableColumn } from '../../../Api.generated';
-import { TableState } from '../arena-table/TableState';
-import { TableRowState } from '../arena-table-row/TableRowState';
+import { ArenaTableState } from '../arena-table/ArenaTableState';
+import { ArenaTableRowState } from '../arena-table-row/ArenaTableRowState';
 import { arenaTableCellStyles } from './ArenaTableCell.variants';
 
 const PLAIN: ArenaTableColumn = { header: '' };
@@ -25,8 +25,8 @@ const PLAIN: ArenaTableColumn = { header: '' };
   `,
 })
 export class ArenaTableCell {
-  private readonly table = inject(TableState);
-  private readonly row = inject(TableRowState);
+  private readonly table = inject(ArenaTableState);
+  private readonly row = inject(ArenaTableRowState);
 
   protected readonly columnIndex = computed(() => this.row.columnIndexOf(this));
 

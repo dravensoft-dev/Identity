@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { arenaSkeletonStyles } from './ArenaSkeleton.variants';
 import type { ArenaSkeletonVariant } from '../../../Api.generated';
 
-export function skeletonRowSlot(row: number, total: number): 'line' | 'lastLine' {
+export function arenaSkeletonRowSlot(row: number, total: number): 'line' | 'lastLine' {
   return row === total && total > 1 ? 'lastLine' : 'line';
 }
 
@@ -42,7 +42,7 @@ export class ArenaSkeleton {
   protected readonly stacked = computed(() => this.variant() === 'text');
   protected readonly rows = computed(() => Array.from({ length: this.lines() }, (_, i) => i + 1));
   protected readonly hostClass = computed(() => (this.stacked() ? this.styles().stack() : this.styles().root()));
-  protected readonly rowSlot = skeletonRowSlot;
+  protected readonly rowSlot = arenaSkeletonRowSlot;
 
   protected readonly diameter = computed<string | undefined>(() => this.height() || this.width());
   protected readonly hostWidth = computed<string | undefined>(() =>

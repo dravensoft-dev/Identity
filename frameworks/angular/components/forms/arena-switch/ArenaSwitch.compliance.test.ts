@@ -197,7 +197,7 @@ test('disabled reflects onto the native attribute and blocks activation', () => 
   try {
     assert.equal(control.disabled, true);
     assert.ok(control.hasAttribute('disabled'),
-      'the attribute is what the track\'s disabled: cursor matches and what removes it from the ArenaTab sequence');
+      'the attribute is what the track\'s disabled: cursor matches and what removes it from the Tab sequence');
     control.click();
     fixture.detectChanges();
     assert.equal(fixture.componentInstance.on, 0);

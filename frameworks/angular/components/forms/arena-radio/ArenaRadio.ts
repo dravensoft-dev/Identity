@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, Component, booleanAttribute, computed, inject, input,
 } from '@angular/core';
-import { RadioGroupState } from '../arena-radio-group/RadioGroupState';
+import { ArenaRadioGroupState } from '../arena-radio-group/ArenaRadioGroupState';
 import { arenaRadioStyles } from './ArenaRadio.variants';
 
 @Component({
@@ -42,7 +42,7 @@ export class ArenaRadio {
   /** Blocks selection and dims the option. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  private readonly group = inject(RadioGroupState);
+  private readonly group = inject(ArenaRadioGroupState);
 
   protected readonly groupName = computed(() => this.group.groupName());
   protected readonly checked = computed(() => this.group.selected() === this.value());

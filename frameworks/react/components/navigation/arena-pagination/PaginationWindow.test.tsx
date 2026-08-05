@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pageWindow } from './PaginationWindow.ts';
+import { arenaPageWindow } from './PaginationWindow.ts';
 import { limitPaginationSiblings } from '../../../Tokens.generated.js';
 
 test('the pinned windows are written for a sibling count of one', () => {
@@ -8,18 +8,18 @@ test('the pinned windows are written for a sibling count of one', () => {
 });
 
 test('seven pages fit whole, and eight do not', () => {
-  assert.deepEqual(pageWindow(1, 7), [1, 2, 3, 4, 5, 6, 7]);
-  assert.ok(pageWindow(1, 8).includes('…'));
+  assert.deepEqual(arenaPageWindow(1, 7), [1, 2, 3, 4, 5, 6, 7]);
+  assert.ok(arenaPageWindow(1, 8).includes('…'));
 });
 
 test('a window in the middle elides on both sides', () => {
-  assert.deepEqual(pageWindow(10, 20), [1, '…', 9, 10, 11, '…', 20]);
+  assert.deepEqual(arenaPageWindow(10, 20), [1, '…', 9, 10, 11, '…', 20]);
 });
 
 test('a window at the start elides on the right only', () => {
-  assert.deepEqual(pageWindow(1, 20), [1, 2, '…', 20]);
+  assert.deepEqual(arenaPageWindow(1, 20), [1, 2, '…', 20]);
 });
 
 test('a window at the end elides on the left only', () => {
-  assert.deepEqual(pageWindow(20, 20), [1, '…', 19, 20]);
+  assert.deepEqual(arenaPageWindow(20, 20), [1, '…', 19, 20]);
 });

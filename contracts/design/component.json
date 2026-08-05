@@ -9,7 +9,7 @@
     },
     "gutter-w": {
       "$value": { "value": 56, "unit": "px" },
-      "$description": "The width of the hour-label gutter down the left of the grid.\nScript-readable because the width term of showsTime() subtracts it from the\nmeasured container to get the grid's width, and no CSS expression hands a\nnumber to JS. It was calc(var(--sp-1) * 14) rendered inline: the same value in\ntwo idioms with nothing holding them in step. One token now, read both ways.",
+      "$description": "The width of the hour-label gutter down the left of the grid.\nScript-readable because the width term of arenaShowsTime() subtracts it from the\nmeasured container to get the grid's width, and no CSS expression hands a\nnumber to JS. It was calc(var(--sp-1) * 14) rendered inline: the same value in\ntwo idioms with nothing holding them in step. One token now, read both ways.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "time-min-h": {

@@ -7,8 +7,8 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from '../../../test/Harness.tsx';
-import { ArenaTable, parseSortOption, sortOptionValue } from './ArenaTable.tsx';
-import { forgetWarnings } from '../../../WarnOnce.ts';
+import { ArenaTable, arenaParseSortOption, arenaSortOptionValue } from './ArenaTable.tsx';
+import { forgetArenaWarnings } from '../../../WarnOnce.ts';
 import { ArenaTableRow } from '../arena-table-row/ArenaTableRow.tsx';
 import { ArenaTableCell } from '../arena-table-cell/ArenaTableCell.tsx';
 import type { ArenaTableColumn, ArenaTableSort, ArenaTableSortControl } from '../../../Api.generated';
@@ -58,11 +58,11 @@ function render(options: {
 }
 
 test('the option value round-trips, so the control edits the same ArenaTableSort the header does', () => {
-  assert.equal(sortOptionValue(2, 'desc'), '2:desc');
-  assert.deepEqual(parseSortOption('2:desc'), { column: 2, direction: 'desc' });
-  assert.deepEqual(parseSortOption('0:asc'), { column: 0, direction: 'asc' });
-  assert.equal(parseSortOption('2:sideways'), null);
-  assert.equal(parseSortOption('nope:asc'), null);
+  assert.equal(arenaSortOptionValue(2, 'desc'), '2:desc');
+  assert.deepEqual(arenaParseSortOption('2:desc'), { column: 2, direction: 'desc' });
+  assert.deepEqual(arenaParseSortOption('0:asc'), { column: 0, direction: 'asc' });
+  assert.equal(arenaParseSortOption('2:sideways'), null);
+  assert.equal(arenaParseSortOption('nope:asc'), null);
 });
 
 test('card mode draws a sort control, and picking one reports the same sortChange a header would', () => {
@@ -111,7 +111,7 @@ test('a sort aimed at a column that is not sortable warns once, instead of drawi
   const original = console.warn;
   console.warn = (...args: unknown[]) => { messages.push(args.map(String).join(' ')); };
   try {
-    forgetWarnings();
+    forgetArenaWarnings();
     render({ sort: { column: 1, direction: 'asc' } });
     assert.equal(messages.length, 1,
       'no caret, no target and no message is the silent way to be misconfigured');
@@ -124,6 +124,6 @@ test('a sort aimed at a column that is not sortable warns once, instead of drawi
     assert.equal(messages.length, 1, 'once per message, not once per render');
   } finally {
     console.warn = original;
-    forgetWarnings();
+    forgetArenaWarnings();
   }
 });

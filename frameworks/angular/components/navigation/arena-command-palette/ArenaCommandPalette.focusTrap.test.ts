@@ -4,7 +4,7 @@ ensureDom();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assertNotSameNode, assertSameNode } from '../../../test/NodeAssert';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
+import { type FocusTrapState, arenaHandleOpenTransition, arenaTrapTabKey } from '../../../FocusTrap';
 
 function buildPalettePanel(rowCount: number): { panel: HTMLElement; input: HTMLElement; rows: HTMLElement[] } {
   const panel = document.createElement('div');
@@ -33,7 +33,7 @@ test('opening the palette moves DOM focus into the search input, with no relianc
 
   const { panel, input } = buildPalettePanel(3);
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
-  handleOpenTransition(state, true, panel, document.activeElement);
+  arenaHandleOpenTransition(state, true, panel, document.activeElement);
 
   assertSameNode(document.activeElement, input, 'opening must move focus into the search input, never into a tabindex="-1" row');
 });
@@ -45,31 +45,31 @@ test('closing the palette restores focus to whatever opened it, which is beyond 
 
   const { panel } = buildPalettePanel(2);
   const state: FocusTrapState = { wasOpen: false, restoreTo: null };
-  handleOpenTransition(state, true, panel, document.activeElement);
-  handleOpenTransition(state, false, panel, document.activeElement);
+  arenaHandleOpenTransition(state, true, panel, document.activeElement);
+  arenaHandleOpenTransition(state, false, panel, document.activeElement);
 
   assertSameNode(document.activeElement, trigger, 'closing must restore focus to the element that opened the palette');
 });
 
-test('ArenaTab from the search input is trapped in place -- there is no other legal ArenaTab stop in the panel', () => {
+test('Tab from the search input is trapped in place -- there is no other legal Tab stop in the panel', () => {
   const { panel, input } = buildPalettePanel(3);
   input.focus();
   const event = keydownTab(false);
-  trapTabKey(panel, event, document.activeElement);
-  assertSameNode(document.activeElement, input, 'ArenaTab must not move focus off the search input');
+  arenaTrapTabKey(panel, event, document.activeElement);
+  assertSameNode(document.activeElement, input, 'Tab must not move focus off the search input');
   assert.ok(event.defaultPrevented, 'the key must be consumed, or the browser would move focus to the page behind the scrim');
 });
 
-test('Shift+ArenaTab from the search input is trapped the same way', () => {
+test('Shift+Tab from the search input is trapped the same way', () => {
   const { panel, input } = buildPalettePanel(3);
   input.focus();
   const event = keydownTab(true);
-  trapTabKey(panel, event, document.activeElement);
+  arenaTrapTabKey(panel, event, document.activeElement);
   assertSameNode(document.activeElement, input);
   assert.ok(event.defaultPrevented);
 });
 
-test('ArenaTab can never reach a control behind the scrim -- the exact failure the review named', () => {
+test('Tab can never reach a control behind the scrim -- the exact failure the review named', () => {
   const behind = document.createElement('button');
   behind.textContent = 'page control behind the scrim';
   document.body.appendChild(behind);
@@ -77,7 +77,7 @@ test('ArenaTab can never reach a control behind the scrim -- the exact failure t
   const { panel, input } = buildPalettePanel(2);
   input.focus();
   const event = keydownTab(false);
-  trapTabKey(panel, event, document.activeElement);
+  arenaTrapTabKey(panel, event, document.activeElement);
 
   assertNotSameNode(document.activeElement, behind, 'focus must never escape to a control behind the scrim');
   assertSameNode(document.activeElement, input);

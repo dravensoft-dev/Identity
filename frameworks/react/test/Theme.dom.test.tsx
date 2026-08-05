@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFAULT_THEMES, arenaThemeClass, initArenaTheme, getArenaTheme, setArenaTheme,
+  ARENA_DEFAULT_THEMES, arenaThemeClass, initArenaTheme, getArenaTheme, setArenaTheme,
   toggleArenaTheme, arenaPalettes,
 } from '../Theme.ts';
 import type { ArenaThemeConfig } from '../Theme.ts';
@@ -26,7 +26,7 @@ function clean() {
 test('the shipped default is dark and light, which is what the package carries', () => {
   clean();
   initArenaTheme();
-  assert.deepEqual(arenaPalettes(), DEFAULT_THEMES.palettes);
+  assert.deepEqual(arenaPalettes(), ARENA_DEFAULT_THEMES.palettes);
   clean();
 });
 

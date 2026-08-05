@@ -75,7 +75,7 @@ family draws one. The category is the one
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
 **A compound family pushes nothing, so its recursive case costs no helper.** `ArenaSideNav` nests to
-any depth because each container re-provides `SideNavState` at `depth + 1` and a row **pulls**
+any depth because each container re-provides `ArenaSideNavState` at `depth + 1` and a row **pulls**
 the nearest, which is the whole mechanism: an item reads its own indent from the injector rather
 than being handed one. A consumer's own wrapper component between two levels is therefore
 harmless here, since it interrupts nothing that travels. **The coordination is a member of no
@@ -100,7 +100,7 @@ Some files at the layer root are not components, and each sits at the narrowest 
 contains all of its consumers rather than in one shared bucket. **List them rather than trusting
 this paragraph**, with `ls *.ts | grep -v generated`; what follows is why the interesting ones
 are where they are:
-`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
+`ContainerSize.ts` (the host element's width as a signal, plus `arenaReadBreakpoint`, which **warns
 once per name when a breakpoint token does not resolve and never caches the failure**: every
 comparison against `NaN` is false, so a silent one leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on
 their wide branch on a phone with nothing reported, plus `forgetArenaBreakpoints`, which drops what
@@ -148,7 +148,7 @@ given. `arenaViewportBelow` measures the viewport, which is what a page layout n
 writing CSS in a `styles:` block cannot get any other way: a media query condition holds no
 `var()`, so the threshold cannot be named from a stylesheet at all. It returns a signal over
 `not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
-`max-width` an epsilon short of it, and it warns through the same `readBreakpoint` when the
+`max-width` an epsilon short of it, and it warns through the same `arenaReadBreakpoint` when the
 token does not resolve. **Reach for it for a page's own layout and never for a component's**: a
 component that branches on the viewport is wrong the first time somebody puts it in a narrow
 column.

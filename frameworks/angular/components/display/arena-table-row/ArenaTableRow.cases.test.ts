@@ -1,7 +1,7 @@
-/* The per-case suite this row's binding requires. The row injects TableState, so it cannot be
+/* The per-case suite this row's binding requires. The row injects ArenaTableState, so it cannot be
  * rendered alone -- every case mounts a real arena-table around it. Reaching the card shape
  * needs the same two levers ArenaTable.cases.test.ts uses and for the same reasons: happy-dom ships
- * no ResizeObserver that ever fires, and readBreakpoint reads --bp-md through getComputedStyle,
+ * no ResizeObserver that ever fires, and arenaReadBreakpoint reads --bp-md through getComputedStyle,
  * which is empty here. Both are set below and undone in a finally, because the document and the
  * breakpoint cache are shared by the whole run -- 768 is the value the cache already holds.
  * `activated` counts what a CONSUMER hears: Angular installs BOTH a DOM listener and an output
@@ -126,7 +126,7 @@ test('arena-table-row meets all three of its declared shapes', async () => {
         'card-interactive': () => {
           const el = rowOf(interactive);
           assert.equal(el.getAttribute('role'), 'button', 'an interactive card row is a button');
-          assert.equal(el.getAttribute('tabindex'), '0', 'a card row is reached by ArenaTab, unlike the wide row');
+          assert.equal(el.getAttribute('tabindex'), '0', 'a card row is reached by Tab, unlike the wide row');
           assert.match(el.textContent ?? '', /checkout-api/,
             'the button pattern accepts text content as its name, and the cells are that text');
 

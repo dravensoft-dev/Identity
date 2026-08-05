@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, Component, computed, inject, input,
 } from '@angular/core';
-import { TabsState } from '../arena-tabs/TabsState';
+import { ArenaTabsState } from '../arena-tabs/ArenaTabsState';
 import { arenaTabStyles } from './ArenaTab.variants';
 
 @Component({
@@ -23,7 +23,7 @@ export class ArenaTab {
   /** What the tab reads. Arena draws the button; the consumer names it. */
   readonly label = input.required<string>();
 
-  private readonly tabs = inject(TabsState);
+  private readonly tabs = inject(ArenaTabsState);
 
   protected readonly selected = computed(() => this.tabs.selected() === this.value());
   protected readonly panelId = computed(() => this.tabs.panelId(this.value()));

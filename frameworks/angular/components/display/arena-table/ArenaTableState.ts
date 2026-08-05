@@ -12,7 +12,7 @@ export interface RowEntry {
 }
 
 @Injectable()
-export class TableState {
+export class ArenaTableState {
   columns: Signal<readonly ArenaTableColumn[]> = signal([]);
   narrow: Signal<boolean> = signal(false);
   rows: Signal<readonly object[]> = signal([]);

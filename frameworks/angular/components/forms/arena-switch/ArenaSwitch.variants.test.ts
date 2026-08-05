@@ -6,7 +6,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { footprintFor, thumbFor } from './ArenaSwitch';
+import { arenaFootprintFor, arenaThumbFor } from './ArenaSwitch';
 import { arenaSwitchStyles } from './ArenaSwitch.variants';
 
 const SIZES = ['sm', 'md', 'lg', 'xl', '2xl'] as const;

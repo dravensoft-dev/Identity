@@ -1,5 +1,5 @@
 /* Grouping must not disturb the flat index the roving cursor and aria-activedescendant are
- * keyed by, so the order is settled once, in orderCommands, and everything else reads it.
+ * keyed by, so the order is settled once, in arenaOrderCommands, and everything else reads it.
  * Ungrouped first is the caller's escape hatch: a palette of four concatenated collections
  * has one list that belongs to none of them. */
 
@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ArenaCommandPalette, capCommands, orderCommands, commandGroups } from './ArenaCommandPalette.tsx';
+import { ArenaCommandPalette, arenaCapCommands, arenaOrderCommands, arenaCommandGroups } from './ArenaCommandPalette.tsx';
 import type { ArenaCommand } from '../../../Api.generated';
 
 const COMMANDS: ArenaCommand[] = [
@@ -20,13 +20,13 @@ const COMMANDS: ArenaCommand[] = [
 
 test('ungrouped commands come first, then each group in the order it first appears', () => {
   assert.deepEqual(
-    orderCommands(COMMANDS).map((c) => c.id),
+    arenaOrderCommands(COMMANDS).map((c) => c.id),
     ['help', 'about', 'sale', 'pay', 'acme'],
   );
 });
 
 test('a group is one contiguous run, and every row keeps its index in the ordered list', () => {
-  const groups = commandGroups(orderCommands(COMMANDS));
+  const groups = arenaCommandGroups(arenaOrderCommands(COMMANDS));
   assert.deepEqual(groups.map((g) => g.name), [null, 'Actions', 'Customers']);
   assert.deepEqual(groups.flatMap((g) => g.rows.map((r) => r.index)), [0, 1, 2, 3, 4],
     'the index is what the roving cursor and aria-activedescendant are keyed by, so it must '
@@ -35,7 +35,7 @@ test('a group is one contiguous run, and every row keeps its index in the ordere
 
 test('a list with no groups at all is one unnamed run, which is the shape it always had', () => {
   const flat: ArenaCommand[] = [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }];
-  const groups = commandGroups(orderCommands(flat));
+  const groups = arenaCommandGroups(arenaOrderCommands(flat));
   assert.equal(groups.length, 1);
   assert.equal(groups[0]?.name, null);
 });
@@ -61,10 +61,10 @@ test('a command with no route is still a button, so nothing navigates by acciden
 });
 
 test('maxResults caps the matches, and the cap runs after the search rather than before it', () => {
-  assert.deepEqual([...capCommands(COMMANDS, 2)].map((c) => c.id), ['sale', 'help'],
+  assert.deepEqual([...arenaCapCommands(COMMANDS, 2)].map((c) => c.id), ['sale', 'help'],
     'the cap takes the first N of what the query matched, in the order the caller passed');
-  assert.equal(capCommands(COMMANDS, undefined).length, COMMANDS.length, 'absent means no ceiling');
-  assert.equal(capCommands(COMMANDS, 0).length, 0, 'zero is a ceiling of zero, not an absent one');
+  assert.equal(arenaCapCommands(COMMANDS, undefined).length, COMMANDS.length, 'absent means no ceiling');
+  assert.equal(arenaCapCommands(COMMANDS, 0).length, 0, 'zero is a ceiling of zero, not an absent one');
 });
 
 test('a capped palette renders the cap, and still groups what is left', () => {

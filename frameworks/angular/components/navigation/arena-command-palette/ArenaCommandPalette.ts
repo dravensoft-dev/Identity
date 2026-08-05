@@ -16,21 +16,21 @@ import {
 } from '@angular/core';
 import { arenaCommandPaletteStyles } from './ArenaCommandPalette.variants';
 import { isArenaPrimaryActivation } from '../../../AnchorActivation';
-import { type FocusTrapState, handleOpenTransition, trapTabKey } from '../../../FocusTrap';
+import { type FocusTrapState, arenaHandleOpenTransition, arenaTrapTabKey } from '../../../FocusTrap';
 import type { ArenaCommand } from '../../../Api.generated';
 
 let nextId = 0;
 
-export function filterCommands(commands: readonly ArenaCommand[], query: string): ArenaCommand[] {
+export function arenaFilterCommands(commands: readonly ArenaCommand[], query: string): ArenaCommand[] {
   const needle = query.toLowerCase();
   return commands.filter((command) => `${command.label} ${command.hint ?? ''}`.toLowerCase().includes(needle));
 }
 
-export function capCommands(commands: readonly ArenaCommand[], max: number | undefined): readonly ArenaCommand[] {
+export function arenaCapCommands(commands: readonly ArenaCommand[], max: number | undefined): readonly ArenaCommand[] {
   return max === undefined || max < 0 ? commands : commands.slice(0, max);
 }
 
-export function orderCommands(commands: readonly ArenaCommand[]): ArenaCommand[] {
+export function arenaOrderCommands(commands: readonly ArenaCommand[]): ArenaCommand[] {
   const names: string[] = [];
   for (const command of commands) {
     if (command.group && !names.includes(command.group)) names.push(command.group);
@@ -46,13 +46,13 @@ export interface CommandRow {
   index: number;
 }
 
-export interface CommandGroup {
+export interface ArenaCommandGroup {
   name: string | null;
   rows: CommandRow[];
 }
 
-export function commandGroups(ordered: readonly ArenaCommand[]): CommandGroup[] {
-  const groups: CommandGroup[] = [];
+export function arenaCommandGroups(ordered: readonly ArenaCommand[]): ArenaCommandGroup[] {
+  const groups: ArenaCommandGroup[] = [];
   ordered.forEach((command, index) => {
     const name = command.group ?? null;
     const last = groups[groups.length - 1];
@@ -62,23 +62,23 @@ export function commandGroups(ordered: readonly ArenaCommand[]): CommandGroup[] 
   return groups;
 }
 
-export function nextActiveIndex(current: number, key: 'ArrowDown' | 'ArrowUp', count: number): number {
+export function arenaNextActiveIndex(current: number, key: 'ArrowDown' | 'ArrowUp', count: number): number {
   if (count === 0) return 0;
   const last = count - 1;
   return key === 'ArrowDown' ? Math.min(current + 1, last) : Math.max(current - 1, 0);
 }
 
-export function scrollRowIntoView(list: HTMLElement, index: number): void {
+export function arenaScrollRowIntoView(list: HTMLElement, index: number): void {
   const row = list.children.item(index);
   if (row instanceof HTMLElement) row.scrollIntoView({ block: 'nearest' });
 }
 
-export function optionRowId(uid: string, index: number): string {
+export function arenaOptionRowId(uid: string, index: number): string {
   return `${uid}-option-${index}`;
 }
 
-export function activeOptionId(uid: string, active: number, rowCount: number): string | undefined {
-  return active >= 0 && active < rowCount ? optionRowId(uid, active) : undefined;
+export function arenaActiveOptionId(uid: string, active: number, rowCount: number): string | undefined {
+  return active >= 0 && active < rowCount ? arenaOptionRowId(uid, active) : undefined;
 }
 
 @Component({
@@ -166,16 +166,16 @@ export class ArenaCommandPalette {
   protected readonly query = signal('');
   protected readonly active = signal(0);
   protected readonly styles = computed(() => arenaCommandPaletteStyles({ open: this.open() }));
-  protected readonly filtered = computed(() => orderCommands(
-    capCommands(filterCommands(this.commands(), this.query()), this.maxResults()),
+  protected readonly filtered = computed(() => arenaOrderCommands(
+    arenaCapCommands(arenaFilterCommands(this.commands(), this.query()), this.maxResults()),
   ));
 
-  protected readonly groups = computed(() => commandGroups(this.filtered()));
+  protected readonly groups = computed(() => arenaCommandGroups(this.filtered()));
 
   private readonly doc = inject(DOCUMENT);
   private readonly uid = `arena-command-palette-${nextId++}`;
   protected readonly listboxId = `${this.uid}-listbox`;
-  protected readonly activeId = computed(() => activeOptionId(this.uid, this.active(), this.filtered().length));
+  protected readonly activeId = computed(() => arenaActiveOptionId(this.uid, this.active(), this.filtered().length));
 
   private readonly list = viewChild<ElementRef<HTMLElement>>('list');
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
@@ -192,7 +192,7 @@ export class ArenaCommandPalette {
     afterRenderEffect(() => {
       const isOpen = this.open();
       untracked(() => {
-        handleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
+        arenaHandleOpenTransition(this.focusTrap, isOpen, this.panel()?.nativeElement ?? null, this.doc.activeElement);
       });
     });
     afterRenderEffect(() => {
@@ -200,13 +200,13 @@ export class ArenaCommandPalette {
       const hasRows = this.filtered().length > 0;
       untracked(() => {
         const list = this.list()?.nativeElement;
-        if (list && hasRows) scrollRowIntoView(list, index);
+        if (list && hasRows) arenaScrollRowIntoView(list, index);
       });
     });
   }
 
   protected optionId(index: number): string {
-    return optionRowId(this.uid, index);
+    return arenaOptionRowId(this.uid, index);
   }
 
   protected onQuery(event: Event): void {
@@ -221,7 +221,7 @@ export class ArenaCommandPalette {
   protected onKey(event: KeyboardEvent): void {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
-      this.active.update((current) => nextActiveIndex(current, event.key as 'ArrowDown' | 'ArrowUp', this.filtered().length));
+      this.active.update((current) => arenaNextActiveIndex(current, event.key as 'ArrowDown' | 'ArrowUp', this.filtered().length));
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const command = this.filtered()[this.active()];
@@ -231,7 +231,7 @@ export class ArenaCommandPalette {
       this.close.emit();
     } else if (event.key === 'Tab') {
       const panel = this.panel()?.nativeElement;
-      if (panel) trapTabKey(panel, event, this.doc.activeElement);
+      if (panel) arenaTrapTabKey(panel, event, this.doc.activeElement);
     }
   }
 

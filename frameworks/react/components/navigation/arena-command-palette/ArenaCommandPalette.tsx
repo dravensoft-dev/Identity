@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { isArenaPrimaryActivation } from '../../../AnchorActivation.ts';
-import { trapTabKey } from '../../../UseDialogModal.ts';
+import { arenaTrapTabKey } from '../../../UseDialogModal.ts';
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
 import manifest from './ArenaCommandPalette.classes.generated.ts';
 
@@ -34,11 +34,11 @@ const paletteStyles = arenaStyles(manifest);
 
 let nextId = 0;
 
-export function capCommands(commands: readonly ArenaCommand[], max: number | undefined): readonly ArenaCommand[] {
+export function arenaCapCommands(commands: readonly ArenaCommand[], max: number | undefined): readonly ArenaCommand[] {
   return max === undefined || max < 0 ? commands : commands.slice(0, max);
 }
 
-export function orderCommands(commands: readonly ArenaCommand[]): ArenaCommand[] {
+export function arenaOrderCommands(commands: readonly ArenaCommand[]): ArenaCommand[] {
   const names: string[] = [];
   for (const command of commands) {
     if (command.group && !names.includes(command.group)) names.push(command.group);
@@ -49,13 +49,13 @@ export function orderCommands(commands: readonly ArenaCommand[]): ArenaCommand[]
   ];
 }
 
-export interface CommandGroup {
+export interface ArenaCommandGroup {
   name: string | null;
   rows: { command: ArenaCommand; index: number }[];
 }
 
-export function commandGroups(ordered: readonly ArenaCommand[]): CommandGroup[] {
-  const groups: CommandGroup[] = [];
+export function arenaCommandGroups(ordered: readonly ArenaCommand[]): ArenaCommandGroup[] {
+  const groups: ArenaCommandGroup[] = [];
   ordered.forEach((command, index) => {
     const name = command.group ?? null;
     const last = groups[groups.length - 1];
@@ -76,11 +76,11 @@ export function ArenaCommandPalette({ open, commands, placeholder = 'Search for 
   if (uid.current === null) uid.current = `arena-command-palette-${nextId++}`;
   const listboxId = `${uid.current}-listbox`;
   const optionId = (index: number) => `${uid.current}-option-${index}`;
-  const filtered = orderCommands(capCommands(
+  const filtered = arenaOrderCommands(arenaCapCommands(
     commands.filter((c) => (c.label + ' ' + (c.hint || '')).toLowerCase().includes(q.toLowerCase())),
     maxResults,
   ));
-  const groups = commandGroups(filtered);
+  const groups = arenaCommandGroups(filtered);
   useEffect(() => { if (open) { setQ(''); setI(0); setTimeout(() => inputRef.current && inputRef.current.focus(), 0); } }, [open]);
   useEffect(() => { setI(0); }, [q]);
   if (!open) return null;
@@ -92,7 +92,7 @@ export function ArenaCommandPalette({ open, commands, placeholder = 'Search for 
     else if (e.key === 'Escape') { e.preventDefault(); onClose && onClose(); }
   };
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Tab' && panelRef.current) trapTabKey(panelRef.current, e, document.activeElement);
+    if (e.key === 'Tab' && panelRef.current) arenaTrapTabKey(panelRef.current, e, document.activeElement);
   };
   const styles = paletteStyles({ open: true });
   return (

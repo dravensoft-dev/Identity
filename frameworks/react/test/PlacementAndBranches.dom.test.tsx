@@ -95,7 +95,7 @@ test('ArrowRight steps from the chip body to its kebab, and ArrowLeft steps back
   const kebab = kebabOf(c);
   assert.ok(body && kebab, 'the fixture did not render both a body and a kebab');
   assert.equal(kebab.getAttribute('tabindex'), '-1',
-    'the kebab is in the page ArenaTab sequence -- focus.roving would be false');
+    'the kebab is in the page Tab sequence -- focus.roving would be false');
 
   act(() => { body.focus(); });
   press(body, 'ArrowRight');

@@ -40,7 +40,7 @@ which is what that name means everywhere else in this library. `showPercentage` 
 - Don't expect the bar to narrate every step. It carries `aria-live="polite"` because
   `role="progressbar"` has no implicit live region, and the percentage is repeated inside that
   region as visually-hidden text so the announcement is an ordinary content change rather than
-  an attribute-only one, but a bar that ticks continuously is chatty by construction. Announce
+  an attribute-only one, but a bar that arenaTicks continuously is chatty by construction. Announce
   a milestone that matters with an `ArenaToast`.
 - Don't read `showPercentage={false}` as silence. It drops the number beside the label; the
   region keeps its own copy, because hiding a number visually is a layout choice and not a

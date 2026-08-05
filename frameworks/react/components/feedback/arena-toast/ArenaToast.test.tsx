@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { ArenaToast, TOAST_DISMISS } from './ArenaToast.tsx';
+import { ArenaToast, ARENA_TOAST_DISMISS } from './ArenaToast.tsx';
 import { dismissDefault, dismissActionable } from '../../../Tokens.generated.js';
 
 test('actionLabel renders a real button carrying that label', () => {
@@ -66,8 +66,8 @@ test('ArenaToast drops a consumer attribute -- no {...rest} spread reaches the r
   assert.doesNotMatch(html, /data-stray/, 'a consumer attribute reached the rendered root -- a {...rest} escape is back');
 });
 
-test('TOAST_DISMISS carries the two token intervals, and the actionable one is the longer', () => {
-  assert.deepEqual({ ...TOAST_DISMISS }, { default: dismissDefault, actionable: dismissActionable });
-  assert.ok(TOAST_DISMISS.actionable > TOAST_DISMISS.default,
+test('ARENA_TOAST_DISMISS carries the two token intervals, and the actionable one is the longer', () => {
+  assert.deepEqual({ ...ARENA_TOAST_DISMISS }, { default: dismissDefault, actionable: dismissActionable });
+  assert.ok(ARENA_TOAST_DISMISS.actionable > ARENA_TOAST_DISMISS.default,
     'a notice carrying a button asks the reader to decide rather than only to read, so it lives longer');
 });

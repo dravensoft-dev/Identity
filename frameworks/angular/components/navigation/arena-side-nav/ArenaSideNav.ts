@@ -1,14 +1,14 @@
 import {
   ChangeDetectionStrategy, Component, computed, inject, input, numberAttribute, output, signal,
 } from '@angular/core';
-import { SideNavState } from './SideNavState';
+import { ArenaSideNavState } from './ArenaSideNavState';
 import { arenaSideNavStyles } from './ArenaSideNav.variants';
 
 @Component({
   selector: 'arena-side-nav',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [SideNavState],
+  providers: [ArenaSideNavState],
   host: {
     '[class]': 'styles().root()',
     role: 'navigation',
@@ -26,7 +26,7 @@ export class ArenaSideNav {
   /** An item was activated, carrying its id. It carries the id alone, on the ArenaBreadcrumbs precedent that the platform event leaves the payload and the item travels by itself, and under the compound shape there is no item datum left to carry either, because the consumer wrote the element and already holds everything on it. Where the item has an href, Arena has already cancelled the anchor by the time this fires, so a listener routes and does not double-navigate; ctrl-click, middle-click and open-in-new-tab are the browser's and fire nothing, so a consumer who wires no listener still has a working column of real links. */
   readonly nav = output<string>();
 
-  private readonly state = inject(SideNavState);
+  private readonly state = inject(ArenaSideNavState);
 
   protected readonly label = computed(() => {
     const name = this.ariaLabel();

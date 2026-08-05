@@ -34,7 +34,7 @@ export const EXCLUDED = new Map([
   ['chart-pad-right', 'script-readable: JS computes SVG positions from it, never a utility'],
   ['chart-pad-bottom', 'script-readable: JS computes SVG positions from it, never a utility'],
   ['chart-pad-left', 'script-readable: JS computes SVG positions from it, never a utility'],
-  ['chart-bar-radius', 'script-readable: passed to barPath(), which builds an SVG path string'],
+  ['chart-bar-radius', 'script-readable: passed to arenaBarPath(), which builds an SVG path string'],
   ['chart-bar-gap', 'script-readable: subtracted from the per-bar step width'],
   ['chart-point-r', 'script-readable: an SVG circle r attribute computed per point'],
   ['chart-point-r-hover', 'script-readable: an SVG circle r attribute computed per point'],
