@@ -23,9 +23,9 @@
       defined and a re-skin never touches. Clearing is what makes the
       utility surface exactly Arena's language and nothing else.
 
-   scripts/check/tailwind/check-tailwind.mjs compiles this file with the component manifests
+   scripts/check/tailwind/check-tailwind.ts compiles this file with the component manifests
    as content and asserts every key still resolves to a real Arena token;
-   scripts/check/tailwind/check-tailwind-coverage.mjs asserts no token is missing from it. */
+   scripts/check/tailwind/check-tailwind-coverage.ts asserts no token is missing from it. */
 @import 'tailwindcss';
 @import './Animations.css';
 @import './Numerals.css';

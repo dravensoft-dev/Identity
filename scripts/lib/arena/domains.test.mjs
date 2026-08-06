@@ -23,7 +23,7 @@ test('the five domains are the grid the repository is sorted by, and every layer
 
 test('a script suite is classified by the domain directory it sits in, whatever its phase', () => {
   assert.equal(domainOfTestPath('scripts/lib/arena/domains.test.mjs'), 'arena');
-  assert.equal(domainOfTestPath('scripts/check/tailwind/check-radius-tokens.test.mjs'), 'tailwind');
+  assert.equal(domainOfTestPath('scripts/check/tailwind/check-radius-tokens.test.ts'), 'tailwind');
   assert.equal(domainOfTestPath('scripts/build/react/build-demos.test.mjs'), 'react');
   assert.equal(domainOfTestPath('scripts/generate/core/fetch-fonts.test.mjs'), 'core');
   assert.equal(domainOfTestPath('scripts/ci/arena/summarize-tests.test.mjs'), 'arena');

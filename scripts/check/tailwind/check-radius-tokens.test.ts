@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hasRoundedFull, evaluateManifest, collect, zeroManifestProblem } from './check-radius-tokens.mjs';
+import { hasRoundedFull, evaluateManifest, collect, zeroManifestProblem } from './check-radius-tokens.ts';
 
 test('a plain class string carries no rounded-full', () => {
   assert.equal(hasRoundedFull('size-5 rounded-pill bg-base-300'), false);

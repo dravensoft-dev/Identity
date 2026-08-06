@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { presetTokens, checkCoverage } from './check-tailwind-coverage.mjs';
+import { presetTokens, checkCoverage } from './check-tailwind-coverage.ts';
 
 test('reads the Arena tokens a preset references', () => {
   const css = `@import 'tailwindcss';\n@theme {\n  --color-*: initial;\n  --color-primary: var(--color-primary);\n  --spacing: var(--sp-1);\n  --text-h1: var(--fs-h1);\n}\n`;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   EXTERNAL_PROPERTIES, MANIFEST_FETCH, THEME_NAMESPACES, collect, preludeProblems, propertiesIn,
   selectorsIn, themeLeaks,
-} from './check-component-css.mjs';
+} from './check-component-css.ts';
 import { sheetPath } from '../../build/tailwind/build-tailwind.mjs';
 
 test('the gate runs green over the tree as it stands', () => {

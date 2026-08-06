@@ -26,7 +26,7 @@ new hex and no new value in this folder. Re-skin Arena by swapping
 Every token in `contracts/design-generated/palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and
 `effects.generated.css` reaches a utility, except the ones that cannot. Each of those is
 listed with its own reason in `EXCLUDED` in
-`scripts/check/tailwind/check-tailwind-coverage.mjs`, and the gate fails the build if a
+`scripts/check/tailwind/check-tailwind-coverage.ts`, and the gate fails the build if a
 token is added and reaches nothing, so **run `bun run check:coverage` for the count rather
 than trusting one here**. The reasons fall into three kinds: v4 has no namespace for that
 property (`--dur-*`, `--loop-*`, `--bw-*`, `--focus-*`), the token is script-readable and JS

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { BANNER, generatedPath, drift } from './check-tailwind-generated.mjs';
+import { BANNER, generatedPath, drift } from './check-tailwind-generated.ts';
 
 test('the committed stylesheet carries the generated banner', () => {
   const css = readFileSync(generatedPath(), 'utf8');

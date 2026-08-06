@@ -32,7 +32,7 @@ export function surfaceClasses(classes) {
     .sort();
 }
 
-export function slotClasses(manifest, slot, variant) {
+export function slotClasses(manifest, slot, variant?) {
   const base = manifest.slots?.[slot] ?? '';
   if (!variant) return base;
   const [axis, value] = variant;

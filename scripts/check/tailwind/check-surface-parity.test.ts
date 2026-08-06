@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PAIRS, SURFACE, surfaceClasses, slotClasses, parityProblems } from './check-surface-parity.mjs';
+import { PAIRS, SURFACE, surfaceClasses, slotClasses, parityProblems } from './check-surface-parity.ts';
 
 const CARD = { slots: { root: 'block bg-base-200 border-[length:var(--bw)] rounded-lg overflow-hidden' },
   variants: { accent: { false: { root: 'border-base-300' } } } };

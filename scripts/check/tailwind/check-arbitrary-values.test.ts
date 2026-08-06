@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanText, scanFile, markerAllowlist } from './check-arbitrary-values.mjs';
+import { scanText, scanFile, markerAllowlist } from './check-arbitrary-values.ts';
 
 const found = (s) => scanText(s).map((f) => f.cls);
 
