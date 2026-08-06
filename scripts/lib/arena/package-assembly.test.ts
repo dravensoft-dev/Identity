@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, sep } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import {
   EXCLUDED_NAMES, EXCLUDED_PATTERNS, CSS_CHAIN, arenaCssHeader, excluded,
   collectFiles, reset, write, copyTree, copyCli, CLI_BINS, baseManifest, version, componentSheets, writeCssChain,
@@ -135,6 +135,26 @@ test('every command the manifest declares is copied, flat, and no two of them sh
     assert.equal(existsSync(join(to, target)), true);
   }
   assert.equal(new Set(written).size, written.length, 'bin/ is flat, so a shared filename loses a file');
+  rmSync(to, { recursive: true });
+});
+
+test('what a command ships reaches nothing outside bin/, because scripts/ is not there', () => {
+  const to = mkdtempSync(join(tmpdir(), 'arena-assembly-cli-'));
+  copyCli(to, repoRoot);
+  const escaping: string[] = [];
+  for (const file of collectFiles(to)) {
+    if (!/\.(ts|mjs|js)$/.test(file)) continue;
+    for (const m of readFileSync(file, 'utf8').matchAll(/from\s+'([^']+)'/g)) {
+      const spec = m[1] ?? '';
+      if (spec.startsWith('node:') || !spec.startsWith('.')) continue;
+      if (!spec.startsWith('../')) continue;
+      escaping.push(`${relative(to, file)} imports ${spec}`);
+    }
+  }
+  assert.deepEqual(escaping, [],
+    'the CLI tree is copied whole into bin/ and compiled by nobody, so a specifier that climbs out '
+    + 'of it resolves in this repository and to nothing in the package. It fails at the consumer\'s '
+    + 'first run, which is the one place this repository cannot see.');
   rmSync(to, { recursive: true });
 });
 

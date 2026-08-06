@@ -19,7 +19,6 @@ import type { ComponentMap } from './components.ts';
 import { scan, drawn, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.ts';
 import type { IconScan } from './icon-css.ts';
 import { AUTO, resolve as resolveComponents } from './components.ts';
-import { captured } from '../../../lib/arena/captures.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -125,7 +124,7 @@ export const SHEET_IMPORT = /@import\s+'\.\/([^']+)';/g;
 export function packageSheets(root: string): PackageSheets {
   try {
     const layers = [...readFileSync(join(root, 'arena.css'), 'utf8').matchAll(SHEET_IMPORT)]
-      .map((m) => captured(m));
+      .map((m) => m[1] ?? '');
     const components = readdirSync(join(root, 'css', 'components'))
       .filter((name) => name.endsWith('.css'))
       .map((name) => basename(name, '.css'))
