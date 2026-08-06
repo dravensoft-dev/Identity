@@ -8,6 +8,8 @@ import {
   relativeFrom, themeStep, iconsStep, main, componentMap, USAGE, THEME_SHEET, ICONS_SHEET, COMPONENT_MAP,
 } from './arena-to-prod.ts';
 import { PALETTE_KEYS } from './palette-keys.ts';
+import type { ComponentMap } from './components.ts';
+import type { Environment } from './arena-to-prod.ts';
 
 test('every path has a default, so the bare command is the whole of it', () => {
   const bare = parseArgs([]);
@@ -118,9 +120,9 @@ const options = (root: string, extra: { strict?: boolean; importHeader?: boolean
   ...(extra.importHeader === false ? ['--no-import'] : []),
 ]);
 
-function quietly(run) {
+function quietly(run: () => void) {
   const log = console.log, error = console.error;
-  const said = [];
+  const said: string[] = [];
   console.log = (m) => said.push(m);
   console.error = (m) => said.push(m);
   try { return { code: run(), said }; } finally { console.log = log; console.error = error; }
@@ -186,7 +188,7 @@ test('a scoped run writes the per-component imports and never the barrel', () =>
   rmSync(root, { recursive: true });
 });
 
-const MAP = {
+const MAP: ComponentMap = {
   match: 'selector',
   draws: { 'arena-button': 'button', 'arena-table': 'table', 'arena-bar-chart': null },
   needs: { table: ['pagination', 'select'] },
@@ -212,13 +214,13 @@ test('"auto" writes the sheets the sources draw and the ones Arena draws for the
 test('an element Arena does not ship is reported, and --strict is what makes it fatal', () => {
   const { root: phosphorRootDir, web } = phosphor({ bold: 'Phosphor-Bold' });
   const root = project(auto, { 'app.html': '<arena-widget /><arena-button icon="ph-bold ph-bell" />' });
-  const environment = { packageName: '@dravensoft/arena-react', sheets: SHEETS, map: MAP, phosphor: web, arena: null };
+  const environment: Environment = { packageName: '@dravensoft/arena-react', sheets: SHEETS, map: MAP, phosphor: web, arena: null };
 
   const step = themeStep(options(root), environment);
   assert.equal(step.code, 0);
   assert.ok(step.reports.some((m) => m.includes('arena-widget is not a component this package ships')));
 
-  const argv = (...extra) =>
+  const argv = (...extra: string[]) =>
     ['--config', join(root, 'arena.config.json'), '--src', join(root, 'src'), '-o', join(root, 'src'), ...extra];
   assert.equal(quietly(() => main(argv(), environment)).code, 0, 'it reports rather than refuses');
   assert.equal(quietly(() => main(argv('--strict'), environment)).code, 1);
@@ -382,11 +384,11 @@ test('--strict promotes a report from either step, and neither is fatal without 
   const { root: phosphorRootDir, web } = phosphor({ bold: 'Phosphor-Bold' });
   const dim = structuredClone(readable);
   dim.palettes[0].colors['base-content'] = '#1a1a1a';
-  const environment = { phosphor: web, arena: null, packageName: '@dravensoft/arena-react', sheets: null };
+  const environment: Environment = { phosphor: web, arena: null, packageName: '@dravensoft/arena-react', sheets: null };
 
   const contrast = project(dim);
   const glyph = project(readable, { 'app.html': '<i class="ph-bold ph-nope"></i><i class="ph-bold ph-bell"></i>' });
-  const argv = (root, ...extra) =>
+  const argv = (root: string, ...extra: string[]) =>
     ['--config', join(root, 'arena.config.json'), '--src', join(root, 'src'), '-o', join(root, 'src'), ...extra];
 
   assert.equal(quietly(() => main(argv(contrast), environment)).code, 0);
@@ -412,7 +414,7 @@ test('the package around the command is found by its name, and nothing else is',
   rmSync(root, { recursive: true });
 });
 
-function installed(barrel, components) {
+function installed(barrel: string, components: string[]) {
   const root = mkdtempSync(join(tmpdir(), 'arena-installed-'));
   mkdirSync(join(root, 'css', 'components'), { recursive: true });
   writeFileSync(join(root, 'arena.css'), barrel);

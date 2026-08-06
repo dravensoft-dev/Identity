@@ -14,7 +14,10 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSy
 import { fileURLToPath } from 'node:url';
 import { dirname, basename, join, relative, resolve, sep } from 'node:path';
 import { configProblems, paletteReports, themeCss } from './theme-css.ts';
+import type { ArenaConfig, PackageSheets } from './theme-css.ts';
+import type { ComponentMap } from './components.ts';
 import { scan, drawn, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.ts';
+import type { IconScan } from './icon-css.ts';
 import { AUTO, resolve as resolveComponents } from './components.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -95,7 +98,7 @@ export function hostPackage(dir = here) {
   }
 }
 
-export function hostPackageName(root) {
+export function hostPackageName(root: string) {
   try {
     return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).name;
   } catch {
@@ -105,7 +108,7 @@ export function hostPackageName(root) {
 
 export const SHEET_IMPORT = /@import\s+'\.\/([^']+)';/g;
 
-export function packageSheets(root) {
+export function packageSheets(root: string): PackageSheets {
   try {
     const layers = [...readFileSync(join(root, 'arena.css'), 'utf8').matchAll(SHEET_IMPORT)].map(([, to]) => to);
     const components = readdirSync(join(root, 'css', 'components'))
@@ -118,7 +121,7 @@ export function packageSheets(root) {
   }
 }
 
-export function componentMap(root) {
+export function componentMap(root: string): ComponentMap | null {
   try {
     const map = JSON.parse(readFileSync(join(root, COMPONENT_MAP), 'utf8'));
     return map.match && map.draws ? map : null;
@@ -128,8 +131,8 @@ export function componentMap(root) {
 }
 
 export function sourceFiles(path: string) {
-  const found = [];
-  const walk = (at) => {
+  const found: string[] = [];
+  const walk = (at: string) => {
     for (const entry of readdirSync(at, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (SKIPPED_DIRECTORIES.has(entry.name)) continue;
       const full = join(at, entry.name);
@@ -156,16 +159,17 @@ export function phosphorRoot(from = process.cwd(), fallback = here) {
   return null;
 }
 
-export function relativeFrom(outDir, target) {
+export function relativeFrom(outDir: string, target: string) {
   const path = relative(outDir, target).split(sep).join('/');
   return path.startsWith('.') ? path : `./${path}`;
 }
 
-export function reportLines(reports) {
+export function reportLines(reports: { palette: string; messages: string[] }[]) {
   return reports.flatMap(({ palette, messages }) => messages.map((m) => `${palette}: ${m}`));
 }
 
-export function autoComponents(config, options, map, packageName) {
+export function autoComponents(config: ArenaConfig, options: CliOptions,
+  map: ComponentMap | null, packageName: string) {
   const sources = [];
   for (const path of options.paths) {
     for (const file of sourceFiles(path) ?? []) sources.push(readFileSync(file, 'utf8'));
@@ -191,16 +195,16 @@ export function autoComponents(config, options, map, packageName) {
 
 export function themeStep(
   options: CliOptions & { out?: string },
-  { packageName, sheets, map }: { packageName: string; sheets?: any; map?: any },
+  { packageName, sheets, map }: Pick<Environment, 'packageName' | 'sheets' | 'map'>,
 ) {
   let config;
   try {
     config = JSON.parse(readFileSync(options.config, 'utf8'));
   } catch (error) {
-    return { code: 2, reports: [], fatal: [`cannot read ${options.config}: ${(error as Error).message}`] };
+    return { code: 2, reports: [] as string[], fatal: [`cannot read ${options.config}: ${(error as Error).message}`] };
   }
 
-  const auto = { reports: [], notes: [] };
+  const auto = { reports: [] as string[], notes: [] as string[] };
   if (config.stylesheet?.components === AUTO) {
     if (!map) {
       return { code: 1,
@@ -226,15 +230,16 @@ export function themeStep(
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, css);
 
-  return { code: 0, reports, fatal: [], notes: auto.notes, wrote: `${out} (${css.length} bytes)` };
+  return { code: 0, reports, fatal: [] as string[], notes: auto.notes, wrote: `${out} (${css.length} bytes)` };
 }
 
-export function iconsStep(options, { arena, phosphor }) {
+export function iconsStep(options: CliOptions & { out?: string },
+  { arena, phosphor }: { arena: string | null; phosphor: string | null }) {
   if (!phosphor) {
     return { code: 2, reports: [], fatal: ['cannot find @phosphor-icons/web; it is a peer of this package, so install it'] };
   }
 
-  const found = { pairs: new Map(), loose: new Set() };
+  const found: IconScan = { pairs: new Map(), loose: new Set() };
   const reports = [];
 
   if (arena) {
@@ -287,17 +292,24 @@ export function iconsStep(options, { arena, phosphor }) {
   mkdirSync(outDir, { recursive: true });
   writeFileSync(out, css);
 
-  return { code: 0, reports, fatal: [], wrote: `${out} (${kept} glyph(s), ${sheets.length} weight(s), ${css.length} bytes)` };
+  return { code: 0, reports, fatal: [] as string[], wrote: `${out} (${kept} glyph(s), ${sheets.length} weight(s), ${css.length} bytes)` };
 }
 
-export function main(argv, environment = {}) {
+export type Environment = {
+  packageName?: string;
+  arena?: string | null;
+  phosphor?: string | null;
+  sheets?: PackageSheets;
+  map?: ComponentMap | null;
+};
+
+export function main(argv: string[], environment: Environment = {}) {
   const options = parseArgs(argv);
   if (options.help) { console.log(USAGE); return 0; }
   if (options.error) { console.error(`arena-to-prod: ${options.error}\n\n${USAGE}`); return 2; }
 
   const arena = 'arena' in environment ? environment.arena : hostPackage();
-  const env = environment as { packageName?: string; arena?: string };
-  const packageName = env.packageName
+  const packageName = environment.packageName
     ?? (arena ? hostPackageName(arena) : null)
     ?? '@dravensoft/arena-react';
   const sheets = 'sheets' in environment ? environment.sheets : (arena ? packageSheets(arena) : null);

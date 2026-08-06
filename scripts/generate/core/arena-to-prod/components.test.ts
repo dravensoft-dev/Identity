@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolve, selectorKeys, symbolKeys, namedImports, AUTO } from './components.ts';
+import type { ComponentMap } from './components.ts';
 
-const ANGULAR = {
+const ANGULAR: ComponentMap = {
   match: 'selector',
   draws: {
     'arena-button': 'button',
@@ -15,7 +16,7 @@ const ANGULAR = {
   needs: { table: ['pagination', 'select'] },
 };
 
-const REACT = {
+const REACT: ComponentMap = {
   match: 'symbol',
   draws: { ArenaButton: 'button', ArenaTable: 'table', ArenaTableRow: 'table', ArenaPagination: 'pagination', ArenaSelect: 'select', ArenaBarChart: null },
   needs: { table: ['pagination', 'select'] },

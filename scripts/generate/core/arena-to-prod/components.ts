@@ -12,7 +12,13 @@ export const AUTO = 'auto';
 
 export const SELECTOR_LIKE = /<(arena-[a-z0-9-]+)[\s/>]/g;
 
-export function selectorKeys(map, sources) {
+export type ComponentMap = {
+  match: string;
+  draws: Record<string, string | null>;
+  needs: Record<string, string[]>;
+};
+
+export function selectorKeys(map: ComponentMap, sources: string[]) {
   const drawn = new Set();
   const unplaced = new Set();
   for (const source of sources) {
@@ -23,12 +29,12 @@ export function selectorKeys(map, sources) {
   return { drawn: [...drawn].sort(), unplaced: [...unplaced].sort() };
 }
 
-export const namedImports = (packageName) =>
+export const namedImports = (packageName: string) =>
   new RegExp(`import\\s*(?:type\\s*)?\\{([^}]*)\\}\\s*from\\s*['"]${packageName.replace('/', '\\/')}['"]`, 'g');
 
 export const JSX_OPEN = /<([A-Z][A-Za-z0-9]*)[\s/>]/g;
 
-export function symbolKeys(map, sources, packageName) {
+export function symbolKeys(map: ComponentMap, sources: string[], packageName: string) {
   const written = new Set();
   const shape = namedImports(packageName);
   for (const source of sources) {
@@ -39,11 +45,11 @@ export function symbolKeys(map, sources, packageName) {
   }
   return {
     drawn: ([...written] as string[]).filter((key) => key in map.draws).sort(),
-    unplaced: [],
+    unplaced: [] as string[],
   };
 }
 
-export function resolve(map, sources, packageName) {
+export function resolve(map: ComponentMap, sources: string[], packageName: string) {
   const read = map.match === 'selector' ? selectorKeys(map, sources)
     : map.match === 'symbol' ? symbolKeys(map, sources, packageName)
       : null;

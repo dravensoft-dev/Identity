@@ -5,7 +5,7 @@ import { PALETTE_KEYS } from './palette-keys.ts';
 import { parseDecls } from '../../../lib/arena/css-decls.ts';
 
 const colors = (overrides: Record<string, string> = {}): Record<string, string> => {
-  const out = {};
+  const out: Record<string, string> = {};
   for (const key of PALETTE_KEYS) out[key] = '#141010';
   return { ...out, ...overrides };
 };

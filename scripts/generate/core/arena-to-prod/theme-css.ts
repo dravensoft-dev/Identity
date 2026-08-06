@@ -1,10 +1,12 @@
 /* Turns a consumer's arena.config.json into the one stylesheet Arena cannot ship: the
  * palette blocks, the @font-face rules and the import that pulls the package's own sheet
- * in. Everything else about a token is already decided and travels inside the package.
- * This module runs in the repository, where check-packages.ts holds its output equivalent
- * to the Style Dictionary pipeline, and inside both npm packages, where it is the only
- * emitter there is. It reads no file and touches no network, so a path in the config is
- * emitted, never resolved, and the sheets a package ships arrive as an option. */
+ * in. Everything else about a token travels inside the package. It runs in the repository,
+ * where check-packages.ts holds its output equivalent to Style Dictionary's, and inside
+ * both npm packages, where it is the only emitter there is. It reads no file and touches
+ * no network, so a path in the config is emitted, never resolved. Every field of an
+ * ArenaConfig is optional because a CONSUMER writes it: an invalid one must reach
+ * configProblems, which decides usable, rather than be refused by a type nobody there can
+ * read. PackageSheets is what the package this command ships inside can offer. */
 
 import {
   PALETTE_KEYS, POLARITIES, FONT_ROLES, GENERIC_FAMILIES, SOURCE_FORMATS,
@@ -12,16 +14,44 @@ import {
 } from './palette-keys.ts';
 import { validate, contrast } from './validate-palette.mjs';
 
+export type PackageSheets =
+  { layers?: string[]; components?: string[] } | null;
+
+export type ArenaPalette = {
+  name?: string;
+  default?: boolean;
+  polarity?: string;
+  colors?: Record<string, string>;
+};
+
+export type ArenaFont = {
+  family?: string;
+  src?: string;
+  fallback?: string;
+  style?: string;
+  weight?: string;
+  display?: string;
+};
+
+export type ArenaStylesheet = { preflight?: boolean; components?: unknown };
+
+export type ArenaConfig = {
+  palettes?: ArenaPalette[];
+  fonts?: Record<string, ArenaFont>;
+  stylesheet?: ArenaStylesheet;
+  components?: string | string[];
+};
+
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const KEBAB = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
-const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isObject = (v: unknown) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
-export function defaultPalette(palettes) {
+export function defaultPalette(palettes: ArenaPalette[]) {
   return palettes.find((p) => p?.default === true) ?? palettes[0];
 }
 
-function paletteProblems(palette, index, seen) {
+function paletteProblems(palette: ArenaPalette, index: number, seen: Set<string>) {
   const at = `palettes[${index}]`;
   const problems = [];
   if (!isObject(palette)) return [`${at}: not an object`];
@@ -58,7 +88,7 @@ function paletteProblems(palette, index, seen) {
   return problems;
 }
 
-function fontProblems(fonts) {
+function fontProblems(fonts: Record<string, ArenaFont> | undefined) {
   if (!isObject(fonts)) return ['fonts: not an object'];
   const problems = [];
   for (const role of Object.keys(FONT_ROLES)) {
@@ -87,7 +117,7 @@ export const COMPONENTS_SHEET = 'css/components.css';
 export const PREFLIGHT_SHEET = 'css/base.css';
 export const STYLESHEET_KEYS = ['components', 'preflight'];
 
-export function stylesheetProblems(stylesheet: any, sheets: any) {
+export function stylesheetProblems(stylesheet: ArenaStylesheet, sheets: PackageSheets) {
   if (!isObject(stylesheet)) return ['stylesheet: not an object'];
   const problems = [];
 
@@ -107,8 +137,8 @@ export function stylesheetProblems(stylesheet: any, sheets: any) {
     return problems;
   }
 
-  const seen = new Set();
-  for (const name of stylesheet.components) {
+  const seen = new Set<string>();
+  for (const name of stylesheet.components as unknown[]) {
     if (typeof name !== 'string' || !sheets.components.includes(name)) {
       problems.push(`stylesheet.components: ${JSON.stringify(name)} is not a sheet this package ships, `
         + `which are ${sheets.components.join(', ')}`);
@@ -120,15 +150,15 @@ export function stylesheetProblems(stylesheet: any, sheets: any) {
   return problems;
 }
 
-export function configProblems(config: any, sheets: any = null) {
+export function configProblems(config: ArenaConfig, sheets: PackageSheets = null) {
   if (!isObject(config)) return ['the configuration is not an object'];
   const problems = [];
 
   if (!Array.isArray(config.palettes) || config.palettes.length === 0) {
     problems.push('palettes: declare at least one palette');
   } else {
-    const seen = new Set();
-    config.palettes.forEach((p, i) => problems.push(...paletteProblems(p, i, seen)));
+    const seen = new Set<string>();
+    (config.palettes as ArenaPalette[]).forEach((p, i) => problems.push(...paletteProblems(p, i, seen)));
     const defaults = config.palettes.filter((p) => isObject(p) && p.default === true);
     if (defaults.length > 1) {
       problems.push(`palettes: ${defaults.length} palettes declare default; exactly one reaches :root`);
@@ -140,7 +170,7 @@ export function configProblems(config: any, sheets: any = null) {
   return problems;
 }
 
-export function paletteReports(config: any) {
+export function paletteReports(config: ArenaConfig) {
   const out = [];
   for (const palette of config.palettes) {
     const mode = palette.polarity;
@@ -172,20 +202,21 @@ export function paletteReports(config: any) {
   return out;
 }
 
-function family(name: string, fallback) {
+function family(name: string, fallback: string[]) {
   return [name, ...fallback]
     .map((f) => (GENERIC_FAMILIES.has(f) ? f : `'${f}'`))
     .join(',');
 }
 
-export function isStylesheet(src) {
+export function isStylesheet(src: string) {
   const path = src.split('?')[0];
   return path.endsWith('.css') || /^https?:\/\/fonts\.googleapis\.com\//.test(src);
 }
 
-function fontFace(font) {
-  const extension = Object.keys(SOURCE_FORMATS).find((e) => font.src.split('?')[0].endsWith(e));
-  const format = extension ? ` format('${SOURCE_FORMATS[extension]}')` : '';
+function fontFace(font: ArenaFont) {
+  const src = font.src as string;
+  const extension = Object.keys(SOURCE_FORMATS).find((e) => src.split('?')[0].endsWith(e));
+  const format = extension ? ` format('${(SOURCE_FORMATS as Record<string, string>)[extension]}')` : '';
   return [
     '@font-face{',
     `  font-family:'${font.family}';`,
@@ -197,22 +228,22 @@ function fontFace(font) {
   ].join('\n');
 }
 
-function block(selector: string, declarations) {
+function block(selector: string, declarations: string[]) {
   return [`${selector}{`, ...declarations.map((d) => `  ${d}`), '}'].join('\n');
 }
 
-function colourDeclarations(palette) {
+function colourDeclarations(palette: ArenaPalette) {
   return PALETTE_KEYS
     .filter((key) => key in palette.colors)
     .map((key) => `--color-${key}:${palette.colors[key].toLowerCase()};`);
 }
 
-export function scopedImports(packageName: string, stylesheet: any, sheets: any) {
+export function scopedImports(packageName: string, stylesheet: ArenaStylesheet | undefined, sheets: PackageSheets) {
   const lines = [];
   for (const layer of sheets.layers) {
     if (layer === PREFLIGHT_SHEET && stylesheet.preflight === false) continue;
     if (layer === COMPONENTS_SHEET) {
-      for (const name of stylesheet.components) lines.push(`@import '${packageName}/css/components/${name}.css';`);
+      for (const name of stylesheet.components as string[]) lines.push(`@import '${packageName}/css/components/${name}.css';`);
       continue;
     }
     lines.push(`@import '${packageName}/${layer}';`);
@@ -224,12 +255,13 @@ export type ThemeOptions = {
   packageName?: string;
   importHeader?: boolean;
   source?: string;
-  sheets?: { layers?: string[]; components?: string[] } | null;
+  sheets?: PackageSheets;
 };
 
-export function themeCss(config: any, options: ThemeOptions = {}) {
+export function themeCss(config: ArenaConfig, options: ThemeOptions = {}) {
   const { packageName = '@dravensoft/arena-react', importHeader = true, source = 'arena.config.json', sheets = null } = options;
-  const fallbackFor = (role: string) => config.fonts[role].fallback ?? FONT_ROLES[role];
+  const fonts = config.fonts ?? {};
+  const fallbackFor = (role: string) => fonts[role].fallback ?? (FONT_ROLES as Record<string, string[]>)[role];
 
   const parts = [`/* GENERATED by arena-to-prod from ${source}. Edit that, not this file. */`];
   if (importHeader) {
@@ -242,14 +274,14 @@ export function themeCss(config: any, options: ThemeOptions = {}) {
   const fontSheets = [...new Set(roles.map((r) => config.fonts[r].src).filter(isStylesheet))];
   for (const sheet of fontSheets) parts.push(`@import url('${sheet}');`);
   for (const role of roles) {
-    if (!isStylesheet(config.fonts[role].src)) parts.push(fontFace(config.fonts[role]));
+    if (!isStylesheet(fonts[role].src as string)) parts.push(fontFace(fonts[role]));
   }
 
   const fallback = defaultPalette(config.palettes);
   parts.push(block(':root', [
     ...colourDeclarations(fallback),
     `--picker-invert:${fallback.polarity === 'light' ? 0 : 1};`,
-    ...Object.keys(FONT_ROLES).map((role) => `--font-${role}:${family(config.fonts[role].family, fallbackFor(role))};`),
+    ...Object.keys(FONT_ROLES).map((role) => `--font-${role}:${family(fonts[role].family as string, fallbackFor(role) as string[])};`),
   ]));
 
   for (const palette of config.palettes) {

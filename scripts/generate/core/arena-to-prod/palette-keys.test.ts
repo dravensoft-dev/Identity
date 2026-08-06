@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { PALETTE_KEYS, OPTIONAL_KEYS, ARENA_CAT_SLOTS, FONT_ROLES, catKeys, requiredKeys } from './palette-keys.ts';
 import { repoRoot as root } from '../../../lib/arena/repo-root.ts';
 
-const skin = (theme) => JSON.parse(readFileSync(join(root, `contracts/design/palette.${theme}.json`), 'utf8'));
-const keysOf = (json) => Object.keys(json.color).filter((k) => !k.startsWith('$'));
+const skin = (theme: string) => JSON.parse(readFileSync(join(root, `contracts/design/palette.${theme}.json`), 'utf8'));
+const keysOf = (json: { color: Record<string, unknown> }) => Object.keys(json.color).filter((k) => !k.startsWith('$'));
 
 test('the key list is exactly the Dravensoft skin, in order', () => {
   assert.deepEqual(PALETTE_KEYS, keysOf(skin('dark')));

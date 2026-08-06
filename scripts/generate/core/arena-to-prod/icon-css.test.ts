@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { scan, drawn, sheetRules, subset, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.ts';
+import type { IconScan } from './icon-css.ts';
 
 const sheet = (selector: string, extra = '') => `@font-face {
   font-family: "Phosphor-Bold";
@@ -25,7 +26,7 @@ ${selector}.ph-moon:before {
 }
 ${extra}`;
 
-const list = (found) => drawn(found).map(({ weight, glyphs }) => [weight, [...glyphs].sort()]);
+const list = (found: IconScan) => drawn(found).map(({ weight, glyphs }) => [weight, [...glyphs].sort()]);
 
 test('a weight and a glyph in one class list are read as that pair and no other', () => {
   assert.deepEqual(list(scan('<i class="ph-bold ph-bell"></i>')), [['bold', ['ph-bell']]]);
