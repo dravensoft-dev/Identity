@@ -56,7 +56,8 @@ export function tally(cases: { file: string | null; status: string }[]) {
   for (const c of cases) {
     const domain = domainOfTestPath(c.file ?? '');
     if (!domain) { unclassified.push(c.file); continue; }
-    byDomain.get(domain)[c.status] += 1;
+    const row = byDomain.get(domain);
+    if (row) row[c.status] += 1;
   }
   return { byDomain, unclassified, total: cases.length, files: cases.map((c) => c.file) };
 }
@@ -88,20 +89,23 @@ export function coverageProblems(
     }
   }
   for (const root of roots) {
-    if (!counted.files.some((f: string) => String(f).includes(root))) {
+    if (!counted.files.some((f) => String(f).includes(root))) {
       problems.push(`no case came from ${root}, so that tree was never opened by this run`);
     }
   }
   return problems;
 }
 
+const rowOf = (counted: ReturnType<typeof tally>, domain: string) =>
+  counted.byDomain.get(domain) ?? { pass: 0, fail: 0, skip: 0 };
+
 export function renderSummary(counted: ReturnType<typeof tally>) {
   const rows = DOMAINS.map((domain) => {
-    const { pass, fail, skip } = counted.byDomain.get(domain);
+    const { pass, fail, skip } = rowOf(counted, domain);
     return `| ${domain} | ${pass} | ${fail} | ${skip} |`;
   });
   const totals = DOMAINS.reduce((acc, d) => {
-    const r = counted.byDomain.get(d);
+    const r = rowOf(counted, d);
     return { pass: acc.pass + r.pass, fail: acc.fail + r.fail, skip: acc.skip + r.skip };
   }, { pass: 0, fail: 0, skip: 0 });
 

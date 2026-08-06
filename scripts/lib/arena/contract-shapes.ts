@@ -18,7 +18,7 @@ export type MemberSpec = {
   form: MemberForm;
   type?: string;
   of?: string;
-  payload?: string;
+  payload?: string | null;
   params?: Record<string, string>;
   returns?: string;
   default?: unknown;

@@ -21,6 +21,8 @@ import type { SurfaceMember } from '../../lib/arena/api-surface.ts';
 const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
+const isPrimitive = (name: string | undefined) => name !== undefined && PRIMITIVE_TYPES.has(name);
+
 export function zeroContractProblems({ contracts, types }: { contracts: number; types: number }) {
   const problems = [];
   if (contracts === 0)
@@ -97,7 +99,7 @@ export function validateTypes(types: TypeContract[]) {
     if (type.kind !== 'object') { problems.push(`${type.name}: unknown kind "${type.kind}"`); continue; }
     for (const [field, spec] of fieldEntries(type.fields)) {
       if (spec.form === 'primitive') {
-        if (!PRIMITIVE_TYPES.has(spec.type)) problems.push(`${type.name}.${field}: "${spec.type}" is not a primitive`);
+        if (!isPrimitive(spec.type)) problems.push(`${type.name}.${field}: "${spec.type}" is not a primitive`);
       } else if (spec.form === 'enum') {
 
         if (!kindByName.has(spec.type)) {
@@ -117,10 +119,11 @@ export function validateTypes(types: TypeContract[]) {
 }
 
 export function validateContract(contract: ContractCandidate, typeNames: Map<string, string>) {
-  const problems = [];
+  const problems: string[] = [];
   const where = contract.component ?? '(unnamed)';
-  const declared = (name: string, kind: string) => {
-    if (!typeNames.has(name)) return `${where}: names type "${name}", which contracts/api/types/ does not declare`;
+  const note = (problem: string | null) => { if (problem) problems.push(problem); };
+  const declared = (name: string | undefined, kind: string) => {
+    if (name === undefined || !typeNames.has(name)) return `${where}: names type "${name}", which contracts/api/types/ does not declare`;
     if (typeNames.get(name) !== kind) return `${where}: "${name}" is a ${typeNames.get(name)}, used where a ${kind} belongs`;
     return null;
   };
@@ -133,19 +136,19 @@ export function validateContract(contract: ContractCandidate, typeNames: Map<str
       problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see contracts/api/AGENTS.md`);
       continue;
     }
-    if (spec.form === 'primitive' && !PRIMITIVE_TYPES.has(spec.type)) {
+    if (spec.form === 'primitive' && !isPrimitive(spec.type)) {
       problems.push(`${where}.${member}: "${spec.type}" is not a primitive`);
     }
-    if (spec.form === 'enum') problems.push(...[declared(spec.type, 'enum')].filter(Boolean));
-    if (spec.form === 'object') problems.push(...[declared(spec.type, 'object')].filter(Boolean));
-    if (spec.form === 'array' && !PRIMITIVE_TYPES.has(spec.of) && spec.of !== CONSUMER_DATA) {
-      problems.push(...[declared(spec.of, 'object')].filter(Boolean));
+    if (spec.form === 'enum') note(declared(spec.type, 'enum'));
+    if (spec.form === 'object') note(declared(spec.type, 'object'));
+    if (spec.form === 'array' && !isPrimitive(spec.of) && spec.of !== CONSUMER_DATA) {
+      note(declared(spec.of, 'object'));
     }
 
     if (spec.form === 'event' && spec.payload
         && !PRIMITIVE_TYPES.has(spec.payload) && spec.payload !== CONSUMER_DATA) {
       if (typeNames.get(spec.payload) !== 'enum') {
-        problems.push(...[declared(spec.payload, 'object')].filter(Boolean));
+        note(declared(spec.payload, 'object'));
       }
     }
 
@@ -164,7 +167,7 @@ export function validateContract(contract: ContractCandidate, typeNames: Map<str
       }
       if (spec.returns === undefined) {
         problems.push(`${where}.${member}: a functionInput declares no "returns" — its signature is modelled, not free TypeScript`);
-      } else if (!PRIMITIVE_TYPES.has(spec.returns) && !typeNames.has(spec.returns)) {
+      } else if (!isPrimitive(spec.returns) && !typeNames.has(spec.returns)) {
         problems.push(`${where}.${member}: functionInput return names undeclared type "${spec.returns}"`);
       }
     }
@@ -221,7 +224,7 @@ export function compareSurface(
       continue;
     }
     if (m.form === 'union') {
-      problems.push(`${where}.${m.name}: a union between forms (${m.parts.join(' | ')}) — R5, a member is one form`);
+      problems.push(`${where}.${m.name}: a union between forms (${(m.parts ?? []).join(' | ')}) — R5, a member is one form`);
       continue;
     }
     if (m.platformPayload) {
@@ -369,7 +372,7 @@ export function reactImplementationProblems(contract: ContractCandidate, declara
   const source = found.source;
   let impl;
   try {
-    impl = reactImplementation(source, contract.component);
+    impl = reactImplementation(source, contract.component ?? '');
   } catch (error) {
     if (!(error instanceof UnrecognisedShape)) throw error;
     return [`${where}: the reader could not read the implementation — ${error.message}`];

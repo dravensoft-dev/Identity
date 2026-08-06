@@ -17,7 +17,7 @@ export const BUNDLE_DIR = 'build/demo/js';
 export const PAGE_SUFFIX = '.demo.generated.html';
 export const ENTRY_SUFFIX = '.demo.entry.generated.ts';
 
-export function pageProblems(tree: Record<string, string[]>, read: (path: string) => string) {
+export function pageProblems(tree: Record<string, string[]>, read: (path: string) => string | null) {
   const problems = [];
   const found = new Set();
 

@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, relative } from 'node:path';
 import { repoRoot } from '../arena/repo-root.ts';
-import type { ManifestClassSource } from './manifest-shapes.ts';
+import type { ManifestClassSource, Manifests } from './manifest-shapes.ts';
 
 export function manifestClasses(manifest: ManifestClassSource): string[] {
   const out = new Set<string>();
@@ -18,8 +18,9 @@ export function manifestClasses(manifest: ManifestClassSource): string[] {
 
 export function escapeClass(cls: string) {
   const backslash = (s: string) => s.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
-  if (/^[0-9]/.test(cls))
-    return `\\${cls.codePointAt(0).toString(16)} ${backslash(cls.slice(1))}`;
+  const first = cls.codePointAt(0);
+  if (first !== undefined && /^[0-9]/.test(cls))
+    return `\\${first.toString(16)} ${backslash(cls.slice(1))}`;
   return backslash(cls);
 }
 
@@ -57,9 +58,9 @@ export function compileEntry(entry: string, root = repoRoot) {
   }
 }
 
-export function layerManifests(root = repoRoot) {
+export function layerManifests(root = repoRoot): Manifests {
   const components = join(root, 'frameworks/tailwind/components');
-  const manifests = new Map();
+  const manifests: Manifests = new Map();
   for (const p of manifestFiles(components))
     manifests.set(relative(root, p), JSON.parse(readFileSync(p, 'utf8')));
   return manifests;

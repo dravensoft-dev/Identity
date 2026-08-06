@@ -29,4 +29,9 @@ export function childEntries(node: DtcgNode): [string, DtcgNode][] {
     .map(([key, child]) => [key, child as DtcgNode]);
 }
 
+export type StampedToken = DtcgToken & { name: string; filePath: string };
+
 export const isToken = (node: DtcgNode): node is DtcgToken => node.$value !== undefined;
+
+export const isStamped = (token: DtcgToken): token is StampedToken =>
+  typeof token.name === 'string' && typeof token.filePath === 'string';
