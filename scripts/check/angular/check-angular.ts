@@ -1,11 +1,9 @@
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-
-const MAX_BUFFER = 32 * 1024 * 1024;
+import { childOutput } from '../../lib/arena/child-output.ts';
 
 export function ngcBin(root = repoRoot) {
   const bin = join(root, 'node_modules/@angular/compiler-cli/bundles/src/bin/ngc.js');
@@ -27,9 +25,9 @@ export function typecheck(opts: { root?: string; project?: string } = {}) {
   const project = join(root, opts.project ?? first.project);
   const out = mkdtempSync(join(tmpdir(), 'arena-ngc-'));
   try {
-    const r = spawnSync(process.execPath, [bin, '-p', project, '--outDir', out], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
+    const r = childOutput(process.execPath, [bin, '-p', project, '--outDir', out]);
     if (r.error) throw new Error(`ngc failed to spawn: ${r.error.message || r.error}`);
-    return { status: r.status ?? 1, output: `${r.stdout || ''}${r.stderr || ''}` };
+    return { status: r.status, output: r.output };
   } finally {
     rmSync(out, { recursive: true, force: true });
   }

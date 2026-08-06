@@ -67,6 +67,16 @@ gate reaching down is the only direction allowed. Across domains the same holds 
 directions: `core/arena-tokens.ts` imports `../arena/css-decls.ts` and nothing forbids it,
 because a domain is a statement about subject matter, not a visibility boundary.
 
+**Never read a spawned child's output through a pipe.** Take it from
+`lib/arena/child-output.ts`, which reads it from a file. A child that writes its results and
+then calls `process.exit()` -- tsc, ngc, and every JavaScript compiler here -- exits before
+the tail of stdout has drained, and `spawnSync` reports that short read as a whole one: status
+0, no error, output simply missing its last lines. The loss is a race, so it survives local
+runs and lands in CI, where it once had `check:script-types` name 16 files as unreached by
+globs that reach them. A gate that parses what it captured is the dangerous case, because a
+truncated read there is a wrong answer rather than a failure. Spawning with `stdio: 'inherit'`
+is unaffected and stays as it is: a runner that only relays a child's output reads none of it.
+
 **A test lives beside what it tests**, in the same directory, which for a `lib/` module means
 the same domain, not merely somewhere under `lib/`.
 

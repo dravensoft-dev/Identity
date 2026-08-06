@@ -6,14 +6,13 @@
  * runner, sharing the shape and none of the code, because ngc emits into a temporary
  * tree rather than checking in place. `projectFiles()` is here so a gate can prove its
  * project matched something: a tsconfig whose globs match nothing compiles nothing and
- * reports clean, which is the one way a typecheck gate passes over an unread tree. */
+ * reports clean, which is the one way a typecheck gate passes over an unread tree. tsc
+ * is read through `childOutput()` and never a pipe, for the reason stated there. */
 
-import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './repo-root.ts';
-
-const MAX_BUFFER = 32 * 1024 * 1024;
+import { childOutput } from './child-output.ts';
 
 type TypecheckOptions = { root?: string; project?: string };
 
@@ -25,9 +24,9 @@ export function tscBin(root = repoRoot) {
 }
 
 function runTsc(args: string[], root: string) {
-  const r = spawnSync(process.execPath, [tscBin(root), ...args], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
+  const r = childOutput(process.execPath, [tscBin(root), ...args]);
   if (r.error) throw new Error(`tsc failed to spawn: ${r.error.message || r.error}`);
-  return { status: r.status ?? 1, output: `${r.stdout || ''}${r.stderr || ''}` };
+  return { status: r.status, output: r.output };
 }
 
 export function typecheck(opts: TypecheckOptions = {}) {

@@ -8,10 +8,10 @@
  * states the entry declaration twice, in exports and at the root, because a consumer on
  * moduleResolution node reads no exports and npm's registry page reads only the root field. */
 
-import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, dirname, sep } from 'node:path';
+import { childOutput } from '../../lib/arena/child-output.ts';
 import { tscBin } from '../../lib/arena/typecheck.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
@@ -46,10 +46,10 @@ export function distFiles(dir: string, keep: (path: string) => boolean, found: s
 export function emitDeclarations(root: string, outDir: string) {
   const args = [tscBin(root), '-p', join(root, DIST_PROJECT)];
   if (outDir) args.push('--outDir', outDir);
-  const r = spawnSync(process.execPath, args, { encoding: 'utf8' });
+  const r = childOutput(process.execPath, args);
   if (r.error) throw new Error(`build-react-package: tsc failed to spawn: ${r.error.message || r.error}`);
-  if ((r.status ?? 1) !== 0)
-    throw new Error(`build-react-package: the declaration emit did not typecheck\n${r.stdout || ''}${r.stderr || ''}`);
+  if (r.status !== 0)
+    throw new Error(`build-react-package: the declaration emit did not typecheck\n${r.output}`);
 }
 
 export function untypedProblems(compiled: string[], dir: string) {
