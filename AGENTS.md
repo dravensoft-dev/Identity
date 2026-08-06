@@ -116,7 +116,7 @@ two copies and never reads either for meaning. Verify with
   the budget is a new **rule**, not a new component.
 - **No document on this branch carries a literal count of anything**, only the command that
   produces it, with **one** exception: the gate table in `scripts/check/AGENTS.md`, whose numbers
-  `check-all.test.mjs` derives from `GATES` and fails when they disagree. A number an assertion
+  `check-all.test.ts` derives from `GATES` and fails when they disagree. A number an assertion
   holds is better than a command; a number nothing holds is the defect this rule exists to stop.
 - **Documentation punctuates with a colon, a comma, a semicolon or a full stop, never with an em
   dash.** A dash pair enclosing an aside becomes commas, or parentheses where commas would nest;

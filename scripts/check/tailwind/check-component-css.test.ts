@@ -4,7 +4,7 @@ import {
   EXTERNAL_PROPERTIES, MANIFEST_FETCH, THEME_NAMESPACES, collect, preludeProblems, propertiesIn,
   selectorsIn, themeLeaks,
 } from './check-component-css.ts';
-import { sheetPath } from '../../build/tailwind/build-tailwind.mjs';
+import { sheetPath } from '../../build/tailwind/build-tailwind.ts';
 
 test('the gate runs green over the tree as it stands', () => {
   const { manifests, problems } = collect();

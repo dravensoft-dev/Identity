@@ -95,7 +95,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: gates (core and the cross-layer arena domain)
-        run: bun scripts/check/arena/check-all.mjs --domain=core,arena --no-tests
+        run: bun scripts/check/arena/check-all.ts --domain=core,arena --no-tests
 
       - name: suites under scripts/
         run: bun run test:scripts
@@ -127,7 +127,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: gates
-        run: bun scripts/check/arena/check-all.mjs --domain=react --no-tests
+        run: bun scripts/check/arena/check-all.ts --domain=react --no-tests
 
       - name: suites with no DOM
         run: bun run test:react
@@ -162,7 +162,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: gates
-        run: bun scripts/check/arena/check-all.mjs --domain=angular --no-tests
+        run: bun scripts/check/arena/check-all.ts --domain=angular --no-tests
 
       - name: suites, off the ngc emit
         run: bun run test:angular
@@ -194,7 +194,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: gates
-        run: bun scripts/check/arena/check-all.mjs --domain=tailwind --no-tests
+        run: bun scripts/check/arena/check-all.ts --domain=tailwind --no-tests
 
   pr-gate:
     name: pr-gate

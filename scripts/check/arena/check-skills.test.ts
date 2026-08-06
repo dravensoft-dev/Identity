@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   skillProblems, firstDifference, zeroDeclarationProblems, trackingProblems,
 } from './check-skills.ts';
-import { SKILL_TARGETS } from '../../generate/arena/generate-skills.mjs';
+import { SKILL_TARGETS } from '../../generate/arena/generate-skills.ts';
 
 test('every committed index matches a fresh emit', () => {
   const { problems } = skillProblems();

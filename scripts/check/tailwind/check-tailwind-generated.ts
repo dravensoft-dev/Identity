@@ -4,7 +4,7 @@ import { relative } from 'node:path';
 import {
   buildTailwind, buildManifestModules, buildComponentCss, buildClassModules,
   buildStylesRuntime, generatedPath, BANNER,
-} from '../../build/tailwind/build-tailwind.mjs';
+} from '../../build/tailwind/build-tailwind.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export { BANNER, generatedPath };

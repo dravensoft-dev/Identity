@@ -1,5 +1,5 @@
 /* Assembles @dravensoft/arena-react into frameworks/react/dist/. A component source goes
- * through Bun.Transpiler, the same path build-demos.mjs uses, and its declaration is EMITTED
+ * through Bun.Transpiler, the same path build-demos.ts uses, and its declaration is EMITTED
  * by tsc rather than copied, so it cannot disagree with the implementation. Every relative
  * specifier lands as .js: tsc's own rewrite does not reach declaration output, and this layer
  * compiles under moduleResolution bundler, where an extension is optional and a consumer's

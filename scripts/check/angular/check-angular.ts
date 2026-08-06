@@ -19,7 +19,7 @@ export const PROJECTS = [
   { project: 'frameworks/angular/tsconfig.demo.json', reaches: 'the demo page entries, which no barrel reaches' },
 ];
 
-export function typecheck(opts = {}) {
+export function typecheck(opts: { root?: string; project?: string } = {}) {
   const root = opts.root ?? repoRoot;
   const bin = ngcBin(root);
   const project = join(root, opts.project ?? PROJECTS[0].project);

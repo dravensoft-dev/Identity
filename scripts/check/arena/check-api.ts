@@ -6,8 +6,8 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
-import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
-import { PREFIX } from './check-structure.mjs';
+import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
+import { PREFIX } from './check-structure.ts';
 import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
   bindingName,

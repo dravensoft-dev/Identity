@@ -15,7 +15,7 @@ import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
 import { connect } from '../../lib/arena/cdp.mjs';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.mjs';
-import { sheetPath } from '../../build/tailwind/build-tailwind.mjs';
+import { sheetPath } from '../../build/tailwind/build-tailwind.ts';
 
 export const PAGE = 'frameworks/tailwind/StyleParity.generated.html';
 const TIMEOUT_MS = 60_000;

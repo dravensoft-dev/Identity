@@ -27,7 +27,7 @@ import {
   MANIFEST_COVERS,
   FAMILIES,
   EXEMPT,
-} from './check-manifest-states.mjs';
+} from './check-manifest-states.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('a plain class carries no state family', () => {

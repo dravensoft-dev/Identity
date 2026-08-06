@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fontsCss, facesFromDisk, weightRange, recordProblems, FONTS } from './fetch-fonts.mjs';
+import { fontsCss, facesFromDisk, weightRange, recordProblems, FONTS } from './fetch-fonts.ts';
 
 import { join } from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -22,7 +22,7 @@ test('weightRange takes the served weights and not what the token source asks fo
 test('the header names the generator and the file itself, not the old tokens/ path', () => {
   const css = fontsCss([{ family: 'Archivo', weight: [400, 900], file: 'archivo.woff2' }]);
   assert.match(css, /contracts\/design-generated\/fonts\.generated\.css/);
-  assert.match(css, /scripts\/generate\/core\/fetch-fonts\.mjs/);
+  assert.match(css, /scripts\/generate\/core\/fetch-fonts\.ts/);
   assert.doesNotMatch(css, /tokens\//);
 });
 
@@ -58,7 +58,7 @@ test('facesFromDisk throws naming a family with no binary at all', () => {
       })
     );
 
-    assert.throws(() => facesFromDisk(root), (err) => {
+    assert.throws(() => facesFromDisk(root), (err: Error) => {
       assert.match(err.message, /"Nonexistent Family"/);
       assert.match(err.message, /no assets\/fonts\//);
       return true;

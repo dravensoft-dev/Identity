@@ -21,7 +21,7 @@ import { ArenaCalendar } from './ArenaCalendar';
 import { ArenaCalendarEvent } from '../arena-calendar-event/ArenaCalendarEvent';
 
 const { scanValue } = await import(
-  pathToFileURL(join(CHECKS, 'arena', 'check-dimension-literals.mjs')).href
+  pathToFileURL(join(CHECKS, 'arena', 'check-dimension-literals.ts')).href
 ) as { scanValue: (prop: string, value: string) => { reason: string } | null };
 
 const PROJECTED = new Map([

@@ -19,7 +19,7 @@ export const UNMARKED = {
     + 'rebuild it. Not reproducible means never ignorable, and the infix would promise a '
     + '`bun run build` that cannot deliver it.',
   'assets/fonts/*.woff2':
-    'downloaded from Google Fonts by scripts/generate/core/fetch-fonts.mjs. Binary, so it '
+    'downloaded from Google Fonts by scripts/generate/core/fetch-fonts.ts. Binary, so it '
     + 'carries no header, and reproducing it needs the network. The one generated output '
     + 'identified by its generator rather than by its name.',
 };

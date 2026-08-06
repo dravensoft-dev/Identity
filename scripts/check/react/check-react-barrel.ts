@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { buildBarrel, ROOT_PRIVATE } from '../../build/react/build-react-barrel.mjs';
+import { buildBarrel, ROOT_PRIVATE } from '../../build/react/build-react-barrel.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 export function driftProblems(files, read) {

@@ -189,7 +189,7 @@ export function collect() {
   const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
   const missingSources = [];
   let sourcesRead = 0;
-  for (const [category, names] of Object.entries(categories))
+  for (const [category, names] of Object.entries(categories) as [string, string[]][])
     for (const name of names) {
       const missing = missingReactSource(name, category);
       if (missing) missingSources.push(missing);

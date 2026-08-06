@@ -299,7 +299,7 @@ suite belongs to. Only the infix does.
 
 **The split reaches past this layer**, because a process-wide happy-dom also replaces Bun's own
 `fetch` and so decides which invocation `scripts/` may ride in. **The single authority for the
-whole command is `testStep()` in `scripts/check/arena/check-all.mjs`**, whose header carries
+whole command is `testStep()` in `scripts/check/arena/check-all.ts`**, whose header carries
 that reasoning and whose `.test.mjs` sibling asserts the args array by literal value; read it
 there rather than reconstructing one.
 
@@ -331,7 +331,7 @@ finished rather than before every commit.
 A bare literal is a bug, and `bun run check:dimensions` fails on each one. A value passes
 when it is `var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over one, zero, or a unit
 the token layer does not model. A handful of sites are exempt by name with a reason each;
-read `EXEMPT` in `scripts/check/arena/check-dimension-literals.mjs` for the current set.
+read `EXEMPT` in `scripts/check/arena/check-dimension-literals.ts` for the current set.
 
 Responsive branches are JS rather than media queries, and they measure the **container** via
 `useArenaContainerWidth`: a media query can only ask about the viewport, and the box that decides

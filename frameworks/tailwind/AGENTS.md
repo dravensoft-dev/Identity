@@ -195,14 +195,14 @@ components/display/arena-badge/
 **The compiled stylesheet is the one thing that does not sit there**, because it is what every
 layer links rather than what one directory owns: it is emitted to
 `consume/components/display/arena-badge/ArenaBadge.styles.generated.css`, at the same category and
-directory. `sheetPath()` in `scripts/build/tailwind/build-tailwind.mjs` is the single place that
+directory. `sheetPath()` in `scripts/build/tailwind/build-tailwind.ts` is the single place that
 mapping is written, and the gates and both package builds go through it.
 
 The category comes from `frameworks/Components.json`, which declares it once for all three
 framework layers, and `bun run check:structure` fails a component directory that sits
 anywhere else. That gate says nothing about whether the category is the *right* one, which
 is editorial judgement and no gate has it. **All three framework layers share this shape**,
-so the gate reads every layer unconditionally; `LAYERS` in `scripts/check/arena/check-structure.mjs` is
+so the gate reads every layer unconditionally; `LAYERS` in `scripts/check/arena/check-structure.ts` is
 the exhaustive enumeration, deliberately not a walk of `frameworks/`, so a layer renamed or
 removed wholesale becomes loud rather than quietly leaving the gate's scope. The root
 `frameworks/AGENTS.md` carries the naming rule and its mechanical exceptions in full; count them there
@@ -269,7 +269,7 @@ comm -13 <(find components -name '*.manifest.json' -exec basename {} .manifest.j
 Two reasons put a component in it. **A compound family draws one surface**, so the parent's
 manifest holds every level of it and its members have none of their own, which is `ArenaTab`,
 `ArenaTableRow`, `ArenaTableCell`, `ArenaCalendarEvent`, `ArenaRadioGroup` and the three `ArenaSideNav*` children.
-`MANIFEST_COVERS` in `scripts/check/arena/check-manifest-states.mjs` is where that mapping
+`MANIFEST_COVERS` in `scripts/check/arena/check-manifest-states.ts` is where that mapping
 is written down. **And the three SVG charts have no surface a class string can describe**:
 `ArenaBarChart`, `ArenaLineChart` and `ArenaDoughnutChart` are SVG geometry driven by measured container
 width, their identity is path data and attribute bindings, and a manifest holding it would
@@ -449,7 +449,7 @@ failure mode.
 
 A manifest authored by reading a neighbouring manifest instead of the contract is
 how this defect arrives, and prose alone does not prevent it. `bun run check:states`
-(`scripts/check/arena/check-manifest-states.mjs`) is what holds it: a modifier no contract
+(`scripts/check/arena/check-manifest-states.ts`) is what holds it: a modifier no contract
 the manifest covers declares fails the build. Read the contract anyway, because the gate
 knows only that the affordance exists somewhere on the covered surface, never that
 this slot is where it belongs.

@@ -6,7 +6,7 @@
  * check:layer-independence scopes, being the mechanism that keeps the layers comparable. */
 
 import { HAND_DRAWN, categoryOf, manifestFor } from '../tailwind/manifest-surfaces.mjs';
-import { PREFLIGHT, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
+import { PREFLIGHT, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 import { composedBy, composedGraph } from './composed-surfaces.mjs';
 import { kebab } from './layers.mjs';
 

@@ -17,7 +17,7 @@ import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { arenaTokenNames } from '../../lib/core/arena-tokens.mjs';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
 import { applyRules } from '../../lib/tailwind/component-css.mjs';
-import { PRELUDE, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
+import { PRELUDE, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 
 export const THEME_NAMESPACES = [
   'spacing', 'radius', 'text', 'z-index', 'leading', 'tracking', 'container',

@@ -1,7 +1,7 @@
 /* Turns a consumer's arena.config.json into the one stylesheet Arena cannot ship: the
  * palette blocks, the @font-face rules and the import that pulls the package's own sheet
  * in. Everything else about a token is already decided and travels inside the package.
- * This module runs in the repository, where check-packages.mjs holds its output equivalent
+ * This module runs in the repository, where check-packages.ts holds its output equivalent
  * to the Style Dictionary pipeline, and inside both npm packages, where it is the only
  * emitter there is. It reads no file and touches no network, so a path in the config is
  * emitted, never resolved, and the sheets a package ships arrive as an option. */

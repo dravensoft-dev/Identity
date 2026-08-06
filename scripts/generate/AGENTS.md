@@ -7,7 +7,7 @@ build starts from something already written in the target's idiom, generate star
 about the design system and picks the idiom itself.
 
 That is why a token appears in five places from one edit. `contracts/design/spacing.json`
-declares a value once; `generate-tokens.mjs` decides what a CSS custom property, a JavaScript
+declares a value once; `generate-tokens.ts` decides what a CSS custom property, a JavaScript
 constant and a TypeScript constant each have to look like to say it.
 
 Every output is named `<stem>.generated.<ext>`, with **one exception**: the font binaries under
@@ -25,7 +25,7 @@ case fails until it is argued for.
 | `react/`, `angular/`, `tailwind/` | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 
 **Count them rather than reading a figure here**, and note the count answers a different
-question than the npm scripts do: `generate-api-types.mjs` and `generate-member-docs.ts` are
+question than the npm scripts do: `generate-api-types.ts` and `generate-member-docs.ts` are
 both reached by `generate:api`, so the file count exceeds the command count and neither is
 wrong. That domain's own table says which file each command runs.
 
@@ -43,6 +43,6 @@ an `arena` one by the reads-and-writes test.
 ## Rebuilding
 
 `bun run generate:tokens` and `bun run generate:api` are part of `bun run build`.
-`fetch-fonts.mjs` is **not**: it reaches the network, and its output changes only when
+`fetch-fonts.ts` is **not**: it reaches the network, and its output changes only when
 `contracts/design/typography.json` names a new family or weight. Run it by path when that
 happens, and `--css-only` to re-emit the stylesheet from the binaries already on disk.

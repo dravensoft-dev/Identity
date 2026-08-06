@@ -8,7 +8,7 @@ import {
   resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.ts';
 import { pascal } from '../../lib/arena/layers.mjs';
-import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
+import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
 import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs';
 
 const TYPES = new Map([['ArenaTone', 'enum'], ['ArenaCrumb', 'object']]);

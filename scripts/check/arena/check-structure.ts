@@ -11,7 +11,7 @@ export function validateStructure({ categories, layers, complete = false }) {
   const problems = [];
 
   const firstCategoryOf = new Map();
-  for (const [category, names] of Object.entries(categories))
+  for (const [category, names] of Object.entries(categories) as [string, string[]][])
     for (const name of names) {
       if (!name.startsWith(PREFIX)) {
         problems.push(`${name} does not start with ${PREFIX}: a component is spelt the same in the contract, `
@@ -80,8 +80,8 @@ function main() {
     console.error('');
     process.exit(1);
   }
-  const total = Object.values(categories).reduce((n, names) => n + names.length, 0);
-  const checked = Object.values(layers).reduce(
+  const total = (Object.values(categories) as string[][]).reduce((n, names) => n + names.length, 0);
+  const checked = (Object.values(layers) as Record<string, string[]>[]).reduce(
     (n, tree) => n + Object.values(tree).reduce((m, dirs) => m + dirs.length, 0), 0,
   );
 

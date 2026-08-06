@@ -12,7 +12,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { bindingName, normaliseDoc } from '../../lib/arena/api-surface.mjs';
 import {
   CONSUMER_LAYERS, componentDir, loadCategories, loadContract, escapeCell,
-} from './generate-skills.mjs';
+} from './generate-skills.ts';
 
 export const CONSUMER_DATA = 'Record<string, unknown>';
 
@@ -103,7 +103,7 @@ export function applyRegion(source, region) {
 export function promptPaths(base = root) {
   const categories = loadCategories(base);
   const found = [];
-  for (const [category, components] of Object.entries(categories)) {
+  for (const [category, components] of Object.entries(categories) as [string, string[]][]) {
     for (const component of components) {
       for (const layer of CONSUMER_LAYERS) {
         const path = join(componentDir(layer, category, component), `${component}.prompt.md`);

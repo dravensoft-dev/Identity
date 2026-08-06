@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   typeCell, defaultCell, memberRow, renderRegion, applyRegion, fenceEnd, signature,
   promptPaths, writePromptApis, openLine, CLOSE_LINE, CONSUMER_DATA,
-} from './generate-prompt-api.mjs';
+} from './generate-prompt-api.ts';
 
 test('an array names what it holds, and consumer data keeps its one spelling', () => {
   assert.equal(typeCell({ form: 'array', of: 'ArenaCrumb' }), '`readonly ArenaCrumb[]`');

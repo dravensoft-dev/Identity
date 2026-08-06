@@ -8,7 +8,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-fonts.mjs';
+import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-fonts.ts';
 import { arenaConfig } from '../../lib/core/arena-config.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
@@ -26,7 +26,7 @@ export function facesIn(css) {
 export function checkFonts(declared, faces) {
   return declared
     .filter((fam) => !faces.has(fam))
-    .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.generated.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.mjs`);
+    .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.generated.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.ts`);
 }
 
 export async function askGoogle(

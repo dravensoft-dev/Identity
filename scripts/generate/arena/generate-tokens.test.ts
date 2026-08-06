@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { FILES, RESOLVES_AGAINST } from './generate-tokens.mjs';
+import { FILES, RESOLVES_AGAINST } from './generate-tokens.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const DESIGN = join(repoRoot, 'contracts/design');

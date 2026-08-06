@@ -2,7 +2,7 @@
 
 | script | emits | why it exists |
 | --- | --- | --- |
-| `fetch-fonts.mjs` | `contracts/design-generated/fonts.generated.css` and `assets/fonts/*.woff2` | Downloads the Latin subsets of the three families `contracts/design/typography.json` names, and declares them with `@font-face`, so a page loads fonts from its own origin and makes no CDN request. **The binaries carry no `.generated.` infix and no header**: they are binary, so a header is impossible, and reproducing them needs the network. They are the one generated output in the repository identified by its generator rather than by its name. `check:generated` records that exception by literal value with its reason. |
+| `fetch-fonts.ts` | `contracts/design-generated/fonts.generated.css` and `assets/fonts/*.woff2` | Downloads the Latin subsets of the three families `contracts/design/typography.json` names, and declares them with `@font-face`, so a page loads fonts from its own origin and makes no CDN request. **The binaries carry no `.generated.` infix and no header**: they are binary, so a header is impossible, and reproducing them needs the network. They are the one generated output in the repository identified by its generator rather than by its name. `check:generated` records that exception by literal value with its reason. |
 | `arena-to-prod/` | `arena.generated.css` and `icons.generated.css`, in the directory the consumer points `--out` at | The one command the npm packages ship, as `bin/arena-to-prod.mjs`. Its theme step turns an `arena.config.json` into the palette blocks and the `@font-face` rules, which is the one stylesheet a package cannot carry because Arena publishes the language and never the skin; it also writes the import chain that file leads with, and a config naming the components it renders gets those sheets rather than the barrel. Its icons step writes the Phosphor subset, because a weight sheet draws every icon Phosphor has and a screen draws a handful, which makes the whole weight the largest thing an Arena project sends that nothing on it reads; it scans the consumer's sources and the package it ships in, since a component renders icons the consumer never names, and keeps the `@font-face` of each weight in use in `woff2` alone. **The theme runs first and its failure stops the run**: a project whose config does not parse has no theme, and nothing to subset for. A config asking for `"components": "auto"` is resolved against the `components.json` the package carries before the config is validated at all, so the list the gate holds is the resolved one and a scan that finds nothing is fatal rather than an empty subset. `check:packages` runs the theme step over Arena's own skin and asserts the result equals what Style Dictionary emits, which is what keeps two emitters saying one thing. |
 
 `core` because the first touches `contracts/` and `assets/`, which the design layer owns, and no
@@ -32,7 +32,7 @@ sections, two flag tables, two wiring snippets. `CLI_BINS` is the list both mani
 
 ## Running them
 
-`fetch-fonts.mjs` is **not part of `bun run build`**, since it reaches the network and its
+`fetch-fonts.ts` is **not part of `bun run build`**, since it reaches the network and its
 output changes only when a family or weight is added. `--css-only` re-emits the stylesheet from
 the binaries already on disk. `check:fonts` asserts every declared family has a face.
 

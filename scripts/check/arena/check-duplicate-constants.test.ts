@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { numericConstants, sourceFiles } from './check-duplicate-constants.mjs';
+import { numericConstants, sourceFiles } from './check-duplicate-constants.ts';
 
 test('finds a module-level numeric const', () => {
   assert.deepEqual(numericConstants('export const ARENA_CHART_HEIGHT = 280;'), new Map([['ARENA_CHART_HEIGHT', '280']]));

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findSourceFiles, rewriteRelativeSourceImports, loaderFor, outputPathFor, ROOT_MODULES, ROOTS } from './build-demos.mjs';
+import { findSourceFiles, rewriteRelativeSourceImports, loaderFor, outputPathFor, ROOT_MODULES, ROOTS } from './build-demos.ts';
 
 test('a relative .jsx import points at the .generated.js sibling this script writes', () => {
   const code = 'import { ArenaButton } from "./ArenaButton.jsx";\nimport { A } from "../a/A.jsx";\n';

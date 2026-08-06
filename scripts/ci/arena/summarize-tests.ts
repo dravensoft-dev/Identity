@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, existsSync, appendFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { testStep } from '../../check/arena/check-all.mjs';
+import { testStep } from '../../check/arena/check-all.ts';
 import { DOMAINS, domainOfTestPath, isSuite } from '../../lib/arena/domains.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -21,7 +21,7 @@ export const EXPECTED_ROOTS = [
   'frameworks/angular/build/test/',
 ];
 
-export function stepsWithJunit(dir = REPORT_DIR) {
+export function stepsWithJunit(dir = REPORT_DIR): { name: string; args: string[]; outfile?: string }[] {
   let n = 0;
   return testStep({ isBun: true, testFiles: [] }).map((step) => {
     if (step.args[0] !== 'test') return step;

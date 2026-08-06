@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { angularEmitRoot } from '../../lib/angular/emit-root.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.mjs';
+import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.ts';
 
 const CI_JOBS = {
   core: ['core', 'arena'],

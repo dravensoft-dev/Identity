@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, sourceFiles, componentParamCount, zeroComponentParamProblems, EXEMPT } from './check-dimension-literals.mjs';
+import { scanValue, scanText, scanInjectedCss, scanAttributes, scanDefaultsAndCallSites, staleExemptions, stalePassthrough, expressionLeaves, sourceFiles, componentParamCount, zeroComponentParamProblems, EXEMPT } from './check-dimension-literals.ts';
 
 test('a bare number is a violation for a dimension-valued property', () => {
   assert.ok(scanValue('fontSize', '13'));

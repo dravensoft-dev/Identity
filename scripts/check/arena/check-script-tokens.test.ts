@@ -7,7 +7,7 @@ import {
   cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems,
   shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT, sourceFiles,
 } from './check-script-tokens.ts';
-import { buildScriptModules } from '../../generate/arena/generate-tokens.mjs';
+import { buildScriptModules } from '../../generate/arena/generate-tokens.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 test('cssCounterpart strips the unit from a px declaration', () => {

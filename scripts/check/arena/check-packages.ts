@@ -134,7 +134,7 @@ export function exportProblems(pkg, manifest, dir) {
   } else if (!existsSync(join(dir, types))) {
     problems.push(`${pkg.name}: types ${types}, which was never emitted`);
   }
-  for (const [field, value] of Object.entries(manifest.bin ?? {})) {
+  for (const [field, value] of Object.entries(manifest.bin ?? {}) as [string, string][]) {
     if (!existsSync(join(dir, value))) problems.push(`${pkg.name}: bin ${field} points at ${value}, which was never emitted`);
   }
   if (!existsSync(join(dir, 'README.md'))) problems.push(`${pkg.name}: no README.md, which is the page npm shows`);
@@ -155,7 +155,7 @@ export function componentMapProblems(pkg, dir) {
   const sheets = existsSync(join(dir, 'css', 'components'))
     ? readdirSync(join(dir, 'css', 'components')).filter((n) => n.endsWith('.css')).map((n) => basename(n, '.css'))
     : [];
-  const claimed = new Set(Object.values(map.draws ?? {}).filter(Boolean));
+  const claimed = new Set((Object.values(map.draws ?? {}) as string[]).filter(Boolean));
   const problems = [];
   if (!map.match || claimed.size === 0) {
     problems.push(`${pkg.name}: ${MAP_FILE} names no component sheet, so auto would resolve every project to nothing`);

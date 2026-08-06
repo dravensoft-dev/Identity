@@ -44,7 +44,7 @@ jobs:
         run: bun run build:packages
 
       - name: every gate
-        run: bun scripts/check/arena/check-all.mjs --no-tests
+        run: bun scripts/check/arena/check-all.ts --no-tests
 
       - name: the whole suite, counted per domain
         run: bun run ci:summarize

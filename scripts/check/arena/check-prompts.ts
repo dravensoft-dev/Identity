@@ -9,10 +9,10 @@ import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-import { loadContract } from '../../generate/arena/generate-skills.mjs';
+import { loadContract } from '../../generate/arena/generate-skills.ts';
 import {
   renderRegion, promptPaths, OPEN_LINE, CLOSE_LINE,
-} from '../../generate/arena/generate-prompt-api.mjs';
+} from '../../generate/arena/generate-prompt-api.ts';
 
 export function regionOf(source) {
   const lines = source.split('\n');

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import {
   EXPECTED_ROOTS, coverageProblems, parseJunit, renderSummary, stepsWithJunit, suiteDomains, tally,
 } from './summarize-tests.ts';
-import { testStep } from '../../check/arena/check-all.mjs';
+import { testStep } from '../../check/arena/check-all.ts';
 import { DOMAINS } from '../../lib/arena/domains.mjs';
 
 const AUTHORITY = testStep({ isBun: true, testFiles: [] });

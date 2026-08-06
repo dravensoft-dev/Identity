@@ -4,7 +4,7 @@ import { mkdtempSync, cpSync, rmSync, symlinkSync, writeFileSync, readFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { PROJECTS, typecheck } from './check-angular.mjs';
+import { PROJECTS, typecheck } from './check-angular.ts';
 
 const BUILD_ONLY_OPTIONS = ['outDir', 'sourceMap', 'incremental', 'tsBuildInfoFile'];
 

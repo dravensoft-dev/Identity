@@ -7,7 +7,7 @@ import {
   PACKAGES, GENERATED_PALETTE, distDir, stripAtStatements,
   paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect, styleProblems,
   componentMapProblems,
-} from './check-packages.mjs';
+} from './check-packages.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const generated = ':root{--color-primary:#b52a20;--color-base-100:#141010;}';
@@ -109,7 +109,7 @@ test('an Arena package is always a peer, never a dependency', () => {
 
 function assembled(files) {
   const dir = mkdtempSync(join(tmpdir(), 'arena-pkg-'));
-  for (const [path, body] of Object.entries(files)) {
+  for (const [path, body] of Object.entries(files) as [string, string][]) {
     const full = join(dir, path);
     mkdirSync(join(full, '..'), { recursive: true });
     writeFileSync(full, body);

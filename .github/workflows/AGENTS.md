@@ -36,9 +36,9 @@ job per layer would have each of them redoing most of what the others did.
 [`../../scripts/build/AGENTS.md`](../../scripts/build/AGENTS.md) carries the chain.
 
 **The four names are on the test stage, where the layers are genuinely disjoint.** A gate
-belongs to exactly one of the five domains `check-all.mjs` sorts by, and the jobs partition
+belongs to exactly one of the five domains `check-all.ts` sorts by, and the jobs partition
 that set: `core` takes the `core` and `arena` domains, and the other three take their own.
-`check-all.test.mjs` asserts the partition, so a gate cannot join `GATES` and run in no job.
+`check-all.test.ts` asserts the partition, so a gate cannot join `GATES` and run in no job.
 
 **`core` runs on every change, and that is not caution.** The `arena` domain is where the
 cross-layer gates are: `check:api`, `check:behaviour`, `check:compliance`, `check:structure`,
@@ -61,7 +61,7 @@ routing decision can skip.
 
 One job, and deliberately not the fan-out. It runs every gate and then the whole suite
 through `bun run ci:summarize`, which takes the invocation from `testStep()` in
-`check-all.mjs` and appends the two junit flags. `check-all.mjs` stays the one place the
+`check-all.ts` and appends the two junit flags. `check-all.ts` stays the one place the
 test invocation is written down, and the run summary carries a table of passes per domain.
 
 A domain that owns suites and reported no case fails the run, as does a tree that

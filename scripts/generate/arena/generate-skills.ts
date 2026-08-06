@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { LAYERS, kebab } from '../../lib/arena/layers.mjs';
 import { bindingCases } from '../../lib/arena/behaviour-contracts.mjs';
+import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 import { bindingName } from '../../lib/arena/api-surface.mjs';
 
 export const CONSUMER_LAYERS = LAYERS.filter((layer) => layer !== 'tailwind');
@@ -116,9 +117,9 @@ export function promptPath(category, component) {
   return `./components/${category}/${kebab(component)}/${component}.prompt.md`;
 }
 
-export function memberList(contract, layer) {
+export function memberList(contract, layer?) {
   if (!contract) return [];
-  return Object.entries(contract.api ?? {}).map(([name, member]) => {
+  return memberEntries(contract.api).map(([name, member]) => {
     const bound = layer ? bindingName(name, member.form, layer) : name;
     return member.required ? `${bound}*` : bound;
   });

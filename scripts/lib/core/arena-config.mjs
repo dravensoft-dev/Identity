@@ -1,5 +1,5 @@
 /* Arena's own skin, expressed as the arena.config.json a consumer writes. Two things read
- * it: check-packages.mjs, which runs the CLI over it and holds the result equivalent to the
+ * it: check-packages.ts, which runs the CLI over it and holds the result equivalent to the
  * Style Dictionary output, and the assembly, which writes it into each package as the
  * example a consumer starts from. Deriving it beats writing it twice, because the example
  * a reader copies is then the palette the gate proved.

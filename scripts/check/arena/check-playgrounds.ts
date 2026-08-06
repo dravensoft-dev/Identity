@@ -19,7 +19,7 @@ import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
 import { connect } from '../../lib/arena/cdp.mjs';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
 import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.mjs';
-import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.mjs';
+import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.ts';
 import { memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 
 export const FIXTURE_DIR = 'frameworks/demos';

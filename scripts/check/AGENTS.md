@@ -1,7 +1,7 @@
 # scripts/check/
 
 **A gate states one claim about the tree and fails when it stops being true.** They are
-registered in `GATES` in [`arena/check-all.mjs`](./arena/check-all.mjs), which `bun run check`
+registered in `GATES` in [`arena/check-all.ts`](./arena/check-all.ts), which `bun run check`
 runs unconditionally: one failure never stops the rest, so a full sweep reports every problem
 in one pass rather than the first. That array is the count, and its suite asserts the number by
 literal value; a figure written here instead would rot the next time a gate lands.
@@ -90,12 +90,12 @@ run. See [`../build/AGENTS.md`](../build/AGENTS.md).
 ## The five domains
 
 **These counts are the one set in the repository written in prose and held by an assertion**, so
-they are numbers rather than a command: `check-all.test.mjs` derives each from `GATES` and fails
+they are numbers rather than a command: `check-all.test.ts` derives each from `GATES` and fails
 this table when the two disagree. That is why they may be read, and why nobody should replace
 them with a `find`, which would trade a held claim for an unheld one.
 
 Counts are of **registered gates**; `arena/` alone holds two files that are not one:
-`check-release.ts`, run by path rather than registered, and `check-all.mjs`, the runner
+`check-release.ts`, run by path rather than registered, and `check-all.ts`, the runner
 rather than a gate. The distinction is the section above: a gate on disk that is registered
 nowhere runs in no job and is worth nothing, so the directory is not the authority here.
 
@@ -107,10 +107,10 @@ nowhere runs in no job and is worth nothing, so the directory is not the authori
 | [`core/`](./core/AGENTS.md) | 5 | `contracts/` and `assets/` only |
 | [`react/`](./react/AGENTS.md) | 4 | the React layer |
 
-`check-all.test.mjs` asserts every gate names one of the five domains and points at
+`check-all.test.ts` asserts every gate names one of the five domains and points at
 `<domain>/<gate>.mjs`, so a gate landing outside the grid fails rather than running unnoticed.
 
-The domain is also what a narrowed run selects on. `check-all.mjs` takes `--domain=core,arena`
+The domain is also what a narrowed run selects on. `check-all.ts` takes `--domain=core,arena`
 and `--no-tests`, and `gatesFor()` refuses a name outside `DOMAINS` and a selection matching no
 gate, because a run of nothing reports nothing wrong with everything. CI is its only caller,
 and its four jobs partition this table: `core` takes `core/` and `arena/`, since every
@@ -120,7 +120,7 @@ a gate cannot join `GATES` and then run in no job.
 ## Adding a gate
 
 Put it in `check/<domain>/`, add it to `GATES` with its domain in the path, give it an npm
-script, and add a row to that domain's table. `check-all.test.mjs` asserts the gate list by
+script, and add a row to that domain's table. `check-all.test.ts` asserts the gate list by
 literal value, so the count and the order move in the same commit.
 
 `check-release` is the one script with no npm entry and no place in `GATES`: it is run by path

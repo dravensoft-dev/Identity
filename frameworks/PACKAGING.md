@@ -164,7 +164,7 @@ The shared half is [`scripts/lib/arena/package-assembly.mjs`](../scripts/lib/are
 the exclusion list, the copy that honours it, the CSS chain and the manifest template.
 Neither half compiles anything, because the two layers need different compilers.
 
-**React** goes through `Bun.Transpiler`, the same path `build-demos.mjs` already uses, and
+**React** goes through `Bun.Transpiler`, the same path `build-demos.ts` already uses, and
 each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
 implementation it describes. There is exactly one rewrite, and it normalises every relative
 specifier to `.js`: one carrying `.ts`, `.tsx`, `.jsx` or `.js` is retargeted, and one carrying

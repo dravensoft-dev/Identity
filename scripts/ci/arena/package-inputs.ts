@@ -27,7 +27,7 @@ export const PACKAGE_INPUTS = {
       + 'which are gitignored, so a manifest edit moves what the package ships and no tracked '
       + 'file under frameworks/react/ moves with it',
     'scripts/build/react/build-react-package.ts': 'the assembler',
-    'scripts/build/react/build-react-barrel.mjs': 'the entry point it compiles',
+    'scripts/build/react/build-react-barrel.ts': 'the entry point it compiles',
   },
   angular: {
     ...SHARED_INPUTS,

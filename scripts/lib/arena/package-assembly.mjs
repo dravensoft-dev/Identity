@@ -9,7 +9,7 @@ import { repoRoot } from './repo-root.mjs';
 import { kebab } from './layers.mjs';
 import { componentMap, MAP_FILE } from './component-map.mjs';
 import { manifestFiles } from '../tailwind/tailwind-compile.mjs';
-import { CONSUME, sheetPath } from '../../build/tailwind/build-tailwind.mjs';
+import { CONSUME, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 
 export const EXCLUDED_NAMES = new Set(['node_modules', 'dist', 'vendor', 'test', 'build']);
 

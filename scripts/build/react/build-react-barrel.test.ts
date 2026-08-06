@@ -6,12 +6,12 @@ import { join } from 'node:path';
 import {
   componentModules, barrel, buildBarrel, zeroComponentProblems,
   missingSourceProblems, duplicateExportProblems, HELPERS, TYPE_ONLY, ROOT_PRIVATE, BANNER,
-} from './build-react-barrel.mjs';
+} from './build-react-barrel.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 function layer(components) {
   const root = mkdtempSync(join(tmpdir(), 'arena-barrel-'));
-  for (const [path, body] of Object.entries(components)) {
+  for (const [path, body] of Object.entries(components) as [string, string][]) {
     const full = join(root, 'frameworks', 'react', path);
     mkdirSync(join(full, '..'), { recursive: true });
     writeFileSync(full, body);

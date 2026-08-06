@@ -234,11 +234,11 @@ test('the Angular emit is skipped by its anchored path, so the scripts phase dir
   const overLong = `/* ${'x\n * '.repeat(HEADER_MAX_LINES + 2)} */\nconst a = 1;\n`;
   const root = tree({
     'frameworks/angular/build/test/Emitted.js': overLong,
-    'scripts/build/react/build-demos.mjs': overLong,
+    'scripts/build/react/build-demos.ts': overLong,
   });
   const { problems } = commentRuleProblems(root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /scripts\/build\/react\/build-demos\.mjs/);
+  assert.match(problems[0], /scripts\/build\/react\/build-demos\.ts/);
   rmSync(root, { recursive: true });
 });
 
@@ -348,7 +348,7 @@ test('a generated demo page is the one build product a prompt may name, being wh
 
 test('the rule reaches prompts alone, and a sibling of the component is not a contributor path', () => {
   const root = tree({
-    'frameworks/react/AGENTS.md': 'Read `scripts/build/react/build-demos.mjs` for the emit.\n',
+    'frameworks/react/AGENTS.md': 'Read `scripts/build/react/build-demos.ts` for the emit.\n',
     'frameworks/react/components/a/A.prompt.md':
       'Open `frameworks/react/components/a/A.card.html`, and import from `@dravensoft/arena-react`.\n',
   });
@@ -370,7 +370,7 @@ test('an index under frameworks/ is a consumer document, and the root router is 
 
 test('an index citing a contributor path fails the same way a prompt does', () => {
   const root = tree({
-    'frameworks/react/SKILL.md': 'Emitted by `scripts/generate/arena/generate-skills.mjs`.\n',
+    'frameworks/react/SKILL.md': 'Emitted by `scripts/generate/arena/generate-skills.ts`.\n',
     'frameworks/react/components/a/A.prompt.md': 'Import from `@dravensoft/arena-react`.\n',
   });
   const { problems, scanned } = consumerBranchProblems(root);

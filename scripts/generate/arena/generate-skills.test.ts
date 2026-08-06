@@ -7,7 +7,7 @@ import {
   renderIndex, renderLayerIndex, renderTarget, renderRow, renderLayerRow, renderPatterns,
   memberList, escapeCell, promptPath, layersFor, layerTarget,
   SKILL_TARGETS, INDEX_TARGET, CONSUMER_LAYERS,
-} from './generate-skills.mjs';
+} from './generate-skills.ts';
 
 test('a required member is starred and an optional one is not', () => {
   const members = memberList({ api: { label: { required: true }, dim: {} } });
@@ -103,7 +103,7 @@ test('every emitted index is what is committed, so a reader of the tag reads the
 test('the index names every component and stays clear of the punctuation rule', () => {
   const out = renderIndex();
   const declared = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
-  for (const names of Object.values(declared)) {
+  for (const names of Object.values(declared) as string[][]) {
     for (const name of names) assert.ok(out.includes(`\`${name}\``), `the index omits ${name}`);
   }
   assert.ok(!out.includes('—'), 'the index carries an em dash, which check:docs bans in a document');

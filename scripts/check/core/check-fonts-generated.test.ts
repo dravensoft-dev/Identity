@@ -23,7 +23,7 @@ test('a declared family with no face fails, naming the family and the fix', () =
   assert.equal(errs.length, 1);
   assert.match(errs[0], /"Inter"/);
   assert.match(errs[0], /no @font-face/);
-  assert.match(errs[0], /bun scripts\/generate\/core\/fetch-fonts\.mjs/);
+  assert.match(errs[0], /bun scripts\/generate\/core\/fetch-fonts\.ts/);
 });
 
 test('a generic fallback like system-ui is never in the declared list, so it is never required to have a face', () => {

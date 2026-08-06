@@ -36,7 +36,7 @@ rather than implied:
 | `arena` | two or more layers at once, or the repository root |
 
 The domain is decided by what a script **touches**, never by what it is about.
-`generate/arena/generate-tokens.mjs` reads `contracts/design/` but writes
+`generate/arena/generate-tokens.ts` reads `contracts/design/` but writes
 `Tokens.generated.*` into both framework layers, so it is `arena` and not `core`.
 
 **A library that touches nothing is placed by the vocabulary it speaks**, because most of
@@ -74,7 +74,7 @@ the same domain, not merely somewhere under `lib/`.
 grants `scripts/` and test files. Anything that will not fit goes in the gate's own reason
 strings, which its paired suite already asserts by name.
 
-**A test under `scripts/` may not import a framework layer's `.ts` or `.tsx`.** `check-all.mjs`
+**A test under `scripts/` may not import a framework layer's `.ts` or `.tsx`.** `check-all.ts`
 also runs these suites under plain node, which cannot resolve the extensionless imports those
 toolchains expect.
 
@@ -99,9 +99,9 @@ notices each missing piece.
 
 ## Adding a gate
 
-Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.mjs` with its domain
+Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.ts` with its domain
 in the path, give it an npm script, and add a row to that domain's table.
-`check-all.test.mjs` asserts every gate names one of the five domains, so a gate landing
+`check-all.test.ts` asserts every gate names one of the five domains, so a gate landing
 outside the grid fails rather than running unnoticed.
 
 **A gate has two existences, the file and every place that invokes it, and only the second is
@@ -129,7 +129,7 @@ each one's dependency in [`check/AGENTS.md`](./check/AGENTS.md), which also has 
 every environment variable the scripts read; all of them are declared in
 `lib/arena/arena-scripts-vars.mjs`, and a real one wins over the declared value.
 
-**CI narrows that run by domain, never by gate name.** `check-all.mjs` takes `--domain=` and
-`--no-tests`, four jobs partition `GATES`, and `check-all.test.mjs` asserts the partition, so a
+**CI narrows that run by domain, never by gate name.** `check-all.ts` takes `--domain=` and
+`--no-tests`, four jobs partition `GATES`, and `check-all.test.ts` asserts the partition, so a
 gate cannot join `GATES` and then run in no job.
 [`../.github/workflows/AGENTS.md`](../.github/workflows/AGENTS.md) has the four workflows.
