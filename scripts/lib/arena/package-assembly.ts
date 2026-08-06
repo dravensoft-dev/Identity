@@ -4,6 +4,7 @@
  * compiles anything; each layer's own builder does that with its own toolchain. */
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
+import { ModuleKind, ScriptTarget, transpileModule } from 'typescript';
 import { join, dirname, relative, sep, basename } from 'node:path';
 import { repoRoot } from './repo-root.ts';
 import { kebab } from './layers.ts';
@@ -145,13 +146,27 @@ export function componentSheets(css: string, split: (css: string) => { base: str
   ];
 }
 
-export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.ts' };
+export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.mjs' };
+
+export const SHIPPED_SPECIFIER = /(from\s+')(\.[^']*)\.ts(')/g;
+
+export function emitCli(source: string) {
+  const { outputText } = transpileModule(source, {
+    compilerOptions: { target: ScriptTarget.ES2022, module: ModuleKind.ESNext, verbatimModuleSyntax: true },
+  });
+  return outputText.replace(SHIPPED_SPECIFIER, '$1$2.mjs$3');
+}
 
 export function copyCli(dir: string, root = repoRoot) {
   const written: string[] = [];
   for (const name of Object.keys(CLI_BINS)) {
     const from = join(root, 'scripts', 'generate', 'core', name);
-    const copied = copyTree(from, dir, 'bin').map((p) => `./${relative(dir, p).split(sep).join('/')}`);
+    const copied = collectFiles(from, (file) => !excluded(basename(file))).map((file) => {
+      const to = join('bin', relative(from, file).split(sep).join('/'));
+      if (!file.endsWith('.ts')) { copy(file, dir, to); return `./${to}`; }
+      write(dir, to.replace(/\.ts$/, '.mjs'), emitCli(readFileSync(file, 'utf8')));
+      return `./${to.replace(/\.ts$/, '.mjs')}`;
+    });
     if (copied.length === 0) throw new Error(`package-assembly: copied 0 files for ${name}; its directory moved`);
     for (const one of copied) {
       if (written.includes(one)) {

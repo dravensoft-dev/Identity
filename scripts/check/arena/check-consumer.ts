@@ -1,15 +1,18 @@
 /* The one gate that runs what a consumer runs. Every other package claim reads dist/ as
- * files; this spawns the CLI each package ships, from inside that package, and reads what it
- * writes. No project is scaffolded and nothing is installed: arena-to-prod resolves its own
- * root by walking up from bin/, so the assembled dist/ IS the installed package, and the
+ * files; this spawns the CLI each package ships, from a `node_modules/` path, and reads what
+ * it writes. The location is load-bearing: Node refuses to strip types under node_modules on
+ * purpose, so a command run from dist/ proves nothing about the same command where it is
+ * installed. The dist is symlinked into the fixture's node_modules and run from there;
+ * arena-to-prod walks up from bin/ to find its root, so that link IS the package, and the
  * config is the example the package itself ships. Assembly is a prerequisite rather than a
  * step: a dist/ already there is left alone, and only a missing one is built, because
  * build:packages costs minutes and this gate costs seconds. The named sheet list is read from
- * the README the package ships, which is that layer's PACKAGE.md, so the example a migrating
- * consumer copies is the one this gate runs rather than a second copy of it here. */
+ * the README the package ships, which is that layer's PACKAGE.md. */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
+import {
+  mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, symlinkSync,
+} from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -19,7 +22,7 @@ import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.ts';
 import { captured } from '../../lib/arena/captures.ts';
 
-export const CLI = 'bin/arena-to-prod.ts';
+export const CLI = 'bin/arena-to-prod.mjs';
 export const GLYPH = 'ph-bell';
 
 export const SOURCES: Record<string, Record<string, string>> = {
@@ -68,8 +71,17 @@ export function fixture(
   return dir;
 }
 
+export function installed(layer: string, dir: string, base = root) {
+  const name = PACKAGES.find((p) => p.layer === layer)?.name;
+  if (!name) throw new Error(`check-consumer: no package is declared for a layer called "${layer}"`);
+  const at = join(dir, 'node_modules', ...name.split('/'));
+  mkdirSync(join(at, '..'), { recursive: true });
+  if (!existsSync(at)) symlinkSync(distDir(layer, base), at, 'dir');
+  return join(at, CLI);
+}
+
 export function runCli(layer: string, dir: string, base = root) {
-  const run = spawnSync('node', [join(distDir(layer, base), CLI), '--src', 'src', '--out', 'out'],
+  const run = spawnSync('node', [installed(layer, dir, base), '--src', 'src', '--out', 'out'],
     { cwd: dir, encoding: 'utf8' });
   const read = (name: string) => {
     const at = join(dir, 'out', name);
@@ -195,7 +207,7 @@ function main() {
     for (const one of problems) console.error(`  ${one}`);
     process.exit(1);
   }
-  console.log(`check-consumer: both packages run ${CLI} from their own dist/ and resolve "auto" to the sheets `
+  console.log(`check-consumer: both packages run ${CLI} from a node_modules/ path and resolve "auto" to the sheets `
     + `a consumer's sources name${built ? ', after assembling what was missing' : ''}`);
 }
 

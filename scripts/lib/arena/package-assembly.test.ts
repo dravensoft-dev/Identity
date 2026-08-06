@@ -111,20 +111,30 @@ test('the manifest takes its version and its identity from plugin.json, never fr
   assert.deepEqual(base.bin, CLI_BINS);
 });
 
-test('a TypeScript command and the node floor are one claim, so neither can move alone', () => {
-  const base = baseManifest(repoRoot);
+test('no command ships as TypeScript, because node_modules is where node refuses to strip it', () => {
   const ships = Object.values(CLI_BINS);
   assert.ok(ships.length > 0, 'the manifest advertises no command, so this proves nothing');
 
-  const [major = 0, minor = 0] = base.engines.node.replace(/^\D*/, '').split('.').map(Number);
-  const strips = major > 22 || (major === 22 && minor >= 18);
-
-  if (ships.some((target) => target.endsWith('.ts'))) {
-    assert.ok(strips,
-      `a command ships as TypeScript and engines says node ${base.engines.node}. Node strips types `
-      + 'unflagged from 22.18; below that the command is a syntax error on a consumer machine, and '
-      + 'engines is advisory, so npm installs it and the failure lands at first run.');
+  for (const target of ships) {
+    assert.doesNotMatch(target, /\.tsx?$/,
+      `${target} ships as TypeScript. Node refuses to strip types for anything under a node_modules `
+      + 'path, at every version and on purpose, so this is not a floor a consumer can raise past: it '
+      + 'is ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING at their first run. copyCli emits .mjs.');
   }
+});
+
+test('what copyCli emits is JavaScript, and its specifiers point at what it wrote', () => {
+  const to = mkdtempSync(join(tmpdir(), 'arena-assembly-cli-'));
+  const written = copyCli(to, repoRoot);
+  for (const one of written) {
+    assert.doesNotMatch(one, /\.tsx?$/, `${one} left the assembly as TypeScript`);
+    for (const m of readFileSync(join(to, one), 'utf8').matchAll(/from\s+'(\.[^']+)'/g)) {
+      const spec = m[1] ?? '';
+      assert.doesNotMatch(spec, /\.tsx?$/, `${one} imports ${spec}, which it did not write`);
+      assert.equal(existsSync(join(to, 'bin', spec)), true, `${one} imports ${spec} and nothing is there`);
+    }
+  }
+  rmSync(to, { recursive: true });
 });
 
 test('every command the manifest declares is copied, flat, and no two of them share a filename', () => {
