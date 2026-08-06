@@ -10,6 +10,6 @@ export function serializeScript(token: DtcgToken) {
   return token.$value.value;
 }
 
-export function scriptName(kebab) {
-  return kebab.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+export function scriptName(kebab: string) {
+  return kebab.replace(/-([a-z0-9])/g, (_: string, c: string) => c.toUpperCase());
 }

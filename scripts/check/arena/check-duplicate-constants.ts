@@ -30,7 +30,7 @@ const EXEMPT = new Map([
 ]);
 
 export function numericConstants(source: string) {
-  const found = new Map();
+  const found = new Map<string, string>();
   const re = /^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*=\s*([^;]+);/gm;
   for (const m of source.matchAll(re)) {
     const raw = m[2].replace(/\s*as\s+const\s*$/, '').trim();
@@ -47,7 +47,7 @@ export function numericConstants(source: string) {
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-export function* sourceFiles(dir: string) {
+export function* sourceFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
     const path = join(dir, entry);
@@ -84,7 +84,8 @@ function collect() {
     hit.add(name);
     if (EXEMPT.has(name)) continue;
     const where = [...layers].map(([layer, decls]) =>
-      decls.map((d) => `${d.file} = ${d.value}`).join(', ')).join('  and  ');
+      decls.map((d: { file: string; value: string }) => `${d.file} = ${d.value}`)
+        .join(', ')).join('  and  ');
     problems.push(`${name}: declared in both layers — ${where}\n    Author it in contracts/design/ with the script flag instead.`);
   }
 

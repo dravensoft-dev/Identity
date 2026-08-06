@@ -14,34 +14,34 @@ import { childEntries } from './dtcg-shapes.ts';
 
 export const GOOGLE_FONTS = 'https://fonts.googleapis.com/css2';
 
-const skin = (root, theme) =>
+const skin = (root: string, theme: string) =>
   JSON.parse(readFileSync(join(root, `contracts/design/palette.${theme}.json`), 'utf8')).color;
 
-export function paletteColors(root, theme) {
-  const out = {};
+export function paletteColors(root: string, theme: string) {
+  const out: Record<string, string> = {};
   for (const [key, token] of childEntries(skin(root, theme))) {
     out[key] = (token.$value as { hex: string }).hex;
   }
   return out;
 }
 
-const typographyContract = (root) =>
+const typographyContract = (root: string) =>
   JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
 
-export function fontWeights(root) {
+export function fontWeights(root: string) {
   return childEntries(typographyContract(root).fw)
     .map(([, token]) => token.$value as number)
     .sort((a, b) => a - b);
 }
 
-export function googleFontsUrl(family: string, weights) {
+export function googleFontsUrl(family: string, weights: number[]) {
   return `${GOOGLE_FONTS}?family=${family.replace(/ /g, '+')}:wght@${weights.join(';')}&display=swap`;
 }
 
-export function fontEntries(root) {
+export function fontEntries(root: string) {
   const weights = fontWeights(root);
 
-  const out = {};
+  const out: Record<string, { family: string; src: string }> = {};
   for (const [role, token] of childEntries(typographyContract(root).font)) {
     const family = (token.$value as string[])[0];
     out[role] = { family, src: googleFontsUrl(family, weights) };
@@ -49,7 +49,7 @@ export function fontEntries(root) {
   return out;
 }
 
-export function arenaConfig(root, themes = ['dark', 'light']) {
+export function arenaConfig(root: string, themes = ['dark', 'light']) {
   return {
     palettes: themes.map((theme, i) => ({
       name: theme,

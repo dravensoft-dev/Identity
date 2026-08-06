@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateTree, zeroSourceProblems } from './check-dtcg.ts';
+import type { DtcgNode } from '../../lib/core/dtcg-shapes.ts';
 
-const ok = (tree) => assert.deepEqual(validateTree(tree, 'f.json'), []);
-const fails = (tree, re) => {
+const ok = (tree: DtcgNode) => assert.deepEqual(validateTree(tree, 'f.json'), []);
+const fails = (tree: DtcgNode, re: RegExp) => {
   const errs = validateTree(tree, 'f.json');
   assert.ok(errs.length > 0, 'expected at least one violation');
   assert.match(errs.join('\n'), re);
@@ -43,7 +44,7 @@ test('rejects a cubicBezier with the wrong arity or an out-of-range x', () => {
 });
 
 test('validates a shadow composite down to its parts', () => {
-  const px = (value) => ({ value, unit: 'px' });
+  const px = (value: number) => ({ value, unit: 'px' });
   ok({ s: { $type: 'shadow', a: { $value: {
     offsetX: px(0), offsetY: px(2), blur: px(6), spread: px(-2),
     color: { colorSpace: 'srgb', components: [0, 0, 0], alpha: 0.5 } } } } });

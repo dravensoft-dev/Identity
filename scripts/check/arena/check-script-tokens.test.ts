@@ -9,6 +9,7 @@ import {
 } from './check-script-tokens.ts';
 import { buildScriptModules } from '../../generate/arena/generate-tokens.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+import type { LayerConstants } from './check-script-tokens.ts';
 
 test('cssCounterpart strips the unit from a px declaration', () => {
   assert.equal(cssCounterpart('280px'), 280);
@@ -125,7 +126,9 @@ test('cssDiscoveryProblems: a prior drift problem AND an empty directory -- both
 });
 
 const sp2 = { jsName: 'sp2', value: '8' };
-const layerWith = (layer: string, imported, constants) => ({ layer, imported: new Set(imported), constants });
+const layerWith = (layer: string, imported: string[],
+  constants: LayerConstants['constants']): LayerConstants =>
+  ({ layer, imported: new Set(imported), constants });
 
 test('a layer that imports the token may hold nothing that shadows it, because it holds no copy', () => {
   const layers = [layerWith('react', ['sp2'], [{ name: 'GAP', value: '8', path: 'a.jsx' }])];

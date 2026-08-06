@@ -1,3 +1,8 @@
+/* Holds the generated token modules against the DTCG source and the CSS. LayerConstants
+ * is what check:duplicate-constants reads out of a layer: the constants declared at
+ * module level, and the names it imported rather than declared, which is how a constant
+ * that merely re-exports a token is told from one that shadows it. */
+
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, extname, relative } from 'node:path';
@@ -9,13 +14,13 @@ import { numericConstants } from './check-duplicate-constants.ts';
 
 const LAYERS_WITH_MODULES = ['react', 'angular'];
 
-export function cssCounterpart(value) {
+export function cssCounterpart(value: string) {
   const m = /^(-?\d+(?:\.\d+)?)(px|ms|%)?$/.exec(value.trim());
   return m ? Number(m[1]) : null;
 }
 
 export function importedNames(source: string) {
-  const names = new Set();
+  const names = new Set<string>();
   const re = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*tokens\.generated(?:\.js|\.ts)?['"]/gi;
   for (const m of source.matchAll(re)) {
     for (const raw of m[1].split(',')) {
@@ -26,7 +31,7 @@ export function importedNames(source: string) {
   return names;
 }
 
-export function catSlotEnumProblems(catSlots, values) {
+export function catSlotEnumProblems(catSlots: number, values: unknown) {
   const expected = Array.from({ length: catSlots }, (_, i) => i + 1);
   const actual = Array.isArray(values) ? values : [];
   const matches = actual.length === expected.length && expected.every((v, i) => actual[i] === v);
@@ -34,12 +39,20 @@ export function catSlotEnumProblems(catSlots, values) {
   return [`contracts/api/types/arena-cat-slot.json: ArenaCatSlot is [${actual.join(', ')}], but the --color-cat-* ramp in contracts/design/palette.dark.json has ${catSlots} slot(s), so it must be [${expected.join(', ')}] — the contract type restates the ramp and has to follow it`];
 }
 
-export const SHADOW_EXEMPT = new Map([
+export const SHADOW_EXEMPT = new Map<string, string>([
 
 ]);
 
-export function shadowedTokenProblems(flagged, layers) {
-  const problems = [];
+export type LayerConstants = {
+  layer: string;
+  imported: Set<string>;
+  constants: { name: string; value: string; path: string }[];
+};
+
+export function shadowedTokenProblems(
+  flagged: { jsName: string; value: unknown }[], layers: LayerConstants[],
+) {
+  const problems: string[] = [];
   for (const { jsName, value } of flagged) {
     if (!/^-?\d+(\.\d+)?$/.test(String(value))) continue;
     for (const { layer, imported, constants } of layers) {
@@ -61,26 +74,27 @@ export function shadowedTokenProblems(flagged, layers) {
   return problems;
 }
 
-export function staleShadowExemptions(layers) {
-  const declared = new Set(layers.flatMap(({ layer, constants }) => constants.map((c) => `${layer}:${c.name}`)));
+export function staleShadowExemptions(layers: LayerConstants[]) {
+  const declared = new Set(layers.flatMap(({ layer, constants }) =>
+    constants.map((c) => `${layer}:${c.name}`)));
   return [...SHADOW_EXEMPT.keys()]
     .filter((key) => !declared.has(key))
     .map((key) => `SHADOW_EXEMPT names "${key}", which declares no module-level numeric constant. Delete the entry.`);
 }
 
-export function zeroGeneratedCssProblems(count) {
+export function zeroGeneratedCssProblems(count: number) {
   if (count > 0) return [];
   return ['found 0 .css files in contracts/design-generated — an empty result set is a failure, not a clean pass; check the discovery path'];
 }
 
-export function cssDiscoveryProblems(existingProblems, cssFileCount) {
+export function cssDiscoveryProblems(existingProblems: string[], cssFileCount: number) {
   const zeroCss = zeroGeneratedCssProblems(cssFileCount);
   return zeroCss.length ? [...existingProblems, ...zeroCss] : [];
 }
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-export function* sourceFiles(dir: string) {
+export function* sourceFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
     const path = join(dir, entry);
@@ -137,10 +151,10 @@ async function main() {
   }
 
   const imported = new Set();
-  const layers = [];
+  const layers: LayerConstants[] = [];
   for (const layer of LAYERS_WITH_MODULES) {
-    const layerImported = new Set();
-    const constants = [];
+    const layerImported = new Set<string>();
+    const constants: LayerConstants['constants'] = [];
     for (const path of sourceFiles(join(root, 'frameworks', layer))) {
       const source = readFileSync(path, 'utf8');
       for (const name of importedNames(source)) { layerImported.add(name); imported.add(name); }

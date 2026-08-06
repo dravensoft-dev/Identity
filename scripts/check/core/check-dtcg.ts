@@ -2,22 +2,23 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+import type { DtcgNode } from '../../lib/core/dtcg-shapes.ts';
 
 const RESERVED = new Set(['$value', '$type', '$description', '$extensions', '$deprecated']);
 const DNS = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
 const HEX = /^#[0-9a-f]{6}$/;
 
-const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
-const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
-const inRange = (v, lo, hi) => isNum(v) && v >= lo && v <= hi;
+const isObj = (v: unknown): v is Record<string, any> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const inRange = (v: unknown, lo: number, hi: number) => isNum(v) && v >= lo && v <= hi;
 
-function checkDimension(v, at, errs, unitsAllowed = ['px', 'rem']) {
+function checkDimension(v: unknown, at: string, errs: string[], unitsAllowed = ['px', 'rem']) {
   if (!isObj(v)) return errs.push(`${at}: dimension must be a {value,unit} object, got ${JSON.stringify(v)}`);
   if (!isNum(v.value)) errs.push(`${at}: dimension value must be a number`);
   if (!unitsAllowed.includes(v.unit)) errs.push(`${at}: dimension unit must be one of ${unitsAllowed.join('|')} and is required even at 0`);
 }
 
-function checkColor(v, at, errs) {
+function checkColor(v: unknown, at: string, errs: string[]) {
   if (!isObj(v)) return errs.push(`${at}: color must be a structured object, got ${JSON.stringify(v)}`);
   if (v.colorSpace !== 'srgb') errs.push(`${at}: color colorSpace must be "srgb"`);
   if (!Array.isArray(v.components) || v.components.length !== 3 || !v.components.every((c) => inRange(c, 0, 1)))
@@ -34,7 +35,7 @@ function checkColor(v, at, errs) {
   }
 }
 
-function checkValue(type, v, at, errs) {
+function checkValue(type: string, v: unknown, at: string, errs: string[]) {
   switch (type) {
     case 'color': return checkColor(v, at, errs);
     case 'dimension': return checkDimension(v, at, errs);
@@ -71,9 +72,9 @@ function checkValue(type, v, at, errs) {
   }
 }
 
-export function validateTree(tree, file: string) {
-  const errs = [];
-  const walk = (node, path: string[], inheritedType) => {
+export function validateTree(tree: DtcgNode, file: string) {
+  const errs: string[] = [];
+  const walk = (node: DtcgNode, path: string[], inheritedType?: string) => {
     const type = node.$type ?? inheritedType;
     if (node.$extensions !== undefined) {
       if (!isObj(node.$extensions)) errs.push(`${file}:${path.join('.')}: $extensions must be an object`);
@@ -87,7 +88,7 @@ export function validateTree(tree, file: string) {
       checkValue(type, node.$value, at, errs);
       return;
     }
-    for (const [k, child] of Object.entries(node)) {
+    for (const [k, child] of Object.entries(node) as [string, DtcgNode][]) {
       if (RESERVED.has(k)) continue;
       if (k.startsWith('$') || /[.{}]/.test(k))
         errs.push(`${file}:${[...path, k].join('.')}: invalid name — must not start with $ or contain . { }`);
@@ -98,7 +99,7 @@ export function validateTree(tree, file: string) {
   return errs;
 }
 
-export function zeroSourceProblems(count) {
+export function zeroSourceProblems(count: number) {
   if (count > 0) return [];
   return ['found 0 token files in contracts/design — an empty result set is a failure, not a clean pass; check the discovery path'];
 }
@@ -108,7 +109,7 @@ function main() {
   const files = readdirSync(src).filter((f) => f.endsWith('.json')).sort();
   const zero = zeroSourceProblems(files.length);
   if (zero.length) { for (const z of zero) console.error(`check-dtcg: ${z}`); process.exit(1); }
-  let errs = [];
+  let errs: string[] = [];
   for (const f of files) errs = errs.concat(validateTree(JSON.parse(readFileSync(join(src, f), 'utf8')), f));
   if (errs.length) {
     console.error(`check-dtcg: ${errs.length} violation(s) of DTCG 2025.10\n`);

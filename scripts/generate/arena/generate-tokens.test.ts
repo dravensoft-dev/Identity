@@ -37,7 +37,7 @@ test('a source that references another file names it, and one that references no
     const groups = new Set(referencedGroups(source));
     const own = new Set(topLevelGroups(source));
     const foreign = [...groups].filter((g) => !own.has(g));
-    const declared = RESOLVES_AGAINST[source] ?? [];
+    const declared: string[] = (RESOLVES_AGAINST as Record<string, string[]>)[source] ?? [];
 
     if (foreign.length === 0) {
       assert.equal(declared.length, 0,
@@ -45,7 +45,7 @@ test('a source that references another file names it, and one that references no
       continue;
     }
     for (const group of foreign) {
-      const holder = declared.find((other) => topLevelGroups(other).includes(group));
+      const holder = declared.find((other: string) => topLevelGroups(other).includes(group));
       assert.ok(holder,
         `"${source}" references {${group}.…}, which lives in no file it resolves against -- `
         + 'the reference would silently emit unresolved');

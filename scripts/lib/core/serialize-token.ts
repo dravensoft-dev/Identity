@@ -8,13 +8,13 @@ const GENERIC_FAMILIES = new Set([
   'math', 'emoji', 'fangsong',
 ]);
 
-const trim = (n) => String(n).replace(/^(-?)0\./, '$1.');
+const trim = (n: number | string) => String(n).replace(/^(-?)0\./, '$1.');
 
-const dim = (d) => `${d.value}${d.unit}`;
+const dim = (d: { value: number; unit: string }) => `${d.value}${d.unit}`;
 
-const color = (c) => {
+const color = (c: { hex?: string; components: number[]; alpha?: number }) => {
   if (c.hex) return c.hex;
-  const [r, g, b] = c.components.map((v) => Math.round(v * 255));
+  const [r, g, b] = c.components.map((v: number) => Math.round(v * 255));
   const a = c.alpha ?? 1;
   return a === 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${trim(a)})`;
 };

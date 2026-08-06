@@ -58,7 +58,7 @@ test('an unknown type still yields a renderable shape rather than undefined', ()
   assert.equal(previewFor('brandnew', 'gradient'), 'value');
 });
 
-function deriveCases(files) {
+function deriveCases(files: { out: string; blocks: { selector: string; source: string }[] }[]) {
   const cases = [];
   for (const file of files) {
     const bySelector = new Map();
@@ -76,7 +76,7 @@ test('derived names match the custom properties the build actually emits', () =>
   assert.ok(cases.length >= 4, 'expected at least one case per output file');
   for (const [sources, css, selector] of cases) {
     const derived = sources
-      .flatMap((s) => flattenTokens(JSON.parse(readFileSync(s, 'utf8'))).map((t) => t.name))
+      .flatMap((s: string) => flattenTokens(JSON.parse(readFileSync(s, 'utf8'))).map((t) => t.name))
       .sort();
     const emitted = [...parseDecls(readFileSync(css, 'utf8')).get(selector).keys()].sort();
     assert.deepEqual(derived, emitted, `${sources.join(', ')} -> ${css} ${selector}`);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { serialize } from './serialize-token.ts';
 
-const px = (value) => ({ value, unit: 'px' });
+const px = (value: number) => ({ value, unit: 'px' });
 const em = { $extensions: { 'com.dravensoft.arena': { cssUnit: 'em' } } };
 
 test('dimension renders value+unit, and a zero KEEPS its unit', () => {

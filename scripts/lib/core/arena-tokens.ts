@@ -25,7 +25,7 @@ export function referencedTokens(css: string) {
   return out;
 }
 
-export function arenaTokenNames(root) {
+export function arenaTokenNames(root: string) {
   const names = arenaTokens(root);
   const colors = parseDecls(readFileSync(join(root, 'contracts', 'design', 'colors.css'), 'utf8'));
   for (const decls of colors.values()) for (const name of decls.keys()) names.add(name);

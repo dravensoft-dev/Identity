@@ -1,12 +1,11 @@
 /* The shape `contracts/design/` holds on disk, so the scripts that walk it agree about it.
- * A DTCG file is a tree where a node is either a token, which carries `$value`, or a group,
- * which carries children and may carry a `$description`; every reader here tells them apart
- * by exactly that test, over an `Object.entries()` of a `JSON.parse` that hands back
- * `unknown`, so the test was a claim none of them stated. `filePath` and `name` are not
- * DTCG: Style Dictionary stamps them on. `childEntries()` skips the `$`-prefixed keys,
- * which are a node's own metadata rather than its children, and is the one place that
- * rule is written down. `$value` is `any` because `$type` decides its shape and DTCG
- * defines a family of them; the serializers branch on `$type` and own that knowledge. */
+ * A node is either a token, which carries `$value`, or a group, which carries children;
+ * every walker here tells them apart by exactly that test, over an `Object.entries()` of a
+ * `JSON.parse` that hands back `unknown`. That is why a DtcgNode's `$value` is optional and
+ * `isToken()` is the test written once. `filePath` and `name` are not DTCG: Style Dictionary
+ * stamps them on. `childEntries()` skips the `$`-prefixed keys, which are a node's own
+ * metadata rather than its children. `$value` is `any` because `$type` decides its shape
+ * and DTCG defines a family of them; the serializers own that knowledge. */
 
 export type DtcgToken = {
   $value: any;
@@ -22,7 +21,7 @@ export type DtcgGroup = {
   [child: string]: unknown;
 };
 
-export type DtcgNode = DtcgToken & DtcgGroup;
+export type DtcgNode = Partial<DtcgToken> & DtcgGroup;
 
 export function childEntries(node): [string, DtcgNode][] {
   return Object.entries(node ?? {})
@@ -30,4 +29,4 @@ export function childEntries(node): [string, DtcgNode][] {
     .map(([key, child]) => [key, child as DtcgNode]);
 }
 
-export const isToken = (node: DtcgNode) => node.$value !== undefined;
+export const isToken = (node: DtcgNode): node is DtcgToken => node.$value !== undefined;
