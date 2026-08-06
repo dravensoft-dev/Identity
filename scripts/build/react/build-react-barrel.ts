@@ -49,7 +49,7 @@ export function componentModules(root = repoRoot) {
   return found;
 }
 
-export function zeroComponentProblems(count) {
+export function zeroComponentProblems(count: number) {
   if (count > 0) return [];
   return ['found 0 component directories under frameworks/react/components; an empty barrel is a failure, not a clean pass'];
 }

@@ -133,7 +133,7 @@ export const COVERED = {
 };
 
 export function suiteMentions(source: string, tail) {
-  const escaped = tail.split('/').map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const escaped = tail.split('/').map((s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return new RegExp(escaped.join(`(?:/|['"]\\s*,\\s*['"])`)).test(source);
 }
 

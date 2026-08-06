@@ -31,7 +31,7 @@ const BARE_NUMBER = /(?<![\w.])-?\d*\.?\d+(?![\w.%])/g;
 
 const MATH_OPEN = /\b(?:calc|min|max|clamp)$/;
 
-function insideMathParens(rest, index) {
+function insideMathParens(rest, index: number) {
   const stack = [];
   for (let i = 0; i < index; i++) {
     if (rest[i] === '(') stack.push(MATH_OPEN.test(rest.slice(0, i)));

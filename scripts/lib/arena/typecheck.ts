@@ -44,7 +44,7 @@ export function projectFiles(opts: TypecheckOptions = {}) {
   return output.split('\n').map((line) => line.trim()).filter(Boolean);
 }
 
-export function zeroProjectProblems(count) {
+export function zeroProjectProblems(count: number) {
   if (count > 0) return [];
   return ['found 0 projects to typecheck; a gate that compiles nothing reports clean by construction'];
 }

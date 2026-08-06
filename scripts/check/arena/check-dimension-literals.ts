@@ -64,7 +64,7 @@ const BARE_NUMBER = /^\s*'?-?\d*\.?\d+'?\s*$/;
 
 const ZERO = /^\s*'?-?0(px|rem|em|%)?'?\s*$/;
 
-function stripInterpolations(raw) {
+function stripInterpolations(raw: string) {
   let out = '';
   for (let i = 0; i < raw.length; i++) {
     if (raw[i] === '$' && raw[i + 1] === '{') {
@@ -84,7 +84,7 @@ function stripInterpolations(raw) {
   return out;
 }
 
-export function scanValue(prop: string, rawValue) {
+export function scanValue(prop: string, rawValue: string) {
   if (!PROPS.has(prop)) return null;
   const raw = stripInterpolations(rawValue);
   if (ZERO.test(raw)) return null;
@@ -102,7 +102,7 @@ export function scanValue(prop: string, rawValue) {
   return null;
 }
 
-export function skipString(text: string, i, quote) {
+export function skipString(text: string, i: number, quote: string) {
   for (let j = i + 1; j < text.length; j++) {
     if (text[j] === '\\') { j++; continue; }
     if (text[j] === quote) return j;
@@ -139,7 +139,7 @@ export function blankComments(text: string) {
   return out;
 }
 
-export function readValue(text: string, start, stopChars) {
+export function readValue(text: string, start: number, stopChars: Set<string>) {
   let i = start, depth = 0;
   for (; i < text.length; i++) {
     const c = text[i];
@@ -228,7 +228,7 @@ function splitArgs(text: string) {
 const CALL_SHAPE = /^([a-zA-Z_$][\w.$]*)\(([^()]*)\)$/;
 const ARITH_SHAPE = /^[a-zA-Z_$][\w.$]*(?:\([^()]*\))?\s*[*+/-]\s*-?\d*\.?\d+$/;
 
-function scanLeaf(prop: string, leaf) {
+function scanLeaf(prop: string, leaf: string) {
   const trimmed = leaf.trim();
   if (!trimmed) return [];
 
@@ -251,7 +251,7 @@ function scanLeaf(prop: string, leaf) {
   return [];
 }
 
-function lineOf(text: string, index) {
+function lineOf(text: string, index: number) {
   return text.slice(0, index).split('\n').length;
 }
 
@@ -274,7 +274,7 @@ function scanColonValues(text: string) {
   return out;
 }
 
-export function scanText(rawText) {
+export function scanText(rawText: string) {
   const text = blankComments(rawText);
   return [...scanColonValues(text), ...scanDataflow(text)];
 }
@@ -353,7 +353,7 @@ function stringLiteralRuns(text: string) {
   return runs;
 }
 
-export function scanInjectedCss(rawText) {
+export function scanInjectedCss(rawText: string) {
   const text = blankComments(rawText);
   const out = [];
   for (const { body, index } of stringLiteralRuns(text)) {
@@ -371,7 +371,7 @@ export function scanInjectedCss(rawText) {
 
 const SVG_ATTRS = new Set(['fontSize', 'strokeWidth', 'width', 'height', 'r', 'x', 'y', 'cx', 'cy', 'x1', 'x2', 'y1', 'y2']);
 
-export function scanAttributes(rawText) {
+export function scanAttributes(rawText: string) {
   const text = blankComments(rawText);
   const out = [];
   for (const m of text.matchAll(/(?<![\w.-])([a-zA-Z]+)\s*=\s*"([^"]*)"/g)) {
@@ -390,17 +390,17 @@ const PASSTHROUGH = new Map([
 const COMPONENT_PARAMS = /function\s+([A-Za-z_]\w*)\s*\(\{([\s\S]*?)\}(?:\s*:\s*[^)]+)?\)\s*\{/g;
 const PARAM_DEFAULT = /(?<![\w.])([a-zA-Z]+)\s*=\s*('[^']*'|"[^"]*"|`[^`]*`|[-\w.%]+)(?=[,\s]|$)/g;
 
-export function componentParamCount(rawText) {
+export function componentParamCount(rawText: string) {
   return [...blankComments(rawText).matchAll(COMPONENT_PARAMS)].length;
 }
 
-export function zeroComponentParamProblems(count) {
+export function zeroComponentParamProblems(count: number) {
   if (count > 0) return [];
   return ['matched 0 destructured component parameter lists under frameworks/; the default-value '
     + 'scanner read nothing, so every default value in the tree reports clean'];
 }
 
-export function scanDefaultsAndCallSites(rawText) {
+export function scanDefaultsAndCallSites(rawText: string) {
   const text = blankComments(rawText);
   const out = [];
   for (const fn of text.matchAll(COMPONENT_PARAMS)) {
@@ -426,7 +426,7 @@ export function scanDefaultsAndCallSites(rawText) {
   return out;
 }
 
-function passthroughSightings(rawText) {
+function passthroughSightings(rawText: string) {
   const text = blankComments(rawText);
   const seen = new Set();
   for (const fn of text.matchAll(COMPONENT_PARAMS)) if (PASSTHROUGH.has(fn[1])) seen.add(fn[1]);

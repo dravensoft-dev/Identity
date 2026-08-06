@@ -91,7 +91,7 @@ test('a dangling aria-labelledby does NOT name the element', () => {
 
 test('every id in an aria-labelledby list must resolve', () => {
   const d = el('div', { 'aria-labelledby': 'a b' });
-  const onlyA = (id) => (id === 'a' ? el('span') : null);
+  const onlyA = (id: string) => (id === 'a' ? el('span') : null);
   assert.equal(hasAccessibleName(d, false, onlyA), false);
   assert.equal(hasAccessibleName(d, false, () => el('span')), true);
 });
@@ -591,7 +591,7 @@ test('comparePattern reports a missing subject once per requirement', () => {
 
 test('an IDREF that resolves meets the requirement', () => {
   const tab = el('button', { 'aria-controls': 'panel-1' });
-  const resolve = (id) => (id === 'panel-1' ? el('div') : null);
+  const resolve = (id: string) => (id === 'panel-1' ? el('div') : null);
   assert.equal(evaluate(tab, 'roles.controls', 'each tab…', 'tabs', resolve), true);
 });
 
@@ -610,7 +610,7 @@ test('a missing IDREF attribute is unmet without consulting the resolver', () =>
 
 test('one resolving id in a list is enough', () => {
   const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
-  const resolve = (id) => (id === 'tooltip-1' ? el('span') : null);
+  const resolve = (id: string) => (id === 'tooltip-1' ? el('span') : null);
   assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', resolve), true);
 });
 
@@ -634,15 +634,15 @@ test('a non-IDREF attribute requirement still needs no resolver', () => {
 
 test('an aria-controls list is met only when EVERY id resolves', () => {
   const tab = el('button', { 'aria-controls': 'panel-1 panel-2' });
-  const both = (id) => (id === 'panel-1' || id === 'panel-2' ? el('div') : null);
-  const onlyOne = (id) => (id === 'panel-1' ? el('div') : null);
+  const both = (id: string) => (id === 'panel-1' || id === 'panel-2' ? el('div') : null);
+  const onlyOne = (id: string) => (id === 'panel-1' ? el('div') : null);
   assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', both), true);
   assert.equal(evaluate(tab, 'roles.controls', 'x', 'tabs', onlyOne), false);
 });
 
 test('aria-describedby keeps the one-resolving-id rule, and keeps its reason', () => {
   const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
-  const resolve = (id) => (id === 'tooltip-1' ? el('span') : null);
+  const resolve = (id: string) => (id === 'tooltip-1' ? el('span') : null);
   assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', resolve), true);
   assert.equal(IDREF_ATTRIBUTES.get('aria-describedby').match, 'some');
 });

@@ -50,7 +50,7 @@ export function everyGlyph(weights) {
   return all;
 }
 
-export function tokenProblems(text: string, where, weights) {
+export function tokenProblems(text: string, where: string, weights) {
   const glyphs = everyGlyph(weights);
   const problems = [];
   for (const line of text.split('\n').entries()) {

@@ -63,7 +63,7 @@ function isObjectLiteral(text: string, open) {
   return false;
 }
 
-export function styleObjectBodies(rawText) {
+export function styleObjectBodies(rawText: string) {
   const text = blankComments(rawText);
   const bodies: { start: number; text: string }[] = [];
   const seen = new Set();
@@ -106,7 +106,7 @@ export function objectEntries(body) {
   return entries;
 }
 
-export function valueIsLiteral(raw) {
+export function valueIsLiteral(raw: string) {
   const leaves = expressionLeaves(raw);
   if (leaves.length === 0) return false;
   return leaves.every((leaf) => {
@@ -120,7 +120,7 @@ export function valueIsLiteral(raw) {
   });
 }
 
-export function literalStyleProblems(rawText, path: string) {
+export function literalStyleProblems(rawText: string, path: string) {
   const problems = [];
   for (const body of styleObjectBodies(rawText))
     for (const { key, value } of objectEntries(body.text)) {

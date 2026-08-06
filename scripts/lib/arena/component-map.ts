@@ -84,7 +84,7 @@ function mapFrom(entries, edges) {
   for (const { symbol, sheet, uses } of entries) {
     if (!sheet) continue;
     const bySymbol = new Map(entries.map((e) => [e.symbol, e.sheet]));
-    const pulled = uses.map((name: string) => bySymbol.get(name)).filter((s) => s && s !== sheet);
+    const pulled = uses.map((name: string) => bySymbol.get(name)).filter((s: string) => s && s !== sheet);
     if (pulled.length) needs[sheet] = [...new Set([...(needs[sheet] ?? []), ...pulled])].sort();
   }
   return { match: edges, draws, needs: close(needs) };

@@ -35,7 +35,7 @@ test('a page declares no card, because its height moves with every knob', () => 
 test('only the mount, the head and the script differ between two layers\' pages', () => {
   const a = page({ mount: '<div id="root"></div>', script: 'a.js', head: '<link rel="stylesheet" href="x.css">\n' });
   const b = page({ mount: '<demo-root></demo-root>', script: 'b.js' });
-  const strip = (s) => s.replace(/<div id="root"><\/div>|<demo-root><\/demo-root>/, 'MOUNT')
+  const strip = (s: string) => s.replace(/<div id="root"><\/div>|<demo-root><\/demo-root>/, 'MOUNT')
     .replace(/src="[ab]\.js"/, 'src="SCRIPT"')
     .replace(/<link rel="stylesheet" href="x\.css">\n/, '');
   assert.equal(strip(a), strip(b));

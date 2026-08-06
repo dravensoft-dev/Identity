@@ -36,7 +36,7 @@ export function applyRules(manifest) {
       for (const [slot, classes] of Object.entries(slots ?? {}))
         push(variantClass(manifest.component, slot, group, value), classes);
 
-  (manifest.compoundVariants ?? []).forEach((compound, index) => {
+  (manifest.compoundVariants ?? []).forEach((compound, index: number) => {
     const { class: applied } = compound;
     for (const [slot, classes] of Object.entries(applied ?? {}))
       push(compoundClass(manifest.component, slot, index), classes);

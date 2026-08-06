@@ -73,7 +73,7 @@ export function readContract(name: string) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function declaredAffordances(contract, where) {
+export function declaredAffordances(contract, where: string) {
   if (!Array.isArray(contract.affordances)) {
     throw new Error(
       `check-manifest-states: ${where} declares no \`affordances\` array. Every contract states one, `
@@ -135,7 +135,7 @@ export function missingReactSource(name: string, category: string) {
     + `no ${name}.jsx, so its affordances were never read and this half reported clean over nothing`;
 }
 
-export function zeroReactSourceProblems(count) {
+export function zeroReactSourceProblems(count: number) {
   if (count > 0) return [];
   return ['read 0 React sources; the react half of this gate checked nothing, which is a failure '
     + 'rather than a clean pass'];

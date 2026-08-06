@@ -30,7 +30,7 @@ function slashOpensRegex(source: string, at) {
   return true;
 }
 
-function skipQuoted(source: string, at, quote) {
+function skipQuoted(source: string, at, quote: string) {
   let i = at + 1;
   while (i < source.length) {
     if (source[i] === '\\') { i += 2; continue; }
@@ -56,7 +56,7 @@ function skipRegex(source: string, at) {
   return i;
 }
 
-export function insideLiteral(ranges, index) {
+export function insideLiteral(ranges, index: number) {
   return ranges.some(([from, to]) => index >= from && index < to);
 }
 

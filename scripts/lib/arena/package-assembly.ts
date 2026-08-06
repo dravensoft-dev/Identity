@@ -50,7 +50,7 @@ export function excluded(name: string) {
 
 export function collectFiles(dir: string, keep = (_file) => true) {
   const found: string[] = [];
-  const walk = (current) => {
+  const walk = (current: string) => {
     for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (excluded(entry.name) || entry.name.startsWith('.')) continue;
       const full = join(current, entry.name);

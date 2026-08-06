@@ -17,7 +17,7 @@ export function describeBinding(binding) {
     .join(' + ');
 }
 
-export function zeroPatternProblems(count) {
+export function zeroPatternProblems(count: number) {
   if (count > 0) return [];
   return [`found 0 patterns in ${PATTERN_DIR} — an empty result set is a failure, not a clean pass; check the discovery path`];
 }

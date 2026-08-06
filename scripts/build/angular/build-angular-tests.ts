@@ -33,7 +33,7 @@ function pruneOrphans(dir: string) {
   walk(dir);
   return pruned;
 
-  function walk(current) {
+  function walk(current: string) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (entry.isDirectory()) {
@@ -59,7 +59,7 @@ function collectTestSources(dir: string) {
   walk(dir);
   return out;
 
-  function walk(current) {
+  function walk(current: string) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (full === EMITTED) continue;
@@ -75,7 +75,7 @@ function collectEmittedTests(dir: string) {
   walk(dir);
   return out;
 
-  function walk(current) {
+  function walk(current: string) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (entry.isDirectory()) { walk(full); continue; }
@@ -105,7 +105,7 @@ function collectInputs() {
   for (const path of EXTERNAL_INPUTS) if (existsSync(path)) out.push(stamp(path));
   return out;
 
-  function walk(current) {
+  function walk(current: string) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (full === EMITTED) continue;

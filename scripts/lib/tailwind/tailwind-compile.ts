@@ -16,7 +16,7 @@ export function manifestClasses(manifest): string[] {
 }
 
 export function escapeClass(cls: string) {
-  const backslash = (s) => s.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
+  const backslash = (s: string) => s.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
   if (/^[0-9]/.test(cls))
     return `\\${cls.codePointAt(0).toString(16)} ${backslash(cls.slice(1))}`;
   return backslash(cls);

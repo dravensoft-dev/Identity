@@ -79,7 +79,7 @@ export function generatedProblems(entries) {
   return problems;
 }
 
-export function zeroContractLevelProblems(count) {
+export function zeroContractLevelProblems(count: number) {
   if (count > 0) return [];
   return [`found 0 entries under contracts/ -- an empty result set is a failure, not a clean pass; check the discovery path`];
 }

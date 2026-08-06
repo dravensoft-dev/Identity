@@ -6,7 +6,7 @@ import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { deriveNamespaces } from '../../lib/tailwind/theme-namespaces.ts';
 
 const merge = (classString) => arenaTv({ slots: { root: classString } })().root();
-const classes = (s) => s.split(/\s+/);
+const classes = (s: string) => s.split(/\s+/);
 
 test('every registered Arena font-size key survives alongside a text color', () => {
   for (const size of ['text-display', 'text-h1', 'text-h2', 'text-h3', 'text-h4',

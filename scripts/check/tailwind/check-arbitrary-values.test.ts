@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { scanText, scanFile, markerAllowlist, walk, SKIPPED_NAMES } from './check-arbitrary-values.ts';
 
-const found = (s) => scanText(s).map((f) => f.cls);
+const found = (s: string) => scanText(s).map((f) => f.cls);
 
 test('flags a raw length', () => {
   assert.deepEqual(found('"root": "px-3 text-[13px] font-semibold"'), ['text-[13px]']);

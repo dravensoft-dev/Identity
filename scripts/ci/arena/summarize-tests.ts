@@ -63,7 +63,7 @@ export function tally(cases) {
 
 export function suiteDomains(dir: string) {
   const found = new Set();
-  const walk = (current) => {
+  const walk = (current: string) => {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
       if (entry.isDirectory()) { walk(full); continue; }

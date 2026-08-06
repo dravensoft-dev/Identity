@@ -97,7 +97,7 @@ test('a compound variant applies only when every condition it names holds', () =
   assert.ok(cased.length > 0, 'no manifest carries a compoundVariant, so this proves nothing');
   for (const manifest of cased) {
     const styles = arenaStyles(named.get(manifest.component));
-    manifest.compoundVariants.forEach(({ class: applied, ...conditions }, index) => {
+    manifest.compoundVariants.forEach(({ class: applied, ...conditions }, index: number) => {
       const holding = styles({ ...manifest.defaultVariants, ...conditions });
       for (const slot of Object.keys(applied ?? {})) {
         assert.ok(holding[slot]().split(/\s+/).includes(`${slotClass(manifest.component, slot)}--cv${index + 1}`),
