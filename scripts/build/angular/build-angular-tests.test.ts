@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { missingEmitProblems, stalenessReason } from './build-angular-tests.ts';
 
-const stamped = (mtimeMs, paths) => ({ mtimeMs, paths });
+const stamped = (mtimeMs, paths: string[]) => ({ mtimeMs, paths });
 
 test('stalenessReason returns null only when the stamp is strictly newer than every input it compiled', () => {
   const inputs = [{ path: 'a.ts', mtimeMs: 10 }, { path: 'b.ts', mtimeMs: 19 }];

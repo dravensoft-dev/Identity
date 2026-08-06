@@ -27,7 +27,7 @@ export const VENDORED_VERBATIM = new Set([
   'scripts/generate/core/arena-to-prod/validate-palette.mjs',
 ]);
 
-export function guardProblems(paths, root = repoRoot) {
+export function guardProblems(paths: string[], root = repoRoot) {
   return paths
     .map((p) => relative(root, p).split(sep).join('/'))
     .filter((rel: string) => !VENDORED_VERBATIM.has(rel))
@@ -46,7 +46,7 @@ export function scriptsUnder(dir: string): string[] {
   return found;
 }
 
-export const isInterpolated = (specifier) => specifier.includes('${');
+export const isInterpolated = (specifier: string) => specifier.includes('${');
 
 export function unresolvedSpecifiers(path: string) {
   const source = readFileSync(path, 'utf8');

@@ -212,7 +212,7 @@ function isMemberDoc(text: string, repoRelativePath) {
     && text.startsWith('/**');
 }
 
-function documents(root) {
+function documents(root: string) {
   return walk(root, (p) => p.endsWith('.md'), emittedTree(root));
 }
 

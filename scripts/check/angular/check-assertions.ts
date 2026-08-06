@@ -27,7 +27,7 @@ export const SCALAR_TAIL = new RegExp(
 
 const EQUALITY = /assert\.(equal|strictEqual|notEqual|notStrictEqual|deepEqual|deepStrictEqual)\(/g;
 
-export function splitArguments(source: string, open) {
+export function splitArguments(source: string, open: number) {
   const args = [];
   let depth = 0;
   let start = open + 1;
@@ -54,7 +54,7 @@ export function isNodeExpression(argument) {
   return NODE_MARKERS.test(argument) && !SCALAR_TAIL.test(argument.trim());
 }
 
-export function suiteFiles(root, list = readdirSync) {
+export function suiteFiles(root: string, list = readdirSync) {
   const found: string[] = [];
   const walk = (dir: string) => {
     for (const entry of list(dir, { withFileTypes: true })) {

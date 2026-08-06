@@ -80,7 +80,7 @@ export function markerAllowlist(text: string) {
   return out;
 }
 
-export function scanFile(relPath, text: string) {
+export function scanFile(relPath: string, text: string) {
   const isMarkdown = relPath.endsWith('.md');
   const markers = findMarkers(text);
   const errs = [];

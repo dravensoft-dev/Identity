@@ -16,7 +16,7 @@ export const MEMBER_START = {
   angular: /^(\s*)(?:readonly\s+)([A-Za-z_$][\w$]*)(\s*=)/,
 };
 
-export function stripDocAbove(lines, at) {
+export function stripDocAbove(lines: string[], at: number) {
   let start = at;
   while (start > 0 && lines[start - 1].trim().startsWith('*')) start -= 1;
   if (start > 0 && lines[start - 1].trim().startsWith('/**')) return start - 1;

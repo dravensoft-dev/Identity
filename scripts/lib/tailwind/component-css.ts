@@ -90,6 +90,6 @@ export function stripIndirection(css: string) {
   return out;
 }
 
-export function themeMapFor(root) {
+export function themeMapFor(root: string) {
   return themeKeyMap(readFileSync(join(root, 'frameworks/tailwind/Theme.css'), 'utf8'));
 }

@@ -85,7 +85,7 @@ export function duplicateExportProblems(modules, root = repoRoot) {
   return problems;
 }
 
-const reExport = (specifier) => `export * from '${specifier}';`;
+const reExport = (specifier: string) => `export * from '${specifier}';`;
 
 export function barrel(modules, root = repoRoot) {
   const lines = [

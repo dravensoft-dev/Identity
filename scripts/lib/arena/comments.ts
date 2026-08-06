@@ -15,7 +15,7 @@ const PUNCT_BEFORE_REGEX = new Set([
   '~', '^', '<', '>',
 ]);
 
-function slashOpensRegex(source: string, at) {
+function slashOpensRegex(source: string, at: number) {
   for (let i = at - 1; i >= 0; i -= 1) {
     const ch = source[i];
     if (/\s/.test(ch)) continue;
@@ -30,7 +30,7 @@ function slashOpensRegex(source: string, at) {
   return true;
 }
 
-function skipQuoted(source: string, at, quote: string) {
+function skipQuoted(source: string, at: number, quote: string) {
   let i = at + 1;
   while (i < source.length) {
     if (source[i] === '\\') { i += 2; continue; }
@@ -40,7 +40,7 @@ function skipQuoted(source: string, at, quote: string) {
   return i;
 }
 
-function skipRegex(source: string, at) {
+function skipRegex(source: string, at: number) {
   let i = at + 1;
   let inClass = false;
   while (i < source.length) {

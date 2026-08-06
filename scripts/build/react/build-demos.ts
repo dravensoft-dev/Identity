@@ -49,7 +49,7 @@ export function rewriteRelativeSourceImports(code) {
   return code.replace(/(from\s*")(\.\.?\/[^"]+?)(?:\.generated)?\.(?:jsx|tsx|ts)"/g, '$1$2.generated.js"');
 }
 
-export function outputPathFor(relPath) {
+export function outputPathFor(relPath: string) {
   return relPath.replace(/(?:\.generated)?\.(?:jsx|tsx|ts)$/, '.generated.js');
 }
 

@@ -84,7 +84,7 @@ export function annotatePure(source: string) {
   return source.replace(STYLE_FACTORY, '$1/*@__PURE__*/$2');
 }
 
-function stage(root) {
+function stage(root: string) {
   const dir = join(root, STAGING);
   reset(dir);
 

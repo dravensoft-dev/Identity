@@ -13,7 +13,7 @@ const LAYER_UTILITIES = '@layer utilities {';
 export const LAYER_ORDER = '@layer properties;\n@layer theme, base, components, utilities;\n';
 export const SLOT_CLASS = /\.([a-z0-9-]+?)__/g;
 
-export function matchingBrace(css: string, open) {
+export function matchingBrace(css: string, open: number) {
   let depth = 0;
   for (let i = open; i < css.length; i++) {
     const c = css[i];

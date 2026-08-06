@@ -39,7 +39,7 @@ export function repoRoots(base = root) {
     .sort();
 }
 
-export function pathPattern(roots) {
+export function pathPattern(roots: string[]) {
   if (roots.length === 0) return /(?!)/g;
   const alternation = roots.map((name: string) => name.replace(/\./g, '\\.')).join('|');
   return new RegExp(
@@ -50,7 +50,7 @@ export function pathPattern(roots) {
 
 export function documents(base = root) {
   const found: string[] = [];
-  const walk = (dir: string, relative) => {
+  const walk = (dir: string, relative: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (skips(entry.name, relative)) continue;
       const path = join(dir, entry.name);
@@ -70,7 +70,7 @@ export const BARE_DOCUMENT = /(?<![A-Za-z0-9._/-])[A-Za-z][A-Za-z0-9-]*(?:\.[a-z
 
 export function basenames(base = root) {
   const found = new Set();
-  const walk = (dir: string, relative) => {
+  const walk = (dir: string, relative: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (skips(entry.name, relative)) continue;
       if (entry.isDirectory()) walk(join(dir, entry.name), relative ? `${relative}/${entry.name}` : entry.name);
@@ -133,7 +133,7 @@ export function zeroDocumentProblems(files) {
     : [];
 }
 
-export function zeroRootProblems(roots) {
+export function zeroRootProblems(roots: string[]) {
   return roots.length === 0
     ? ['found 0 top-level directories, so nothing would be recognised as a repository path at all. '
        + 'An empty root list fails the other way from an empty document list: the pattern it builds '

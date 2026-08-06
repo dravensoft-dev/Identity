@@ -87,7 +87,7 @@ export function declaredAffordances(contract, where: string) {
   return new Set(contract.affordances);
 }
 
-export function affordancesFor(names) {
+export function affordancesFor(names: string[]) {
   const union = new Set();
   for (const name of names) {
     const contract = readContract(name);

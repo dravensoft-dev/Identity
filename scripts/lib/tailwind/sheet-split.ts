@@ -8,7 +8,7 @@
 const ORDER = /^@layer [^{};]*;$/gm;
 const BLOCK = /^@layer ([a-z-]+) \{$/gm;
 
-function matchingBrace(css: string, open) {
+function matchingBrace(css: string, open: number) {
   let depth = 0;
   for (let i = open; i < css.length; i++) {
     const c = css[i];

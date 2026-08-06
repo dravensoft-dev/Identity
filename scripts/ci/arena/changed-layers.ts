@@ -29,11 +29,11 @@ export const LAYER_INPUTS = {
   tailwind: { 'frameworks/tailwind/': 'its own layer' },
 };
 
-function reaches(prefix, path: string) {
+function reaches(prefix: string, path: string) {
   return prefix.endsWith('/') ? path.startsWith(prefix) : path === prefix;
 }
 
-export function layersChanged(paths) {
+export function layersChanged(paths: string[]) {
   const changed = {};
   const shared = paths.some((p) => Object.keys(SHARED).some((prefix) => reaches(prefix, p)));
   for (const layer of Object.keys(LAYER_INPUTS)) {

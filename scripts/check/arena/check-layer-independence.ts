@@ -102,7 +102,7 @@ export function escapingSpecifiers(text: string, filePath: string, layer: string
   return found;
 }
 
-export function isAllowedSpecifier(specifier) {
+export function isAllowedSpecifier(specifier: string) {
   return [...ALLOWED_SPECIFIERS.keys()].some((re) => re.test(specifier));
 }
 

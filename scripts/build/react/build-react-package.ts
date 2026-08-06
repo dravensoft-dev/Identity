@@ -42,7 +42,7 @@ export function distFiles(dir: string, keep, found = []) {
   return found;
 }
 
-export function emitDeclarations(root, outDir) {
+export function emitDeclarations(root: string, outDir) {
   const args = [tscBin(root), '-p', join(root, DIST_PROJECT)];
   if (outDir) args.push('--outDir', outDir);
   const r = spawnSync(process.execPath, args, { encoding: 'utf8' });
@@ -62,7 +62,7 @@ export const MODULE_EXTENSION = /\.[jt]sx?$/;
 export const RELATIVE_SPECIFIER = /(from\s*|import\s*\(\s*)(['"])(\.[^'"]*)(['"])/g;
 
 export function rewriteSourceSpecifiers(code) {
-  return code.replace(RELATIVE_SPECIFIER, (_whole, keyword, open, specifier, close) =>
+  return code.replace(RELATIVE_SPECIFIER, (_whole, keyword, open: string, specifier: string, close) =>
     `${keyword}${open}${specifier.replace(MODULE_EXTENSION, '')}.js${close}`);
 }
 
@@ -81,7 +81,7 @@ export function unresolvedProblems(dir: string) {
   return problems;
 }
 
-export function assembleModules(root, dir: string) {
+export function assembleModules(root: string, dir: string) {
   const layer = join(root, LAYER);
   const written = [];
   const compiled: string[] = [];

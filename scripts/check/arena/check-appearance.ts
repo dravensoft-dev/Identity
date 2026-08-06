@@ -31,7 +31,7 @@ const ENTRY_STOP = new Set([',', '}']);
 const KEY_STOP = new Set([':']);
 const LITERAL_LEAF = /^(?:-?\d*\.?\d+|true|false|null|undefined)$/;
 
-function balancedFrom(text: string, open) {
+function balancedFrom(text: string, open: number) {
   let depth = 0;
   for (let i = open; i < text.length; i++) {
     const c = text[i];
@@ -54,7 +54,7 @@ function nextBrace(text: string, from) {
   return -1;
 }
 
-function isObjectLiteral(text: string, open) {
+function isObjectLiteral(text: string, open: number) {
   for (let i = open - 1; i >= 0; i--) {
     const c = text[i];
     if (c === ' ' || c === '\n' || c === '\t' || c === '\r') continue;
@@ -67,7 +67,7 @@ export function styleObjectBodies(rawText: string) {
   const text = blankComments(rawText);
   const bodies: { start: number; text: string }[] = [];
   const seen = new Set();
-  const push = (open) => {
+  const push = (open: number) => {
     if (open < 0 || seen.has(open)) return;
     const close = balancedFrom(text, open);
     if (close < 0) return;

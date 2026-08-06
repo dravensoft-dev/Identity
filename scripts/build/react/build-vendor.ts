@@ -30,11 +30,11 @@ export const ENTRIES = [
   { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.generated.js', real: 'react-dom/client.js', external: ['react'] },
 ];
 
-function realExportNames(root, real) {
+function realExportNames(root: string, real) {
   return Object.keys(req(join(root, 'node_modules', real)));
 }
 
-export function withNamedExports(code, names) {
+export function withNamedExports(code, names: string[]) {
   return code.replace(/export default (.+);\s*$/, (_m, expr) => {
     const named = names.map((n) => `export const ${n} = __arenaDefault.${n};`).join('\n');
     return `const __arenaDefault = ${expr};\nexport default __arenaDefault;\n${named}\n`;

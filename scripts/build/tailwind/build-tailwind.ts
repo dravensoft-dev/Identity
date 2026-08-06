@@ -62,7 +62,7 @@ export function keyframesIn(css: string) {
   return blocks;
 }
 
-export function keyframesOf(root) {
+export function keyframesOf(root: string) {
   const animations = readFileSync(join(root, 'frameworks/tailwind/Animations.css'), 'utf8');
   const blocks = keyframesIn(animations);
   if (blocks.length === 0) {
@@ -141,7 +141,7 @@ export function buildStylesRuntime(opts: BuildOptions = {}) {
   return out;
 }
 
-export function consumerCopies(manifestFile, root) {
+export function consumerCopies(manifestFile, root: string) {
   return CONSUMING_LAYERS
     .map((layer) => manifestFile.replace('frameworks/tailwind/', `frameworks/${layer}/`))
     .filter((rel) => existsSync(dirname(join(root, rel))))

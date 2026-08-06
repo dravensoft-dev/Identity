@@ -103,7 +103,7 @@ export function globMatches(target, dir: string) {
   const rel = target.replace(/^\.\//, '');
   const pattern = new RegExp(`^${rel.split('*').map((p) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
   const found: string[] = [];
-  const walk = (at, prefix) => {
+  const walk = (at: string, prefix: string) => {
     if (!existsSync(at)) return;
     for (const entry of readdirSync(at, { withFileTypes: true })) {
       const path = prefix ? `${prefix}/${entry.name}` : entry.name;
