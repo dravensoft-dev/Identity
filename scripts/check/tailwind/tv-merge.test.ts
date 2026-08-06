@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { arenaTv, ARENA_SPACING_SUFFIXES, arenaSpacingConsumingGroups } from '../../../frameworks/tailwind/Tv.ts';
-import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { deriveNamespaces } from '../../lib/tailwind/theme-namespaces.ts';
 
 const merge = (classString) => arenaTv({ slots: { root: classString } })().root();

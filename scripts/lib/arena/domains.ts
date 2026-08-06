@@ -6,7 +6,7 @@
  * here, not in each of the four scanners, because a suffix one stops recognising is a file
  * that quietly leaves its scope. A suite is TypeScript and can earn no exception, nothing
  * loading one. A script may be JavaScript only if STAYS_JAVASCRIPT names it, and it is
- * still scanned, since those four have specifiers that must resolve like any other's. */
+ * still scanned, since those two have specifiers that must resolve like any other's. */
 
 export const DOMAINS = ['core', 'react', 'angular', 'tailwind', 'arena'];
 
@@ -17,11 +17,6 @@ export const SUITE_EXTENSIONS = ['.ts'];
 export const SCRIPT_EXTENSIONS = ['.ts', '.mjs'];
 
 export const STAYS_JAVASCRIPT = new Map([
-  ['scripts/lib/arena/css-decls.mjs',
-   'an intro/ page imports it over HTTP and a browser runs it as written, with no build step '
-   + 'between the git tag and the page; browser-modules.test.ts holds that end of it'],
-  ['scripts/lib/core/token-preview.mjs',
-   'the same: the Overview page loads it directly, and static-server.ts serves no .ts'],
   ['scripts/lib/core/validate-palette.mjs',
    'vendored verbatim from the dataviz Agent Skill and re-vendored rather than patched, so it '
    + 'can carry no annotation: editing one threshold invalidates published measurements'],

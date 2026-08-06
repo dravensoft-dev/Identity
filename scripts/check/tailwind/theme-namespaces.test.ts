@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.ts';
 import {
   attributedNames, deriveNamespaces, namespacedPropertyCandidates,
 } from '../../lib/tailwind/theme-namespaces.ts';

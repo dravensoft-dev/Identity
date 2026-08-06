@@ -7,7 +7,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaTokenNames, referencedTokens } from '../../lib/core/arena-tokens.ts';
 

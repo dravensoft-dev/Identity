@@ -3,7 +3,7 @@
 **The bottom of the graph.** A module is here because more than one script reads it, and the
 only direction allowed is downward: a gate imports a library, and **a library never imports a
 gate**. Across domains the same holds in both directions: `core/arena-tokens.ts` imports
-`../arena/css-decls.mjs` and nothing forbids it, because a domain is a statement about subject
+`../arena/css-decls.ts` and nothing forbids it, because a domain is a statement about subject
 matter, not a visibility boundary.
 
 ## ArenaPlacement

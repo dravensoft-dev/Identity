@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseDecls } from './css-decls.mjs';
+import { parseDecls } from './css-decls.ts';
 
 test('parses one selector block into name/value pairs', () => {
   const out = parseDecls(':root{\n  --sp-0:0;\n  --sp-1:4px;\n}\n');

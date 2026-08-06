@@ -64,7 +64,7 @@ the one place that counts, which is why moving *it* is the one move needing care
 **A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.ts`,
 `core/arena-tokens.ts` and the rest are there because more than one gate reads them, and a
 gate reaching down is the only direction allowed. Across domains the same holds in both
-directions: `core/arena-tokens.ts` imports `../arena/css-decls.mjs` and nothing forbids it,
+directions: `core/arena-tokens.ts` imports `../arena/css-decls.ts` and nothing forbids it,
 because a domain is a statement about subject matter, not a visibility boundary.
 
 **A test lives beside what it tests**, in the same directory, which for a `lib/` module means

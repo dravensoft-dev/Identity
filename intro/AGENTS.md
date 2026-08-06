@@ -39,17 +39,25 @@ So the cost of moving this directory is not two pages. List the runtime with
 ignored and it must not be edited. `check:generated` names it, with that reason, as one of the
 two outputs that can carry neither the `.generated.` infix nor a header.
 
+**A page's `<script type="module">` names a bundle, never a source.** `bun run build:intro`
+writes one `<page>.generated.js` per module entry, tracked, because the plugin is served from
+the git tag where no build runs. That bundle is what lets a page import from `scripts/`
+without the browser having to resolve it, and it is why the two modules the Overview reads
+are TypeScript like everything else under `scripts/`. Edit the source `.js`; the bundle is
+output. A page that pointed back at its own source would serve whatever that source imports,
+so `build:intro` refuses to build one and `check:intro` refuses to pass one.
+
 ## The Overview generates itself, and that is the point
 
 `Arena - Overview.html` reads names and `$description`s from `contracts/design/*.json`, and the
-alias names from `colors.css` with `scripts/lib/arena/css-decls.mjs`, the same parser the drift
+alias names from `colors.css` with `scripts/lib/arena/css-decls.ts`, the same parser the drift
 gate uses. But it reads **values** from `getComputedStyle` on the live document.
 
 So it exercises the whole chain, JSON to build to CSS to browser, instead of restating the JSON,
 and **a token that resolves empty is flagged as stale rather than shown as in effect**. Add a
 token and it appears with no edit to the page.
 
-The group-to-preview mapping lives in `scripts/lib/core/token-preview.mjs` and **never** in the
+The group-to-preview mapping lives in `scripts/lib/core/token-preview.ts` and **never** in the
 token source, which stays platform-neutral.
 
 ## A specimen page declares the box it is cropped to
@@ -78,6 +86,7 @@ and fails one that mounts nothing, draws no panel, says anything on the console,
 |---|---|
 | a declaring page fits the viewport it declares | `check:cards`, in real Chromium |
 | the browsable pages' own runtime modules parse and export what they claim | `browser-modules.test.ts`, under `scripts/check/arena/` |
+| every page bundle matches the source it was built from, and every module entry is a bundle | `check:intro` |
 | `support.js` stays tracked and unedited | `check:generated`, by literal name |
 | **that a specimen's stylesheet path resolves** | **nothing. An unstyled page that happens to fit its box passes outright** |
 | **that a page reads well, or that a colour carries its meaning** | **nothing. Open it** |

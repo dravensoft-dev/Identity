@@ -54,6 +54,7 @@ export const GATES = [
   { name: 'check:agents', file: 'arena/check-agents.ts' },
   { name: 'check:icons', file: 'arena/check-icons.ts' },
   { name: 'check:fonts', file: 'core/check-fonts-generated.ts' },
+  { name: 'check:intro', file: 'arena/check-intro-generated.ts' },
   { name: 'check:vendor', file: 'react/check-vendor-generated.ts' },
   { name: 'check:demos', file: 'react/check-demos-generated.ts' },
   { name: 'check:react-barrel', file: 'react/check-react-barrel.ts' },

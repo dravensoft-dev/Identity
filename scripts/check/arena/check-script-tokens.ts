@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, extname, relative } from 'node:path';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from '../../generate/arena/generate-tokens.ts';
-import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { numericConstants } from './check-duplicate-constants.ts';

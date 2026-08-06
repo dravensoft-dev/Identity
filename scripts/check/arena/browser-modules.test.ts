@@ -1,8 +1,9 @@
-/* The intro/ pages are ES modules a real browser loads over HTTP, so what they reach into
- * scripts/ is reached UNCOMPILED. That is what makes the second suite here part of the
- * TypeScript migration rather than a note about it: node resolves a .ts import and would
- * report these green while the page 404s or refuses the MIME type, so the rule has to be
- * about the specifier and not about whether the import works here. */
+/* The intro/ modules parse, and what a browser is handed is a bundle. build-intro.ts put
+ * that bundle between the pages and scripts/, which is what let the two modules they reach
+ * become TypeScript. The rule below is the other end of that arrangement, and it is about
+ * the SOURCE rather than the bundle: a page's own module file may import .ts freely now,
+ * and the thing that must never be TypeScript is what an HTML file names, which is why
+ * check:intro reads the pages and this reads what the pages load. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,6 +11,7 @@ import { pathToFileURL } from 'node:url';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+import { moduleEntries } from '../../build/arena/build-intro.ts';
 
 const MODULES = ['intro/overview.js', 'intro/theme.js'];
 
@@ -42,23 +44,25 @@ for (const file of MODULES) {
   });
 }
 
-test('a module a browser loads is named as one, so this list is read rather than typed', () => {
-  const reached = browserReachableScripts();
-  assert.ok(reached.length > 0,
-    'no intro/ module reaches scripts/ any more, so this suite proves nothing and the rule below is unheld');
-  assert.deepEqual(reached, [
-    'scripts/lib/arena/css-decls.mjs',
-    'scripts/lib/core/token-preview.mjs',
-  ]);
+test('what an intro page hands a browser is a bundle, never a module reaching into scripts/', () => {
+  const entries = moduleEntries(root);
+  assert.ok(entries.length > 0, 'no page declares a module entry, so this suite proves nothing');
+
+  for (const { page, out, source } of entries) {
+    assert.ok(out.endsWith('.generated.js'),
+      `${page} loads ${out}, which is not a bundle: a page that names its source serves whatever `
+      + 'that source imports, and scripts/ goes back out of reach of TypeScript with every gate green');
+    assert.ok(existsSync(join(root, 'intro', out)), `${page} loads ${out} and it is not there`);
+    assert.ok(existsSync(join(root, 'intro', source)), `${out} is built from ${source}, which is not there`);
+  }
 });
 
-test('nothing a browser loads may be TypeScript, because nothing strips it on the way there', () => {
-  for (const spec of browserReachableScripts()) {
-    assert.ok(spec.endsWith('.mjs'),
-      `${spec} is loaded by intro/ over HTTP, and a browser runs it as written: there is no build `
-      + 'step between the git tag and the page, which is the same reason contracts/design-generated/ '
-      + 'is tracked. Renaming it to .ts serves TypeScript to a browser, and static-server.ts has no '
-      + '.ts MIME type either, so the page fails while node -- which does strip types -- reports green.');
-    assert.ok(existsSync(join(root, spec)), `${spec} is imported by an intro/ page and is not there`);
-  }
+test('a page source may now import TypeScript, which is what the build step bought', () => {
+  const reached = browserReachableScripts();
+  assert.ok(reached.length > 0,
+    'no intro/ module reaches scripts/ any more, so the build step is holding nothing open');
+  assert.deepEqual(reached, [
+    'scripts/lib/arena/css-decls.ts',
+    'scripts/lib/core/token-preview.ts',
+  ]);
 });

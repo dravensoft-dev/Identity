@@ -13,7 +13,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname, basename, sep } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
-import { parseDecls } from '../../lib/arena/css-decls.mjs';
+import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { themeCss } from '../../generate/core/arena-to-prod/theme-css.ts';
 import { MAP_FILE } from '../../lib/arena/component-map.ts';

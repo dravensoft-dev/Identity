@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { configProblems, themeCss, paletteReports, defaultPalette, isStylesheet, scopedImports } from './theme-css.ts';
 import { PALETTE_KEYS } from './palette-keys.ts';
-import { parseDecls } from '../../../lib/arena/css-decls.mjs';
+import { parseDecls } from '../../../lib/arena/css-decls.ts';
 
 const colors = (overrides: Record<string, string> = {}): Record<string, string> => {
   const out = {};
