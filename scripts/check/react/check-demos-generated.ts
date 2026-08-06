@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 
 function skip(reason) {
   const code = skipExitCode();

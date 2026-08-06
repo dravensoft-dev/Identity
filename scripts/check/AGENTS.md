@@ -62,7 +62,7 @@ reason strict is the declared value rather than the opt-in one.
 
 ## Where the variables live
 
-`scripts/lib/arena/arena-scripts-vars.mjs` declares every environment variable the scripts
+`scripts/lib/arena/arena-scripts-vars.ts` declares every environment variable the scripts
 read, so a test run or a CI run needs no exports. There are four, and no gate reads any other:
 
 | variable | what it decides |

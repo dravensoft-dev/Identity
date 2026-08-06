@@ -9,7 +9,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-import { bindingName, normaliseDoc } from '../../lib/arena/api-surface.mjs';
+import { bindingName, normaliseDoc } from '../../lib/arena/api-surface.ts';
 import {
   CONSUMER_LAYERS, componentDir, loadCategories, loadContract, escapeCell,
 } from './generate-skills.ts';

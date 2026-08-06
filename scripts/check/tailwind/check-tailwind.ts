@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
-import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.mjs';
-import { arenaTokens } from '../../lib/core/arena-tokens.mjs';
+import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.ts';
+import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 
 export function themeKeys(css) {
   const out = new Map();

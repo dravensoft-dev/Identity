@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { kebab } from '../../lib/arena/layers.mjs';
 import { classBase, classesFor, arenaClassesFor } from '../../../frameworks/tailwind/ManifestClasses.js';
-import { slotClass } from '../../lib/tailwind/component-css.mjs';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
+import { slotClass } from '../../lib/tailwind/component-css.ts';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 
 const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/display/arena-tag/ArenaTag.manifest.json'), 'utf8'));
 

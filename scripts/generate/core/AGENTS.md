@@ -17,7 +17,7 @@ nothing but `node:fs` and its own contents, because inside a package `scripts/` 
 
 **`bin/` is flat**, so every CLI tree is one namespace: two of them may not share a filename, and
 a command may never import across from another's directory, because the path it would use here
-is not the path that exists there. `copyCli` in `lib/arena/package-assembly.mjs` refuses both,
+is not the path that exists there. `copyCli` in `lib/arena/package-assembly.ts` refuses both,
 which is what lets a second command be added without silently overwriting a file of this one's.
 
 That is also why `validate-palette.mjs` sits in it: a **verbatim** second copy of the one in

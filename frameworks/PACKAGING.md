@@ -41,7 +41,7 @@ So the packages ship everything that is invariant, and the consumer declares the
 - **The consumer's, in `arena.config.json`**: the palettes and the fonts.
 
 One command travels in each package, `arena-to-prod`, and `CLI_BINS` in
-[`scripts/lib/arena/package-assembly.mjs`](../scripts/lib/arena/package-assembly.mjs) is the
+[`scripts/lib/arena/package-assembly.ts`](../scripts/lib/arena/package-assembly.ts) is the
 list both manifests take their `bin` from. Its source is its own directory under
 `scripts/generate/core/`, described in
 [`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md), copied whole into
@@ -55,7 +55,7 @@ It does the two jobs a project always did together, and a failure in the first s
   sheets in place of the `arena.css` barrel, reading both lists off the package it is running
   from rather than from a copy of them that could age. `"components": "auto"` resolves that list
   from their own sources against `components.json`, which each package carries and
-  [`scripts/lib/arena/component-map.mjs`](../scripts/lib/arena/component-map.mjs) derives from the
+  [`scripts/lib/arena/component-map.ts`](../scripts/lib/arena/component-map.ts) derives from the
   layer: what a consumer writes is not what dresses it, since 43 sheets dress 55 components, and
   the closure matters more than the mapping because Arena draws components nobody named.
 - **The icons** write the Phosphor subset a project draws, `icons.generated.css`, reading the
@@ -160,7 +160,7 @@ Nothing moves. `bun run build:packages` reads the tree as it stands and writes t
 directories that were not there before. The two other channels keep working on the same
 files, byte for byte.
 
-The shared half is [`scripts/lib/arena/package-assembly.mjs`](../scripts/lib/arena/package-assembly.mjs):
+The shared half is [`scripts/lib/arena/package-assembly.ts`](../scripts/lib/arena/package-assembly.ts):
 the exclusion list, the copy that honours it, the CSS chain and the manifest template.
 Neither half compiles anything, because the two layers need different compilers.
 

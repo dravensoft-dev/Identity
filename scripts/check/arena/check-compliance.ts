@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { join, basename } from 'node:path';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
-} from '../../lib/arena/behaviour-contracts.mjs';
+} from '../../lib/arena/behaviour-contracts.ts';
 import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 

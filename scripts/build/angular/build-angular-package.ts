@@ -11,12 +11,12 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep, posix } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { arenaConfig } from '../../lib/core/arena-config.mjs';
+import { arenaConfig } from '../../lib/core/arena-config.ts';
 import {
   collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,
   writeComponentMap, CLI_BINS,
-} from '../../lib/arena/package-assembly.mjs';
-import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
+} from '../../lib/arena/package-assembly.ts';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
 
 export const NAME = '@dravensoft/arena-angular';
 export const LAYER = 'frameworks/angular';

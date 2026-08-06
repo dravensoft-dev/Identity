@@ -57,7 +57,7 @@ test('nothing a browser loads may be TypeScript, because nothing strips it on th
     assert.ok(spec.endsWith('.mjs'),
       `${spec} is loaded by intro/ over HTTP, and a browser runs it as written: there is no build `
       + 'step between the git tag and the page, which is the same reason contracts/design-generated/ '
-      + 'is tracked. Renaming it to .ts serves TypeScript to a browser, and static-server.mjs has no '
+      + 'is tracked. Renaming it to .ts serves TypeScript to a browser, and static-server.ts has no '
       + '.ts MIME type either, so the page fails while node -- which does strip types -- reports green.');
     assert.ok(existsSync(join(root, spec)), `${spec} is imported by an intro/ page and is not there`);
   }

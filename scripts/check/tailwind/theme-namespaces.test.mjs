@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import {
   attributedNames, deriveNamespaces, namespacedPropertyCandidates,
-} from '../../lib/tailwind/theme-namespaces.mjs';
+} from '../../lib/tailwind/theme-namespaces.ts';
 
 const themeCssPath = new URL('../../../frameworks/tailwind/Theme.css', import.meta.url);
 const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()];

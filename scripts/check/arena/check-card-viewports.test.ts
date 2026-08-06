@@ -4,9 +4,9 @@ import net from 'node:net';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { startStaticServer } from '../../lib/arena/static-server.mjs';
-import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
-import { connect } from '../../lib/arena/cdp.mjs';
+import { startStaticServer } from '../../lib/arena/static-server.ts';
+import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
+import { connect } from '../../lib/arena/cdp.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import {
   parseDsCard, classify, summarizeCards, findCardPages, UNDER_RUN_SLACK,

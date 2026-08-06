@@ -1,7 +1,7 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 import { repoRoot as root } from './lib/arena/repo-root.mjs';
-import { arenaEnv } from './lib/arena/arena-scripts-vars.mjs';
+import { arenaEnv } from './lib/arena/arena-scripts-vars.ts';
 
 const port = Number(arenaEnv().PORT) || 8000;
 

@@ -31,7 +31,7 @@ two patterns and not one.
 
 **That set is machine-checked**, which is what makes it safe to name here at
 all: `none aside, exactly the patterns with no APG pattern page cite something
-else`, in `scripts/lib/arena/behaviour-contracts.test.mjs`, asserts it by literal value.
+else`, in `scripts/lib/arena/behaviour-contracts.test.ts`, asserts it by literal value.
 Adding a pattern that cites anything but an APG *patterns* page fails that test
 until the list follows, so the test is the authority and this paragraph is the
 explanation.
@@ -108,7 +108,7 @@ discriminator would be circular in every motivating case anyway: what marks
 `ArenaAlert`'s `danger` case is `role="alert"`, which is the very attribute the
 requirement under examination is about.
 
-`bindingCases()` in `scripts/lib/arena/behaviour-contracts.mjs` is the one place the
+`bindingCases()` in `scripts/lib/arena/behaviour-contracts.ts` is the one place the
 two shapes meet: a flat binding normalises to a single anonymous case (`name:
 null`), so every consumer (`check:behaviour`, `check:compliance` and both
 layers' render-suite wrappers) reads a binding as a list of cases and never
@@ -159,7 +159,7 @@ the current set with
 grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u
 ```
 
-against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.mjs`, rather than any list
+against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.ts`, rather than any list
 written here.
 
 ### A name that is PRESENT is never checked for being USEFUL

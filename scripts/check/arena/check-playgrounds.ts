@@ -14,11 +14,11 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { LAYERS } from '../../lib/arena/layers.mjs';
-import { startStaticServer } from '../../lib/arena/static-server.mjs';
-import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
-import { connect } from '../../lib/arena/cdp.mjs';
-import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
-import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.mjs';
+import { startStaticServer } from '../../lib/arena/static-server.ts';
+import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
+import { connect } from '../../lib/arena/cdp.ts';
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
+import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.ts';
 import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.ts';
 import { memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 

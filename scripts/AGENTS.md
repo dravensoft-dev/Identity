@@ -41,11 +41,11 @@ The domain is decided by what a script **touches**, never by what it is about.
 
 **A library that touches nothing is placed by the vocabulary it speaks**, because most of
 `lib/` is pure functions and the reads-and-writes test cannot separate them.
-`core/serialize-token.mjs` opens no file, but every name in it is a DTCG one, so it is `core`;
-`core/behaviour-compliance.mjs` is the same, in `contracts/behaviour`'s vocabulary of
+`core/serialize-token.ts` opens no file, but every name in it is a DTCG one, so it is `core`;
+`core/behaviour-compliance.ts` is the same, in `contracts/behaviour`'s vocabulary of
 requirement keys. What is left over is `arena`, meaning the parsers, the browser harness, `layers.mjs`
 and `repo-root.mjs`, because it belongs to no layer in particular. Never place a library by
-**who imports it**: `behaviour-compliance.mjs` is read from both framework layers' harnesses
+**who imports it**: `behaviour-compliance.ts` is read from both framework layers' harnesses
 and is still `core`.
 
 **An npm script's prefix names its phase directory.** `bun run generate:tokens` runs something
@@ -62,9 +62,9 @@ silently, because the wrong path still exists. That module is
 the one place that counts, which is why moving *it* is the one move needing care.
 
 **A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.mjs`,
-`core/arena-tokens.mjs` and the rest are there because more than one gate reads them, and a
+`core/arena-tokens.ts` and the rest are there because more than one gate reads them, and a
 gate reaching down is the only direction allowed. Across domains the same holds in both
-directions: `core/arena-tokens.mjs` imports `../arena/css-decls.mjs` and nothing forbids it,
+directions: `core/arena-tokens.ts` imports `../arena/css-decls.mjs` and nothing forbids it,
 because a domain is a statement about subject matter, not a visibility boundary.
 
 **A test lives beside what it tests**, in the same directory, which for a `lib/` module means
@@ -127,7 +127,7 @@ per commit.
 **except that the repository declares itself strict**, so it fails instead. Count them and read
 each one's dependency in [`check/AGENTS.md`](./check/AGENTS.md), which also has the table of
 every environment variable the scripts read; all of them are declared in
-`lib/arena/arena-scripts-vars.mjs`, and a real one wins over the declared value.
+`lib/arena/arena-scripts-vars.ts`, and a real one wins over the declared value.
 
 **CI narrows that run by domain, never by gate name.** `check-all.ts` takes `--domain=` and
 `--no-tests`, four jobs partition `GATES`, and `check-all.test.ts` asserts the partition, so a

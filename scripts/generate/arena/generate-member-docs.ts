@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { docComment } from './generate-api-types.ts';
-import { normaliseDoc } from '../../lib/arena/api-surface.mjs';
+import { normaliseDoc } from '../../lib/arena/api-surface.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 
 export const MEMBER_START = {

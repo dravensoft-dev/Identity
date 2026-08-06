@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { manifestFiles } from '../../lib/tailwind/tailwind-compile.mjs';
+import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import { classStringsBySlot } from '../arena/check-manifest-states.ts';
 

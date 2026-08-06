@@ -10,7 +10,7 @@ import { mkdirSync, readFileSync, existsSync, appendFileSync, readdirSync } from
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { testStep } from '../../check/arena/check-all.ts';
-import { DOMAINS, domainOfTestPath, isSuite } from '../../lib/arena/domains.mjs';
+import { DOMAINS, domainOfTestPath, isSuite } from '../../lib/arena/domains.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const REPORT_DIR = join('.cache', 'junit');

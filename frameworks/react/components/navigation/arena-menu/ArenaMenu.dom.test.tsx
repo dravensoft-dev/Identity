@@ -10,7 +10,7 @@ import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup, act } from '../../../test/Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from '../../../test/AssertPattern.tsx';
-import { isFocusable } from '../../../../../scripts/lib/core/behaviour-compliance.mjs';
+import { isFocusable } from '../../../../../scripts/lib/core/behaviour-compliance.ts';
 import { ArenaMenu } from './ArenaMenu.tsx';
 
 afterEach(cleanup);
@@ -109,7 +109,7 @@ test('the popup state sits on the focusable trigger, not on a wrapper around it'
   assert.equal(trigger!.getAttribute('aria-haspopup'), 'menu',
     'ARIA is not inherited from an ancestor, so a wrapper carrying this names nothing');
   assert.equal(trigger!.getAttribute('aria-expanded'), 'false');
-  assert.equal(isFocusable(trigger), true, 'the carrier must be the element that takes focus');
+  assert.equal(isFocusable(trigger!), true, 'the carrier must be the element that takes focus');
   assert.equal(root.querySelectorAll<HTMLElement>('[aria-haspopup]').length, 1,
     'exactly one element may claim the popup');
 });

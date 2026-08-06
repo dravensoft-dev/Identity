@@ -9,8 +9,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { arenaStyles } from '../../../frameworks/tailwind/ArenaStyles.ts';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
-import { classesManifest, slotClass, variantClass } from '../../lib/tailwind/component-css.mjs';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
+import { classesManifest, slotClass, variantClass } from '../../lib/tailwind/component-css.ts';
 
 const manifests = [...layerManifests().values()];
 const named = new Map(manifests.map((m) => [m.component, classesManifest(m)]));

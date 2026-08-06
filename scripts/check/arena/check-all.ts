@@ -4,7 +4,7 @@
  * testStep() below is the single authority for how the test suite is invoked, and why it is
  * two bun processes: --preload installs happy-dom PROCESS-wide, and a DOM installed for a
  * whole invocation also replaces Bun's own fetch, which turns
- * scripts/lib/arena/static-server.test.mjs's fetch assertion into a cross-origin failure --
+ * scripts/lib/arena/static-server.test.ts's fetch assertion into a cross-origin failure --
  * so scripts/ rides the DOM-free invocation, not the preloaded one. The Angular emit is safe
  * in either: its TestBed registration site is guarded rather than throwing on a second call.
  * Read the args here, never reconstruct them. */
@@ -14,7 +14,7 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { DOMAINS, isSuite } from '../../lib/arena/domains.mjs';
+import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const checkRoot = join(here, '..');

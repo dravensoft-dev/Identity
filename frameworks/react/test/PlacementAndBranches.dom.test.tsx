@@ -4,7 +4,7 @@ import React from 'react';
 import { join } from 'node:path';
 import { mount, cleanup, act } from './Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from './AssertPattern.tsx';
-import { isFocusable } from '../../../scripts/lib/core/behaviour-compliance.mjs';
+import { isFocusable } from '../../../scripts/lib/core/behaviour-compliance.ts';
 import { ArenaSkeleton } from '../components/display/arena-skeleton/ArenaSkeleton.tsx';
 import { ArenaCalendarEvent } from '../components/display/arena-calendar-event/ArenaCalendarEvent.tsx';
 

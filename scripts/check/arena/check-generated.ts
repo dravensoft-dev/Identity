@@ -7,7 +7,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
-import { findComments } from '../../lib/arena/comments.mjs';
+import { findComments } from '../../lib/arena/comments.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
 
 const SCANNED_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js', '.css'];

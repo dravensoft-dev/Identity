@@ -3,7 +3,7 @@
  * tsc runs under plain node, so unlike check:demos and check:vendor this gate never skips. */
 
 import { fileURLToPath } from 'node:url';
-import { typecheck, zeroProjectProblems } from '../../lib/arena/typecheck.mjs';
+import { typecheck, zeroProjectProblems } from '../../lib/arena/typecheck.ts';
 
 export const PROJECTS = [
   { project: 'frameworks/react/tsconfig.check.json', reaches: 'every component, helper and suite in the layer' },

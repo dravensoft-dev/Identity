@@ -11,9 +11,9 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { LAYERS, kebab } from '../../lib/arena/layers.mjs';
-import { bindingCases } from '../../lib/arena/behaviour-contracts.mjs';
+import { bindingCases } from '../../lib/arena/behaviour-contracts.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
-import { bindingName } from '../../lib/arena/api-surface.mjs';
+import { bindingName } from '../../lib/arena/api-surface.ts';
 
 export const CONSUMER_LAYERS = LAYERS.filter((layer) => layer !== 'tailwind');
 

@@ -2,7 +2,7 @@
  * contract forms is imperative, and returning focus after each completed transaction is the
  * gesture a point of sale is built on. autoFocus fires once at mount and the caller needs it
  * again every time, so the declarative alternative answers a different question.
- * IMPERATIVE_HANDLES in scripts/lib/arena/api-surface.mjs is what lets check:api read a public
+ * IMPERATIVE_HANDLES in scripts/lib/arena/api-surface.ts is what lets check:api read a public
  * method here at all, and it names this one and no other. */
 
 import { useTestEnvironment } from '../../../test/TestbedEnv';

@@ -2,8 +2,8 @@ import StyleDictionary from 'style-dictionary';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { serialize } from '../../lib/core/serialize-token.mjs';
-import { serializeScript, scriptName } from '../../lib/core/serialize-script.mjs';
+import { serialize } from '../../lib/core/serialize-token.ts';
+import { serializeScript, scriptName } from '../../lib/core/serialize-script.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { childEntries, isToken } from '../../lib/core/dtcg-shapes.ts';
 

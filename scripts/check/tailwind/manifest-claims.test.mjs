@@ -9,7 +9,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { arenaTv } from '../../../frameworks/tailwind/Tv.ts';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 
 const manifests = new Map([...layerManifests().values()].map((m) => [m.component, m]));
 

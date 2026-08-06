@@ -12,14 +12,14 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, dirname, sep } from 'node:path';
-import { tscBin } from '../../lib/arena/typecheck.mjs';
+import { tscBin } from '../../lib/arena/typecheck.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { arenaConfig } from '../../lib/core/arena-config.mjs';
+import { arenaConfig } from '../../lib/core/arena-config.ts';
 import {
   collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,
   writeComponentMap,
-} from '../../lib/arena/package-assembly.mjs';
-import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
+} from '../../lib/arena/package-assembly.ts';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';

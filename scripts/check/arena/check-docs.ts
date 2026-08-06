@@ -11,8 +11,8 @@
 import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
-import { findComments } from '../../lib/arena/comments.mjs';
-import { proseSegments } from '../../lib/arena/markdown-prose.mjs';
+import { findComments } from '../../lib/arena/comments.ts';
+import { proseSegments } from '../../lib/arena/markdown-prose.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
 import { emittedTree } from '../../lib/arena/layers.mjs';
 

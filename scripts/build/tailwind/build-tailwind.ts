@@ -1,14 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, dirname, join } from 'node:path';
-import { compileLayer, compileEntry, layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
+import { compileLayer, compileEntry, layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import {
   classBase, classesManifest, entryStylesheet, stripIndirection, stripProblems, themeMapFor,
-} from '../../lib/tailwind/component-css.mjs';
+} from '../../lib/tailwind/component-css.ts';
 import {
   componentSheet, matchingBrace, preludeSheet, splitUtilities,
-} from '../../lib/tailwind/component-sheets.mjs';
-import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.mjs';
+} from '../../lib/tailwind/component-sheets.ts';
+import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 type BuildOptions = { root?: string; manifests?: Map<string, any> };

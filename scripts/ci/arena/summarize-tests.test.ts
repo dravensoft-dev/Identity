@@ -7,7 +7,7 @@ import {
   EXPECTED_ROOTS, coverageProblems, parseJunit, renderSummary, stepsWithJunit, suiteDomains, tally,
 } from './summarize-tests.ts';
 import { testStep } from '../../check/arena/check-all.ts';
-import { DOMAINS } from '../../lib/arena/domains.mjs';
+import { DOMAINS } from '../../lib/arena/domains.ts';
 
 const AUTHORITY = testStep({ isBun: true, testFiles: [] });
 
@@ -30,12 +30,12 @@ test('the invocation comes from testStep and gains the two junit flags, nothing 
 
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="bun test" tests="4">
-  <testsuite name="scripts/lib/arena/domains.test.mjs" file="scripts/lib/arena/domains.test.mjs" tests="3">
-    <testcase name="passes" classname="" file="scripts/lib/arena/domains.test.mjs" line="1" />
-    <testcase name="fails" classname="" file="scripts/lib/arena/domains.test.mjs" line="2">
+  <testsuite name="scripts/lib/arena/domains.test.ts" file="scripts/lib/arena/domains.test.ts" tests="3">
+    <testcase name="passes" classname="" file="scripts/lib/arena/domains.test.ts" line="1" />
+    <testcase name="fails" classname="" file="scripts/lib/arena/domains.test.ts" line="2">
       <failure type="AssertionError" />
     </testcase>
-    <testcase name="skipped" classname="" file="scripts/lib/arena/domains.test.mjs" line="3">
+    <testcase name="skipped" classname="" file="scripts/lib/arena/domains.test.ts" line="3">
       <skipped />
     </testcase>
   </testsuite>

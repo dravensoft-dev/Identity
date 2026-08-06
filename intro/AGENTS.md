@@ -26,8 +26,8 @@ Each page loads `styles.css` and its runtime as **siblings**, and reaches `asset
 **silently**, because a missing stylesheet is not an error.
 
 **And every generated playground reaches back here**, in every framework layer, for the shared
-page furniture. `scripts/lib/arena/playground-page.mjs` is where those paths are written; derive
-what a page pulls with `grep -n "intro/" scripts/lib/arena/playground-page.mjs` rather than from
+page furniture. `scripts/lib/arena/playground-page.ts` is where those paths are written; derive
+what a page pulls with `grep -n "intro/" scripts/lib/arena/playground-page.ts` rather than from
 a list here. That is the reason the furniture sits outside every layer: each harness draws the
 same frame from the same bytes, so **a difference seen between two layers is a difference in the
 component rather than in the frame around it**.

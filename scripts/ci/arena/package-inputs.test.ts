@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { PACKAGE_INPUTS, SHARED_INPUTS, pathspecs, uncoveredChainEntries } from './package-inputs.ts';
-import { CSS_CHAIN, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
+import { CSS_CHAIN, CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('every file the CSS chain copies is covered, so a chain that grows fails here', () => {

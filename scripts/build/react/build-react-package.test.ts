@@ -7,7 +7,7 @@ import {
   rewriteSourceSpecifiers, untypedProblems, unresolvedProblems, relativeSpecifiers,
   isSource, manifest, NAME, ROOT_JS, ROOT_TS, LAYER,
 } from './build-react-package.ts';
-import { version, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
+import { version, CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('a relative source specifier becomes .js, because the package holds no JSX and no TypeScript', () => {

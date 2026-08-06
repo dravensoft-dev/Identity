@@ -15,8 +15,8 @@ import { readFileSync, existsSync, readdirSync, mkdtempSync, writeFileSync, rmSy
 import { join, dirname, relative, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { literalRanges, insideLiteral } from '../../lib/arena/comments.mjs';
-import { isScript, isSuite } from '../../lib/arena/domains.mjs';
+import { literalRanges, insideLiteral } from '../../lib/arena/comments.ts';
+import { isScript, isSuite } from '../../lib/arena/domains.ts';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]*)['"]/g;
 

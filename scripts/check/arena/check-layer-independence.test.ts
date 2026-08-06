@@ -84,7 +84,7 @@ test('tailwind may name neither sibling, and react may name neither either', () 
 
 test('an import is judged by where it LANDS, so the shared evaluator under scripts/ is not a hit', () => {
   const file = '/frameworks/react/test/AssertPattern.jsx';
-  assert.deepEqual(escapingSpecifiers("import x from '../../../scripts/lib/core/behaviour-compliance.mjs';", file, 'react'), []);
+  assert.deepEqual(escapingSpecifiers("import x from '../../../scripts/lib/core/behaviour-compliance.ts';", file, 'react'), []);
   assert.deepEqual(escapingSpecifiers("import React from 'react';", file, 'react'), []);
 });
 

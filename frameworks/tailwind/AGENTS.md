@@ -170,7 +170,7 @@ sheet `@import`s the prelude itself, so one alone is safe.
 **A surface a component renders inside ITSELF is one it draws**, and it is the half a page is
 most likely to miss, because nothing on the page names it: `ArenaTable` renders an `ArenaPagination`
 whoever implements it, and `ArenaUnauthCard` renders an `ArenaCard` in one implementation and draws the
-same frame from its own manifest in another. `scripts/lib/arena/composed-surfaces.mjs` reads that
+same frame from its own manifest in another. `scripts/lib/arena/composed-surfaces.ts` reads that
 from every implementation and **unions** it, so a page carries the same list wherever it is
 served, and `check:playgrounds` fails a page rendering an `arena-*__*` class no sheet it links
 defines, in a real browser, which is the only place the question has an answer.
@@ -247,7 +247,7 @@ the specimen renders it either way.
 stands between the gate and a vacuous pass. A gate iterating zero
 manifests finds zero violations by construction, so a discovery step that reads the wrong
 directory prints `0 manifest(s) … all resolve` and exits 0 over a layer it never looked at.
-Discovery is one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind/tailwind-compile.mjs`, and
+Discovery is one shared recursive walk, `manifestFiles()` in `scripts/lib/tailwind/tailwind-compile.ts`, and
 an empty result is an explicit failure rather than a clean pass. Every site that needs to
 find manifests calls it: `compileLayer()` in that same file, which `check:tailwind` and
 `build:tailwind` go through; `check:radius` and `check:states` directly; and a consuming
@@ -458,7 +458,7 @@ The gate's other half asks a layer's own source the same question, and there is 
 nobody left to ask. A layer that realises an affordance by rendering the manifest's class has
 no answer of its own to give, because the answer is the manifest, and both layers do that
 wherever a component renders its recipe. So that half reads `HAND_DRAWN`, in
-`scripts/lib/tailwind/manifest-surfaces.mjs`, which is the set of components drawing their own
+`scripts/lib/tailwind/manifest-surfaces.ts`, which is the set of components drawing their own
 appearance: the three SVG charts, whose geometry no class string can describe. An empty
 `HAND_DRAWN` fails rather than passing over nothing, so retiring that half would be a decision
 somebody has to write down.

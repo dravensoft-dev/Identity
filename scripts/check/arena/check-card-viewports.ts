@@ -8,10 +8,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
-import { startStaticServer } from '../../lib/arena/static-server.mjs';
-import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
-import { connect } from '../../lib/arena/cdp.mjs';
-import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
+import { startStaticServer } from '../../lib/arena/static-server.ts';
+import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
+import { connect } from '../../lib/arena/cdp.ts';
+import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const FRAME_FALLBACK_MS = 34;

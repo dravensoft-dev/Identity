@@ -3,7 +3,7 @@
 **One fixture per component, layer-neutral, and the only thing about a playground page anyone
 writes by hand.** Everything else on that page is derived: the knobs come from
 `contracts/api/components/<Name>.json`, the controls and the URL codec come from
-`scripts/lib/arena/playground-model.mjs`, and the page and its entry are emitted into both
+`scripts/lib/arena/playground-model.ts`, and the page and its entry are emitted into both
 framework layers from the same model. The two layers are therefore equal by construction, and
 this directory is where the one fact the contract cannot supply lives.
 

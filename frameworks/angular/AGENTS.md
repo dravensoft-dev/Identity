@@ -157,7 +157,7 @@ column.
 `select()`, because none of the nine contract forms is imperative and returning focus after each
 completed transaction is what lets a till chain sales without the mouse; `autoFocus` fires once
 at mount and answers a different question. `IMPERATIVE_HANDLES` in
-`scripts/lib/arena/api-surface.mjs` is what lets `check:api` read a public method on a component
+`scripts/lib/arena/api-surface.ts` is what lets `check:api` read a public method on a component
 class at all, it names these two and no others with a reason each, and any other public method
 still fails the gate as an undeclared surface.
 

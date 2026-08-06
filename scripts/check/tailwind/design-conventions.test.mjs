@@ -8,7 +8,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 
 const manifests = layerManifests();
 

@@ -2,7 +2,7 @@
  * contract forms is imperative, and returning focus after each completed transaction is the
  * gesture a point of sale is built on. autoFocus fires once at mount and the caller needs it
  * again every time, so the declarative alternative answers a different question.
- * IMPERATIVE_HANDLES in scripts/lib/arena/api-surface.mjs names this handle and no other. */
+ * IMPERATIVE_HANDLES in scripts/lib/arena/api-surface.ts names this handle and no other. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-fonts.ts';
-import { arenaConfig } from '../../lib/core/arena-config.mjs';
+import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 export function facesIn(css) {

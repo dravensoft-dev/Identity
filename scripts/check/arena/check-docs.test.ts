@@ -302,12 +302,12 @@ test('a prompt citing a contributor path is a problem, and each hit is named', (
   const root = tree({
     'frameworks/react/components/a/A.prompt.md':
       'It is a member because R6 in `contracts/api/AGENTS.md` forbids it, and\n'
-      + '`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.mjs` allows the two.\n',
+      + '`IMPERATIVE_HANDLES` in `scripts/lib/arena/api-surface.ts` allows the two.\n',
   });
   const { problems } = consumerBranchProblems(root);
   assert.equal(problems.length, 2);
   assert.ok(problems.some((p) => p.includes('contracts/api/AGENTS.md')));
-  assert.ok(problems.some((p) => p.includes('scripts/lib/arena/api-surface.mjs')));
+  assert.ok(problems.some((p) => p.includes('scripts/lib/arena/api-surface.ts')));
   for (const problem of problems) assert.match(problem, /leave the reason on the contributor branch/);
   rmSync(root, { recursive: true });
 });

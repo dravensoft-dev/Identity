@@ -10,11 +10,11 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-import { startStaticServer } from '../../lib/arena/static-server.mjs';
-import { findChromium, launchChromium } from '../../lib/arena/chromium.mjs';
-import { connect } from '../../lib/arena/cdp.mjs';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
-import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.mjs';
+import { startStaticServer } from '../../lib/arena/static-server.ts';
+import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
+import { connect } from '../../lib/arena/cdp.ts';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
+import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.ts';
 import { sheetPath } from '../../build/tailwind/build-tailwind.ts';
 
 export const PAGE = 'frameworks/tailwind/StyleParity.generated.html';

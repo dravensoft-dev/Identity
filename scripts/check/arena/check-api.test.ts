@@ -9,7 +9,7 @@ import {
 } from './check-api.ts';
 import { pascal } from '../../lib/arena/layers.mjs';
 import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
-import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs';
+import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.ts';
 
 const TYPES = new Map([['ArenaTone', 'enum'], ['ArenaCrumb', 'object']]);
 

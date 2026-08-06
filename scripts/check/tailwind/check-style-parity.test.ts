@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { allCases, problemsFrom, sheetsFor } from './check-style-parity.ts';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
-import { cases, selections } from '../../lib/tailwind/style-parity.mjs';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
+import { cases, selections } from '../../lib/tailwind/style-parity.ts';
 
 const manifests = layerManifests();
 

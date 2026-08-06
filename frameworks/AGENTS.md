@@ -56,10 +56,10 @@ a gate with nothing to check rather than something to fail.
    only where the tree tracks it.
 
 **Two literal counts move outside the layer you touched, and the layer's own suite cannot see
-either.** `scripts/lib/arena/behaviour-contracts.test.mjs` asserts an inventory **per layer** by
+either.** `scripts/lib/arena/behaviour-contracts.test.ts` asserts an inventory **per layer** by
 literal value, one for React and one for Angular, so a new component **directory** moves the one
 for that layer and a component landing in both moves both. Find them with
-`grep -n 'found.length' scripts/lib/arena/behaviour-contracts.test.mjs` rather than assuming
+`grep -n 'found.length' scripts/lib/arena/behaviour-contracts.test.ts` rather than assuming
 there is one, and move them in the same commit. Verify with the merged process, the args array in `testStep()`, because
 `bun test frameworks/react` never matches `scripts/` and reports green over a tree whose run is
 red.
@@ -130,7 +130,7 @@ page only *links* the CSS, which is identical whoever renders it, so it lives on
 
 **What survives inline is a value computed at runtime**, from data or a measurement.
 `check:appearance` fails a component that writes its appearance by hand, and `HAND_DRAWN`, in
-`scripts/lib/tailwind/manifest-surfaces.mjs`, names the ones that still do with a reason each.
+`scripts/lib/tailwind/manifest-surfaces.ts`, names the ones that still do with a reason each.
 
 **No gate compares a manifest against a rendered component, and the mapping is not one-to-one**:
 a manifest mirrors a *surface*, so a compound family's members share the parent's and the three

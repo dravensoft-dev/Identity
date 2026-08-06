@@ -11,10 +11,10 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
-import { manifestFiles } from '../../lib/tailwind/tailwind-compile.mjs';
+import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import {
   HAND_DRAWN, MANIFEST_COVERS, categoryOf, coveredContracts, surfaceProblems,
-} from '../../lib/tailwind/manifest-surfaces.mjs';
+} from '../../lib/tailwind/manifest-surfaces.ts';
 import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 

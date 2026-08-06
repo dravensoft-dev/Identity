@@ -10,7 +10,7 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { typecheck, projectFiles, zeroProjectProblems } from '../../lib/arena/typecheck.mjs';
+import { typecheck, projectFiles, zeroProjectProblems } from '../../lib/arena/typecheck.ts';
 
 export const PROJECTS = [
   { project: 'scripts/tsconfig.check.json',

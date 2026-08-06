@@ -11,7 +11,7 @@ import { PREFIX } from './check-structure.ts';
 import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
   bindingName,
-} from '../../lib/arena/api-surface.mjs';
+} from '../../lib/arena/api-surface.ts';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';

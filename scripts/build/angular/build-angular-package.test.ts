@@ -6,7 +6,7 @@ import {
   manifest, ngPackageConfig, libTsconfig, withAssets, ngPackagrBin, annotatePure,
   NAME, RUNTIME_DEPENDENCIES, STAGING, LAYER, VARIANTS,
 } from './build-angular-package.ts';
-import { version, collectFiles, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
+import { version, collectFiles, CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('ng-packagr is pointed at the entry file and told where the package lands', () => {

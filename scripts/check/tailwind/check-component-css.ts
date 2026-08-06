@@ -14,9 +14,9 @@ import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
-import { arenaTokenNames } from '../../lib/core/arena-tokens.mjs';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.mjs';
-import { applyRules } from '../../lib/tailwind/component-css.mjs';
+import { arenaTokenNames } from '../../lib/core/arena-tokens.ts';
+import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
+import { applyRules } from '../../lib/tailwind/component-css.ts';
 import { PRELUDE, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 
 export const THEME_NAMESPACES = [

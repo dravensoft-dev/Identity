@@ -66,7 +66,7 @@ appears in no contract.
 
 It is not free. `check:api` reads a layer's class and refuses any public member it cannot
 recognise, so an imperative handle exists only by being named in `IMPERATIVE_HANDLES`
-(`scripts/lib/arena/api-surface.mjs`), keyed by component and method, with its reason as the
+(`scripts/lib/arena/api-surface.ts`), keyed by component and method, with its reason as the
 value, and asserted by literal value in that file's own suite. Any other public method on any
 component fails the gate as an undeclared surface.
 

@@ -11,7 +11,7 @@ import { join, relative } from 'node:path';
 import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.ts';
-import { angularEmitRoot } from '../../lib/angular/emit-root.mjs';
+import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const PROJECT = 'frameworks/angular/tsconfig.test.json';

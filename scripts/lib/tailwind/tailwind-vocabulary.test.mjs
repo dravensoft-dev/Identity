@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { compileLayer, escapeClass } from './tailwind-compile.mjs';
+import { compileLayer, escapeClass } from './tailwind-compile.ts';
 
 const VOCABULARY = {
   colour: ['bg-base-100', 'bg-base-200', 'bg-base-300', 'border-base-300', 'border-neutral',
