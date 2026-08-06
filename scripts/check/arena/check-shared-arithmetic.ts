@@ -118,7 +118,7 @@ export function collect(base = root, paired = PAIRED, divergent = DIVERGENT) {
   return { problems, claimed, compared };
 }
 
-export function staleEntries(claimed, divergent = DIVERGENT) {
+export function staleEntries(claimed: string[], divergent = DIVERGENT) {
   const seen = new Set(claimed);
   return [...divergent.keys()]
     .filter((key) => !seen.has(key))

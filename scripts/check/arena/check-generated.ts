@@ -184,7 +184,7 @@ export function matches(pattern: string, path: string) {
   return new RegExp(`^${rx}$`).test(path);
 }
 
-function gitRun(args: string[], cwd) {
+function gitRun(args: string[], cwd: string) {
   const { stdout } = spawnSync('git', args, { cwd, encoding: 'utf8' });
   return (stdout ?? '').split('\n').filter(Boolean);
 }

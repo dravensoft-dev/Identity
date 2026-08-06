@@ -30,7 +30,7 @@ export function sourcesUnder(dir: string): string[] {
   return found;
 }
 
-export function unreachedProblems(onDisk, included, root = repoRoot) {
+export function unreachedProblems(onDisk: string[], included: string[], root = repoRoot) {
   const reached = new Set(included);
   return onDisk
     .filter((path: string) => !reached.has(path))

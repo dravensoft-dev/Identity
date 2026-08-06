@@ -185,7 +185,7 @@ export function renderLayerRow(row, layer: string) {
   } | [\`${row.component}.prompt.md\`](${promptPath(row.category, row.component)}) |`;
 }
 
-function indexOfNothing(what) {
+function indexOfNothing(what: string) {
   throw new Error(`generate-skills: ${what}, and an index of nothing indexes nothing`);
 }
 

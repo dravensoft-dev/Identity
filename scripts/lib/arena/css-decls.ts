@@ -1,4 +1,4 @@
-export function parseDecls(cssText) {
+export function parseDecls(cssText: string) {
   const stripped = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
   const out = new Map();
   for (const m of stripped.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {

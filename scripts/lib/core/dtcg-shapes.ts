@@ -23,7 +23,7 @@ export type DtcgGroup = {
 
 export type DtcgNode = Partial<DtcgToken> & DtcgGroup;
 
-export function childEntries(node): [string, DtcgNode][] {
+export function childEntries(node: DtcgNode): [string, DtcgNode][] {
   return Object.entries(node ?? {})
     .filter(([key, child]) => !key.startsWith('$') && child !== null && typeof child === 'object')
     .map(([key, child]) => [key, child as DtcgNode]);

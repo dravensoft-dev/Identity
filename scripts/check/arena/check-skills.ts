@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { renderTarget, SKILL_TARGETS, loadCategories } from '../../generate/arena/generate-skills.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-export function trackingProblems(target: string, tracked) {
+export function trackingProblems(target: string, tracked: boolean) {
   return tracked
     ? []
     : [`${target}: not tracked by git, so it reaches no clone and no tag. `
@@ -36,7 +36,7 @@ export function firstDifference(expected, actual) {
   return null;
 }
 
-export function zeroDeclarationProblems(componentCount) {
+export function zeroDeclarationProblems(componentCount: number) {
   return componentCount === 0
     ? ['frameworks/Components.json declared no component, so this gate compared an index of nothing against an index of nothing']
     : [];

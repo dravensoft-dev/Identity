@@ -84,7 +84,7 @@ function collectEmittedTests(dir: string) {
   }
 }
 
-export function missingEmitProblems(sourceTests, emittedTests, emitDir = relative(repoRoot, EMIT_DIR)) {
+export function missingEmitProblems(sourceTests: string[], emittedTests: string[], emitDir = relative(repoRoot, EMIT_DIR)) {
   const emittedStems = new Set(emittedTests.map((f: string) => f.slice(0, -'.js'.length)));
   const problems = [];
   for (const src of sourceTests) {

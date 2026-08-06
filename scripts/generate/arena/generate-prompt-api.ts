@@ -87,7 +87,7 @@ export function fenceEnd(source: string) {
   return -1;
 }
 
-export function applyRegion(source: string, region) {
+export function applyRegion(source: string, region: string) {
   const lines = source.split('\n');
   const opensAt = lines.findIndex((line) => OPEN_LINE.test(line));
 

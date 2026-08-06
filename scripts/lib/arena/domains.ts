@@ -30,7 +30,7 @@ export const isSuite = (name: string) => SUITE_EXTENSIONS.some((ext) => name.end
 export const isScript = (name: string) =>
   SCRIPT_EXTENSIONS.some((ext) => name.endsWith(ext)) && !isSuite(name);
 
-function classify(segments, i: number) {
+function classify(segments: string[], i: number) {
   if (segments[i] === 'scripts' && PHASES.includes(segments[i + 1]) && DOMAINS.includes(segments[i + 2])) {
     return segments[i + 2];
   }

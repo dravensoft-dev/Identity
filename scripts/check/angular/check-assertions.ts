@@ -50,7 +50,7 @@ export function splitArguments(source: string, open: number) {
   return null;
 }
 
-export function isNodeExpression(argument) {
+export function isNodeExpression(argument: string) {
   return NODE_MARKERS.test(argument) && !SCALAR_TAIL.test(argument.trim());
 }
 

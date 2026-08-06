@@ -42,7 +42,7 @@ export function distFiles(dir: string, keep: (path: string) => boolean, found = 
   return found;
 }
 
-export function emitDeclarations(root: string, outDir) {
+export function emitDeclarations(root: string, outDir: string) {
   const args = [tscBin(root), '-p', join(root, DIST_PROJECT)];
   if (outDir) args.push('--outDir', outDir);
   const r = spawnSync(process.execPath, args, { encoding: 'utf8' });
@@ -51,7 +51,7 @@ export function emitDeclarations(root: string, outDir) {
     throw new Error(`build-react-package: the declaration emit did not typecheck\n${r.stdout || ''}${r.stderr || ''}`);
 }
 
-export function untypedProblems(compiled, dir: string) {
+export function untypedProblems(compiled: string[], dir: string) {
   return compiled
     .filter((rel: string) => !existsSync(join(dir, rel.replace(/\.js$/, '.d.ts'))))
     .map((rel: string) => `${rel} ships with no declaration beside it, so the package would ship it untyped`);

@@ -37,7 +37,7 @@ export function rootProblems(entries: string[]) {
   return problems;
 }
 
-export function levelProblems(level: string, entries: string[], isDir) {
+export function levelProblems(level: string, entries: string[], isDir: (path: string) => boolean) {
   const problems = [];
   const shape = SHAPE.get(level);
   if (!shape) return [`contracts/${level}: no declared shape`];

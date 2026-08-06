@@ -11,7 +11,7 @@ import {
 } from './check-shared-arithmetic.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
-const fns = (src) => exportedFunctions(src);
+const fns = (src: string) => exportedFunctions(src);
 
 test('a body is compared with its whitespace normalised, so a reflow is not a drift', () => {
   const one = fns('export function f(a) {\n  return a + 1;\n}');

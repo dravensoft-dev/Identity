@@ -11,7 +11,7 @@ function chromiumTempDirs() {
   return new Set(readdirSync(tmpdir()).filter((n) => n.startsWith('arena-chromium-')));
 }
 
-function processesNaming(profilePath) {
+function processesNaming(profilePath: string) {
   try {
     return execFileSync('pgrep', ['-f', `user-data-dir=${profilePath}`], { stdio: ['ignore', 'pipe', 'ignore'] })
       .toString().trim().split('\n').filter(Boolean);

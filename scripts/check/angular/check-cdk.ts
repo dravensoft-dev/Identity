@@ -36,7 +36,7 @@ export function importedSheets(css: string) {
   return out;
 }
 
-export function checkBridge(bridgeCss, prebuiltCss, tokens: Set<string>, resolveSheet) {
+export function checkBridge(bridgeCss: string, prebuiltCss: string, tokens: Set<string>, resolveSheet) {
   const errs = [];
   const selectors = bridgeSelectors(bridgeCss);
   const named = cdkClasses(bridgeCss);

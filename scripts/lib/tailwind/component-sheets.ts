@@ -105,7 +105,7 @@ export function dedent(text: string) {
     .map((line, i) => (i === 0 ? line : line.slice(shortest))).join('\n');
 }
 
-export function componentSheet(rules, preludeSpecifier: string) {
+export function componentSheet(rules: string[], preludeSpecifier: string) {
   const body = rules.map((rule) => dedent(rule).replace(/^(?=.)/gm, '  ')).join('\n');
   return `@import '${preludeSpecifier}';\n\n@layer utilities {\n${body}\n}\n`;
 }

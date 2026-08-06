@@ -30,7 +30,7 @@ export const ENTRIES = [
   { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.generated.js', real: 'react-dom/client.js', external: ['react'] },
 ];
 
-function realExportNames(root: string, real) {
+function realExportNames(root: string, real: string) {
   return Object.keys(req(join(root, 'node_modules', real)));
 }
 

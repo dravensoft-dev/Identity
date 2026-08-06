@@ -26,7 +26,7 @@ export const EXPORTED = /export (?:function|const) ([A-Za-z0-9_]+)/g;
 export const COMPONENT_NAME = /^[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*$/;
 export const LAYER_IMPORT = /from '\.\.\/\.\.\/[a-z-]+\/[a-z-]+\/([A-Z][A-Za-z0-9]*)\.tsx?'/g;
 
-export function componentFiles(layer: string, extension, root = repoRoot) {
+export function componentFiles(layer: string, extension: string, root = repoRoot) {
   const base = join(root, 'frameworks', layer, 'components');
   const found: { at: string; file: string; symbol: string }[] = [];
   if (!existsSync(base)) return found;

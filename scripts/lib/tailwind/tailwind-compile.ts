@@ -23,7 +23,7 @@ export function escapeClass(cls: string) {
   return backslash(cls);
 }
 
-export function manifestFiles(componentsDir) {
+export function manifestFiles(componentsDir: string) {
   const out: string[] = [];
   const walk = (dir: string) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -41,7 +41,7 @@ export function entryStylesheet(preset: string, components: string, extra?: stri
     + (extra ? `@source '${extra}';\n` : '');
 }
 
-export function compileEntry(entry, root = repoRoot) {
+export function compileEntry(entry: string, root = repoRoot) {
   const bin = join(root, 'node_modules/.bin/tailwindcss');
   const dir = mkdtempSync(join(tmpdir(), 'arena-tw-'));
   const out = join(dir, 'out.css');

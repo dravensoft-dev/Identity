@@ -59,7 +59,7 @@ export const MODULE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs']);
 export const REFERENCE_EXT = new Set([...MODULE_EXT, '.html']);
 const SKIP_DIRS = new Set(['node_modules', 'vendor', 'build', 'dist']);
 
-export function* layerFiles(layerDir): Generator<string> {
+export function* layerFiles(layerDir: string): Generator<string> {
   for (const entry of readdirSync(layerDir).sort()) {
     if (SKIP_DIRS.has(entry)) continue;
     const path = join(layerDir, entry);
@@ -143,7 +143,7 @@ export function staleExemptions(matchedKeys: string[]) {
   return [...EXEMPT.keys()].filter((k) => !matched.has(k));
 }
 
-export function staleSpecifierAllowances(allowedHits) {
+export function staleSpecifierAllowances(allowedHits: string[]) {
   return [...ALLOWED_SPECIFIERS.keys()]
     .filter((re) => !allowedHits.some((spec: string) => re.test(spec)))
     .map((re) => `${re} matches nothing any layer references, so it authorises an edge nobody takes`);

@@ -46,7 +46,7 @@ export function stripAtStatements(css: string) {
   return css.replace(/^[ \t]*@[a-z-]+[^{}\n]*;[ \t]*$/gim, '');
 }
 
-export function paletteEquivalenceProblems(generatedCss, cliCss) {
+export function paletteEquivalenceProblems(generatedCss: string, cliCss: string) {
   const expected = parseDecls(stripAtStatements(generatedCss));
   const actual = parseDecls(stripAtStatements(cliCss));
   const problems = [];
@@ -76,7 +76,7 @@ export function paletteEquivalenceProblems(generatedCss, cliCss) {
   return { problems, compared };
 }
 
-export function manifestProblems(pkg: { layer: string; name: string }, manifest: PackageManifest, version) {
+export function manifestProblems(pkg: { layer: string; name: string }, manifest: PackageManifest, version: string) {
   const problems = [];
   const at = pkg.name;
 

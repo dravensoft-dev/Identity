@@ -50,7 +50,7 @@ export function promptProblems(base = root, prompts = promptPaths(base)) {
   return { problems, held, uncontracted, scanned: prompts.length };
 }
 
-export function zeroScanProblems(scanned) {
+export function zeroScanProblems(scanned: number) {
   return scanned === 0
     ? ['found no .prompt.md at all, so this gate compared nothing against nothing']
     : [];

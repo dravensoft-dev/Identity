@@ -133,7 +133,7 @@ export const COVERED = {
   'ArenaSideNavCollapsible:angular': 'SideNavNesting.test.ts',
 };
 
-export function suiteMentions(source: string, tail) {
+export function suiteMentions(source: string, tail: string) {
   const escaped = tail.split('/').map((s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return new RegExp(escaped.join(`(?:/|['"]\\s*,\\s*['"])`)).test(source);
 }

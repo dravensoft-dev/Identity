@@ -6,12 +6,13 @@ import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
   crossLayerAgrees, bindingCases, PATTERN_DIR,
 } from '../../lib/arena/behaviour-contracts.ts';
+import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 import { pascal, kebab } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 
-export function describeBinding(binding) {
+export function describeBinding(binding: BehaviourBinding) {
   return bindingCases(binding)
     .map((c) => (c.name ? `${c.name}:${c.pattern}` : c.pattern))
     .join(' + ');

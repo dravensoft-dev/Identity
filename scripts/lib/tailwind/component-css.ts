@@ -66,7 +66,7 @@ export function entryStylesheet(presetPath: string, manifests: Manifests) {
   return `@reference '${presetPath}';\n\n@layer utilities {\n${body}\n}\n`;
 }
 
-export function themeKeyMap(themeCss) {
+export function themeKeyMap(themeCss: string) {
   const map = new Map();
   for (const decls of parseDecls(themeCss).values()) {
     for (const [name, value] of decls) {
@@ -78,7 +78,7 @@ export function themeKeyMap(themeCss) {
   return map;
 }
 
-export function stripProblems(css: string, themeMap) {
+export function stripProblems(css: string, themeMap: Map<string, string>) {
   const problems = [];
   for (const [, key, token] of css.matchAll(INDIRECTION)) {
     if (!isThemeKey(key)) continue;

@@ -12,7 +12,7 @@ import { getDefaultConfig } from 'tailwind-merge';
 
 export const NATIVE_THEME_NAMESPACES = new Set(Object.keys(getDefaultConfig().theme));
 
-export function deriveNamespaces(decls, native = NATIVE_THEME_NAMESPACES) {
+export function deriveNamespaces(decls: Map<string, string>, native = NATIVE_THEME_NAMESPACES) {
   const resetNamespaces = new Set();
   for (const [name, value] of decls) {
     const reset = /^([a-z][a-z0-9-]*)-\*$/.exec(name);
@@ -32,7 +32,7 @@ export function deriveNamespaces(decls, native = NATIVE_THEME_NAMESPACES) {
   return namespaces;
 }
 
-export function namespacedPropertyCandidates(decls) {
+export function namespacedPropertyCandidates(decls: Map<string, string>) {
   const candidates = [];
   for (const [name] of decls) {
     if (/-\*$/.test(name)) continue;
