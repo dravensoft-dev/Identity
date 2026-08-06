@@ -77,7 +77,7 @@ and fails one that mounts nothing, draws no panel, says anything on the console,
 | Claim | Held by |
 |---|---|
 | a declaring page fits the viewport it declares | `check:cards`, in real Chromium |
-| the browsable pages' own runtime modules parse and export what they claim | `browser-modules.test.mjs`, under `scripts/check/arena/` |
+| the browsable pages' own runtime modules parse and export what they claim | `browser-modules.test.ts`, under `scripts/check/arena/` |
 | `support.js` stays tracked and unedited | `check:generated`, by literal name |
 | **that a specimen's stylesheet path resolves** | **nothing. An unstyled page that happens to fit its box passes outright** |
 | **that a page reads well, or that a colour carries its meaning** | **nothing. Open it** |

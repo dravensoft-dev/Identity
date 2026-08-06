@@ -24,8 +24,8 @@ compound family's one manifest mirrors several of each, so that check is by hand
 narrow slice that is machine-checked lives elsewhere, as `check:states` in `../arena/`.
 
 Every `X.test.mjs` beside a gate covers that gate. Three suites here name no gate:
-`manifest-classes.test.mjs` covers `frameworks/tailwind/ManifestClasses.js`,
-`arenaTv-merge.test.mjs` covers the shared `Tv.ts`, and `theme-namespaces.test.mjs` covers
+`manifest-classes.test.ts` covers `frameworks/tailwind/ManifestClasses.js`,
+`arenaTv-merge.test.mjs` covers the shared `Tv.ts`, and `theme-namespaces.test.ts` covers
 `Theme.css` itself, asserting that every namespaced property in it is attributed to a
 namespace or listed with a reason. All three are claims about the layer this domain gates
 rather than about any one gate, and the third is deliberately independent of the other two:

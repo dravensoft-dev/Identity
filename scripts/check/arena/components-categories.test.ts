@@ -15,13 +15,13 @@ test('every category name is a legal directory name under the new convention', (
 });
 
 test('every component name is PascalCase', () => {
-  for (const names of Object.values(categories))
+  for (const names of (Object.values(categories) as string[][]))
     for (const name of names) assert.match(name, /^[A-Z][A-Za-z0-9]*$/, `${name} is not PascalCase`);
 });
 
 test('no component is declared in two categories', () => {
   const seen = new Map();
-  for (const [category, names] of Object.entries(categories))
+  for (const [category, names] of (Object.entries(categories) as [string, string[]][]))
     for (const name of names) {
       assert.equal(seen.has(name), false, `${name} is in both ${seen.get(name)} and ${category}`);
       seen.set(name, category);
@@ -29,11 +29,11 @@ test('no component is declared in two categories', () => {
 });
 
 test('each category lists its components sorted, so a diff shows only what moved', () => {
-  for (const [category, names] of Object.entries(categories))
+  for (const [category, names] of (Object.entries(categories) as [string, string[]][]))
     assert.deepEqual(names, [...names].sort(), `${category} is not sorted`);
 });
 
 test('the file declares all fifty-five components', () => {
-  const total = Object.values(categories).reduce((n, names) => n + names.length, 0);
+  const total = (Object.values(categories) as string[][]).reduce((n, names) => n + names.length, 0);
   assert.equal(total, 55);
 });

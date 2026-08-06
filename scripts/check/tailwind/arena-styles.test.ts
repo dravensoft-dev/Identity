@@ -3,7 +3,7 @@
  * each component's string was its own. A class name is derived, so the guarantees are now the
  * same for all of them and belong to the composer rather than to any one component. What is
  * NOT here is what each manifest MEANS: which tone paints which token, which size is which
- * height. That is a claim per component, it is in `manifest-claims.test.mjs`, and it is
+ * height. That is a claim per component, it is in `manifest-claims.test.ts`, and it is
  * resolved through the recipe so it says the same thing it said before. */
 
 import test from 'node:test';

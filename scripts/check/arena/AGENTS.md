@@ -64,10 +64,10 @@ rather than a count. A stale exemption fails the gate itself, and a change to `E
 on both maps by name.
 
 Every `X.test.mjs` beside a gate covers that gate. Three suites here name no gate:
-`browser-modules.test.mjs` covers the `intro/` runtime modules and the two `scripts/`
+`browser-modules.test.ts` covers the `intro/` runtime modules and the two `scripts/`
 modules they reach,
-`components-categories.test.mjs` covers `frameworks/Components.json`, and
-`script-imports.test.mjs` covers every non-suite script's relative specifiers and the shape of
+`components-categories.test.ts` covers `frameworks/Components.json`, and
+`script-imports.test.ts` covers every non-suite script's relative specifiers and the shape of
 its main guard. All three are claims about the repository root, which is what makes them
 `arena`.
 
@@ -75,7 +75,7 @@ its main guard. All three are claims about the repository root, which is what ma
 Those pages are ES modules a browser loads over HTTP, and there is no build step between the
 git tag and the page, which is the reason `contracts/design-generated/` is tracked in the
 first place. Two modules are reached that way today, `lib/arena/css-decls.mjs` and
-`lib/core/token-preview.mjs`, and `browser-modules.test.mjs` reads that list off the imports
+`lib/core/token-preview.mjs`, and `browser-modules.test.ts` reads that list off the imports
 rather than carrying a typed copy. This is the one rule here a passing suite could otherwise
 hide: node strips types and would resolve a `.ts` import happily, while the browser gets a
 file `static-server.ts` has no MIME type for and the page fails with every gate green.
@@ -84,7 +84,7 @@ file `static-server.ts` has no MIME type for and the page fails with every gate 
 `fileURLToPath(import.meta.url)`, never by matching its own filename.** The second form reads
 as equivalent and is not: it is a claim about the file's own name, so renaming the file makes
 it false, `main()` stops running, the process exits 0 having read nothing, and `check-all`
-reports that as PASS. `script-imports.test.mjs` holds the rule and carries the only exemption,
+reports that as PASS. `script-imports.test.ts` holds the rule and carries the only exemption,
 the two `validate-palette.mjs` copies, which are vendored verbatim and re-vendored rather than
 patched; that exemption fails if either stops carrying the guard or stops saying it is
 vendored.

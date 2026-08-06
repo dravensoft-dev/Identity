@@ -82,7 +82,7 @@ test('serve.ts is in scope, and it is the reason this suite exists', () => {
 test('a suite is out of scope, because its fixtures are imports inside strings', () => {
   const scripts = scriptsUnder(join(repoRoot, 'scripts')).map((p) => relative(repoRoot, p));
   assert.equal(scripts.some((p) => isSuite(p)), false);
-  assert.deepEqual(unresolvedSpecifiers(join(repoRoot, 'scripts/check/arena/script-imports.test.mjs')), [],
+  assert.deepEqual(unresolvedSpecifiers(join(repoRoot, 'scripts/check/arena/script-imports.test.ts')), [],
     'and this suite is its own witness: scanned directly it is clean, so exclusion is not hiding a break');
 });
 

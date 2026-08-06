@@ -15,8 +15,8 @@ const MODULES = ['intro/overview.js', 'intro/theme.js'];
 
 const REACHES_SCRIPTS = /from\s+['"]([^'"]*\/scripts\/[^'"]+)['"]/g;
 
-export function browserReachableScripts(files = MODULES, base = root) {
-  const found = new Set();
+export function browserReachableScripts(files = MODULES, base = root): string[] {
+  const found = new Set<string>();
   for (const file of files) {
     const source = readFileSync(join(base, file), 'utf8');
     for (const m of source.matchAll(REACHES_SCRIPTS)) found.add(m[1].slice(m[1].indexOf('scripts/')));

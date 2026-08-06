@@ -16,14 +16,16 @@ const manifests = new Map([...layerManifests().values()].map((m) => [m.component
 export function resolve(component, chosen, slot) {
   const manifest = manifests.get(component);
   if (!manifest) throw new Error(`manifest-claims: no manifest called ${component}`);
-  const styles = arenaTv(manifest)(chosen);
+  const styles = (arenaTv as any)(manifest)(chosen) as Record<string, () => string>;
   if (!styles[slot]) throw new Error(`manifest-claims: ${component} has no slot called ${slot}`);
   return styles[slot]().split(/\s+/).filter(Boolean);
 }
 
-export function claimProblems(claims) {
+type Claim = { chosen?: Record<string, string>; slot: string; has?: string[]; hasNot?: string[]; why: string };
+
+export function claimProblems(claims: Record<string, Claim[]>) {
   const problems = [];
-  for (const [component, entries] of Object.entries(claims)) {
+  for (const [component, entries] of Object.entries(claims) as [string, Claim[]][]) {
     for (const { chosen = {}, slot, has = [], hasNot = [], why } of entries) {
       const resolved = resolve(component, chosen, slot);
       const where = `${component}.${slot} with ${JSON.stringify(chosen)}`;
@@ -45,7 +47,7 @@ test('every claim names a manifest that exists, so a renamed component fails her
 });
 
 test('every claim carries a reason, because one that cannot be judged stale is not a claim', () => {
-  for (const [component, entries] of Object.entries(CLAIMS)) {
+  for (const [component, entries] of Object.entries(CLAIMS) as [string, Claim[]][]) {
     assert.ok(entries.length > 0, `${component} carries an empty claim list`);
     for (const entry of entries) {
       assert.ok(entry.why && entry.why.length > 10, `${component}.${entry.slot} has no usable reason`);
@@ -56,7 +58,7 @@ test('every claim carries a reason, because one that cannot be judged stale is n
 });
 
 test('every manifest claim holds', () => {
-  const problems = claimProblems(CLAIMS);
+  const problems = claimProblems(CLAIMS as unknown as Record<string, Claim[]>);
   assert.deepEqual(problems, [], problems.join('\n'));
 });
 

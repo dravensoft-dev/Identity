@@ -10,6 +10,6 @@
 | `component-sheets.ts` | Cuts one compiled sheet into the per-component files a package ships plus the prelude they all import. Separate from `component-css.ts` because it knows about CSS block structure and nothing about manifests. |
 | `style-parity.ts` | Builds the page `check:style-parity` mounts: both the recipe's class string and the Arena names for every slot of every variant, in one document, so the token layer and the preflight are identical and only the thing under test differs. |
 
-Every `X.test.mjs` beside a module covers that module. `tailwind-vocabulary.test.mjs` covers
+Every `X.test.mjs` beside a module covers that module. `tailwind-vocabulary.test.ts` covers
 the same module from the vocabulary side: which utility families the preset is expected to
 emit at all.

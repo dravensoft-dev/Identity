@@ -39,9 +39,9 @@ test('shadow-1..3 still dedupe against each other (pre-existing registration, re
 
 test("ArenaButton.manifest.json through arenaTv(): text-ctl* and the variant's text color both survive", async () => {
   const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
-  const arenaButtonStyles = arenaTv(manifest);
-  const expectSize = { sm: 'text-ctl-md', md: 'text-ctl', lg: 'text-ctl' };
-  const expectColor = { primary: 'text-primary-content', danger: 'text-error' };
+  const arenaButtonStyles = (arenaTv as any)(manifest);
+  const expectSize: Record<string, string> = { sm: 'text-ctl-md', md: 'text-ctl', lg: 'text-ctl' };
+  const expectColor: Record<string, string> = { primary: 'text-primary-content', danger: 'text-error' };
   for (const variant of ['primary', 'danger']) {
     for (const size of ['sm', 'md', 'lg']) {
       const root = classes(arenaButtonStyles({ variant, size }).root());
@@ -192,7 +192,7 @@ test('the exact cases the coordinator\'s review found broken now behave correctl
 
 test('ArenaButton.manifest.json\'s three ctl-h heights now dedupe against each other through arenaTv()', async () => {
   const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
-  const arenaButtonStyles = arenaTv(manifest);
+  const arenaButtonStyles = (arenaTv as any)(manifest);
   const heights = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
   for (const size of ['sm', 'md', 'lg']) {
     const root = classes(arenaButtonStyles({ variant: 'primary', size }).root());
