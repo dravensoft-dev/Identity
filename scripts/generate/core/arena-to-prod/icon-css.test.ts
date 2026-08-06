@@ -83,7 +83,7 @@ test('the src lands beside font-family rather than at the end, which is where Ph
   const block = /@font-face\{([^}]*)\}/.exec(css);
   assert.ok(block, 'the subset declares no @font-face at all');
   const face = block[1];
-  assert.deepEqual(face.split(';').map((d) => d.split(':')[0]), ['font-family', 'src', 'font-weight', 'font-display']);
+  assert.deepEqual((face ?? '').split(';').map((d) => d.split(':')[0]), ['font-family', 'src', 'font-weight', 'font-display']);
 });
 
 test('a glyph the weight does not draw is named rather than written', () => {

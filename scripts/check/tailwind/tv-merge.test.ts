@@ -45,8 +45,10 @@ test("ArenaButton.manifest.json through arenaTv(): text-ctl* and the variant's t
   for (const variant of ['primary', 'danger']) {
     for (const size of ['sm', 'md', 'lg']) {
       const root = classes(arenaButtonStyles({ variant, size }).root());
-      assert.ok(root.includes(expectSize[size]), `${variant}/${size}: ${expectSize[size]} missing from "${root.join(' ')}"`);
-      assert.ok(root.includes(expectColor[variant]), `${variant}/${size}: ${expectColor[variant]} missing from "${root.join(' ')}"`);
+      const height = expectSize[size] ?? '';
+      const colour = expectColor[variant] ?? '';
+      assert.ok(root.includes(height), `${variant}/${size}: ${height} missing from "${root.join(' ')}"`);
+      assert.ok(root.includes(colour), `${variant}/${size}: ${colour} missing from "${root.join(' ')}"`);
     }
   }
 });

@@ -343,6 +343,7 @@ test('every current EXEMPT key is matched by this run -- none are stale', () => 
 test('an EXEMPT key absent from the matched set is reported as stale', () => {
   const oneMissing = new Set(EXEMPT.keys());
   const [firstKey] = EXEMPT.keys();
+  assert.ok(firstKey, 'EXEMPT is empty, so this asserts nothing');
   oneMissing.delete(firstKey);
   assert.deepEqual(staleExemptions(oneMissing), [firstKey]);
 });

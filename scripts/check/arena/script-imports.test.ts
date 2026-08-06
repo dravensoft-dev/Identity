@@ -53,9 +53,10 @@ export function unresolvedSpecifiers(path: string) {
   const literals = literalRanges(source);
   const bad = [];
   for (const m of source.matchAll(SPECIFIER)) {
-    if (isInterpolated(m[1])) continue;
+    const spec = m[1] ?? '';
+    if (isInterpolated(spec)) continue;
     if (insideLiteral(literals, m.index)) continue;
-    if (!existsSync(join(dirname(path), m[1]))) bad.push(m[1]);
+    if (!existsSync(join(dirname(path), spec))) bad.push(spec);
   }
   return bad;
 }

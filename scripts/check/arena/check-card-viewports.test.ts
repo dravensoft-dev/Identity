@@ -287,7 +287,7 @@ test('interleaveForDispatch spreads originally-adjacent items out of the first w
 
   for (let a = 0; a < positions.length; a += 1) {
     for (let b = a + 1; b < positions.length; b += 1) {
-      assert.ok(Math.abs(positions[a] - positions[b]) >= groups, `items ${a} and ${b} landed too close: positions ${positions[a]} and ${positions[b]}`);
+      assert.ok(Math.abs((positions[a] ?? 0) - (positions[b] ?? 0)) >= groups, `items ${a} and ${b} landed too close: positions ${positions[a]} and ${positions[b]}`);
     }
   }
 });

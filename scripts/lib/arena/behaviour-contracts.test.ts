@@ -317,10 +317,10 @@ test('a cased binding yields one entry per case, in order', () => {
 test('a case inherits the binding reason and may override it', () => {
   const [inherited] = bindingCases({ reason: 'from the binding',
     cases: [{ name: 'a', when: 'x', pattern: 'none', exceptions: [] }] });
-  assert.equal(inherited.reason, 'from the binding');
+  assert.equal(inherited?.reason, 'from the binding');
   const [own] = bindingCases({ reason: 'from the binding',
     cases: [{ name: 'a', when: 'x', pattern: 'none', reason: 'its own', exceptions: [] }] });
-  assert.equal(own.reason, 'its own');
+  assert.equal(own?.reason, 'its own');
   assert.equal(bindingCases({ pattern: 'status' })[0]?.reason, null);
 });
 

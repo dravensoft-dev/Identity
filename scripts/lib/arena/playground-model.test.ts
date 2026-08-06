@@ -89,12 +89,12 @@ test('a neutral value is the form\'s own empty, and an enum\'s is its first decl
 });
 
 test('a neutral object carries every field that is required or defaulted, and nothing else', () => {
-  assert.deepEqual(neutralObject(types.ArenaTableSort, types), { column: 0, direction: 'asc' });
-  assert.deepEqual(neutralObject(types.ArenaTableColumn, types), { header: '', align: 'neutral' });
+  assert.deepEqual(neutralObject(typeOf(types, 'ArenaTableSort'), types), { column: 0, direction: 'asc' });
+  assert.deepEqual(neutralObject(typeOf(types, 'ArenaTableColumn'), types), { header: '', align: 'neutral' });
 });
 
 test('objectFields carries each field\'s options and initial, so one control can draw them all', () => {
-  const fields = objectFields(types.ArenaTableSort, types);
+  const fields = objectFields(typeOf(types, 'ArenaTableSort'), types);
   assert.deepEqual(fields.map((f) => f.name), ['column', 'direction']);
   assert.deepEqual(fields[1]?.options, ['asc', 'desc']);
   assert.equal(fields[1]?.initial, 'asc');

@@ -85,7 +85,7 @@ test('suiteFiles collects only .test.ts, and walks the whole layer', () => {
     ],
     '/root/nested': [{ name: 'B.test.ts', isDirectory: () => false }],
   };
-  assert.deepEqual(suiteFiles('/root', (dir) => tree[dir]), ['/root/A.test.ts', '/root/nested/B.test.ts']);
+  assert.deepEqual(suiteFiles('/root', (dir) => tree[dir] ?? []), ['/root/A.test.ts', '/root/nested/B.test.ts']);
 });
 
 test('the gate is pointed at the Angular layer, the one whose suites share a document', () => {

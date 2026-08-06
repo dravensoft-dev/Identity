@@ -9,13 +9,13 @@ import { kebab } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
 
 const shipped = manifestFiles(join(repoRoot, 'frameworks', 'tailwind', 'components'))
-  .map((file) => kebab(basename(file).split('.')[0]));
+  .map((file) => kebab(basename(file).split('.')[0] ?? ''));
 
 test('the file both packages carry the map as is named once', () => {
   assert.equal(MAP_FILE, 'components.json');
 });
 
-for (const [layer, match] of [['angular', 'selector'], ['react', 'symbol']]) {
+for (const [layer, match] of [['angular', 'selector'], ['react', 'symbol']] as [string, string][]) {
   test(`${layer} keys every component by what a consumer of that layer writes`, () => {
     const map = componentMap(layer, repoRoot);
     assert.equal(map.match, match);

@@ -26,7 +26,7 @@ test('the domain table in scripts/check/AGENTS.md counts what GATES holds, or it
   const readme = readFileSync(join(repoRoot, 'scripts', 'check', 'AGENTS.md'), 'utf8');
   const counted: Record<string, number> = {};
   for (const { file } of GATES) {
-    const domain = file.split('/')[0];
+    const domain = file.split('/')[0] ?? '';
     counted[domain] = (counted[domain] ?? 0) + 1;
   }
   for (const [domain, n] of Object.entries(counted)) {
@@ -48,7 +48,7 @@ test('every gate in the array is also an npm script -- a gate a reader cannot in
 test('every gate sits in one of the five domains, so a new one cannot land outside the grid', () => {
   assert.deepEqual(DOMAINS, ['core', 'react', 'angular', 'tailwind', 'arena']);
   for (const { name, file } of GATES) {
-    const [domain, ...tail] = file.split('/');
+    const [domain = '', ...tail] = file.split('/');
     assert.ok(DOMAINS.includes(domain), `${name} names the domain ${domain}, which is not one of the five`);
     assert.equal(tail.length, 1, `${name} points at ${file}, which is not <domain>/<gate>.mjs`);
   }

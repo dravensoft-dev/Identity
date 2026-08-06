@@ -55,10 +55,10 @@ test('assembly is judged by the package manifest, so a half-written dist is not 
 });
 
 test('the React fixture names the package, because the symbol scan reads the import as well as the tag', () => {
-  assert.match(SOURCES.react['src/App.tsx'] ?? '', /from '@dravensoft\/arena-react'/);
-  assert.match(SOURCES.react['src/App.tsx'] ?? '', /<ArenaButton/);
-  assert.match(STALE.react['src/App.tsx'] ?? '', /\{ Button \}/, 'the negative fixture must spell the old name exactly');
-  assert.match(SOURCES.angular['src/app.html'] ?? '', /<arena-button/,
+  assert.match(SOURCES['react']?.['src/App.tsx'] ?? '', /from '@dravensoft\/arena-react'/);
+  assert.match(SOURCES['react']?.['src/App.tsx'] ?? '', /<ArenaButton/);
+  assert.match(STALE['react']?.['src/App.tsx'] ?? '', /\{ Button \}/, 'the negative fixture must spell the old name exactly');
+  assert.match(SOURCES['angular']?.['src/app.html'] ?? '', /<arena-button/,
     'the Angular element is unchanged by the rename, and this fixture is what holds that');
 });
 

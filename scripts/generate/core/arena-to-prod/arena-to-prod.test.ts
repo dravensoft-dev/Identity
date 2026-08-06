@@ -141,7 +141,7 @@ test('the theme step writes the stylesheet and creates the directory leading to 
 
 test('a configuration problem is fatal and writes nothing', () => {
   const broken = structuredClone(readable);
-  delete broken.palettes[0].colors.primary;
+  delete broken.palettes[0]?.colors.primary;
   const root = project(broken);
   const step = themeStep(options(root), { packageName: '@dravensoft/arena-react', sheets: null });
   assert.equal(step.code, 1);
@@ -161,7 +161,9 @@ test('a config that is not JSON exits 2 rather than throwing', () => {
 
 test('a contrast report warns and still writes, because a consumer owns their brand', () => {
   const dim = structuredClone(readable);
-  dim.palettes[0].colors['base-content'] = '#1a1a1a';
+  const [firstPalette] = dim.palettes;
+  assert.ok(firstPalette, 'the readable fixture declares no palette to dim');
+  firstPalette.colors['base-content'] = '#1a1a1a';
   const root = project(dim);
   const step = themeStep(options(root), { packageName: '@dravensoft/arena-react', sheets: null });
   assert.equal(step.code, 0);
@@ -290,7 +292,7 @@ test('the font path is written relative to the stylesheet, so a bundler resolves
   iconsStep(options(root), { phosphor: web, arena: null });
   const src = /url\('([^']+)'\)/.exec(readFileSync(join(root, 'src', ICONS_SHEET), 'utf8'));
   assert.ok(src, 'the sheet declares no @font-face src at all');
-  const path = src[1];
+  const path = src[1] ?? '';
   assert.ok(path.startsWith('..'), path);
   assert.ok(path.endsWith('/bold/Phosphor-Bold.woff2'), path);
   rmSync(root, { recursive: true });
@@ -389,7 +391,9 @@ test('a config that does not parse stops the run before the subset, which it has
 test('--strict promotes a report from either step, and neither is fatal without it', () => {
   const { root: phosphorRootDir, web } = phosphor({ bold: 'Phosphor-Bold' });
   const dim = structuredClone(readable);
-  dim.palettes[0].colors['base-content'] = '#1a1a1a';
+  const [firstPalette] = dim.palettes;
+  assert.ok(firstPalette, 'the readable fixture declares no palette to dim');
+  firstPalette.colors['base-content'] = '#1a1a1a';
   const environment: Environment = { phosphor: web, arena: null, packageName: '@dravensoft/arena-react', sheets: null };
 
   const contrast = project(dim);

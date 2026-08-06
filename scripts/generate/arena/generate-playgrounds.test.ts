@@ -24,7 +24,7 @@ test('the emitted copies are byte-identical, which is the whole reason they are 
 
 test('the copy names its generator and its source, so nobody edits the copy', () => {
   const body = [...codecFiles().values()][0];
-  assert.ok(body.startsWith(CODEC_BANNER));
+  assert.ok(body?.startsWith(CODEC_BANNER));
   assert.match(body ?? '', /generate-playgrounds\.ts/);
   assert.match(body ?? '', /frameworks\/demos\/PlaygroundCodec\.ts/);
 });

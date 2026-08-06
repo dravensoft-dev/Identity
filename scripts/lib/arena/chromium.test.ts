@@ -125,7 +125,7 @@ test('kill() reaps the whole process group: no descendant survives it and no tem
   const { kill } = await launchChromium(found.path);
   const created = [...chromiumTempDirs()].filter((d) => !before.has(d));
   assert.equal(created.length, 1, 'launchChromium should have made exactly one new temp profile dir');
-  const profilePath = join(tmpdir(), created[0]);
+  const profilePath = join(tmpdir(), created[0] ?? '');
 
   const beforeKill = processesNaming(profilePath);
   assert.ok(beforeKill.length > 1,

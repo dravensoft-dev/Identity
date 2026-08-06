@@ -780,7 +780,7 @@ test('an empty array reads as a missing subject, not as vacuously met', () => {
 test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement', () => {
   for (const map of [QUANTIFIED, NOT_QUANTIFIED]) {
     for (const key of map.keys()) {
-      const [name, requirement] = key.split(':');
+      const [name = '', requirement = ''] = key.split(':');
       const pattern = PATTERNS.get(name);
       assert.ok(pattern, `${key}: no pattern file called "${name}"`);
       assert.ok(requirement in pattern.requires, `${key}: pattern "${name}" declares no "${requirement}"`);
@@ -790,7 +790,7 @@ test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement',
 
 test('every QUANTIFIED requirement is decidable per element', () => {
   for (const key of QUANTIFIED.keys()) {
-    const requirement = key.split(':')[1];
+    const requirement = key.split(':')[1] ?? '';
     assert.ok(DECIDABLE.has(requirement),
       `${key}: quantifying needs a per-element verdict, and this requirement is behavioural`);
   }

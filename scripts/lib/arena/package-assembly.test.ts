@@ -116,7 +116,7 @@ test('a TypeScript command and the node floor are one claim, so neither can move
   const ships = Object.values(CLI_BINS);
   assert.ok(ships.length > 0, 'the manifest advertises no command, so this proves nothing');
 
-  const [major, minor] = base.engines.node.replace(/^\D*/, '').split('.').map(Number);
+  const [major = 0, minor = 0] = base.engines.node.replace(/^\D*/, '').split('.').map(Number);
   const strips = major > 22 || (major === 22 && minor >= 18);
 
   if (ships.some((target) => target.endsWith('.ts'))) {
@@ -208,7 +208,7 @@ test('a component sheet is reached through the barrel alone, never named twice i
   writeCssChain(dir, '@dravensoft/arena-angular', sheets, repoRoot);
   const links = importsIn(readFileSync(join(dir, 'arena.css'), 'utf8'));
 
-  assert.equal(links.filter((l) => l.startsWith('./css/components/')).length, 0,
+  assert.equal(links.filter((l) => l?.startsWith('./css/components/')).length, 0,
     'arena.css imports css/components.css, which imports every component sheet itself');
   assert.ok(links.includes('./css/components.css'));
   assert.equal(existsSync(join(dir, 'css', 'components', 'tag.css')), true,

@@ -121,7 +121,7 @@ test('the binding table is mechanical: content is children, an event x is onX', 
   assert.equal(bindingName('mark', 'slot', 'react'), 'mark');
   assert.equal(bindingName('navigate', 'event', 'react'), 'onNavigate');
   assert.equal(bindingName('items', 'array', 'react'), 'items');
-  for (const [n, f] of [['content', 'slot'], ['navigate', 'event'], ['items', 'array']]) {
+  for (const [n = '', f = ''] of [['content', 'slot'], ['navigate', 'event'], ['items', 'array']]) {
     assert.equal(bindingName(n, f, 'angular'), n);
   }
 });

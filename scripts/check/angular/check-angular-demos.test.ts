@@ -20,7 +20,7 @@ const ENTRY =
   + 'bootstrapApplication(Demo, { providers: [provideZonelessChangeDetection()] });\n';
 
 function reader(files: Record<string, string>) {
-  return (rel: string) => (rel in files ? files[rel] : null);
+  return (rel: string) => files[rel] ?? null;
 }
 
 const GOOD = {

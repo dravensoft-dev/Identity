@@ -17,6 +17,12 @@ import type { CompoundVariant } from '../../lib/tailwind/manifest-shapes.ts';
 const manifests = [...layerManifests().values()];
 const named = new Map(manifests.map((m) => [m.component, classesManifest(m)]));
 
+const slotted = (styles: Record<string, () => string>, slot: string) => {
+  const read = styles[slot];
+  if (!read) throw new Error(`the composed styles answer for no slot called ${slot}`);
+  return read();
+};
+
 const classesOf = (component: string) => {
   const found = named.get(component);
   if (!found) throw new Error(`no class manifest was composed for ${component}`);
@@ -32,9 +38,9 @@ test('every slot answers with its own base class, so no slot renders unstyled', 
   for (const manifest of manifests) {
     const styles = arenaStyles(classesOf(manifest.component))();
     for (const slot of Object.keys(manifest.slots ?? {})) {
-      assert.equal(typeof styles[slot](), 'string');
-      assert.ok(styles[slot]().split(/\s+/).includes(slotClass(manifest.component, slot)),
-        `${manifest.component}.${slot} resolved to "${styles[slot]()}" without its own base class`);
+      assert.equal(typeof slotted(styles, slot), 'string');
+      assert.ok(slotted(styles, slot).split(/\s+/).includes(slotClass(manifest.component, slot)),
+        `${manifest.component}.${slot} resolved to "${slotted(styles, slot)}" without its own base class`);
     }
   }
 });
@@ -45,7 +51,7 @@ test('no argument resolves to exactly the declared defaults, so a default cannot
     const explicit = styles({ ...manifest.defaultVariants });
     const implicit = styles({});
     for (const slot of Object.keys(manifest.slots ?? {})) {
-      assert.equal(implicit[slot](), explicit[slot](),
+      assert.equal(slotted(implicit, slot), slotted(explicit, slot),
         `${manifest.component}.${slot}: the default selection and the explicit one disagree`);
     }
   }
@@ -60,7 +66,7 @@ test('a variant reaches exactly the slots its manifest gives it, and no others',
         const resolved = styles(chosen);
         for (const slot of Object.keys(manifest.slots ?? {})) {
           const expected = variantClass(manifest.component, slot, group, value);
-          const touched = resolved[slot]().split(/\s+/).includes(expected);
+          const touched = slotted(resolved, slot).split(/\s+/).includes(expected);
           const declared = Boolean(String(slots?.[slot] ?? '').trim());
           assert.equal(touched, declared,
             `${manifest.component}: ${group}=${value} ${touched ? 'reaches' : 'misses'} .${slot}, `
@@ -78,7 +84,8 @@ test('two variant values that declare different classes resolve differently, so 
       const seen = new Map();
       for (const [value, slots] of Object.entries(values)) {
         if (!Object.values(slots ?? {}).some((c) => String(c).trim())) continue;
-        const key = Object.keys(manifest.slots ?? {}).map((slot) => styles({ [group]: value })[slot]()).join('|');
+        const key = Object.keys(manifest.slots ?? {})
+          .map((slot) => slotted(styles({ [group]: value }), slot)).join('|');
         assert.ok(!seen.has(key),
           `${manifest.component}: ${group}=${value} and ${group}=${seen.get(key)} resolve identically`);
         seen.set(key, value);
@@ -91,7 +98,7 @@ test('a value no manifest declares is refused by name rather than drawing nothin
   for (const manifest of manifests) {
     const groups = Object.keys(manifest.variants ?? {});
     if (groups.length === 0) continue;
-    const group = groups[0];
+    const group = groups[0] ?? '';
     assert.throws(
       () => arenaStyles(classesOf(manifest.component))({ [group]: 'chartreuse' }),
       new RegExp(`${manifest.component}: ${group}="chartreuse" is not in the manifest`),
@@ -108,10 +115,10 @@ test('a compound variant applies only when every condition it names holds', () =
     (manifest.compoundVariants ?? []).forEach(({ class: applied, ...conditions }: CompoundVariant, index: number) => {
       const holding = styles({ ...manifest.defaultVariants, ...conditions } as ArenaSelection);
       for (const slot of Object.keys(applied ?? {})) {
-        assert.ok(holding[slot]().split(/\s+/).includes(`${slotClass(manifest.component, slot)}--cv${index + 1}`),
+        assert.ok(slotted(holding, slot).split(/\s+/).includes(`${slotClass(manifest.component, slot)}--cv${index + 1}`),
           `${manifest.component}: compound ${index + 1} did not apply to .${slot} with its own conditions met`);
       }
-      const [firstCondition] = Object.keys(conditions);
+      const [firstCondition = ''] = Object.keys(conditions);
       const otherValue = Object.keys(manifest.variants?.[firstCondition] ?? {})
         .find((v) => v !== String(conditions[firstCondition]));
       if (otherValue === undefined) return;
@@ -119,7 +126,7 @@ test('a compound variant applies only when every condition it names holds', () =
         { ...manifest.defaultVariants, ...conditions, [firstCondition]: otherValue } as ArenaSelection,
       );
       for (const slot of Object.keys(applied ?? {})) {
-        assert.ok(!broken[slot]().split(/\s+/).includes(`${slotClass(manifest.component, slot)}--cv${index + 1}`),
+        assert.ok(!slotted(broken, slot).split(/\s+/).includes(`${slotClass(manifest.component, slot)}--cv${index + 1}`),
           `${manifest.component}: compound ${index + 1} still applied with ${firstCondition}=${otherValue}`);
       }
     });

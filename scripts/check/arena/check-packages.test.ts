@@ -10,6 +10,9 @@ import {
 } from './check-packages.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+const [REACT_PACKAGE, ANGULAR_PACKAGE] = PACKAGES;
+if (!REACT_PACKAGE || !ANGULAR_PACKAGE) throw new Error('PACKAGES no longer declares both layers');
+
 const generated = ':root{--color-primary:#b52a20;--color-base-100:#141010;}';
 
 test('an equal pair reports nothing and says how much it looked at', () => {
@@ -73,37 +76,37 @@ const manifest = (overrides = {}) => ({
 });
 
 test('a well-formed manifest reports nothing', () => {
-  assert.deepEqual(manifestProblems(PACKAGES[0], manifest(), '4.1.0'), []);
+  assert.deepEqual(manifestProblems(REACT_PACKAGE, manifest(), '4.1.0'), []);
 });
 
 test('a version out of step with plugin.json is reported with both', () => {
-  const problems = manifestProblems(PACKAGES[0], manifest({ version: '4.0.0' }), '4.1.0');
+  const problems = manifestProblems(REACT_PACKAGE, manifest({ version: '4.0.0' }), '4.1.0');
   assert.deepEqual(problems, ['@dravensoft/arena-react: version 4.0.0, and .claude-plugin/plugin.json says 4.1.0']);
 });
 
 test('private is a problem, because a private package can never be published', () => {
-  assert.deepEqual(manifestProblems(PACKAGES[0], manifest({ private: true }), '4.1.0'),
+  assert.deepEqual(manifestProblems(REACT_PACKAGE, manifest({ private: true }), '4.1.0'),
     ['@dravensoft/arena-react: private, so it can never be published']);
 });
 
 test('an install script is refused, whichever of the three names it takes', () => {
   for (const hook of ['preinstall', 'install', 'postinstall']) {
-    const problems = manifestProblems(PACKAGES[0], manifest({ scripts: { [hook]: 'node x.js' } }), '4.1.0');
+    const problems = manifestProblems(REACT_PACKAGE, manifest({ scripts: { [hook]: 'node x.js' } }), '4.1.0');
     assert.equal(problems.length, 1, hook);
     assert.match(problems[0] ?? '', /declares an install script/);
   }
 });
 
 test('Phosphor is the consumer\'s, so bundling it or omitting the peer are both problems', () => {
-  const bundled = manifestProblems(PACKAGES[0], manifest({ dependencies: { '@phosphor-icons/web': '^2.1.2' } }), '4.1.0');
+  const bundled = manifestProblems(REACT_PACKAGE, manifest({ dependencies: { '@phosphor-icons/web': '^2.1.2' } }), '4.1.0');
   assert.ok(bundled.some((p) => /never a dependency/.test(p)));
 
-  const missing = manifestProblems(PACKAGES[0], manifest({ peerDependencies: { react: '>=18' } }), '4.1.0');
+  const missing = manifestProblems(REACT_PACKAGE, manifest({ peerDependencies: { react: '>=18' } }), '4.1.0');
   assert.deepEqual(missing, ['@dravensoft/arena-react: no peer on @phosphor-icons/web, and every component renders ph-* classes']);
 });
 
 test('an Arena package is always a peer, never a dependency', () => {
-  const problems = manifestProblems(PACKAGES[0], manifest({ dependencies: { '@dravensoft/arena-angular': '4.1.0' } }), '4.1.0');
+  const problems = manifestProblems(REACT_PACKAGE, manifest({ dependencies: { '@dravensoft/arena-angular': '4.1.0' } }), '4.1.0');
   assert.ok(problems.some((p) => /is a dependency; an Arena package is always a peer/.test(p)));
 });
 
@@ -120,10 +123,10 @@ function assembled(files: Record<string, string>) {
 test('every exports target must have been emitted', () => {
   const dir = assembled({ 'README.md': '#', 'Index.js': '', 'Index.d.ts': '', 'css/reset.css': '' });
   const m = manifest({ exports: { '.': { import: './Index.js' }, './css/reset.css': './css/reset.css' } });
-  assert.deepEqual(exportProblems(PACKAGES[0], m, dir), []);
+  assert.deepEqual(exportProblems(REACT_PACKAGE, m, dir), []);
 
   const m2 = manifest({ exports: { '.': './Missing.js' } });
-  assert.deepEqual(exportProblems(PACKAGES[0], m2, dir),
+  assert.deepEqual(exportProblems(REACT_PACKAGE, m2, dir),
     ['@dravensoft/arena-react: exports ./Missing.js, which was never emitted']);
   rmSync(dir, { recursive: true });
 });
@@ -131,10 +134,10 @@ test('every exports target must have been emitted', () => {
 test('a wildcard target names a family, so what is checked is that the family is not empty', () => {
   const dir = assembled({ 'README.md': '#', 'Index.d.ts': '', 'css/a.css': '' });
   const m = manifest({ exports: { './css/*': './css/*' } });
-  assert.deepEqual(exportProblems(PACKAGES[0], m, dir), []);
+  assert.deepEqual(exportProblems(REACT_PACKAGE, m, dir), []);
 
   const empty = manifest({ exports: { './css/*': './css/*', './gone/*': './gone/*' } });
-  assert.deepEqual(exportProblems(PACKAGES[0], empty, dir),
+  assert.deepEqual(exportProblems(REACT_PACKAGE, empty, dir),
     ['@dravensoft/arena-react: exports ./gone/*, which matches nothing that was emitted, so the '
       + 'subpath resolves to a module error for every consumer who imports it']);
   rmSync(dir, { recursive: true });
@@ -151,16 +154,16 @@ test('a wildcard matches one path segment, the way Node resolves an exports patt
 
 test('a package exposing nothing is a problem, and so is a bin that was never emitted', () => {
   const dir = assembled({ 'README.md': '#', 'Index.d.ts': '' });
-  assert.match(exportProblems(PACKAGES[0], manifest(), dir)[0] ?? '', /no exports target resolves/);
+  assert.match(exportProblems(REACT_PACKAGE, manifest(), dir)[0] ?? '', /no exports target resolves/);
   const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-to-prod': './bin/arena-to-prod.ts' } });
-  assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
+  assert.deepEqual(exportProblems(REACT_PACKAGE, m, dir),
     ['@dravensoft/arena-react: bin arena-to-prod points at ./bin/arena-to-prod.ts, which was never emitted']);
   rmSync(dir, { recursive: true });
 });
 
 test('a package carrying no component map cannot answer auto, and that is caught before a release', () => {
   const dir = assembled({ 'css/components/arena-button.css': '' });
-  assert.deepEqual(componentMapProblems(PACKAGES[0], dir),
+  assert.deepEqual(componentMapProblems(REACT_PACKAGE, dir),
     ['@dravensoft/arena-react: no components.json, so "components": "auto" has nothing to resolve a template against']);
   rmSync(dir, { recursive: true });
 });
@@ -170,7 +173,7 @@ test('a map is held to the sheets beside it in both directions', () => {
     'css/components/arena-button.css': '',
     'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'arena-button', 'arena-tag': 'arena-tag' } }),
   });
-  assert.deepEqual(componentMapProblems(PACKAGES[0], named),
+  assert.deepEqual(componentMapProblems(REACT_PACKAGE, named),
     ['@dravensoft/arena-react: components.json names arena-tag, and no such sheet was emitted']);
 
   const short = assembled({
@@ -178,7 +181,7 @@ test('a map is held to the sheets beside it in both directions', () => {
     'css/components/arena-tag.css': '',
     'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-button': 'arena-button' } }),
   });
-  assert.deepEqual(componentMapProblems(PACKAGES[0], short),
+  assert.deepEqual(componentMapProblems(REACT_PACKAGE, short),
     ['@dravensoft/arena-react: components.json reaches no key for arena-tag, so auto can never put it in a subset']);
 
   rmSync(named, { recursive: true });
@@ -190,21 +193,21 @@ test('a map that resolves everything to nothing is a failure, not an empty subse
     'css/components/arena-button.css': '',
     'components.json': JSON.stringify({ match: 'selector', draws: { 'arena-bar-chart': null } }),
   });
-  assert.ok(componentMapProblems(PACKAGES[0], dir).some((m) => m.includes('names no component sheet')));
+  assert.ok(componentMapProblems(REACT_PACKAGE, dir).some((m) => m.includes('names no component sheet')));
   rmSync(dir, { recursive: true });
 });
 
 test('a package with no README is a problem, because that is the page npm shows', () => {
   const dir = assembled({ 'Index.js': '', 'Index.d.ts': '' });
   const m = manifest({ exports: { '.': './Index.js' } });
-  assert.deepEqual(exportProblems(PACKAGES[0], m, dir), ['@dravensoft/arena-react: no README.md, which is the page npm shows']);
+  assert.deepEqual(exportProblems(REACT_PACKAGE, m, dir), ['@dravensoft/arena-react: no README.md, which is the page npm shows']);
   rmSync(dir, { recursive: true });
 });
 
 test('a package advertising no declaration at the root is untyped to npm and to moduleResolution: node', () => {
   const dir = assembled({ 'README.md': '#', 'Index.js': '', 'Index.d.ts': '' });
   const m = manifest({ types: undefined, exports: { '.': { types: './Index.d.ts', import: './Index.js' } } });
-  assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
+  assert.deepEqual(exportProblems(REACT_PACKAGE, m, dir),
     ['@dravensoft/arena-react: no types and no typings at the root, so npm reads the package as untyped and a consumer on moduleResolution: node finds no declarations']);
   rmSync(dir, { recursive: true });
 });
@@ -212,10 +215,10 @@ test('a package advertising no declaration at the root is untyped to npm and to 
 test('typings is the other spelling of the same claim, and ng-packagr writes that one', () => {
   const dir = assembled({ 'README.md': '#', 'Index.js': '', 'types/Index.d.ts': '' });
   const named = manifest({ types: undefined, typings: 'types/Index.d.ts', exports: { '.': './Index.js' } });
-  assert.deepEqual(exportProblems(PACKAGES[1], named, dir), []);
+  assert.deepEqual(exportProblems(ANGULAR_PACKAGE, named, dir), []);
 
   const missing = manifest({ types: undefined, typings: 'types/Gone.d.ts', exports: { '.': './Index.js' } });
-  assert.deepEqual(exportProblems(PACKAGES[1], missing, dir),
+  assert.deepEqual(exportProblems(ANGULAR_PACKAGE, missing, dir),
     ['@dravensoft/arena-angular: types types/Gone.d.ts, which was never emitted']);
   rmSync(dir, { recursive: true });
 });
@@ -239,7 +242,7 @@ test('a stylesheet chain that resolves end to end reports nothing, and says how 
     'css/components/arena-tag.css': "@import '../prelude.css';",
     'css/prelude.css': ':root{}',
   });
-  const { problems, walked } = styleProblems(PACKAGES[1], dir);
+  const { problems, walked } = styleProblems(ANGULAR_PACKAGE, dir);
   assert.deepEqual(problems, []);
   assert.equal(walked, 5);
   rmSync(dir, { recursive: true });
@@ -251,7 +254,7 @@ test('an import naming a file beside the barrel that lives a directory below it 
     'css/components.css': "@import './button.css';",
     'css/components/arena-button.css': '',
   });
-  const { problems } = styleProblems(PACKAGES[1], dir);
+  const { problems } = styleProblems(ANGULAR_PACKAGE, dir);
   assert.ok(problems.includes(
     '@dravensoft/arena-angular: css/components.css imports ./button.css, which was never emitted',
   ), problems.join('\n'));
@@ -260,7 +263,7 @@ test('an import naming a file beside the barrel that lives a directory below it 
 
 test('a chain that leads nowhere fails rather than passing for having found no import', () => {
   const dir = assembled({ 'arena.css': ':root{}' });
-  const { problems, walked } = styleProblems(PACKAGES[1], dir);
+  const { problems, walked } = styleProblems(ANGULAR_PACKAGE, dir);
   assert.equal(walked, 1);
   assert.equal(problems.length, 1);
   assert.match(problems[0] ?? '', /reaches no component stylesheet/);
@@ -273,7 +276,7 @@ test('a bare specifier is the consumer\'s to resolve and is never walked as a pa
     'css/components.css': "@import './components/arena-tag.css';",
     'css/components/arena-tag.css': '',
   });
-  assert.deepEqual(styleProblems(PACKAGES[1], dir).problems, []);
+  assert.deepEqual(styleProblems(ANGULAR_PACKAGE, dir).problems, []);
   rmSync(dir, { recursive: true });
 });
 
@@ -283,6 +286,6 @@ test('a cycle terminates rather than walking the same sheet forever', () => {
     'css/components.css': "@import './components/arena-tag.css';",
     'css/components/arena-tag.css': "@import '../components.css';",
   });
-  assert.deepEqual(styleProblems(PACKAGES[1], dir).problems, []);
+  assert.deepEqual(styleProblems(ANGULAR_PACKAGE, dir).problems, []);
   rmSync(dir, { recursive: true });
 });

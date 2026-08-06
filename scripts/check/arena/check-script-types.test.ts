@@ -2,8 +2,9 @@
  * the failure it prevents. erasableSyntaxOnly is the one that keeps the migration honest:
  * without it a script could take an enum and stop running under bare node, which check-all
  * needs it to do. strict is asserted as a bundle now that every one of its seven is on, the
- * way both framework layers already declare it; checkJs stays named at false with the reason
- * it is loose, and the unreached-file rule is what stops a narrowed glob from passing. */
+ * way both framework layers already declare it, with noUncheckedIndexedAccess beside it;
+ * checkJs stays named at false with the reason it is loose, and the unreached-file rule is
+ * what stops a narrowed glob from passing. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,7 +14,7 @@ import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { PROJECTS, CHECKED_EXTENSIONS, sourcesUnder, unreachedProblems } from './check-script-types.ts';
 
-const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0]?.project), 'utf8'));
+const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0]?.project ?? ''), 'utf8'));
 
 test('the gate names a project that exists', () => {
   for (const { project: path } of PROJECTS)
@@ -32,7 +33,7 @@ test('the project never emits, because a checking project writing output would s
     'scripts import each other with the extension written out, which is what both runtimes resolve');
 });
 
-test('strict is on as a bundle, which is what both framework layers already declare', () => {
+test('strict is on as a bundle, and the index tightening beyond it is on too', () => {
   const options = project().compilerOptions;
   assert.equal(options.strict, true,
     'all seven are on, so the enumeration this file used to carry is gone. What it cost, for '
@@ -47,10 +48,10 @@ test('strict is on as a bundle, which is what both framework layers already decl
     assert.equal(options[off], undefined,
       `${off} is named individually, which can only weaken what strict already turns on`);
 
-  assert.equal(options.noUncheckedIndexedAccess, undefined,
-    'the one tightening beyond strict that this project does not take: 716 errors, because '
-    + 'every scripts/ read of arr[i] and m[k] becomes possibly-undefined. The React layer takes '
-    + 'it and this one does not, so lifting it is a deliberate edit here rather than a drift.');
+  assert.equal(options.noUncheckedIndexedAccess, true,
+    'beyond strict, and the last flag either framework layer has that this one lacked: it cost '
+    + '716, because a tooling script reads arr[i] and map[k] constantly. Turning it off again '
+    + 'is a deliberate edit to this line.');
 });
 
 test('a .mjs is resolved and never checked, which is what the two vendored copies need', () => {
@@ -88,7 +89,7 @@ test('sourcesUnder finds a script nested several directories deep, which a flat 
 test('a file the globs do not reach is reported, which is how a narrowed include is caught', () => {
   const onDisk = [join(repoRoot, 'scripts', 'a.mjs'), join(repoRoot, 'scripts', 'b.ts')];
   assert.deepEqual(unreachedProblems(onDisk, onDisk), []);
-  const missed = unreachedProblems(onDisk, [onDisk[0]]);
+  const missed = unreachedProblems(onDisk, [onDisk[0] ?? '']);
   assert.equal(missed.length, 1);
   assert.match(missed[0] ?? '', /scripts\/b\.ts is on disk and the project's globs do not reach it/);
 });
