@@ -45,7 +45,7 @@ export function findSourceFiles(dir: string) {
   return found.sort();
 }
 
-export function rewriteRelativeSourceImports(code) {
+export function rewriteRelativeSourceImports(code: string) {
   return code.replace(/(from\s*")(\.\.?\/[^"]+?)(?:\.generated)?\.(?:jsx|tsx|ts)"/g, '$1$2.generated.js"');
 }
 

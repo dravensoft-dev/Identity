@@ -43,7 +43,7 @@ test('the strict family is enumerated, so every flag is a decision somebody made
     assert.equal(options[on], true, `${on} is on and must stay on`);
 
   assert.equal(options.noImplicitAny, false,
-    'off by decision rather than oversight: 404 parameters and locals carry no annotation '
+    'off by decision rather than oversight: 339 parameters and locals carry no annotation '
     + 'yet, down from 1,643. Turning it on is the remaining work, not a switch.');
   assert.equal(options.strictNullChecks, false,
     'off for the same reason and second in line: 970 alone, and 812 with noImplicitAny on. '
@@ -64,7 +64,7 @@ test('a .mjs is resolved and never checked, which is what the two vendored copie
 test('the project reaches both extensions, since dropping either stops covering half the tree', () => {
   const include = project().include ?? [];
   for (const ext of CHECKED_EXTENSIONS)
-    assert.ok(include.some((p) => p.endsWith(ext)), `no ${ext} in include: ${JSON.stringify(include)}`);
+    assert.ok(include.some((p: string) => p.endsWith(ext)), `no ${ext} in include: ${JSON.stringify(include)}`);
 });
 
 test('sourcesUnder finds a script nested several directories deep, which a flat read would miss', () => {

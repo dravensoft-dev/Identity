@@ -40,7 +40,7 @@ function insideMathParens(rest, index: number) {
   return stack.length > 0 && stack[stack.length - 1];
 }
 
-export function isLegalBracket(content) {
+export function isLegalBracket(content: string) {
   const value = content.replace(HINT, '').replaceAll('_', ' ');
   if (UNMODELLED.test(value.trim())) return true;
   if (!/[\d#]/.test(value)) return true;

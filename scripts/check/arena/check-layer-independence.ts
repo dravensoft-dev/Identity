@@ -86,7 +86,7 @@ export function textualHits(text: string, tokens) {
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
 const HTML_REFERENCE = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
 
-export function referencesIn(text: string, ext) {
+export function referencesIn(text: string, ext: string) {
   return [...text.matchAll(MODULE_EXT.has(ext) ? SPECIFIER : HTML_REFERENCE)].map((m) => m[1]);
 }
 
@@ -145,7 +145,7 @@ export function staleExemptions(matchedKeys: string[]) {
 
 export function staleSpecifierAllowances(allowedHits) {
   return [...ALLOWED_SPECIFIERS.keys()]
-    .filter((re) => !allowedHits.some((spec) => re.test(spec)))
+    .filter((re) => !allowedHits.some((spec: string) => re.test(spec)))
     .map((re) => `${re} matches nothing any layer references, so it authorises an edge nobody takes`);
 }
 

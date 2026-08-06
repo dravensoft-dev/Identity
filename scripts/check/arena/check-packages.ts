@@ -112,9 +112,9 @@ function exportTargets(exports) {
   return out;
 }
 
-export function globMatches(target, dir: string) {
+export function globMatches(target: string, dir: string) {
   const rel = target.replace(/^\.\//, '');
-  const pattern = new RegExp(`^${rel.split('*').map((p) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
+  const pattern = new RegExp(`^${rel.split('*').map((p: string) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
   const found: string[] = [];
   const walk = (at: string, prefix: string) => {
     if (!existsSync(at)) return;

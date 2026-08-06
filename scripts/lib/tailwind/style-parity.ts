@@ -39,7 +39,7 @@ export function cases(manifest: ComponentManifest) {
 }
 
 export function parityPage(sheets, allCases) {
-  const links = sheets.map((href) => `<link rel="stylesheet" href="${href}">`).join('\n');
+  const links = sheets.map((href: string) => `<link rel="stylesheet" href="${href}">`).join('\n');
   const rows = allCases.map(({ id, raw, arena }) =>
     `<div data-case="${id}"><span class="${raw}"></span><span class="${arena}"></span></div>`).join('\n');
   return `<!doctype html>\n<meta charset="utf-8">\n<title>Arena style parity</title>\n${links}\n`

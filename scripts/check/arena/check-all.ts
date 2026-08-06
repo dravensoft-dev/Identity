@@ -110,7 +110,7 @@ export function testStep({ isBun, testFiles }) {
             args: ['--test', ...testFiles] }];
 }
 
-export function stepStatus(code) {
+export function stepStatus(code: number) {
   if (code === 0) return 'pass';
   if (code === 2) return 'skip';
   return 'fail';

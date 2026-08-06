@@ -11,7 +11,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
-export function declaredOption(configPath, option) {
+export function declaredOption(configPath: string, option) {
   const seen = new Set();
   let current = resolve(configPath);
   while (!seen.has(current)) {
@@ -35,7 +35,7 @@ export function emitRoot({ rootDir, outDir, layerRoot }) {
   return join(outDir, inside);
 }
 
-export function angularEmitRoot(configPath) {
+export function angularEmitRoot(configPath: string) {
   const root = declaredOption(configPath, 'rootDir');
   const out = declaredOption(configPath, 'outDir');
   return emitRoot({

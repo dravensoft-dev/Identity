@@ -42,7 +42,7 @@ function balancedFrom(text: string, open: number) {
   return -1;
 }
 
-function nextBrace(text: string, from) {
+function nextBrace(text: string, from: number) {
   for (let i = from; i < text.length; i++) {
     const c = text[i];
     if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
@@ -90,7 +90,7 @@ export function styleObjectBodies(rawText: string) {
   return bodies.sort((a, b) => a.start - b.start);
 }
 
-export function objectEntries(body) {
+export function objectEntries(body: string) {
   const entries = [];
   let i = 0;
   while (i < body.length) {

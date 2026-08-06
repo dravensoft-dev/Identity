@@ -338,7 +338,7 @@ export const COMPARABLE_DEFAULT = new Set(['primitive', 'enum']);
 
 export const REACT_SOURCE_EXTENSIONS = ['.tsx', '.jsx'];
 
-export function reactSourceFor(declarationPath, readFile = readFileSync) {
+export function reactSourceFor(declarationPath: string, readFile = readFileSync) {
   if (declarationPath.endsWith('.tsx')) {
     try {
       return { path: declarationPath, source: readFile(declarationPath, 'utf8') };
@@ -357,7 +357,7 @@ export function reactSourceFor(declarationPath, readFile = readFileSync) {
   return null;
 }
 
-export function reactImplementationProblems(contract: ContractCandidate, declarationPath, readFile = readFileSync) {
+export function reactImplementationProblems(contract: ContractCandidate, declarationPath: string, readFile = readFileSync) {
   const where = `react/${contract.component}`;
   const found = reactSourceFor(declarationPath, readFile);
   if (!found) {

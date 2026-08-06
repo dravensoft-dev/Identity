@@ -26,7 +26,7 @@ export const ROOT_PRIVATE = new Map([
     + 'nobody types data with calendarHourH.'],
 ]);
 
-export function sourceExtension(base) {
+export function sourceExtension(base: string) {
   return [...SOURCE_EXTENSIONS, '.ts', '.js'].find((e) => existsSync(`${base}${e}`)) ?? null;
 }
 

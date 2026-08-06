@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { renderTarget, SKILL_TARGETS, loadCategories } from '../../generate/arena/generate-skills.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-export function trackingProblems(target, tracked) {
+export function trackingProblems(target: string, tracked) {
   return tracked
     ? []
     : [`${target}: not tracked by git, so it reaches no clone and no tag. `
@@ -20,7 +20,7 @@ export function trackingProblems(target, tracked) {
       + 'because it scans no .md.'];
 }
 
-function trackedFiles(base) {
+function trackedFiles(base: string) {
   const { stdout } = spawnSync('git', ['ls-files', ...SKILL_TARGETS], { cwd: base, encoding: 'utf8' });
   return new Set((stdout ?? '').split('\n').filter(Boolean));
 }

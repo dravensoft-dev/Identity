@@ -213,7 +213,7 @@ function isMemberDoc(text: string, repoRelativePath: string) {
 }
 
 function documents(root: string) {
-  return walk(root, (p) => p.endsWith('.md'), emittedTree(root));
+  return walk(root, (p: string) => p.endsWith('.md'), emittedTree(root));
 }
 
 function exempt(list, rel: string) {
@@ -290,7 +290,7 @@ export function commentRuleProblems(root = ROOT) {
   const sources = SCANNED_TREES
     .map((tree) => join(root, tree))
     .filter((dir) => existsSync(dir))
-    .flatMap((dir) => walk(dir, (p) => SOURCE_EXTENSIONS.some((e) => p.endsWith(e)), emittedTree(root)));
+    .flatMap((dir) => walk(dir, (p: string) => SOURCE_EXTENSIONS.some((e) => p.endsWith(e)), emittedTree(root)));
 
   const problems = [];
   let scanned = 0;

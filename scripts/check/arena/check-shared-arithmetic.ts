@@ -50,7 +50,7 @@ export const DIVERGENT = new Map([
    + 'PageSlot type, so what differs is how the gap is spelt, not where one falls.'],
 ]);
 
-export function normalise(body) {
+export function normalise(body: string) {
   return body.replace(/\s+/g, ' ').trim();
 }
 

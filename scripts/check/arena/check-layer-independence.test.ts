@@ -50,7 +50,7 @@ test('the compiled CSS is the one reference authorised, and the layer around it 
 
 test('a stylesheet link is judged by where it lands, so a relative path cannot slip past the tokens', () => {
   const file = `${repoRoot}/frameworks/react/ui-kits/console/index.html`;
-  const link = (href) => `<link rel="stylesheet" href="${href}">`;
+  const link = (href: string) => `<link rel="stylesheet" href="${href}">`;
   assert.deepEqual(
     escapingSpecifiers(link('../../../tailwind/consume/Components.generated.css'), file, 'react'),
     ['frameworks/tailwind/consume/Components.generated.css'],

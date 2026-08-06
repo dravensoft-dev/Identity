@@ -3,8 +3,8 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-const read = (p) => readFileSync(join(root, p), 'utf8');
-const readJSON = (p) => JSON.parse(read(p));
+const read = (p: string) => readFileSync(join(root, p), 'utf8');
+const readJSON = (p: string) => JSON.parse(read(p));
 
 function git(...args) {
   try {
@@ -30,7 +30,7 @@ const version = plugin.version;
 const tag = `v${version}`;
 console.log(`\nRelease under test: ${tag}  (from .claude-plugin/plugin.json, the version Claude Code resolves first)`);
 
-const entry = marketplace.plugins?.find((p) => p.name === plugin.name);
+const entry = marketplace.plugins?.find((p: { name: string }) => p.name === plugin.name);
 if (!check('marketplace entry', !!entry, entry ? `"${plugin.name}" found` : `no plugin named "${plugin.name}" in marketplace.json`)) {
   report();
 }

@@ -44,7 +44,7 @@ export const RUNTIME_DEPENDENCIES = {
   tslib: '^2.8.1',
 };
 
-export function fromStaging(target) {
+export function fromStaging(target: string) {
   return posix.relative(STAGING, target);
 }
 

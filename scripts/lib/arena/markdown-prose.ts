@@ -52,7 +52,7 @@ export function proseSegments(source: string) {
     text = '';
   };
 
-  const advanceTo = (target) => {
+  const advanceTo = (target: number) => {
     for (let k = index; k < target; k += 1) {
       if (source[k] === '\n') { line += 1; column = 1; } else column += 1;
     }

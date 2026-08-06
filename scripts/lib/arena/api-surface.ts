@@ -10,7 +10,7 @@ export class UnrecognisedShape extends Error {
 
 const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
-export function bindingName(name: string, form, layer: string) {
+export function bindingName(name: string, form: string, layer: string) {
   if (layer !== 'react') return name;
   if (form === 'slot') return name === 'content' ? 'children' : name;
   if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
@@ -202,7 +202,7 @@ export function normaliseDoc(text: string) {
     .trim();
 }
 
-export function memberDocs(body) {
+export function memberDocs(body: string) {
   const docs = new Map();
   const re = /\/\*\*([\s\S]*?)\*\/\s*(?:readonly\s+|protected\s+|public\s+)*([A-Za-z_$][\w$]*)/g;
   for (const match of body.matchAll(re)) docs.set(match[2], normaliseDoc(match[1]));
@@ -269,7 +269,7 @@ export function defaultProblems(where: string, member, contractDefault, rawImple
   return [];
 }
 
-function interfaceMembers(body) {
+function interfaceMembers(body: string) {
   const members = [];
 
   for (const raw of splitTopLevel(stripComments(body), ';', { brackets: '(){}[]' })) {

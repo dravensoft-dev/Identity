@@ -241,7 +241,7 @@ export function renderLayerIndex(layer: string, base = root) {
   return out.join('\n');
 }
 
-export function renderTarget(target, base = root) {
+export function renderTarget(target: string, base = root) {
   if (target === INDEX_TARGET) return renderIndex(base);
   const layer = CONSUMER_LAYERS.find((one) => layerTarget(one) === target);
   if (!layer) throw new Error(`generate-skills: nothing emits ${target}`);

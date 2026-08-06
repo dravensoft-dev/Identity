@@ -28,7 +28,7 @@ export function matchingBrace(css: string, open: number) {
   return -1;
 }
 
-export function topLevelChildren(body) {
+export function topLevelChildren(body: string) {
   const children = [];
   let at = 0;
   while (at < body.length) {

@@ -61,18 +61,18 @@ export const MODULE_EXTENSION = /\.[jt]sx?$/;
 
 export const RELATIVE_SPECIFIER = /(from\s*|import\s*\(\s*)(['"])(\.[^'"]*)(['"])/g;
 
-export function rewriteSourceSpecifiers(code) {
+export function rewriteSourceSpecifiers(code: string) {
   return code.replace(RELATIVE_SPECIFIER, (_whole, keyword, open: string, specifier: string, close) =>
     `${keyword}${open}${specifier.replace(MODULE_EXTENSION, '')}.js${close}`);
 }
 
-export function relativeSpecifiers(code) {
+export function relativeSpecifiers(code: string) {
   return [...code.matchAll(RELATIVE_SPECIFIER)].map((m) => m[3]);
 }
 
 export function unresolvedProblems(dir: string) {
   const problems = [];
-  for (const path of distFiles(dir, (p) => p.endsWith('.js') || p.endsWith('.d.ts'))) {
+  for (const path of distFiles(dir, (p: string) => p.endsWith('.js') || p.endsWith('.d.ts'))) {
     for (const specifier of relativeSpecifiers(readFileSync(path, 'utf8'))) {
       if (existsSync(join(dirname(path), specifier))) continue;
       problems.push(`${relative(dir, path)} names ${specifier}, which resolves to no file in the package`);
@@ -91,7 +91,7 @@ export function assembleModules(root: string, dir: string) {
   const sources = collectFiles(join(layer, 'components'), isSource);
   if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
 
-  const emit = (from, rel: string) => {
+  const emit = (from: string, rel: string) => {
     written.push(write(dir, rel, rewriteSourceSpecifiers(transpilers.get('tsx').transformSync(readFileSync(from, 'utf8')))));
     compiled.push(rel);
   };
@@ -112,9 +112,9 @@ export function assembleModules(root: string, dir: string) {
   }
 
   emitDeclarations(root, dir);
-  for (const path of distFiles(dir, (p) => p.endsWith('.d.ts')))
+  for (const path of distFiles(dir, (p: string) => p.endsWith('.d.ts')))
     writeFileSync(path, rewriteSourceSpecifiers(readFileSync(path, 'utf8')));
-  const declarations = distFiles(dir, (p) => p.endsWith('.d.ts'));
+  const declarations = distFiles(dir, (p: string) => p.endsWith('.d.ts'));
 
   const untyped = untypedProblems(compiled, dir);
   if (untyped.length) throw new Error(`build-react-package:\n  ${untyped.join('\n  ')}`);

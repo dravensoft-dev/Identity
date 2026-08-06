@@ -37,8 +37,8 @@ test('the project is strict, and checks what it indexes', () => {
 
 test('the project reaches the suites too, not the components alone', () => {
   const include = project().include ?? [];
-  assert.ok(include.some((p) => p.endsWith('.tsx')), `no .tsx in include: ${JSON.stringify(include)}`);
-  assert.ok(include.some((p) => p.endsWith('.ts')), `no .ts in include: ${JSON.stringify(include)}`);
+  assert.ok(include.some((p: string) => p.endsWith('.tsx')), `no .tsx in include: ${JSON.stringify(include)}`);
+  assert.ok(include.some((p: string) => p.endsWith('.ts')), `no .ts in include: ${JSON.stringify(include)}`);
   assert.ok((project().exclude ?? []).includes('./dist'),
     'dist holds a compiled copy of the layer, and checking it would double every declaration');
 });

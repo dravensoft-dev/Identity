@@ -12,7 +12,7 @@ test('the emit project covers the test directory and relaxes nothing', () => {
   const emit = JSON.parse(readFileSync(join(repoRoot, 'frameworks/angular/tsconfig.test.json'), 'utf8'));
   assert.equal(emit.extends, './tsconfig.check.json',
     'the emit project must inherit the layer project rather than restate its strictness');
-  assert.ok(Array.isArray(emit.include) && emit.include.some((p) => p.startsWith('./test/')),
+  assert.ok(Array.isArray(emit.include) && emit.include.some((p: string) => p.startsWith('./test/')),
     `the emit project no longer covers ./test/: ${JSON.stringify(emit.include)}`);
   assert.equal(emit.angularCompilerOptions, undefined,
     'the emit project must carry no angularCompilerOptions of its own -- it relaxes nothing');

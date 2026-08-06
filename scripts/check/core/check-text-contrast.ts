@@ -11,13 +11,13 @@ function block(css: string, selector: string, file: string) {
   if (!m) throw new Error(`${file}: no ${selector} block found`);
   return m[1];
 }
-function readHex(body, name: string) {
+function readHex(body: string, name: string) {
   const m = body.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-fA-F]{6})`));
   if (!m) throw new Error(`palette.generated.css: --${name} missing or not a #rrggbb literal`);
   return m[1];
 }
 
-function tryHex(body, name: string) {
+function tryHex(body: string, name: string) {
   try { return readHex(body, name); } catch { return null; }
 }
 const MISSING = 'not declared in contracts/design-generated/palette.generated.css — every theme block must define it';
@@ -48,7 +48,7 @@ const composite = (fg, bg, percent) => {
 
 const s2lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 const lin2s = (c) => { c = Math.max(0, Math.min(1, c)); return c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055; };
-function toOklab(hex) {
+function toOklab(hex: string) {
   const [r, g, b] = hex2rgb(hex).map((c) => s2lin(c / 255));
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
@@ -68,7 +68,7 @@ function oklabToHex([L, a, b]: number[]) {
   ].map((c) => lin2s(c) * 255);
   return rgb2hex(rgb);
 }
-const darkenOklab = (hex, keep) => oklabToHex(toOklab(hex).map((v) => v * keep));
+const darkenOklab = (hex: string, keep) => oklabToHex(toOklab(hex).map((v) => v * keep));
 
 const LEVELS = [
   { token: 'text-strong', gate: 4.5, note: 'body text' },
@@ -118,7 +118,7 @@ for (const { token, use } of REMOVED) {
 for (const t of THEMES) {
   const body = block(palette, t.selector, 'palette.generated.css');
   const content = readHex(body, 'color-base-content');
-  const surfaces = [
+  const surfaces: [string, string][] = [
     ['base-100', readHex(body, 'color-base-100')],
     ['base-200', readHex(body, 'color-base-200')],
   ];
@@ -130,7 +130,7 @@ for (const t of THEMES) {
       console.log(`  [FAIL] --${token.padEnd(16)} not declared in contracts/design/colors.css`);
       continue;
     }
-    const ratios = surfaces.map(([n, hex]) => [n, contrast(composite(content, hex, percent), hex)]);
+    const ratios: [string, number][] = surfaces.map(([n, hex]) => [n, contrast(composite(content, hex, percent), hex)]);
     const failed = gate !== null && ratios.some(([, r]) => r < gate);
     if (failed) ok = false;
     const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
@@ -174,7 +174,7 @@ for (const t of THEMES) {
       console.log(`         ${note}`);
       continue;
     }
-    const ratios = surfaces.map(([n, s]) => [n, contrast(hex, s)]);
+    const ratios: [string, number][] = surfaces.map(([n, s]) => [n, contrast(hex, s)]);
     const failed = gate !== null && ratios.some(([, r]) => r < gate);
     if (failed) ok = false;
     const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';

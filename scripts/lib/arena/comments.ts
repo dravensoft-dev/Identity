@@ -147,7 +147,7 @@ export function findComments(source: string): { line: number; lines: number; tex
   let line = 1;
   let i = 0;
 
-  const advance = (from, to) => {
+  const advance = (from: number, to) => {
     for (let k = from; k < to; k += 1) if (source[k] === '\n') line += 1;
   };
 

@@ -13,7 +13,7 @@ function block(selector: string) {
   if (!m) throw new Error(`palette.generated.css: no ${selector} block found`);
   return m[1];
 }
-function readVar(body, name: string) {
+function readVar(body: string, name: string) {
   const m = body.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-fA-F]{6})`));
   if (!m) throw new Error(`palette.generated.css: --${name} missing or not a #rrggbb literal`);
   return m[1];

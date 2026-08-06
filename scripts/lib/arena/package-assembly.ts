@@ -67,21 +67,21 @@ export function reset(dir: string) {
   mkdirSync(dir, { recursive: true });
 }
 
-export function write(dir: string, rel: string, content) {
+export function write(dir: string, rel: string, content: string) {
   const full = join(dir, rel);
   mkdirSync(dirname(full), { recursive: true });
   writeFileSync(full, content);
   return full;
 }
 
-export function copy(from, dir: string, rel: string) {
+export function copy(from: string, dir: string, rel: string) {
   const full = join(dir, rel);
   mkdirSync(dirname(full), { recursive: true });
   copyFileSync(from, full);
   return full;
 }
 
-export function copyTree(from, dir: string, rel: string, keep?) {
+export function copyTree(from: string, dir: string, rel: string, keep?) {
   const written = [];
   for (const file of collectFiles(from, keep)) {
     written.push(copy(file, dir, join(rel, relative(from, file))));

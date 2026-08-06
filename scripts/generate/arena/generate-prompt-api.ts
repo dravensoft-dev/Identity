@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { bindingName, normaliseDoc } from '../../lib/arena/api-surface.ts';
-import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
+import type { ContractCandidate, MemberCandidate } from '../../lib/arena/contract-shapes.ts';
 import {
   CONSUMER_LAYERS, componentDir, loadCategories, loadContract, escapeCell,
 } from './generate-skills.ts';
@@ -35,7 +35,7 @@ export function signature(params = {}) {
     .map(([name, type]) => `${name}: ${typeOf(type)}`).join(', ');
 }
 
-export function typeCell(spec) {
+export function typeCell(spec: MemberCandidate) {
   if (spec.form === 'array') return `\`readonly ${typeOf(spec.of)}[]\``;
   if (spec.form === 'consumerData') return `\`${CONSUMER_DATA}\``;
   if (spec.form === 'functionInput') return `\`(${signature(spec.params)}) => ${typeOf(spec.returns)}\``;
@@ -44,11 +44,11 @@ export function typeCell(spec) {
   return spec.type ? `\`${spec.type}\`` : '';
 }
 
-export function defaultCell(spec) {
+export function defaultCell(spec: MemberCandidate) {
   return spec.default === undefined ? '' : `\`${escapeCell(JSON.stringify(spec.default))}\``;
 }
 
-export function memberRow(name: string, spec, layer: string) {
+export function memberRow(name: string, spec: MemberCandidate, layer: string) {
   const bound = bindingName(name, spec.form, layer);
   return `| \`${bound}${spec.required ? '*' : ''}\` | ${spec.form} | ${typeCell(spec)} | ${
     defaultCell(spec)} | ${escapeCell(normaliseDoc(spec.description ?? ''))} |`;
