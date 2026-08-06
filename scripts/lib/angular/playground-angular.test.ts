@@ -134,7 +134,7 @@ test('a marker directive joins imports only when a slot it covers is projected',
 });
 
 test('a host wraps the subject where the placeholder marks', () => {
-  const hosted = { ...model, host: { component: 'ArenaTable', members: { label: 'L' }, slots: { content: ['$subject'] } } };
+  const hosted = { ...model, host: { component: 'ArenaTable', members: { label: 'L' }, slots: { content: ['$subject' as const] } } };
   const fields = collectFields(hosted.host, contracts, [], 'host');
   const out = renderTree(hosted, places, fields, new Map(), 0, new Set());
   assert.match(out, /^<arena-table label="L"/);

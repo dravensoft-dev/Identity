@@ -8,7 +8,16 @@
 
 import { playgroundPage, sheetLinks } from '../arena/playground-page.ts';
 import { kebab } from '../arena/layers.ts';
-import type { Knob, Place, Places, PlaygroundEvent, PlaygroundModel } from '../arena/playground-model.ts';
+import { SUBJECT } from '../arena/playground-model.ts';
+import type { MemberSpec } from '../arena/contract-shapes.ts';
+import type { FixtureNode, Knob, Place, Places, PlaygroundEvent, PlaygroundModel }
+  from '../arena/playground-model.ts';
+
+type Field = { name: string; type: string; value: unknown; member: string; node: FixtureNode };
+
+type FieldRef = Pick<Field, 'name' | 'member' | 'node'>;
+
+type Markers = Map<string, string>;
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
@@ -27,8 +36,8 @@ function validatorFor(name: string | undefined): ((value: string) => string) | u
 
 export const MARKERS_SOURCE = 'frameworks/angular/ProjectionMarkers.ts';
 
-export function markerNames(source: string) {
-  const found = new Map();
+export function markerNames(source: string): Markers {
+  const found: Markers = new Map();
   for (const [, selector, name] of source.matchAll(/selector:\s*'\[(\w+)\]'[^}]*}\)\s*export class (\w+)/g)) {
     found.set(selector, name);
   }
@@ -46,7 +55,7 @@ export function typeExpr(knob: Knob) {
   return knob.type;
 }
 
-export function contractTypes(model: PlaygroundModel, fields) {
+export function contractTypes(model: PlaygroundModel, fields: Field[]) {
   const names = new Set();
   for (const knob of model.knobs) {
     if (knob.form === 'enum' || knob.form === 'object') names.add(knob.type);
@@ -62,21 +71,22 @@ export function importPath(place: Place) {
   return `../../${place.category}/${place.dir}/${place.name}`;
 }
 
-export function fieldTypeFor(spec) {
+export function fieldTypeFor(spec: MemberSpec): string {
   if (spec.form === 'array') return `${spec.of}[]`;
   if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object') return spec.type;
   return 'unknown';
 }
 
-export function staticAttribute(value) {
+export function staticAttribute(value: unknown) {
   return typeof value === 'string';
 }
 
-export function attributeText(value) {
+export function attributeText(value: unknown) {
   return escapeText(String(value)).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
-export function collectFields(node, contracts, into, prefix) {
+export function collectFields(node: FixtureNode | string | null, contracts: Map<string, any>,
+  into: Field[], prefix: string): Field[] {
   if (node === '$subject' || node === null || typeof node !== 'object') return into;
   if (typeof node.component === 'string') {
     const api = contracts.get(node.component)?.api ?? {};
@@ -92,11 +102,12 @@ export function collectFields(node, contracts, into, prefix) {
   return into;
 }
 
-export function fieldFor(fields, node, member) {
+export function fieldFor(fields: FieldRef[],
+  node: FixtureNode, member: string) {
   return fields.find((one) => one.node === node && one.member === member)?.name;
 }
 
-export function nodeAttributes(node, fields) {
+export function nodeAttributes(node: FixtureNode, fields: FieldRef[]) {
   return (Object.entries(node.members ?? {}) as [string, any][])
     .map(([member, value]) => (staticAttribute(value)
       ? ` ${member}="${attributeText(value)}"`
@@ -104,7 +115,8 @@ export function nodeAttributes(node, fields) {
     .join('');
 }
 
-export function renderNode(node, places, fields, markers, depth, imports) {
+export function renderNode(node: FixtureNode, places: Places, fields: FieldRef[],
+  markers: Markers, depth: number, imports: Set<string>): string {
   const pad = '  '.repeat(depth);
   if (typeof node.text === 'string' && !node.element) return `${pad}${escapeText(node.text)}`;
   if (typeof node.element === 'string' || typeof node.text === 'string') {
@@ -132,7 +144,8 @@ export function renderNode(node, places, fields, markers, depth, imports) {
   return `${pad}<${tag}${attrs}>\n${children.join('\n')}\n${pad}</${tag}>`;
 }
 
-export function projected(node, places, fields, markers, depth, imports, marked) {
+export function projected(node: FixtureNode, places: Places, fields: FieldRef[],
+  markers: Markers, depth: number, imports: Set<string>, marked: string) {
   const pad = '  '.repeat(depth);
   if (!marked) return renderNode(node, places, fields, markers, depth, imports);
   if (typeof node.text === 'string' && !node.element) return `${pad}<span${marked}>${escapeText(node.text)}</span>`;
@@ -144,19 +157,22 @@ export function escapeText(text: string) {
   return text.replace(/\{\{/g, '{{ "{{" }}').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 }
 
-export function slotBlock(knob, places, fields, markers, depth, imports, marked) {
+export function slotBlock(knob: Knob, places: Places, fields: FieldRef[],
+  markers: Markers, depth: number, imports: Set<string>, marked: string) {
   const pad = '  '.repeat(depth);
   if (knob.control === 'slotText') {
     const body = marked ? `<span${marked}>{{ k().${knob.member} }}</span>` : `{{ k().${knob.member} }}`;
     return `${pad}@if (k().${knob.member} !== undefined) {\n${pad}  ${body}\n${pad}}`;
   }
-  const nodes = (knob.nodes ?? [])
+  const nodes = ((knob.nodes ?? []) as FixtureNode[])
     .map((one) => projected(one, places, fields, markers, depth + 1, imports, marked));
   if (!marked) return `${pad}@if (k().${knob.member}) {\n${nodes.join('\n')}\n${pad}}`;
-  return nodes.map((one) => `${pad}@if (k().${knob.member}) {\n${one}\n${pad}}`).join('\n');
+  return nodes.map((one: string) => `${pad}@if (k().${knob.member}) {\n${one}\n${pad}}`).join('\n');
 }
 
-export function renderSubject(model, places, fields, markers, depth, imports) {
+export function renderSubject(model: PlaygroundModel, places: Places,
+  fields: FieldRef[],
+  markers: Markers, depth: number, imports: Set<string>) {
   const pad = '  '.repeat(depth);
   const inner = `${pad}  `;
   const tag = selector(model.component);
@@ -184,15 +200,16 @@ export function renderSubject(model, places, fields, markers, depth, imports) {
   return `${pad}<${tag}${attrs}>\n${blocks.join('\n')}\n${pad}</${tag}>`;
 }
 
-export function holdsSubject(node) {
+export function holdsSubject(node: FixtureNode | string | null): boolean {
   if (node === '$subject') return true;
   if (node === null || typeof node !== 'object') return false;
   return (Object.values(node.slots ?? {}) as any[][]).some((list) => list.some((one) => holdsSubject(one)));
 }
 
-export function renderTree(model, places, fields, markers, depth, imports) {
+export function renderTree(model: PlaygroundModel, places: Places, fields: FieldRef[],
+  markers: Markers, depth: number, imports: Set<string>) {
   if (model.host === null) return renderSubject(model, places, fields, markers, depth, imports);
-  const wrap = (node, level) => {
+  const wrap = (node: FixtureNode | typeof SUBJECT, level: number): string => {
     const pad = '  '.repeat(level);
     if (node === '$subject') return renderSubject(model, places, fields, markers, level, imports);
     if (!holdsSubject(node)) return renderNode(node, places, fields, markers, level, imports);
@@ -216,7 +233,7 @@ export function renderTree(model, places, fields, markers, depth, imports) {
   return wrap(model.host, depth);
 }
 
-export function knobsInterface(model) {
+export function knobsInterface(model: { knobs: Knob[] }) {
   const rows = model.knobs.map((knob) => {
     const optional = knob.bind === 'optional' ? '?' : '';
     return `  ${knob.member}${optional}: ${typeExpr(knob)};`;
@@ -224,19 +241,20 @@ export function knobsInterface(model) {
   return `interface Knobs {\n${rows.join('\n')}\n}`;
 }
 
-export function validatorTable(model) {
+export function validatorTable(model: { knobs: Knob[] }) {
   return model.knobs.some((knob) => knob.form === 'functionInput') ? VALIDATOR_TABLE : '';
 }
 
-export function angularEntry(model, places, contracts, markersSource, banner) {
+export function angularEntry(model: PlaygroundModel, places: Places,
+  contracts: Map<string, any>, markersSource: string, banner: string) {
   const markers = markerNames(markersSource);
-  const fields = [];
+  const fields: Field[] = [];
   collectFields(model.host, contracts, fields, 'host');
   for (const knob of model.knobs) {
     for (const node of knob.nodes ?? []) collectFields(node, contracts, fields, 'slot');
   }
 
-  const imports = new Set();
+  const imports = new Set<string>();
   const template = renderTree(model, places, fields, markers, 3, imports);
   const used = [...imports].sort();
   const types = contractTypes(model, fields);
@@ -285,7 +303,7 @@ bootstrapApplication(Demo, { providers: [provideZonelessChangeDetection()] });
 `;
 }
 
-export function angularPage(model, banner) {
+export function angularPage(model: PlaygroundModel, banner: string) {
   return playgroundPage({
     component: model.component,
     banner,

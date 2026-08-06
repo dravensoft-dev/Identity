@@ -65,10 +65,11 @@ export function renderNode(node: FixtureNode, places: Places, depth: number): st
 
   const place = places.get(node.component);
   const slots = node.slots ?? {};
-  const named = Object.entries(slots).filter(([name]) => name !== 'content');
+  const named = (Object.entries(slots) as [string, FixtureNode[]][])
+    .filter(([name]) => name !== 'content');
   const attrs = attributes(node.members, `${pad}  `)
     + named.map(([name, list]) => `\n${pad}  ${name}={${inlineList(list, places, depth + 1)}}`).join('');
-  const children = slots.content ?? [];
+  const children = (slots.content ?? []) as FixtureNode[];
   if (children.length === 0) return `${pad}<${place.name}${attrs} />`;
   return `${pad}<${place.name}${attrs}>\n${children.map((one) => renderNode(one, places, depth + 1)).join('\n')}\n${pad}</${place.name}>`;
 }
@@ -152,7 +153,8 @@ export function renderTree(model: PlaygroundModel, places: Places, depth: number
       .filter(([name]) => name !== 'content');
     const attrs = attributes(node.members, `${pad}  `)
       + named.map(([name, list]) => `\n${pad}  ${name}={${inlineList(list, places, level + 1)}}`).join('');
-    const children = (slots.content ?? []).map((one: FixtureNode) => wrap(one, level + 1)).join('\n');
+    const children = ((slots.content ?? []) as FixtureChild[])
+      .map((one) => wrap(one, level + 1)).join('\n');
     if (children.length === 0) return `${pad}<${place.name}${attrs} />`;
     return `${pad}<${place.name}${attrs}>\n${children}\n${pad}</${place.name}>`;
   };

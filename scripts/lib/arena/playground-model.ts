@@ -1,13 +1,13 @@
-/* Derives a component's playground from its API contract and its fixture. Pure and
- * layer-neutral on purpose: it is the ONLY place the knob set, the initial state and
- * the URL codec of a member are decided, so the two layers cannot disagree about any
- * of them. A form it cannot model THROWS rather than dropping the member, because a
- * member missing by accident and a member missing by design look identical on a page.
- * The three bind classes are not cosmetic: an Angular input() bound to undefined holds
- * undefined rather than falling back, so a member carrying a default may never unbind.
- * A seed is the configuration the fixture CHOSE, so it binds and it outranks a contract
- * default; the neutral value is only what an unseeded optional knob holds until it is
- * switched on. */
+/* Derives a component's playground from its API contract and its fixture, and names what
+ * it derives, so the two layer renderers read a shape rather than infer one. Pure and
+ * layer-neutral: it is the ONLY place a member's knob, initial state and URL codec are
+ * decided. A form it cannot model THROWS rather than dropping the member, since a member
+ * missing by accident and one missing by design look identical on a page. The bind classes
+ * are not cosmetic: an Angular input() bound to undefined holds undefined rather than
+ * falling back, so a member carrying a default may never unbind. A seed is what the fixture
+ * CHOSE, so it binds and outranks a contract default. A Control's fields vary by form, so
+ * it is spread into a Knob and stays open; a slot list holds nodes, and a HOST's may also
+ * hold $subject, which wrap() answers before any renderer recurses. */
 import { memberEntries, fieldEntries } from './contract-shapes.ts';
 
 
@@ -19,13 +19,6 @@ export const SUBJECT = '$subject';
 
 export const INBOUND_FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'functionInput']);
 
-/* What this module decides, named once, so the two layer renderers read a shape rather
- * than infer one. A knob's control half varies by form -- a select carries options, an
- * object carries fields -- so Control is spread in and stays open. `nodes` is a fixture
- * subtree and deliberately loose: only collectUses and the renderers walk it, and its
- * shape is the fixture's rather than this module's. Note that `knob` in check-playgrounds
- * is a contract MemberSpec and NOT one of these, which is why the name alone decides
- * nothing here. */
 export type Control = {
   control: string;
   codec: string;
@@ -55,26 +48,17 @@ export type PlaygroundEvent = {
   doc: string;
 };
 
-/* One node of a demo fixture's tree: the $subject placeholder, a piece of text, a bare
- * element, or a component with members and slots. Loose on purpose --
- * the shape is frameworks/demos/'s and check:playgrounds is what validates it; this only
- * says enough for the renderers to walk it. */
 export type FixtureNode = {
   component?: string;
   element?: string;
   text?: string;
   members?: Record<string, any>;
-  slots?: Record<string, FixtureNode[]>;
+  slots?: Record<string, FixtureChild[]>;
   [other: string]: any;
 };
 
-/* What a fixture's HOST may be, which a slot list may not: the $subject placeholder marks
- * where the component under test goes, and it appears in the host alone. collectUses and
- * holdsSubject are the two that see it; every renderer walks nodes. */
 export type FixtureChild = FixtureNode | typeof SUBJECT | null;
 
-/* Where a component lives, as generate-playgrounds resolves it out of Components.json,
- * plus whether it is the one the page is about. Both renderers turn it into an import. */
 export type Place = { name: string; category: string; dir: string; self?: boolean };
 
 export type Places = Map<string, Place>;
