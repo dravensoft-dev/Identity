@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { arenaConfig, fontEntries, fontWeights, googleFontsUrl, GOOGLE_FONTS } from './arena-config.ts';
-import { repoRoot } from '../arena/repo-root.mjs';
+import { repoRoot } from '../arena/repo-root.ts';
 
 test('a family is asked for the weights Arena declares, one by one', () => {
   assert.equal(

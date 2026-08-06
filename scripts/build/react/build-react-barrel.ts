@@ -9,7 +9,7 @@ import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { SOURCE_EXTENSIONS } from './build-demos.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { pascal } from '../../lib/arena/layers.ts';
 
 export const BANNER =

@@ -8,7 +8,7 @@ import {
   paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect, styleProblems,
   componentMapProblems,
 } from './check-packages.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const generated = ':root{--color-primary:#b52a20;--color-base-100:#141010;}';
 

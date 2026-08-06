@@ -11,7 +11,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const SKIPPED_ANYWHERE = new Set(['node_modules', '.git']);
 

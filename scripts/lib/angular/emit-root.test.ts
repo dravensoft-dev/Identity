@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { emitRoot, angularEmitRoot, declaredOption } from './emit-root.ts';
-import { repoRoot } from '../arena/repo-root.mjs';
+import { repoRoot } from '../arena/repo-root.ts';
 
 const LAYER = '/repo/frameworks/angular';
 

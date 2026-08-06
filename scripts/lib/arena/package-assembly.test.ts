@@ -9,7 +9,7 @@ import {
   writeComponentMap,
 } from './package-assembly.ts';
 import { MAP_FILE } from './component-map.ts';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 
 function tree(files) {
   const root = mkdtempSync(join(tmpdir(), 'arena-assembly-'));

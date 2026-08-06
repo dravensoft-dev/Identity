@@ -13,7 +13,7 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));

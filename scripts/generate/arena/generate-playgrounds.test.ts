@@ -6,7 +6,7 @@ import {
   buildPlaygrounds, codecFiles, codecTarget, renderCodec, componentFiles, loadPlaces, placesFor,
   CODEC_BANNER, CODEC_SOURCE, PLAYGROUND_LAYERS,
 } from './generate-playgrounds.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 test('every layer with a playground gets the codec, and nothing else does', () => {
   assert.deepEqual(PLAYGROUND_LAYERS, ['react', 'angular']);

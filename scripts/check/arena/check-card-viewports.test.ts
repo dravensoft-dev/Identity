@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import {
   parseDsCard, classify, summarizeCards, findCardPages, UNDER_RUN_SLACK,
   measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch, MEASURE_SCRIPT,

@@ -13,7 +13,7 @@ import {
   bindingName,
 } from '../../lib/arena/api-surface.ts';
 import { pascal, readLayer } from '../../lib/arena/layers.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 
 const FORMS: Set<string> = new Set(MEMBER_FORMS);

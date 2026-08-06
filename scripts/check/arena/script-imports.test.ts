@@ -1,5 +1,5 @@
 /* A script nothing imports has its specifiers proven by nothing. scripts/serve.ts kept
- * importing ./lib/repo-root.mjs for three commits after that module moved into lib/arena/,
+ * importing ./lib/repo-root.ts for three commits after that module moved into lib/arena/,
  * because `bun test scripts` loads *.test.mjs and whatever those reach, and no suite reaches
  * serve.ts -- it calls Bun.serve() at module top level, so importing it starts a server.
  * A *.test.mjs is excluded on the opposite reasoning: running it proves its imports, and its
@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join, dirname, relative, sep } from 'node:path';
 import { tmpdir } from 'node:os';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { literalRanges, insideLiteral } from '../../lib/arena/comments.ts';
 import { isScript, isSuite } from '../../lib/arena/domains.ts';
 
@@ -71,7 +71,7 @@ test('every relative import in a non-suite script resolves to a file that is the
 
 test('a specifier a generator is writing into its output is not one this script imports', () => {
   assert.equal(isInterpolated('./${helper}.js'), true);
-  assert.equal(isInterpolated('./lib/arena/repo-root.mjs'), false);
+  assert.equal(isInterpolated('./lib/arena/repo-root.ts'), false);
 });
 
 test('serve.ts is in scope, and it is the reason this suite exists', () => {

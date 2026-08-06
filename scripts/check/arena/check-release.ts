@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
 const readJSON = (p) => JSON.parse(read(p));

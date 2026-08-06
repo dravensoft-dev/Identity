@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { COVERED, suiteMentions, validateCoverage, inventoryFrom, walkSuites, collectSuites } from './check-compliance.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 test('validateCoverage is clean when a composite key names the layer its suite verifies', () => {
   const problems = validateCoverage({

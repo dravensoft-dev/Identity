@@ -7,7 +7,7 @@
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { kebab } from '../../lib/arena/layers.ts';
 import { playgroundModel } from '../../lib/arena/playground-model.ts';
 import { reactEntry, reactPage } from '../../lib/react/playground-react.ts';

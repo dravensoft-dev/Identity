@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { renderTarget, SKILL_TARGETS, loadCategories } from '../../generate/arena/generate-skills.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export function trackingProblems(target, tracked) {
   return tracked

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { FILES, RESOLVES_AGAINST } from './generate-tokens.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 const DESIGN = join(repoRoot, 'contracts/design');
 const SOURCES = [...new Set(FILES.flatMap((f) => f.blocks.map((b) => b.source)))];

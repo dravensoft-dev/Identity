@@ -5,7 +5,7 @@ import { fontsCss, facesFromDisk, weightRange, recordProblems, FONTS } from './f
 import { join } from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 test('a face becomes one @font-face rule with a two-hop url, and a range is written as a range', () => {
   const css = fontsCss([{ family: 'Archivo', weight: [400, 900], file: 'archivo.woff2' }]);

@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, relative } from 'node:path';
-import { repoRoot } from '../arena/repo-root.mjs';
+import { repoRoot } from '../arena/repo-root.ts';
 
 export function manifestClasses(manifest) {
   const out = new Set();

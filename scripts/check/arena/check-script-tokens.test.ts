@@ -8,7 +8,7 @@ import {
   shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT, sourceFiles,
 } from './check-script-tokens.ts';
 import { buildScriptModules } from '../../generate/arena/generate-tokens.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 test('cssCounterpart strips the unit from a px declaration', () => {
   assert.equal(cssCounterpart('280px'), 280);

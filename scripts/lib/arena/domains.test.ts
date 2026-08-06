@@ -4,7 +4,7 @@ import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { DOMAINS, SCRIPT_EXTENSIONS, domainOfTestPath, isScript, isSuite } from './domains.ts';
 import { LAYERS } from './layers.ts';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 
 function suitesUnder(dir) {
   const found = [];

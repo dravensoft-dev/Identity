@@ -7,7 +7,7 @@ import {
   NAME, RUNTIME_DEPENDENCIES, STAGING, LAYER, VARIANTS,
 } from './build-angular-package.ts';
 import { version, collectFiles, CLI_BINS } from '../../lib/arena/package-assembly.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 test('ng-packagr is pointed at the entry file and told where the package lands', () => {
   const config = ngPackageConfig();

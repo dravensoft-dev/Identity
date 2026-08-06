@@ -6,7 +6,7 @@ import { join, basename } from 'node:path';
 import { componentMap, angularComponentMap, reactComponentMap, sheetOf, close, MAP_FILE } from './component-map.ts';
 import { manifestFiles } from '../tailwind/tailwind-compile.ts';
 import { kebab } from './layers.ts';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 
 const shipped = manifestFiles(join(repoRoot, 'frameworks', 'tailwind', 'components'))
   .map((file) => kebab(basename(file).split('.')[0]));

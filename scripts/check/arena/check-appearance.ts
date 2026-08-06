@@ -13,7 +13,7 @@ import { join, relative } from 'node:path';
 import { blankComments, expressionLeaves, readValue, skipString } from './check-dimension-literals.ts';
 import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind/manifest-surfaces.ts';
 import { kebab } from '../../lib/arena/layers.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const EXEMPT = new Map<string, string>([]);
 

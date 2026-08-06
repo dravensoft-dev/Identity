@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { PROJECTS } from './check-react-types.ts';
 
 const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0].project), 'utf8'));

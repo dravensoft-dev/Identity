@@ -16,7 +16,7 @@ import {
   HAND_DRAWN, MANIFEST_COVERS, categoryOf, coveredContracts, surfaceProblems,
 } from '../../lib/tailwind/manifest-surfaces.ts';
 import { kebab } from '../../lib/arena/layers.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };
 

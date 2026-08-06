@@ -14,7 +14,7 @@ import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const NAVIGATE_TIMEOUT_MS = 30_000;
 const SETTLE_MS = 1_100;

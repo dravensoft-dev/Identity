@@ -7,7 +7,7 @@ import {
   componentModules, barrel, buildBarrel, zeroComponentProblems,
   missingSourceProblems, duplicateExportProblems, HELPERS, TYPE_ONLY, ROOT_PRIVATE, BANNER,
 } from './build-react-barrel.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 function layer(components) {
   const root = mkdtempSync(join(tmpdir(), 'arena-barrel-'));

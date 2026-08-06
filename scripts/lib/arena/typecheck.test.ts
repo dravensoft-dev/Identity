@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 import { tscBin, typecheck, projectFiles, zeroProjectProblems } from './typecheck.ts';
 
 test('tsc runs under plain node, so a gate built on this has no skip path to take', () => {

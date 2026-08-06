@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildAll, buildBreakpointTheme, BREAKPOINT_TARGET } from '../../generate/arena/generate-tokens.ts';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const built = await buildAll();
 const drift = [];

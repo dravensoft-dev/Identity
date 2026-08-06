@@ -6,7 +6,7 @@ import {
   selector, typeExpr, importPath, markerNames, collectFields, escapeText, renderSubject, renderTree,
   knobsInterface, angularEntry, angularPage, renderNode, slotBlock, attributeText, MARKERS_SOURCE,
 } from './playground-angular.ts';
-import { repoRoot as root } from '../arena/repo-root.mjs';
+import { repoRoot as root } from '../arena/repo-root.ts';
 
 const places = new Map([
   ['ArenaCard', { name: 'ArenaCard', category: 'display', dir: 'arena-card', self: true }],

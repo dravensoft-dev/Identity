@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from '
 import { fileURLToPath } from 'node:url';
 import { join, relative, dirname, sep } from 'node:path';
 import { tscBin } from '../../lib/arena/typecheck.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import {
   collectFiles, reset, write, copy, writeCssChain, componentSheets, copyCli, baseManifest, report,

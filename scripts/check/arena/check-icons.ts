@@ -7,7 +7,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
-import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
 export const PHOSPHOR = 'node_modules/@phosphor-icons/web/src';
 

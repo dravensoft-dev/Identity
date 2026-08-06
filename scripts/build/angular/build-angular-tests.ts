@@ -12,7 +12,7 @@ import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync 
 import { fileURLToPath } from 'node:url';
 import { ngcBin } from '../../check/angular/check-angular.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 const PROJECT = 'frameworks/angular/tsconfig.test.json';
 const OUT_DIR = join(repoRoot, 'frameworks', 'angular', 'build', 'test');

@@ -11,7 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kebab } from '../arena/layers.ts';
 import type { ComponentTree } from '../arena/layers.ts';
-import { repoRoot } from '../arena/repo-root.mjs';
+import { repoRoot } from '../arena/repo-root.ts';
 
 export const MANIFEST_COVERS = new Map([
   ['ArenaTable', {

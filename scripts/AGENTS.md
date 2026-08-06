@@ -44,7 +44,7 @@ The domain is decided by what a script **touches**, never by what it is about.
 `core/serialize-token.ts` opens no file, but every name in it is a DTCG one, so it is `core`;
 `core/behaviour-compliance.ts` is the same, in `contracts/behaviour`'s vocabulary of
 requirement keys. What is left over is `arena`, meaning the parsers, the browser harness, `layers.ts`
-and `repo-root.mjs`, because it belongs to no layer in particular. Never place a library by
+and `repo-root.ts`, because it belongs to no layer in particular. Never place a library by
 **who imports it**: `behaviour-compliance.ts` is read from both framework layers' harnesses
 and is still `core`.
 
@@ -57,7 +57,7 @@ stdin or are imported.
 ## Rules a script here holds to
 
 **Never count `..` to find the repository root.** Import `repoRoot` from
-`lib/arena/repo-root.mjs`. A script deriving the root from its own location breaks on a move,
+`lib/arena/repo-root.ts`. A script deriving the root from its own location breaks on a move,
 silently, because the wrong path still exists. That module is
 the one place that counts, which is why moving *it* is the one move needing care.
 

@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { TRAPS, FOCUSABLE, walkProblems } from './check-focus-trap.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 const inside = (n) => Array.from({ length: n }, (_, i) => ({ press: i + 1, inside: true }));
 

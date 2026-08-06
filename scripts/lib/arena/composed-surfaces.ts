@@ -8,7 +8,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { LAYERS, pascal } from './layers.ts';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g;
 const SOURCE = /\.(tsx?|jsx?|mjs)$/;

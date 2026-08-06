@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { composedBy, composedGraph, importedComponents } from './composed-surfaces.ts';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 
 test('an import of another component directory is a composition, and nothing else is', () => {
   const path = `${repoRoot}/frameworks/react/components/display/arena-table/ArenaTable.tsx`;

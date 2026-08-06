@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { contrast } from '../../lib/core/validate-palette.mjs';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const palette = readFileSync(join(root, 'contracts/design-generated/palette.generated.css'), 'utf8');
 const colors = readFileSync(join(root, 'contracts/design/colors.css'), 'utf8');

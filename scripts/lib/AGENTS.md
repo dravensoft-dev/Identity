@@ -15,7 +15,7 @@ them, and **a library that touches nothing is placed by the vocabulary it speaks
 `core/serialize-token.ts` opens no file, but every name in it is a DTCG one, so it is `core`.
 `core/behaviour-compliance.ts` is the same, in `contracts/behaviour`'s vocabulary of
 requirement keys. What is left over is `arena`, meaning the parsers, the browser harness,
-`layers.ts` and `repo-root.mjs`, because it belongs to no layer in particular.
+`layers.ts` and `repo-root.ts`, because it belongs to no layer in particular.
 
 **Never place a library by who imports it.** `behaviour-compliance.ts` is read from both
 framework layers' test harnesses and is still `core`, because what it speaks is the contract
@@ -50,6 +50,6 @@ for d in angular arena core react tailwind; do
 done
 ```
 
-`repo-root.mjs` is the one module whose own move needs care: it is the single place that counts
+`repo-root.ts` is the one module whose own move needs care: it is the single place that counts
 `..` segments to find the repository root, so that no other script's depth is part of what it
 has to get right.

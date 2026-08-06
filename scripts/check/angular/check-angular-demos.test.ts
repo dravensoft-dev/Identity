@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BUNDLE_DIR, PAGE_SUFFIX, ENTRY_SUFFIX, pageProblems } from './check-angular-demos.ts';
 import { readLayer } from '../../lib/arena/layers.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 const TREE = { forms: ['arena-button'] };
 const DIR = 'frameworks/angular/components/forms/arena-button';

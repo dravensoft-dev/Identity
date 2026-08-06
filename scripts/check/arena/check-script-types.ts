@@ -9,7 +9,7 @@
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { typecheck, projectFiles, zeroProjectProblems } from '../../lib/arena/typecheck.ts';
 
 export const PROJECTS = [

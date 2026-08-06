@@ -11,7 +11,7 @@
 
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { repoRoot } from './repo-root.mjs';
+import { repoRoot } from './repo-root.ts';
 
 export const LAYERS = ['tailwind', 'angular', 'react'];
 

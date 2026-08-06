@@ -6,4 +6,4 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+export const repoRoot: string = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PALETTE_KEYS, OPTIONAL_KEYS, ARENA_CAT_SLOTS, FONT_ROLES, catKeys, requiredKeys } from './palette-keys.mjs';
-import { repoRoot as root } from '../../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../../lib/arena/repo-root.ts';
 
 const skin = (theme) => JSON.parse(readFileSync(join(root, `contracts/design/palette.${theme}.json`), 'utf8'));
 const keysOf = (json) => Object.keys(json.color).filter((k) => !k.startsWith('$'));

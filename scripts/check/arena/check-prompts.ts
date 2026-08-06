@@ -8,7 +8,7 @@
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { loadContract } from '../../generate/arena/generate-skills.ts';
 import {
   renderRegion, promptPaths, OPEN_LINE, CLOSE_LINE,

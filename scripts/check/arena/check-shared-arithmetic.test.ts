@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import {
   DIVERGENT, PAIRED, collect, exportedFunctions, normalise, pairProblems, staleEntries,
 } from './check-shared-arithmetic.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 const fns = (src) => exportedFunctions(src);
 

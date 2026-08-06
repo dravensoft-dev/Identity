@@ -12,7 +12,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { arenaTokenNames } from '../../lib/core/arena-tokens.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';

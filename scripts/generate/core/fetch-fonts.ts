@@ -1,7 +1,7 @@
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { fontWeights, googleFontsUrl } from '../../lib/core/arena-config.ts';
 import { childEntries } from '../../lib/core/dtcg-shapes.ts';
 

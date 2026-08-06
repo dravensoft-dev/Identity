@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import { findComments } from '../../lib/arena/comments.ts';
-import { repoRoot as ROOT } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
 const SCANNED_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js', '.css'];
 const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'build', 'dist', '.cache']);

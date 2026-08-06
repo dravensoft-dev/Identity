@@ -5,7 +5,7 @@ import {
   buildTailwind, buildManifestModules, buildComponentCss, buildClassModules,
   buildStylesRuntime, generatedPath, BANNER,
 } from '../../build/tailwind/build-tailwind.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export { BANNER, generatedPath };
 

@@ -9,7 +9,7 @@
 import { readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const LEVELS = ['api', 'behaviour', 'design'];
 export const GENERATED = 'design-generated';

@@ -8,7 +8,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaTokenNames, referencedTokens } from '../../lib/core/arena-tokens.ts';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');

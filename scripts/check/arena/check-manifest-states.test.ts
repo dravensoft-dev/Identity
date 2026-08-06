@@ -28,7 +28,7 @@ import {
   FAMILIES,
   EXEMPT,
 } from './check-manifest-states.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 test('a plain class carries no state family', () => {
   assert.deepEqual([...stateFamilies('bg-primary text-base-content rounded-sm')], []);

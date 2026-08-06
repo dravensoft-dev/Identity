@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, extname, dirname, resolve } from 'node:path';
 import { LAYERS } from '../../lib/arena/layers.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const LAYER_TOKENS = {
   react: [

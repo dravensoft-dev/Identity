@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { PACKAGE_INPUTS, SHARED_INPUTS, pathspecs, uncoveredChainEntries } from './package-inputs.ts';
 import { CSS_CHAIN, CLI_BINS } from '../../lib/arena/package-assembly.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 test('every file the CSS chain copies is covered, so a chain that grows fails here', () => {
   assert.ok(CSS_CHAIN.length > 0);

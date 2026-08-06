@@ -6,7 +6,7 @@ import {
   loadContracts, loadFixtures, loadTypes, citingFiles, basenameIndex, emissionProblems,
   pagePaths, smokeProblems, READY, SMOKE_READY_MS, SMOKE_GRACE_MS,
 } from './check-playgrounds.ts';
-import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const types = new Map([
   ['ArenaTone', { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] }],

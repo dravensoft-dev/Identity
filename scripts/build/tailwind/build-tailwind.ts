@@ -9,7 +9,7 @@ import {
   componentSheet, matchingBrace, preludeSheet, splitUtilities,
 } from '../../lib/tailwind/component-sheets.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
-import { repoRoot } from '../../lib/arena/repo-root.mjs';
+import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 type BuildOptions = { root?: string; manifests?: Map<string, any> };
 
