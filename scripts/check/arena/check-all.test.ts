@@ -100,22 +100,23 @@ test('testFilesUnder finds a suite nested several directories deep, which a flat
   const root = mkdtempSync(join(tmpdir(), 'check-all-'));
   try {
     mkdirSync(join(root, 'check', 'angular'), { recursive: true });
-    writeFileSync(join(root, 'check', 'angular', 'a.test.mjs'), '// suite');
-    writeFileSync(join(root, 'check', 'angular', 'a.mjs'), '// not a suite');
+    writeFileSync(join(root, 'check', 'angular', 'a.test.ts'), '// suite');
+    writeFileSync(join(root, 'check', 'angular', 'a.ts'), '// not a suite');
     writeFileSync(join(root, 'serve.ts'), '// not a suite');
-    assert.deepEqual(testFilesUnder(root), [join(root, 'check', 'angular', 'a.test.mjs')]);
+    assert.deepEqual(testFilesUnder(root), [join(root, 'check', 'angular', 'a.test.ts')]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('testFilesUnder collects both extensions, so a suite renamed to .ts does not leave the run', () => {
+test('a suite is TypeScript, so a .test.mjs is not one and would run in neither runner', () => {
   const root = mkdtempSync(join(tmpdir(), 'check-all-ext-'));
   try {
     for (const name of ['a.test.mjs', 'b.test.ts', 'c.mjs', 'd.ts', 'notes.md'])
       writeFileSync(join(root, name), '// fixture');
-    assert.deepEqual(testFilesUnder(root).map((p) => relative(root, p)).sort(),
-      ['a.test.mjs', 'b.test.ts']);
+    assert.deepEqual(testFilesUnder(root).map((p) => relative(root, p)).sort(), ['b.test.ts'],
+      'domains.test.ts is what stops a .test.mjs reaching the tree at all; this only says '
+      + 'that if one did, the run would not silently include it and count it as covered');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -103,12 +103,12 @@ test('the summary names every domain and totals them', () => {
   assert.match(summary, /\| \*\*total\*\* \| \*\*2\*\* \| \*\*1\*\* \| \*\*1\*\* \|/);
 });
 
-test('suiteDomains reads a domain off a suite in either extension, which is what expects its cases', () => {
+test('suiteDomains reads a domain off every suite, which is what expects its cases', () => {
   const root = mkdtempSync(join(tmpdir(), 'summarize-ext-'));
   try {
     mkdirSync(join(root, 'scripts', 'check', 'tailwind'), { recursive: true });
     mkdirSync(join(root, 'scripts', 'lib', 'core'), { recursive: true });
-    writeFileSync(join(root, 'scripts', 'check', 'tailwind', 'a.test.mjs'), '// suite');
+    writeFileSync(join(root, 'scripts', 'check', 'tailwind', 'a.test.ts'), '// suite');
     writeFileSync(join(root, 'scripts', 'lib', 'core', 'b.test.ts'), '// suite');
     writeFileSync(join(root, 'scripts', 'lib', 'core', 'c.ts'), '// not a suite');
     assert.deepEqual(suiteDomains(join(root, 'scripts')), ['core', 'tailwind']);

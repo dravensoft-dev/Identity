@@ -1,8 +1,8 @@
 /* A script nothing imports has its specifiers proven by nothing. scripts/serve.ts kept
  * importing ./lib/repo-root.ts for three commits after that module moved into lib/arena/,
- * because `bun test scripts` loads *.test.mjs and whatever those reach, and no suite reaches
+ * because `bun test scripts` loads the suites and whatever those reach, and no suite reaches
  * serve.ts -- it calls Bun.serve() at module top level, so importing it starts a server.
- * A *.test.mjs is excluded on the opposite reasoning: running it proves its imports, and its
+ * A suite is excluded on the opposite reasoning: running it proves its imports, and its
  * fixtures are import statements inside STRING literals, which a text scan cannot tell apart.
  * A generator writing an import into its OUTPUT is that same class, and a static one there is
  * indistinguishable by text alone. What tells them apart is where the KEYWORD sits, never the
@@ -103,12 +103,15 @@ test('the two vendored copies are exempt on the record, because re-vendoring is 
   }
 });
 
-test('a .ts script is in scope and a .ts suite is not, so a renamed file keeps its coverage', () => {
+test('a script is in scope in either extension, and a suite is not', () => {
   const dir = mkdtempSync(join(tmpdir(), 'arena-imports-ext-'));
   try {
     for (const name of ['a.mjs', 'b.ts', 'a.test.mjs', 'b.test.ts', 'notes.md'])
       writeFileSync(join(dir, name), '// fixture\n');
-    assert.deepEqual(scriptsUnder(dir).map((p) => relative(dir, p)).sort(), ['a.mjs', 'b.ts']);
+    assert.deepEqual(scriptsUnder(dir).map((p) => relative(dir, p)).sort(),
+      ['a.mjs', 'a.test.mjs', 'b.ts'],
+      'the four modules that stay JavaScript are still scanned, and a .test.mjs is no longer a '
+      + 'suite, so it falls to this walk rather than out of every one');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

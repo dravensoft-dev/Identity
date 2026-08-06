@@ -1,21 +1,36 @@
 /* How scripts/ names its own parts: the five domains it sorts by, which of them a test
- * file belongs to, and what counts as a script or a suite in the first place. It is
- * arena because it speaks about every layer and the repository root, and it opens no
- * file, so a caller can classify a path that does not exist on this machine: a junit
- * report names files a runner wrote, read where they no longer are. A report may name
- * them absolutely, so the anchor is searched for rather than assumed at index 0 and the
- * LAST one wins, or a checkout under a directory called scripts decides every path.
- * SCRIPT_EXTENSIONS is here rather than in each of the three scanners because a suffix
- * one of them stops recognising is a file that quietly leaves its scope, which is the
- * one failure this migration can take in silence. */
+ * file belongs to, and what counts as a script or a suite. It opens no file, so a caller
+ * can classify a path absent from this machine: a junit report names files a runner wrote.
+ * A report may name them absolutely, so the anchor is searched for and the LAST one wins,
+ * or a checkout under a directory called scripts decides every path. The extensions live
+ * here, not in each of the four scanners, because a suffix one stops recognising is a file
+ * that quietly leaves its scope. A suite is TypeScript and can earn no exception, nothing
+ * loading one. A script may be JavaScript only if STAYS_JAVASCRIPT names it, and it is
+ * still scanned, since those four have specifiers that must resolve like any other's. */
 
 export const DOMAINS = ['core', 'react', 'angular', 'tailwind', 'arena'];
 
 const PHASES = ['build', 'generate', 'check', 'lib', 'ci'];
 
-export const SCRIPT_EXTENSIONS = ['.mjs', '.ts'];
+export const SUITE_EXTENSIONS = ['.ts'];
 
-export const isSuite = (name) => SCRIPT_EXTENSIONS.some((ext) => name.endsWith(`.test${ext}`));
+export const SCRIPT_EXTENSIONS = ['.ts', '.mjs'];
+
+export const STAYS_JAVASCRIPT = new Map([
+  ['scripts/lib/arena/css-decls.mjs',
+   'an intro/ page imports it over HTTP and a browser runs it as written, with no build step '
+   + 'between the git tag and the page; browser-modules.test.ts holds that end of it'],
+  ['scripts/lib/core/token-preview.mjs',
+   'the same: the Overview page loads it directly, and static-server.ts serves no .ts'],
+  ['scripts/lib/core/validate-palette.mjs',
+   'vendored verbatim from the dataviz Agent Skill and re-vendored rather than patched, so it '
+   + 'can carry no annotation: editing one threshold invalidates published measurements'],
+  ['scripts/generate/core/arena-to-prod/validate-palette.mjs',
+   'the copy that ships inside both npm packages, which palette-keys.test.ts holds byte-equal '
+   + 'to the one above, so it is the same file and takes the same answer'],
+]);
+
+export const isSuite = (name) => SUITE_EXTENSIONS.some((ext) => name.endsWith(`.test${ext}`));
 
 export const isScript = (name) =>
   SCRIPT_EXTENSIONS.some((ext) => name.endsWith(ext)) && !isSuite(name);
