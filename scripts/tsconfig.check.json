@@ -11,7 +11,7 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "useUnknownInCatchVariables": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictNullChecks": false,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,

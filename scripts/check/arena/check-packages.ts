@@ -102,7 +102,7 @@ export function manifestProblems(pkg: { layer: string; name: string }, manifest:
   return problems;
 }
 
-function exportTargets(exports) {
+function exportTargets(exports: unknown) {
   const out: string[] = [];
   const walk = (value: unknown) => {
     if (typeof value === 'string') { out.push(value); return; }

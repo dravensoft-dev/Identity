@@ -7,7 +7,7 @@ import type { ManifestClassSource } from './manifest-shapes.ts';
 
 export function manifestClasses(manifest: ManifestClassSource): string[] {
   const out = new Set<string>();
-  const eat = (v) => {
+  const eat = (v: unknown) => {
     if (typeof v === 'string') for (const c of v.split(/\s+/)) { if (c) out.add(c); }
     else if (v && typeof v === 'object') for (const child of Object.values(v)) eat(child);
   };

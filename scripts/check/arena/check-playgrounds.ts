@@ -87,8 +87,8 @@ export function valueProblems(where: string, spec: MemberSpec, value: unknown, t
     return typeof value === spec.type ? [] : [`${where}: declares ${spec.type} and the fixture holds ${typeof value}`];
   }
   if (kind === 'enum') {
-    const values: string[] = types.get(spec.type)?.values ?? [];
-    return values.includes(value as string) ? [] : [`${where}: ${JSON.stringify(value)} is not one of ${spec.type}'s ${JSON.stringify(values)}`];
+    const values: (string | number)[] = types.get(spec.type)?.values ?? [];
+    return values.includes(value as string | number) ? [] : [`${where}: ${JSON.stringify(value)} is not one of ${spec.type}'s ${JSON.stringify(values)}`];
   }
   if (kind === 'array') {
     if (!Array.isArray(value)) return [`${where}: declares an array and the fixture holds ${typeof value}`];

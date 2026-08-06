@@ -41,7 +41,7 @@ export function namespacedPropertyCandidates(decls: Map<string, string>) {
   return candidates;
 }
 
-export function attributedNames(namespaces) {
+export function attributedNames(namespaces: Map<string, string[]>) {
   const names = new Set();
   for (const [ns, keys] of namespaces) for (const key of keys) names.add(`${ns}-${key}`);
   return names;

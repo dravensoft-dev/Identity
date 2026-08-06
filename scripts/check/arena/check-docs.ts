@@ -174,7 +174,7 @@ export const RULE_OWNERS = [
   },
 ];
 
-export function statesRule(text: string, phrase) {
+export function statesRule(text: string, phrase: string | RegExp) {
   return typeof phrase === 'string' ? text.includes(phrase) : phrase.test(text);
 }
 
@@ -216,7 +216,7 @@ function documents(root: string) {
   return walk(root, (p: string) => p.endsWith('.md'), emittedTree(root));
 }
 
-function exempt(list, rel: string) {
+function exempt(list: string[], rel: string) {
   return list.some((e) => rel === e || rel.startsWith(e));
 }
 
@@ -265,7 +265,7 @@ export function documentSizeProblems(root = ROOT, allowance = SIZE_ALLOWANCE) {
   return { problems, scanned: scanned.length };
 }
 
-export function staleAllowanceProblems(sizes, allowance = SIZE_ALLOWANCE) {
+export function staleAllowanceProblems(sizes: Map<string, number>, allowance = SIZE_ALLOWANCE) {
   const problems = [];
   for (const [rel, { limit, reason }] of allowance) {
     if (!sizes.has(rel)) {

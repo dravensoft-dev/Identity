@@ -428,14 +428,14 @@ export function scanDefaultsAndCallSites(rawText: string) {
 
 function passthroughSightings(rawText: string) {
   const text = blankComments(rawText);
-  const seen = new Set();
+  const seen = new Set<string>();
   for (const fn of text.matchAll(COMPONENT_PARAMS)) if (PASSTHROUGH.has(fn[1])) seen.add(fn[1]);
   for (const name of PASSTHROUGH.keys())
     if (new RegExp(`<${name}\\b`).test(text)) seen.add(name);
   return seen;
 }
 
-export function stalePassthrough(seenComponents) {
+export function stalePassthrough(seenComponents: Set<string>) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
@@ -458,7 +458,7 @@ export function staleExemptions(matchedKeys: Set<string>) {
 function collect() {
   const found = [];
   const matchedKeys = new Set<string>();
-  const seenComponents = new Set();
+  const seenComponents = new Set<string>();
   let paramLists = 0;
   for (const file of sourceFiles(join(repoRoot, 'frameworks'))) {
     const rel = relative(repoRoot, file);
@@ -481,7 +481,9 @@ function collect() {
   };
 }
 
-function report(found) {
+export type DimensionHit = { file: string; line: number; prop: string; raw: string };
+
+function report(found: DimensionHit[]) {
   const byProp = new Map();
   for (const f of found) {
     if (!byProp.has(f.prop)) byProp.set(f.prop, new Map());
@@ -498,7 +500,7 @@ function report(found) {
   console.log(`\ntotal: ${found.length} site(s)`);
 }
 
-function reportSites(found) {
+function reportSites(found: DimensionHit[]) {
   const sorted = [...found].sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
   for (const f of sorted) console.log(`${f.file}:${f.line}  ${f.prop}: ${f.raw}`);
 }

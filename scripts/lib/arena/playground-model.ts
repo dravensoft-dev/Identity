@@ -23,7 +23,7 @@ export const INBOUND_FORMS = new Set(['primitive', 'enum', 'object', 'array', 's
 export type Control = {
   control: string;
   codec: string;
-  options?: string[];
+  options?: (string | number)[];
   fields?: unknown[];
   params?: Record<string, string>;
   returns?: string;

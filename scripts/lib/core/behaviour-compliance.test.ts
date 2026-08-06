@@ -708,7 +708,7 @@ test('a resolving reference with an exception declared is a STALE EXCEPTION', ()
 test('an array subject is met only when every element meets it', () => {
   const ok = el('button', { 'aria-selected': 'false' });
   const bad = el('button');
-  const p = (subject) => comparePattern({
+  const p = (subject: unknown) => comparePattern({
     pattern: { name: 'tabs', requires: { 'states.selected': 'true on the active tab, false on the rest' } },
     binding: { pattern: 'tabs', exceptions: [] },
     subjects: { 'states.selected': subject },

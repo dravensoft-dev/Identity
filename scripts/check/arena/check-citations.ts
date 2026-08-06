@@ -62,7 +62,7 @@ export function documents(base = root) {
   return found;
 }
 
-export function namesAFile(cited) {
+export function namesAFile(cited: string) {
   return EXTENSION.test(cited);
 }
 

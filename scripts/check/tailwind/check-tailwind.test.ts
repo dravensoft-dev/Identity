@@ -4,7 +4,7 @@ import { themeKeys, checkCompiled } from './check-tailwind.ts';
 
 const TOKENS = new Set(['color-primary', 'sp-1', 'sp-4', 'r-sm']);
 
-const compiled = (root: string, utilities) =>
+const compiled = (root: string, utilities: string) =>
   `@layer theme {\n  :root, :host {\n${root}\n  }\n}\n@layer utilities {\n${utilities}\n}\n`;
 
 test('reads the emitted theme keys and their values', () => {

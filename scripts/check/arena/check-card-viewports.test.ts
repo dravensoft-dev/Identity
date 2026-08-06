@@ -44,9 +44,9 @@ test('MEASURE_SCRIPT still reports timedOut: true on exhaustion, never a passing
   assert.match(MEASURE_SCRIPT, /return \{ \.\.\.read\(\), timedOut: true \};/);
 });
 
-function fakeCdp(failingUrls) {
+function fakeCdp(failingUrls: Set<string>) {
   return {
-    send: async (method, params) => {
+    send: async (method: string, params: Record<string, any>) => {
       switch (method) {
         case 'Target.createTarget': return { targetId: 't' };
         case 'Target.attachToTarget': return { sessionId: 's' };

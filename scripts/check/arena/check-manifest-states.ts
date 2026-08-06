@@ -147,7 +147,7 @@ export function zeroReactSourceProblems(count: number) {
     + 'rather than a clean pass'];
 }
 
-export function unaskedHandDrawn(asked, handDrawn = HAND_DRAWN) {
+export function unaskedHandDrawn(asked: Iterable<string>, handDrawn = HAND_DRAWN) {
   const seen = new Set(asked);
   const problems = [...handDrawn.keys()]
     .filter((name) => !seen.has(name))

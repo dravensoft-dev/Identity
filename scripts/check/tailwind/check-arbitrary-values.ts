@@ -31,7 +31,7 @@ const BARE_NUMBER = /(?<![\w.])-?\d*\.?\d+(?![\w.%])/g;
 
 const MATH_OPEN = /\b(?:calc|min|max|clamp)$/;
 
-function insideMathParens(rest, index: number) {
+function insideMathParens(rest: string, index: number) {
   const stack = [];
   for (let i = 0; i < index; i++) {
     if (rest[i] === '(') stack.push(MATH_OPEN.test(rest.slice(0, i)));
@@ -75,7 +75,7 @@ export function findMarkers(text: string) {
 }
 
 export function markerAllowlist(text: string) {
-  const out = new Set();
+  const out = new Set<string>();
   for (const { classes } of findMarkers(text)) for (const cls of classes) out.add(cls);
   return out;
 }
@@ -90,7 +90,7 @@ export function scanFile(relPath: string, text: string) {
 
   const withoutMarkers = markers.length ? text.replace(MARKER, '') : text;
   const candidates = scanText(withoutMarkers);
-  const allowed = isMarkdown ? markerAllowlist(text) : new Set();
+  const allowed = isMarkdown ? markerAllowlist(text) : new Set<string>();
 
   for (const { cls } of candidates)
     if (!allowed.has(cls)) errs.push(`${relPath}: \`${cls}\` — a raw value, not a token`);

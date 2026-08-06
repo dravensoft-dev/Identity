@@ -36,9 +36,9 @@ export type ComponentContract = {
 
 export type TypeContract = {
   name: string;
-  kind: 'enum' | 'object';
+  kind: string;
   description?: string;
-  values?: string[];
+  values?: (string | number)[];
   fields?: Record<string, MemberSpec>;
 };
 
@@ -55,6 +55,6 @@ export type ContractCandidate = {
 export type Contracts = Map<string, ComponentContract>;
 export type Types = Map<string, TypeContract> | Record<string, TypeContract>;
 
-export const memberEntries = (api): [string, MemberSpec][] => Object.entries(api ?? {});
+export const memberEntries = (api: unknown): [string, MemberSpec][] => Object.entries(api ?? {});
 
-export const fieldEntries = (fields): [string, MemberSpec][] => Object.entries(fields ?? {});
+export const fieldEntries = (fields: unknown): [string, MemberSpec][] => Object.entries(fields ?? {});

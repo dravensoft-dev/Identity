@@ -128,7 +128,10 @@ function readStamp() {
   }
 }
 
-export function stalenessReason(inputs, stamped) {
+export function stalenessReason(
+  inputs: { path: string; mtimeMs: number }[],
+  stamped: { paths?: string[]; mtimeMs: number } | null,
+) {
   if (stamped === null) return 'no emit stamp is present, so nothing is known about what was compiled';
   if (inputs.length === 0) return 'no input was found to compare the emit against';
   const compiled = new Set(stamped.paths ?? []);

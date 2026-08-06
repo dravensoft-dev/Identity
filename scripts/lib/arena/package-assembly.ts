@@ -26,7 +26,9 @@ export const EXCLUDED_PATTERNS = [
   /^BehaviourDelegated\.json$/,
 ];
 
-export const CSS_CHAIN = [
+export type CssChainEntry = { to: string; from?: string; content?: string; linked?: boolean };
+
+export const CSS_CHAIN: CssChainEntry[] = [
   { from: 'contracts/design/reset.css', to: 'css/reset.css' },
   { from: 'contracts/design-generated/typography.generated.css', to: 'css/typography.css' },
   { from: 'contracts/design-generated/spacing.generated.css', to: 'css/spacing.css' },
@@ -89,7 +91,7 @@ export function copyTree(from: string, dir: string, rel: string, keep?: (path: s
   return written;
 }
 
-export function writeCssChain(dir: string, name: string, extra = [], root = repoRoot) {
+export function writeCssChain(dir: string, name: string, extra: CssChainEntry[] = [], root = repoRoot) {
   const chain = [...CSS_CHAIN, ...extra];
   for (const entry of chain) {
     if (entry.content !== undefined) write(dir, entry.to, entry.content);
@@ -119,7 +121,7 @@ export const SHEET_BANNERS = {
   ].join('\n'),
 };
 
-export function componentSheets(css: string, split, root = repoRoot) {
+export function componentSheets(css: string, split: (css: string) => { base: string }, root = repoRoot) {
   const { base } = split(css);
   const dir = join(root, 'frameworks', 'tailwind');
   const consume = join(root, ...CONSUME.split('/'));

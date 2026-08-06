@@ -20,7 +20,7 @@ function processesNaming(profilePath: string) {
   }
 }
 
-async function waitUntil(predicate, { timeoutMs = 5000, intervalMs = 100 } = {}) {
+async function waitUntil(predicate: () => boolean, { timeoutMs = 5000, intervalMs = 100 } = {}) {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
     if (predicate()) return true;

@@ -76,7 +76,9 @@ export function presetTokens(css: string) {
   return out;
 }
 
-export function checkCoverage(tokens: Set<string>, exposed: Set<string>, excluded) {
+export function checkCoverage(
+  tokens: Set<string>, exposed: Set<string>, excluded: Map<string, string>,
+) {
   const errs = [];
   for (const t of [...tokens].sort()) {
     const isExposed = exposed.has(t);

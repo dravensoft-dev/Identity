@@ -95,7 +95,7 @@ export function scannedFiles(root = ROOT) {
   return found;
 }
 
-export function staleExemptions(seen) {
+export function staleExemptions(seen: Set<string>) {
   return [...EXEMPT.keys()]
     .filter((token) => !seen.has(token))
     .map((token) => `EXEMPT names "${token}", which the tree no longer carries -- drop the exemption`);
@@ -106,7 +106,7 @@ export function collect(root = ROOT) {
   const problems = zeroWeightProblems(weights);
   if (problems.length > 0) return { problems, scanned: 0, names: 0 };
 
-  const seen = new Set();
+  const seen = new Set<string>();
   let scanned = 0;
   for (const file of scannedFiles(root)) {
     const text = readFileSync(file, 'utf8');

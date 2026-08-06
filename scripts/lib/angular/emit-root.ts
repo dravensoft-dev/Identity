@@ -11,7 +11,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
-export function declaredOption(configPath: string, option) {
+export function declaredOption(configPath: string, option: string) {
   const seen = new Set();
   let current = resolve(configPath);
   while (!seen.has(current)) {

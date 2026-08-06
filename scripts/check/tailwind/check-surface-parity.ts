@@ -16,7 +16,9 @@ const MANIFESTS = join(root, 'frameworks/tailwind/components');
 
 export const SURFACE = ['bg-', 'border-', 'rounded-'];
 
-export const PAIRS = [
+export type SurfacePoint = { file: string; slot: string; variant?: [string, string] };
+
+export const PAIRS: { name: string; a: SurfacePoint; b: SurfacePoint; reason: string }[] = [
   {
     name: 'ArenaUnauthCard.panel mirrors ArenaCard.root',
     a: { file: 'display/arena-unauth-card/ArenaUnauthCard.manifest.json', slot: 'panel' },
@@ -33,7 +35,9 @@ export function surfaceClasses(classes: string) {
     .sort();
 }
 
-export function slotClasses(manifest: ManifestClassSource, slot: string, variant?) {
+export function slotClasses(
+  manifest: ManifestClassSource, slot: string, variant?: [string, string],
+) {
   const base = manifest.slots?.[slot] ?? '';
   if (!variant) return base;
   const [axis, value] = variant;
@@ -41,7 +45,10 @@ export function slotClasses(manifest: ManifestClassSource, slot: string, variant
   return `${base} ${extra}`.trim();
 }
 
-export function parityProblems(pairs, read) {
+export function parityProblems(
+  pairs: { name: string; a: SurfacePoint; b: SurfacePoint; reason: string }[],
+  read: (file: string) => ManifestClassSource,
+) {
   const problems = [];
   for (const { name, a, b, reason } of pairs) {
     const left = surfaceClasses(slotClasses(read(a.file), a.slot, a.variant));

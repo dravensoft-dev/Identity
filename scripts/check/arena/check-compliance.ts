@@ -141,7 +141,7 @@ export function suiteMentions(source: string, tail: string) {
 export function validateCoverage(
   { bindings, covered, suites }:
     {
-      bindings: ReturnType<typeof inventoryFrom>;
+      bindings: BindingInventory[];
       covered: Record<string, string>;
       suites: Record<string, { source: string; layer: string }>;
     },
@@ -201,8 +201,12 @@ export function validateCoverage(
   return problems;
 }
 
-export function inventoryFrom(bindings) {
-  const out = [];
+export type BindingInventory = {
+  name: string; layer: string; tail?: string; patterns: (string | undefined)[];
+};
+
+export function inventoryFrom(bindings: Record<string, BehaviourBinding & { tail?: string }>) {
+  const out: BindingInventory[] = [];
   const declared = Object.entries(bindings) as [string, BehaviourBinding & { tail?: string }][];
   for (const [key, binding] of declared) {
     const sep = key.lastIndexOf(':');

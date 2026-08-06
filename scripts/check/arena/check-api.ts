@@ -15,7 +15,8 @@ import {
 import { pascal, readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
-import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
+import type { ContractCandidate, TypeContract } from '../../lib/arena/contract-shapes.ts';
+import type { SurfaceMember } from '../../lib/arena/api-surface.ts';
 
 const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
@@ -31,7 +32,7 @@ export function zeroContractProblems({ contracts, types }: { contracts: number; 
 
 export { bindingName };
 
-export function docProblems(contract: ContractCandidate, docs, layer: string) {
+export function docProblems(contract: ContractCandidate, docs: Map<string, string>, layer: string) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
   const wanted = new Map();
@@ -71,7 +72,7 @@ export function docProblems(contract: ContractCandidate, docs, layer: string) {
   return problems;
 }
 
-export function validateTypes(types) {
+export function validateTypes(types: TypeContract[]) {
   const problems = [];
   const seen = new Set();
 
@@ -115,10 +116,10 @@ export function validateTypes(types) {
   return problems;
 }
 
-export function validateContract(contract: ContractCandidate, typeNames) {
+export function validateContract(contract: ContractCandidate, typeNames: Map<string, string>) {
   const problems = [];
   const where = contract.component ?? '(unnamed)';
-  const declared = (name: string, kind) => {
+  const declared = (name: string, kind: string) => {
     if (!typeNames.has(name)) return `${where}: names type "${name}", which contracts/api/types/ does not declare`;
     if (typeNames.get(name) !== kind) return `${where}: "${name}" is a ${typeNames.get(name)}, used where a ${kind} belongs`;
     return null;
@@ -184,7 +185,9 @@ export function validateContract(contract: ContractCandidate, typeNames) {
   return problems;
 }
 
-export function compareSurface(contract: ContractCandidate, members, layer: string, types = new Map()) {
+export function compareSurface(
+  contract: ContractCandidate, members: SurfaceMember[], layer: string, types = new Map(),
+) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
 

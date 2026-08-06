@@ -35,20 +35,19 @@ test('the project never emits, because a checking project writing output would s
 test('the strict family is enumerated, so every flag is a decision somebody made', () => {
   const options = project().compilerOptions;
   assert.equal(options.strict, undefined,
-    'strict is not set as a bundle: it turns on seven things at once, and two of them cost '
-    + 'four figures here, so each is named below at the value it actually holds');
+    'strict is not set as a bundle: it turns on seven things at once and one of them is still '
+    + 'off, so each is named below at the value it actually holds');
 
   for (const on of ['strictFunctionTypes', 'strictBindCallApply', 'noImplicitThis',
-    'alwaysStrict', 'useUnknownInCatchVariables'])
+    'alwaysStrict', 'useUnknownInCatchVariables', 'noImplicitAny'])
     assert.equal(options[on], true, `${on} is on and must stay on`);
 
-  assert.equal(options.noImplicitAny, false,
-    'off by decision rather than oversight: 81 parameters and locals carry no annotation '
-    + 'yet, down from 1,643. Turning it on is the remaining work, not a switch.');
   assert.equal(options.strictNullChecks, false,
-    'off for the same reason and second in line: 970 alone, and 812 with noImplicitAny on. '
-    + 'The two overlap, so the order matters -- noImplicitAny first, or evolving-array '
-    + 'inference is unavailable and hundreds of never[] errors appear that it would erase.');
+    'the last of the seven still off, and the only one left: 328 errors, down from 812 beside '
+    + 'noImplicitAny and 970 without it. The order was the thing -- noImplicitAny first, or '
+    + 'evolving-array inference is unavailable and hundreds of never[] errors appear that it '
+    + 'erases. strictPropertyInitialization is absent rather than false because TypeScript '
+    + 'refuses to name it while this one is off.');
 });
 
 test('a .mjs is resolved and never checked, which is what the two vendored copies need', () => {

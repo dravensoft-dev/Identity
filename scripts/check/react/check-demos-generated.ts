@@ -14,7 +14,7 @@ function skip(reason: string) {
 
 function findJsFiles(dir: string) {
   const found: string[] = [];
-  const walk = (d) => {
+  const walk = (d: string) => {
     for (const entry of readdirSync(d, { withFileTypes: true })) {
       const path = join(d, entry.name);
       if (entry.isDirectory()) walk(path);

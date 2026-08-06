@@ -25,7 +25,7 @@ function trackedFiles(base: string) {
   return new Set((stdout ?? '').split('\n').filter(Boolean));
 }
 
-export function firstDifference(expected, actual) {
+export function firstDifference(expected: string, actual: string) {
   const a = expected.split('\n');
   const b = actual.split('\n');
   for (let i = 0; i < Math.max(a.length, b.length); i += 1) {

@@ -82,7 +82,7 @@ export function survivorProblems(base = root, found = [...markdownFiles(base)], 
   return problems;
 }
 
-export function zeroScanProblems(found) {
+export function zeroScanProblems(found: unknown[]) {
   return found.length === 0
     ? ['found 0 documents; an empty walk reports every level present and every survivor stale, '
        + 'which is a clean-looking pass over a tree it never opened']

@@ -25,7 +25,8 @@ const CONTRACT = {
 
 const TREE = { charts: ['arena-bar-chart'], display: ['arena-tag', 'arena-unauth-card'] };
 
-const layerExists = (layer: string, ext: string) => (tree, missing = []) => {
+const layerExists = (layer: string, ext: string) =>
+  (tree: Record<string, string[]>, missing: string[] = []) => {
   const gone = new Set(missing);
   const present = new Set();
   for (const [category, dirs] of Object.entries(tree) as [string, string[]][])

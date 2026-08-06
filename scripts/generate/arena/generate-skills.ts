@@ -140,7 +140,7 @@ export function patternsFor(category: string, component: string, layers: string[
   return found;
 }
 
-export function renderPatterns(found, layers: string[]) {
+export function renderPatterns(found: Map<string, Set<string>>, layers: string[]) {
   const names = [...found.keys()].sort();
   if (names.length === 0) return '';
   const everywhere = (pattern: string) => layers.every((layer: string) => found.get(pattern).has(layer));
@@ -169,17 +169,27 @@ export function rowsFor(category: string, components: string[], base = root) {
   });
 }
 
-function taken(members) {
+export type SkillRow = {
+  component: string;
+  category?: string;
+  description?: string;
+  layers: string[];
+  contract?: ContractCandidate | null;
+  members?: string[];
+  patterns?: string;
+};
+
+function taken(members: string[]) {
   return members.map((m) => `\`${m}\``).join(' ') || '(no members)';
 }
 
-export function renderRow(row) {
+export function renderRow(row: SkillRow) {
   return `| \`${row.component}\` | ${escapeCell(row.description)} | ${taken(row.members)} | ${
     row.patterns || '(undeclared)'
   } | ${row.layers.join(', ') || '(no layer)'} |`;
 }
 
-export function renderLayerRow(row, layer: string) {
+export function renderLayerRow(row: SkillRow, layer: string) {
   return `| \`${row.component}\` | ${escapeCell(row.description)} | ${
     taken(memberList(row.contract, layer))
   } | [\`${row.component}.prompt.md\`](${promptPath(row.category, row.component)}) |`;

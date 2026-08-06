@@ -157,7 +157,13 @@ export function buildAngularPackage(root = repoRoot) {
   return { dir: dist, written, staged: staged.length, log: result.stdout };
 }
 
-export function withAssets(emitted) {
+export type NgPackage = {
+  exports?: Record<string, unknown>;
+  sideEffects?: boolean;
+  [key: string]: unknown;
+};
+
+export function withAssets(emitted: NgPackage): NgPackage {
   return {
     ...emitted,
     exports: {

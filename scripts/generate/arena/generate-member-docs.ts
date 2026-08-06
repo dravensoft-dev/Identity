@@ -11,6 +11,7 @@ import { docComment } from './generate-api-types.ts';
 import { normaliseDoc } from '../../lib/arena/api-surface.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
+import type { ComponentTree } from '../../lib/arena/layers.ts';
 
 export const MEMBER_START: Record<string, RegExp> = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
@@ -38,7 +39,7 @@ export function unpackMembers(source: string) {
 
 export const REACT_PROPS_OPEN = /^export interface \w+Props\b[^{]*\{/;
 
-export function applyDocs(source: string, docs, layer: string) {
+export function applyDocs(source: string, docs: Map<string, string>, layer: string) {
   const lines = (layer === 'react' ? unpackMembers(source) : source).split('\n');
   const out = [];
   let reachable = layer !== 'react';
@@ -96,7 +97,14 @@ export function writeMemberDocs({
   return written;
 }
 
-export function componentSources(resolveReact, resolveAngular, readLayer, exists: (path: string) => boolean) {
+type Resolver = (
+  tree: ComponentTree, exists: (path: string) => boolean,
+) => { implementations: Map<string, string> };
+
+export function componentSources(
+  resolveReact: Resolver, resolveAngular: Resolver, readLayer: (layer: string) => ComponentTree,
+  exists: (path: string) => boolean,
+) {
   const react = resolveReact(readLayer('react'), exists).implementations;
   const angular = resolveAngular(readLayer('angular'), exists).implementations;
   const sources = new Map();

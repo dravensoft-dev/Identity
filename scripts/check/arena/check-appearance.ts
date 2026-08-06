@@ -132,7 +132,7 @@ export function literalStyleProblems(rawText: string, path: string) {
   return problems;
 }
 
-export function sourceFiles(dir: string, found = []) {
+export function sourceFiles(dir: string, found: string[] = []) {
   if (!existsSync(dir)) return found;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);

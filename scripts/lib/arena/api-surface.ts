@@ -255,7 +255,9 @@ export function literalValue(raw: string) {
   return undefined;
 }
 
-export function defaultProblems(where: string, member, contractDefault, rawImplementationDefault) {
+export function defaultProblems(
+  where: string, member: string, contractDefault: unknown, rawImplementationDefault: string,
+) {
   const declared = contractDefault !== undefined;
   const implemented = literalValue(rawImplementationDefault);
   if (implemented === undefined) return [];
@@ -270,7 +272,7 @@ export function defaultProblems(where: string, member, contractDefault, rawImple
 }
 
 function interfaceMembers(body: string) {
-  const members = [];
+  const members: SurfaceMember[] = [];
 
   for (const raw of splitTopLevel(stripComments(body), ';', { brackets: '(){}[]' })) {
     const text = raw.trim();
@@ -295,7 +297,7 @@ export function angularSurface(source: string, className: string) {
   const decl = new RegExp(`export\\s+class\\s+${className}\\b[^{]*\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export class ${className}" in this source`);
   const body = braceBody(source, decl.index + decl[0].length - 1);
-  const members = [];
+  const members: SurfaceMember[] = [];
 
   for (const raw of splitTopLevel(stripComments(body), ';', { brackets: '(){}[]', closeBrace: true })) {
     const text = raw.trim();
@@ -327,6 +329,8 @@ export function angularSurface(source: string, className: string) {
 
 export type SurfaceMember = {
   name: string;
+  parts?: string[];
+  values?: string[];
   form?: string;
   type?: string | null;
   required?: boolean;
@@ -389,7 +393,7 @@ function componentTemplate(source: string) {
 }
 
 export function templateSlots(source: string) {
-  const out = [];
+  const out: SurfaceMember[] = [];
   for (const m of source.matchAll(/<ng-content\b([^>]*)>/g)) {
     const attrs = m[1];
     const select = /select\s*=\s*"([^"]*)"/.exec(attrs);

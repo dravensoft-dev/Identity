@@ -15,7 +15,7 @@ const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');
 
 export function bridgeSelectors(css: string) {
-  const out = new Set();
+  const out = new Set<string>();
   const noAtRules = css.replace(/@[a-z-]+[^;{}]*;/gi, '');
   for (const selector of parseDecls(noAtRules).keys())
     for (const one of selector.split(',')) if (one.trim()) out.add(one.trim());
@@ -23,20 +23,20 @@ export function bridgeSelectors(css: string) {
 }
 
 export function cdkClasses(css: string) {
-  const out = new Set();
+  const out = new Set<string>();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   for (const m of stripped.matchAll(/\.(cdk-[a-z0-9-]+)/g)) out.add(m[1]);
   return out;
 }
 
 export function importedSheets(css: string) {
-  const out = new Set();
+  const out = new Set<string>();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   for (const m of stripped.matchAll(/@import\s+['"]([^'"]+)['"]/g)) out.add(m[1]);
   return out;
 }
 
-export function checkBridge(bridgeCss: string, prebuiltCss: string, tokens: Set<string>, resolveSheet) {
+export function checkBridge(bridgeCss: string, prebuiltCss: string, tokens: Set<string>, resolveSheet: (sheet: string) => boolean) {
   const errs = [];
   const selectors = bridgeSelectors(bridgeCss);
   const named = cdkClasses(bridgeCss);

@@ -46,7 +46,7 @@ export function topLevelChildren(body: string) {
   return children;
 }
 
-export function ownersOf(text: string, bases) {
+export function ownersOf(text: string, bases: Set<string>) {
   const found = new Set([...text.matchAll(SLOT_CLASS)].map((m) => m[1]));
   const stray = [...found].filter((base) => !bases.has(base));
   if (stray.length > 0) {
@@ -56,7 +56,7 @@ export function ownersOf(text: string, bases) {
   return found;
 }
 
-export function splitUtilities(css: string, bases) {
+export function splitUtilities(css: string, bases: Set<string>) {
   const at = css.indexOf(LAYER_UTILITIES);
   if (at === -1) {
     throw new Error('component-sheets: the compiled sheet carries no `@layer utilities` block, '
@@ -110,7 +110,7 @@ export function componentSheet(rules: string[], preludeSpecifier: string) {
   return `@import '${preludeSpecifier}';\n\n@layer utilities {\n${body}\n}\n`;
 }
 
-export function preludeSheet(shared, keyframes) {
+export function preludeSheet(shared: string, keyframes: string) {
   const withoutBanner = shared.replace(/^\/\*![^]*?\*\/\n?/, '').replace(/^@layer properties;\n?/m, '').trim();
   return `${LAYER_ORDER}\n${keyframes.trim()}\n\n${withoutBanner}\n`;
 }

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { fieldEntries } from '../../lib/arena/contract-shapes.ts';
+import type { MemberCandidate, TypeContract } from '../../lib/arena/contract-shapes.ts';
 
 export const API_TARGETS = [
   'frameworks/react/Api.generated.ts',
@@ -33,7 +34,7 @@ export function docComment(text: string, indent = '') {
   return [`${indent}/**`, ...lines.map((l) => `${indent} *  ${l}`), `${indent} */`].join('\n');
 }
 
-export function fieldType(field) {
+export function fieldType(field: MemberCandidate) {
   if (field.form === 'primitive') {
     const ts = PRIMITIVE_TS[field.type];
     if (!ts) throw new Error(`fieldType: "${field.type}" is not one of string, number, boolean`);
@@ -47,7 +48,7 @@ export function enumLiteral(value: string | number) {
   return typeof value === 'number' ? String(value) : `'${value}'`;
 }
 
-export function renderApiModule(types) {
+export function renderApiModule(types: TypeContract[]) {
   const out = [HEADER];
   for (const type of types) {
     out.push('');

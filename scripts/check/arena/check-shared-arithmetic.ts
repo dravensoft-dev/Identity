@@ -65,7 +65,9 @@ export function exportedFunctions(source: string) {
   return found;
 }
 
-export function pairProblems(rel: string, react, angular, divergent = DIVERGENT) {
+export function pairProblems(
+  rel: string, react: Map<string, string>, angular: Map<string, string>, divergent = DIVERGENT,
+) {
   const problems = [];
   const claimed: string[] = [];
   const shared = [...react.keys()].filter((name) => angular.has(name)).sort();
