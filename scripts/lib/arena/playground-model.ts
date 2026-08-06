@@ -19,6 +19,77 @@ export const SUBJECT = '$subject';
 
 export const INBOUND_FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'functionInput']);
 
+/* What this module decides, named once, so the two layer renderers read a shape rather
+ * than infer one. A knob's control half varies by form -- a select carries options, an
+ * object carries fields -- so Control is spread in and stays open. `nodes` is a fixture
+ * subtree and deliberately loose: only collectUses and the renderers walk it, and its
+ * shape is the fixture's rather than this module's. Note that `knob` in check-playgrounds
+ * is a contract MemberSpec and NOT one of these, which is why the name alone decides
+ * nothing here. */
+export type Control = {
+  control: string;
+  codec: string;
+  options?: string[];
+  fields?: unknown[];
+  params?: Record<string, string>;
+  returns?: string;
+  itemForm?: string;
+  itemType?: string | null;
+};
+
+export type Knob = Control & {
+  member: string;
+  form: string;
+  type: string | null;
+  bind: string;
+  bound: boolean;
+  initial: unknown;
+  nodes: any;
+  doc: string;
+};
+
+export type PlaygroundEvent = {
+  name: string;
+  payload: string | null;
+  bind: string | null;
+  doc: string;
+};
+
+/* One node of a demo fixture's tree: the $subject placeholder, a piece of text, a bare
+ * element, or a component with members and slots. Loose on purpose --
+ * the shape is frameworks/demos/'s and check:playgrounds is what validates it; this only
+ * says enough for the renderers to walk it. */
+export type FixtureNode = {
+  component?: string;
+  element?: string;
+  text?: string;
+  members?: Record<string, any>;
+  slots?: Record<string, FixtureNode[]>;
+  [other: string]: any;
+};
+
+/* What a fixture's HOST may be, which a slot list may not: the $subject placeholder marks
+ * where the component under test goes, and it appears in the host alone. collectUses and
+ * holdsSubject are the two that see it; every renderer walks nodes. */
+export type FixtureChild = FixtureNode | typeof SUBJECT | null;
+
+/* Where a component lives, as generate-playgrounds resolves it out of Components.json,
+ * plus whether it is the one the page is about. Both renderers turn it into an import. */
+export type Place = { name: string; category: string; dir: string; self?: boolean };
+
+export type Places = Map<string, Place>;
+
+export type PlaygroundModel = {
+  component: string;
+  description: string;
+  note: string;
+  affordances: string[];
+  knobs: Knob[];
+  events: PlaygroundEvent[];
+  host: any;
+  uses: string[];
+};
+
 export class UnmodelledForm extends Error {
   constructor(message) { super(message); this.name = 'UnmodelledForm'; }
 }
@@ -69,7 +140,7 @@ export function objectFields(type, types) {
   }));
 }
 
-export function controlFor(spec, types, nodes?) {
+export function controlFor(spec, types, nodes?): Control {
   if (spec.form === 'primitive') {
     if (spec.type === 'boolean') return { control: 'check', codec: 'flag' };
     if (spec.type === 'number') return { control: 'number', codec: 'number' };
@@ -99,7 +170,7 @@ export function isTextNodes(nodes) {
   return Array.isArray(nodes) && nodes.length === 1 && typeof nodes[0] === 'object' && typeof nodes[0].text === 'string';
 }
 
-export function knobFor(component: string, name: string, spec, fixture, types) {
+export function knobFor(component: string, name: string, spec, fixture, types): Knob {
   if (spec.form === 'slot' && spec.params) {
     throw new UnmodelledForm(
       `${component}.${name} is a parameterised slot, which is a per-item renderer no layer may declare`,
@@ -137,7 +208,7 @@ export function knobFor(component: string, name: string, spec, fixture, types) {
   };
 }
 
-export function eventFor(name: string, spec, fixture) {
+export function eventFor(name: string, spec, fixture): PlaygroundEvent {
   return {
     name,
     payload: spec.payload ?? null,
@@ -162,9 +233,9 @@ export function countSubjects(node) {
   return Object.values(node.slots ?? {}).reduce((n, list) => n + countSubjects(list), 0);
 }
 
-export function playgroundModel(contract, fixture, types) {
-  const knobs = [];
-  const events = [];
+export function playgroundModel(contract, fixture, types): PlaygroundModel {
+  const knobs: Knob[] = [];
+  const events: PlaygroundEvent[] = [];
   for (const [name, spec] of memberEntries(contract.api)) {
     if (spec.form === 'event') events.push(eventFor(name, spec, fixture));
     else if (INBOUND_FORMS.has(spec.form)) knobs.push(knobFor(contract.component, name, spec, fixture, types));

@@ -8,6 +8,7 @@
 
 import { playgroundPage, sheetLinks } from '../arena/playground-page.ts';
 import { kebab } from '../arena/layers.ts';
+import type { Knob, Place, Places, PlaygroundEvent, PlaygroundModel } from '../arena/playground-model.ts';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
@@ -38,14 +39,14 @@ export function selector(name: string) {
   return kebab(name);
 }
 
-export function typeExpr(knob) {
+export function typeExpr(knob: Knob) {
   if (knob.form === 'slot') return knob.control === 'slotText' ? 'string' : 'boolean';
   if (knob.form === 'array') return `${knob.type}[]`;
   if (knob.form === 'functionInput') return 'string';
   return knob.type;
 }
 
-export function contractTypes(model, fields) {
+export function contractTypes(model: PlaygroundModel, fields) {
   const names = new Set();
   for (const knob of model.knobs) {
     if (knob.form === 'enum' || knob.form === 'object') names.add(knob.type);
@@ -57,7 +58,7 @@ export function contractTypes(model, fields) {
   return [...names].sort();
 }
 
-export function importPath(place) {
+export function importPath(place: Place) {
   return `../../${place.category}/${place.dir}/${place.name}`;
 }
 

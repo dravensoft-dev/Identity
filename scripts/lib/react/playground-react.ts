@@ -6,6 +6,9 @@
 
 import { playgroundPage, sheetLinks, UP } from '../arena/playground-page.ts';
 import { bindingName } from '../arena/api-surface.ts';
+import { SUBJECT } from '../arena/playground-model.ts';
+import type { FixtureChild, FixtureNode, Knob, Place, Places, PlaygroundEvent, PlaygroundModel }
+  from '../arena/playground-model.ts';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
@@ -20,14 +23,14 @@ function validatorFor(name: string | undefined): ((value: string) => string) | u
 }
 `;
 
-export function typeExpr(knob) {
+export function typeExpr(knob: Knob) {
   if (knob.form === 'slot') return knob.control === 'slotText' ? 'string' : 'boolean';
   if (knob.form === 'array') return `${knob.type}[]`;
   if (knob.form === 'functionInput') return 'string';
   return knob.type;
 }
 
-export function contractTypes(model) {
+export function contractTypes(model: { knobs: Knob[] }) {
   const names = new Set();
   for (const knob of model.knobs) {
     if (knob.form === 'enum' || knob.form === 'object') names.add(knob.type);
@@ -36,21 +39,21 @@ export function contractTypes(model) {
   return [...names].sort();
 }
 
-export function importPath(place) {
+export function importPath(place: Place) {
   return `../../${place.category}/${place.dir}/${place.name}.tsx`;
 }
 
-export function literal(value) {
+export function literal(value: unknown) {
   return `{${JSON.stringify(value)}}`;
 }
 
-export function attributes(members, indent) {
+export function attributes(members: Record<string, any> | undefined, indent: string) {
   return (Object.entries(members ?? {}) as [string, any][])
     .map(([name, value]) => `\n${indent}${name}=${literal(value)}`)
     .join('');
 }
 
-export function renderNode(node, places, depth) {
+export function renderNode(node: FixtureNode, places: Places, depth: number): string {
   const pad = '  '.repeat(depth);
   if (typeof node.text === 'string' && !node.element) return `${pad}{${JSON.stringify(node.text)}}`;
   if (typeof node.element === 'string' || typeof node.text === 'string') {
@@ -70,49 +73,49 @@ export function renderNode(node, places, depth) {
   return `${pad}<${place.name}${attrs}>\n${children.map((one) => renderNode(one, places, depth + 1)).join('\n')}\n${pad}</${place.name}>`;
 }
 
-export function keyed(rendered, index) {
+export function keyed(rendered: string, index: number) {
   return rendered.replace(/^(<[A-Za-z][\w.]*)/, `$1 key={${index}}`);
 }
 
-export function inlineList(list, places, depth) {
+export function inlineList(list: FixtureNode[], places: Places, depth: number) {
   const rendered = list.map((one) => renderNode(one, places, depth).trim());
   if (rendered.length === 1) return rendered[0];
   return `[${rendered.map((one, i) => keyed(one, i)).join(', ')}]`;
 }
 
-export function slotChildren(knob, places, depth) {
+export function slotChildren(knob: Knob, places: Places, depth: number) {
   const pad = '  '.repeat(depth);
   if (knob.control === 'slotText') return `${pad}{k.${knob.member}}`;
   return `${pad}{k.${knob.member} ? ${listExpression(knob.nodes ?? [], places, depth)} : undefined}`;
 }
 
-export function listExpression(nodes, places, depth) {
+export function listExpression(nodes: FixtureNode[], places: Places, depth: number) {
   const pad = '  '.repeat(depth);
   const rendered = nodes.map((one) => renderNode(one, places, depth + 1));
   if (rendered.length === 1) return `(\n${rendered[0]}\n${pad})`;
   return `[\n${rendered.map((one, i) => keyed(one.trimStart(), i).split('\n').map((l, n) => (n === 0 ? `${pad}  ${l}` : l)).join('\n')).join(',\n')},\n${pad}]`;
 }
 
-export function slotAttribute(knob, places, pad, depth) {
+export function slotAttribute(knob: Knob, places: Places, pad: string, depth: number) {
   if (knob.control === 'slotText') {
     return `\n${pad}${knob.member}={k.${knob.member} === undefined ? undefined : <React.Fragment>{k.${knob.member}}</React.Fragment>}`;
   }
   return `\n${pad}${knob.member}={k.${knob.member} ? ${listExpression(knob.nodes ?? [], places, depth)} : undefined}`;
 }
 
-export function memberAttribute(knob, pad) {
+export function memberAttribute(knob: Knob, pad: string) {
   if (knob.form === 'functionInput') return `\n${pad}${knob.member}={validatorFor(k.${knob.member})}`;
   return `\n${pad}${knob.member}={k.${knob.member}}`;
 }
 
-export function eventAttribute(event, pad) {
+export function eventAttribute(event: PlaygroundEvent, pad: string) {
   const bound = bindingName(event.name, 'event', 'react');
   return event.payload
     ? `\n${pad}${bound}={(payload) => play.fire(${JSON.stringify(event.name)}, payload)}`
     : `\n${pad}${bound}={() => play.fire(${JSON.stringify(event.name)})}`;
 }
 
-export function renderSubject(model, places, depth) {
+export function renderSubject(model: PlaygroundModel, places: Places, depth: number) {
   const pad = '  '.repeat(depth);
   const inner = `${pad}  `;
   const name = model.component;
@@ -131,31 +134,32 @@ export function renderSubject(model, places, depth) {
   return `${pad}<${name}${attrs}>\n${slotChildren(content, places, depth + 1)}\n${pad}</${name}>`;
 }
 
-export function holdsSubject(node) {
+export function holdsSubject(node: FixtureChild): boolean {
   if (node === '$subject') return true;
   if (node === null || typeof node !== 'object') return false;
   return (Object.values(node.slots ?? {}) as any[][]).some((list) => list.some((one) => holdsSubject(one)));
 }
 
-export function renderTree(model, places, depth) {
+export function renderTree(model: PlaygroundModel, places: Places, depth: number) {
   if (model.host === null) return renderSubject(model, places, depth);
-  const wrap = (node, level) => {
+  const wrap = (node: FixtureNode | typeof SUBJECT, level: number): string => {
     const pad = '  '.repeat(level);
     if (node === '$subject') return renderSubject(model, places, level);
     if (!holdsSubject(node)) return renderNode(node, places, level);
     const place = places.get(node.component);
     const slots = node.slots ?? {};
-    const named = Object.entries(slots).filter(([name]) => name !== 'content');
+    const named = (Object.entries(slots) as [string, FixtureNode[]][])
+      .filter(([name]) => name !== 'content');
     const attrs = attributes(node.members, `${pad}  `)
       + named.map(([name, list]) => `\n${pad}  ${name}={${inlineList(list, places, level + 1)}}`).join('');
-    const children = (slots.content ?? []).map((one) => wrap(one, level + 1)).join('\n');
+    const children = (slots.content ?? []).map((one: FixtureNode) => wrap(one, level + 1)).join('\n');
     if (children.length === 0) return `${pad}<${place.name}${attrs} />`;
     return `${pad}<${place.name}${attrs}>\n${children}\n${pad}</${place.name}>`;
   };
   return wrap(model.host, depth);
 }
 
-export function knobsInterface(model) {
+export function knobsInterface(model: { knobs: Knob[] }) {
   const rows = model.knobs.map((knob) => {
     const optional = knob.bind === 'optional' ? '?' : '';
     return `  ${knob.member}${optional}: ${typeExpr(knob)};`;
@@ -163,11 +167,11 @@ export function knobsInterface(model) {
   return `interface Knobs {\n${rows.join('\n')}\n}`;
 }
 
-export function validatorTable(model) {
+export function validatorTable(model: { knobs: Knob[] }) {
   return model.knobs.some((knob) => knob.form === 'functionInput') ? VALIDATOR_TABLE : '';
 }
 
-export function reactEntry(model, places, banner) {
+export function reactEntry(model: PlaygroundModel, places: Places, banner: string) {
   const types = contractTypes(model);
   const components = [...new Set([model.component, ...model.uses])]
     .map((name) => `import { ${name} } from '${places.get(name).self ? `./${name}.tsx` : importPath(places.get(name))}';`);
@@ -203,7 +207,7 @@ createRoot(document.getElementById('root')!).render(<Demo />);
 `;
 }
 
-export function reactPage(model, banner) {
+export function reactPage(model: PlaygroundModel, banner: string) {
   const importmap = {
     imports: {
       react: `${UP}frameworks/react/vendor/React.generated.js`,
