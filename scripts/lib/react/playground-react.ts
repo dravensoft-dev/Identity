@@ -6,7 +6,7 @@
 
 import { playgroundPage, sheetLinks, UP } from '../arena/playground-page.ts';
 import { bindingName } from '../arena/api-surface.ts';
-import { SUBJECT } from '../arena/playground-model.ts';
+import { placeOf, SUBJECT } from '../arena/playground-model.ts';
 import type { FixtureChild, FixtureNode, Knob, Place, Places, PlaygroundEvent, PlaygroundModel }
   from '../arena/playground-model.ts';
 
@@ -33,6 +33,7 @@ export function typeExpr(knob: Knob) {
 export function contractTypes(model: { knobs: Knob[] }) {
   const names = new Set();
   for (const knob of model.knobs) {
+    if (!knob.type) continue;
     if (knob.form === 'enum' || knob.form === 'object') names.add(knob.type);
     if (knob.form === 'array' && !PRIMITIVES.has(knob.type)) names.add(knob.type);
   }
@@ -63,7 +64,7 @@ export function renderNode(node: FixtureNode, places: Places, depth: number): st
     return `${pad}<${tag}${attrs}>{${JSON.stringify(node.text)}}</${tag}>`;
   }
 
-  const place = places.get(node.component);
+  const place = placeOf(places, node.component);
   const slots = node.slots ?? {};
   const named = (Object.entries(slots) as [string, FixtureNode[]][])
     .filter(([name]) => name !== 'content');
@@ -147,13 +148,14 @@ export function renderTree(model: PlaygroundModel, places: Places, depth: number
     const pad = '  '.repeat(level);
     if (node === '$subject') return renderSubject(model, places, level);
     if (!holdsSubject(node)) return renderNode(node, places, level);
-    const place = places.get(node.component);
+    const place = placeOf(places, node.component);
     const slots = node.slots ?? {};
     const named = (Object.entries(slots) as [string, FixtureNode[]][])
       .filter(([name]) => name !== 'content');
     const attrs = attributes(node.members, `${pad}  `)
       + named.map(([name, list]) => `\n${pad}  ${name}={${inlineList(list, places, level + 1)}}`).join('');
     const children = ((slots.content ?? []) as FixtureChild[])
+      .filter((one): one is FixtureNode | typeof SUBJECT => one !== null)
       .map((one) => wrap(one, level + 1)).join('\n');
     if (children.length === 0) return `${pad}<${place.name}${attrs} />`;
     return `${pad}<${place.name}${attrs}>\n${children}\n${pad}</${place.name}>`;
@@ -176,7 +178,10 @@ export function validatorTable(model: { knobs: Knob[] }) {
 export function reactEntry(model: PlaygroundModel, places: Places, banner: string) {
   const types = contractTypes(model);
   const components = [...new Set([model.component, ...model.uses])]
-    .map((name) => `import { ${name} } from '${places.get(name).self ? `./${name}.tsx` : importPath(places.get(name))}';`);
+    .map((name) => {
+      const place = placeOf(places, name);
+      return `import { ${name} } from '${place.self ? `./${name}.tsx` : importPath(place)}';`;
+    });
 
   const imports = [
     "import React from 'react';",

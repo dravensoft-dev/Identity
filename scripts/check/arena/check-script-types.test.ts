@@ -43,9 +43,9 @@ test('the strict family is enumerated, so every flag is a decision somebody made
     assert.equal(options[on], true, `${on} is on and must stay on`);
 
   assert.equal(options.strictNullChecks, false,
-    'the last of the seven still off, and the only one left: 328 errors, down from 812 beside '
-    + 'noImplicitAny and 970 without it. The order was the thing -- noImplicitAny first, or '
-    + 'evolving-array inference is unavailable and hundreds of never[] errors appear that it '
+    'the last of the seven still off, and the only one left: 195 errors, down from 328 when '
+    + 'noImplicitAny landed and 970 before it. The order was the thing -- noImplicitAny first, '
+    + 'or evolving-array inference is unavailable and hundreds of never[] errors appear that it '
     + 'erases. strictPropertyInitialization is absent rather than false because TypeScript '
     + 'refuses to name it while this one is off.');
 });

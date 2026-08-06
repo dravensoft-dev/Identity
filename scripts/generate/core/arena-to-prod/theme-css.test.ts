@@ -174,7 +174,7 @@ test('one stylesheet serving several families is imported once', () => {
   const sheet = 'https://fonts.googleapis.com/css2?family=Archivo&family=Familjen+Grotesk&display=swap';
   c.fonts.display.src = sheet;
   c.fonts.body.src = sheet;
-  assert.equal(themeCss(c).match(/@import url\(/g).length, 1);
+  assert.equal(themeCss(c).match(/@import url\(/g)?.length, 1);
 });
 
 test('every @import precedes the first rule, which is what CSS requires', () => {

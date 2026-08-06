@@ -55,7 +55,9 @@ export function resolve(map: ComponentMap, sources: string[], packageName: strin
       : null;
   if (!read) return null;
 
-  const drawn = [...new Set((read.drawn as string[]).map((key) => map.draws[key]).filter(Boolean))].sort();
+  const drawn = [...new Set((read.drawn as string[])
+    .map((key) => map.draws[key])
+    .filter((sheet): sheet is string => Boolean(sheet)))].sort();
   const pulled = [...new Set(drawn.flatMap((sheet) => map.needs[sheet] ?? []))]
     .filter((sheet) => !drawn.includes(sheet))
     .sort();

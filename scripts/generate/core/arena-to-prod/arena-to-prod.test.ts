@@ -4,12 +4,12 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  parseArgs, reportLines, hostPackage, hostPackageName, packageSheets, sourceFiles, phosphorRoot,
+  parseArgs, resolved, reportLines, hostPackage, hostPackageName, packageSheets, sourceFiles, phosphorRoot,
   relativeFrom, themeStep, iconsStep, main, componentMap, USAGE, THEME_SHEET, ICONS_SHEET, COMPONENT_MAP,
 } from './arena-to-prod.ts';
 import { PALETTE_KEYS } from './palette-keys.ts';
 import type { ComponentMap } from './components.ts';
-import type { Environment } from './arena-to-prod.ts';
+import type { Environment, ThemeEnvironment } from './arena-to-prod.ts';
 
 test('every path has a default, so the bare command is the whole of it', () => {
   const bare = parseArgs([]);
@@ -30,17 +30,17 @@ test('--config and --src and --out all take their value either way, and --src re
 });
 
 test('a flag with nothing after it is an error rather than a silent undefined path', () => {
-  assert.match(parseArgs(['--config']).error, /--config needs a path/);
-  assert.match(parseArgs(['--src']).error, /--src needs a path/);
-  assert.match(parseArgs(['-o']).error, /-o needs a directory/);
+  assert.match(errorOf(['--config']), /--config needs a path/);
+  assert.match(errorOf(['--src']), /--src needs a path/);
+  assert.match(errorOf(['-o']), /-o needs a directory/);
 });
 
 test('an unknown flag is refused by name', () => {
-  assert.match(parseArgs(['--minify']).error, /unknown flag: --minify/);
+  assert.match(errorOf(['--minify']), /unknown flag: --minify/);
 });
 
 test('a positional is an error, because every path this command takes is named', () => {
-  assert.match(parseArgs(['arena.config.json']).error, /unexpected argument: arena\.config\.json/);
+  assert.match(errorOf(['arena.config.json']), /unexpected argument: arena\.config\.json/);
 });
 
 test('both behaviour flags default off and read as themselves', () => {
@@ -114,11 +114,13 @@ function project(config: any = readable, files: Record<string, string> = { 'app.
   return root;
 }
 
-const options = (root: string, extra: { strict?: boolean; importHeader?: boolean } = {}) => parseArgs([
+const errorOf = (argv: string[]) => parseArgs(argv).error ?? '';
+
+const options = (root: string, extra: { strict?: boolean; importHeader?: boolean } = {}) => resolved(parseArgs([
   '--config', join(root, 'arena.config.json'), '--src', join(root, 'src'), '-o', join(root, 'src'),
   ...(extra.strict ? ['--strict'] : []),
   ...(extra.importHeader === false ? ['--no-import'] : []),
-]);
+]));
 
 function quietly(run: () => void) {
   const log = console.log, error = console.error;
@@ -207,14 +209,16 @@ test('"auto" writes the sheets the sources draw and the ones Arena draws for the
     assert.match(css, new RegExp(`css/components/${name}\\.css`), `${name} was drawn or pulled in and is missing`);
   }
   assert.doesNotMatch(css, /arena\.css/, 'a resolved auto is a subset, not the barrel');
-  assert.match(step.notes[0], /2 component sheet\(s\) drawn, and 2 Arena draws for you: pagination, select/);
+  assert.match(step.notes?.[0] ?? '', /2 component sheet\(s\) drawn, and 2 Arena draws for you: pagination, select/);
   rmSync(root, { recursive: true });
 });
 
 test('an element Arena does not ship is reported, and --strict is what makes it fatal', () => {
   const { root: phosphorRootDir, web } = phosphor({ bold: 'Phosphor-Bold' });
   const root = project(auto, { 'app.html': '<arena-widget /><arena-button icon="ph-bold ph-bell" />' });
-  const environment: Environment = { packageName: '@dravensoft/arena-react', sheets: SHEETS, map: MAP, phosphor: web, arena: null };
+  const environment: Environment & ThemeEnvironment = {
+    packageName: '@dravensoft/arena-react', sheets: SHEETS, map: MAP, phosphor: web, arena: null,
+  };
 
   const step = themeStep(options(root), environment);
   assert.equal(step.code, 0);
@@ -274,7 +278,7 @@ test('the icons step writes one file holding every weight in use and nothing els
   assert.match(css, /\.ph-bold\.ph-bell:before\{content:"\\e0ce"\}/);
   assert.match(css, /\.ph-fill\.ph-moon:before\{content:"\\e330"\}/);
   assert.doesNotMatch(css, /ph-sun/, 'a glyph nothing draws is the whole reason this command exists');
-  assert.match(step.wrote, /2 glyph\(s\), 2 weight\(s\)/);
+  assert.match(step.wrote ?? '', /2 glyph\(s\), 2 weight\(s\)/);
 
   rmSync(root, { recursive: true });
   rmSync(phosphorRootDir, { recursive: true });
@@ -284,7 +288,9 @@ test('the font path is written relative to the stylesheet, so a bundler resolves
   const { root: phosphorRootDir, web } = phosphor({ bold: 'Phosphor-Bold' });
   const root = project();
   iconsStep(options(root), { phosphor: web, arena: null });
-  const [, path] = /url\('([^']+)'\)/.exec(readFileSync(join(root, 'src', ICONS_SHEET), 'utf8'));
+  const src = /url\('([^']+)'\)/.exec(readFileSync(join(root, 'src', ICONS_SHEET), 'utf8'));
+  assert.ok(src, 'the sheet declares no @font-face src at all');
+  const path = src[1];
   assert.ok(path.startsWith('..'), path);
   assert.ok(path.endsWith('/bold/Phosphor-Bold.woff2'), path);
   rmSync(root, { recursive: true });

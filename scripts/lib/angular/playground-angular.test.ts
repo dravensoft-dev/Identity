@@ -7,9 +7,10 @@ import {
   knobsInterface, angularEntry, angularPage, renderNode, slotBlock, attributeText, MARKERS_SOURCE,
 } from './playground-angular.ts';
 import { repoRoot as root } from '../arena/repo-root.ts';
-import type { Knob, PlaygroundModel } from '../arena/playground-model.ts';
+import { placeOf } from '../arena/playground-model.ts';
+import type { Knob, Places, PlaygroundModel } from '../arena/playground-model.ts';
 
-const places = new Map([
+const places: Places = new Map([
   ['ArenaCard', { name: 'ArenaCard', category: 'display', dir: 'arena-card', self: true }],
   ['ArenaBadge', { name: 'ArenaBadge', category: 'display', dir: 'arena-badge' }],
   ['ArenaTable', { name: 'ArenaTable', category: 'display', dir: 'arena-table' }],
@@ -77,7 +78,7 @@ test('a type expression follows the form, the same way the other layer\'s does',
 });
 
 test('a component is reached without an extension, which is what the layer\'s own imports do', () => {
-  assert.equal(importPath(places.get('ArenaBadge')), '../../display/arena-badge/ArenaBadge');
+  assert.equal(importPath(placeOf(places, 'ArenaBadge')), '../../display/arena-badge/ArenaBadge');
 });
 
 test('a string literal becomes a static attribute, because a bound one lands too late for a required input', () => {
@@ -180,7 +181,7 @@ test('each projected node gets its own @if, because a block with two roots proje
     nodes: [{ component: 'ArenaBadge', slots: {} }, { component: 'ArenaBadge', slots: {} }],
   };
   const out = slotBlock(knob, places, [], new Map(), 0, new Set(), ' footer');
-  assert.equal(out.match(/@if \(k\(\)\.footer\) \{/g).length, 2);
+  assert.equal(out.match(/@if \(k\(\)\.footer\) \{/g)?.length, 2);
 });
 
 test('an unfilled named slot pulls in no marker directive, which the compiler would call unused', () => {
@@ -198,5 +199,5 @@ test('an unfilled named slot pulls in no marker directive, which the compiler wo
 test('a component reached twice is imported once', () => {
   const twice = { ...model, uses: ['ArenaBadge', 'ArenaCard'] };
   const out = angularEntry(twice, places, contracts, MARKERS, '');
-  assert.equal(out.match(/import \{ ArenaCard \}/g).length, 1);
+  assert.equal(out.match(/import \{ ArenaCard \}/g)?.length, 1);
 });

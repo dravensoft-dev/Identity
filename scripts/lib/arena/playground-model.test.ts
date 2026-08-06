@@ -6,7 +6,7 @@ import {
   PINNED, DEFAULTED, OPTIONAL, SUBJECT,
 } from './playground-model.ts';
 import type { ComponentContract, TypeContract } from './contract-shapes.ts';
-import type { Fixture } from './playground-model.ts';
+import type { Fixture, PlaygroundModel } from './playground-model.ts';
 
 const types: Record<string, TypeContract> = {
   ArenaTone: { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] },
@@ -62,7 +62,13 @@ const fixture: Fixture = {
 };
 
 const model = () => playgroundModel(contract, fixture, types);
-const knob = (name: string) => model().knobs.find((k) => k.member === name);
+const knobIn = (model: PlaygroundModel, name: string) => {
+  const found = model.knobs.find((k) => k.member === name);
+  if (!found) throw new Error(`the model declares no knob called ${name}`);
+  return found;
+};
+
+const knob = (name: string) => knobIn(model(), name);
 
 test('typeOf throws by name on a type no contract declares', () => {
   assert.throws(() => typeOf(types, 'Nope'), UnmodelledForm);
@@ -159,7 +165,7 @@ test('an optional member with no seed holds its form\'s neutral and starts unbou
 
 test('a seed outranks a contract default, and the member stays bound either way', () => {
   const seeded = playgroundModel(contract, { ...fixture, seed: { ...fixture.seed, tone: 'danger' } }, types);
-  const tone = seeded.knobs.find((k) => k.member === 'tone');
+  const tone = knobIn(seeded, 'tone');
   assert.equal(tone.initial, 'danger');
   assert.equal(tone.bound, true);
   assert.equal(tone.bind, DEFAULTED);

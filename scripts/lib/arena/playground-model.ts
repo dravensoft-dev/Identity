@@ -88,8 +88,27 @@ export class UnmodelledForm extends Error {
   constructor(message: string) { super(message); this.name = 'UnmodelledForm'; }
 }
 
-export function typeOf(types: Types, name: string) {
-  const found = types instanceof Map ? types.get(name) : types?.[name];
+export function enumValues(types: Types, name: string | undefined) {
+  const { values } = typeOf(types, name);
+  if (!values || values.length === 0) {
+    throw new UnmodelledForm(`type ${name} is used as an enum and declares no values`);
+  }
+  return values;
+}
+
+export function placeOf(places: Places, component: string | undefined): Place {
+  const place = component === undefined ? undefined : places.get(component);
+  if (!place) {
+    throw new UnmodelledForm(
+      `a fixture names <${component}>, and no component directory under frameworks/ provides it. `
+      + 'Places are derived from the tree, so this is the fixture naming something that is not there.',
+    );
+  }
+  return place;
+}
+
+export function typeOf(types: Types, name: string | undefined) {
+  const found = name === undefined ? undefined : (types instanceof Map ? types.get(name) : types?.[name]);
   if (!found) throw new UnmodelledForm(`no type named ${name} is declared in contracts/api/types`);
   return found;
 }
@@ -106,7 +125,7 @@ export function neutralValue(spec: MemberSpec, types: Types): unknown {
     if (spec.type === 'number') return 0;
     return '';
   }
-  if (spec.form === 'enum') return typeOf(types, spec.type).values[0];
+  if (spec.form === 'enum') return enumValues(types, spec.type)[0];
   if (spec.form === 'array') return [];
   if (spec.form === 'object') return neutralObject(typeOf(types, spec.type), types);
   if (spec.form === 'slot') return '';
@@ -129,7 +148,7 @@ export function objectFields(type: TypeContract, types: Types) {
     form: field.form,
     type: field.type,
     required: Boolean(field.required),
-    options: field.form === 'enum' ? typeOf(types, field.type).values : undefined,
+    options: field.form === 'enum' ? enumValues(types, field.type) : undefined,
     initial: 'default' in field ? field.default : neutralValue(field, types),
   }));
 }
@@ -140,7 +159,7 @@ export function controlFor(spec: MemberSpec, types: Types, nodes?: FixtureChild[
     if (spec.type === 'number') return { control: 'number', codec: 'number' };
     return { control: 'text', codec: 'raw' };
   }
-  if (spec.form === 'enum') return { control: 'select', codec: 'raw', options: typeOf(types, spec.type).values };
+  if (spec.form === 'enum') return { control: 'select', codec: 'raw', options: enumValues(types, spec.type) };
   if (spec.form === 'array') {
     return spec.of === 'string' || spec.of === 'number'
       ? { control: 'lines', codec: 'json', itemForm: spec.of }
@@ -160,7 +179,7 @@ export function controlFor(spec: MemberSpec, types: Types, nodes?: FixtureChild[
   );
 }
 
-export function isTextNodes(nodes: FixtureChild[] | null): nodes is [{ text: string }] {
+export function isTextNodes(nodes: FixtureChild[] | null | undefined): nodes is [{ text: string }] {
   return Array.isArray(nodes) && nodes.length === 1
     && typeof nodes[0] === 'object' && nodes[0] !== null && typeof nodes[0].text === 'string';
 }
@@ -187,7 +206,7 @@ export function knobFor(component: string, name: string, spec: MemberSpec,
 
   const initial = spec.form === 'slot'
     ? (isTextNodes(nodes) ? nodes[0].text : nodes !== null)
-    : seeded ? fixture.seed[name]
+    : seeded ? fixture.seed?.[name]
       : 'default' in spec ? spec.default
         : neutralValue(spec, types);
 
@@ -196,7 +215,7 @@ export function knobFor(component: string, name: string, spec: MemberSpec,
     form: spec.form,
     type: spec.type ?? spec.of ?? null,
     bind,
-    bound: bind !== OPTIONAL || (spec.form === 'slot' ? nodes !== null : seeded),
+    bound: bind !== OPTIONAL || (spec.form === 'slot' ? nodes !== null : Boolean(seeded)),
     ...controlFor(spec, types, nodes),
     initial,
     nodes,

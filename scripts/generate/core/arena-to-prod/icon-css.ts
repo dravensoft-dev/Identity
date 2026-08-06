@@ -41,22 +41,28 @@ export function scan(source: string,
     const weights = [];
     const glyphs = [];
     for (const token of group.split(/\s+/)) {
-      if (CLASS_TOKENS.has(token)) weights.push(ARENA_WEIGHTS.find((weight) => (WEIGHT_CLASSES as Record<string, string>)[weight] === token));
+      if (CLASS_TOKENS.has(token)) {
+        const named = ARENA_WEIGHTS.find((weight) => (WEIGHT_CLASSES as Record<string, string>)[weight] === token);
+        if (named) weights.push(named);
+      }
       else glyphs.push(token);
     }
     if (glyphs.length === 0) continue;
     if (weights.length === 0) { for (const glyph of glyphs) found.loose.add(glyph); continue; }
     for (const weight of weights) {
-      if (!found.pairs.has(weight)) found.pairs.set(weight, new Set());
-      for (const glyph of glyphs) found.pairs.get(weight).add(glyph);
+      let bucket = found.pairs.get(weight);
+      if (!bucket) { bucket = new Set(); found.pairs.set(weight, bucket); }
+      for (const glyph of glyphs) bucket.add(glyph);
     }
   }
   return found;
 }
 
 export function drawn(found: IconScan) {
-  return ARENA_WEIGHTS.filter((weight) => found.pairs.has(weight))
-    .map((weight) => ({ weight, glyphs: new Set([...found.pairs.get(weight), ...found.loose]) }));
+  return ARENA_WEIGHTS.flatMap((weight) => {
+    const pair = found.pairs.get(weight);
+    return pair ? [{ weight, glyphs: new Set([...pair, ...found.loose]) }] : [];
+  });
 }
 
 function declarations(body: string): Declarations {
@@ -78,8 +84,9 @@ export function sheetRules(css: string, weight: string): WeightRules {
     const match = icon.exec(at);
     if (!match) continue;
     const [, glyph, pseudo] = match;
-    if (!out.glyphs.has(glyph)) out.glyphs.set(glyph, []);
-    out.glyphs.get(glyph).push([pseudo, declarations(body)]);
+    let rules = out.glyphs.get(glyph);
+    if (!rules) { rules = []; out.glyphs.set(glyph, rules); }
+    rules.push([pseudo, declarations(body)]);
   }
   return out;
 }

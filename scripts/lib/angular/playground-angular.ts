@@ -8,7 +8,7 @@
 
 import { playgroundPage, sheetLinks } from '../arena/playground-page.ts';
 import { kebab } from '../arena/layers.ts';
-import { SUBJECT } from '../arena/playground-model.ts';
+import { placeOf, SUBJECT } from '../arena/playground-model.ts';
 import type { MemberSpec } from '../arena/contract-shapes.ts';
 import type { FixtureNode, Knob, Place, Places, PlaygroundEvent, PlaygroundModel }
   from '../arena/playground-model.ts';
@@ -58,6 +58,7 @@ export function typeExpr(knob: Knob) {
 export function contractTypes(model: PlaygroundModel, fields: Field[]) {
   const names = new Set();
   for (const knob of model.knobs) {
+    if (!knob.type) continue;
     if (knob.form === 'enum' || knob.form === 'object') names.add(knob.type);
     if (knob.form === 'array' && !PRIMITIVES.has(knob.type)) names.add(knob.type);
   }
@@ -73,7 +74,7 @@ export function importPath(place: Place) {
 
 export function fieldTypeFor(spec: MemberSpec): string {
   if (spec.form === 'array') return `${spec.of}[]`;
-  if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object') return spec.type;
+  if (spec.form === 'primitive' || spec.form === 'enum' || spec.form === 'object') return spec.type ?? 'unknown';
   return 'unknown';
 }
 
@@ -127,7 +128,7 @@ export function renderNode(node: FixtureNode, places: Places, fields: FieldRef[]
     return `${pad}<${tag}${attrs}>${escapeText(node.text)}</${tag}>`;
   }
 
-  const place = places.get(node.component);
+  const place = placeOf(places, node.component);
   const tag = selector(place.name);
   imports.add(place.name);
   const slots = node.slots ?? {};
@@ -136,7 +137,8 @@ export function renderNode(node: FixtureNode, places: Places, fields: FieldRef[]
   for (const [name, list] of Object.entries(slots) as [string, any[]][]) {
     for (const one of list) {
       const marked = name === 'content' ? '' : ` ${name}`;
-      if (marked && markers.has(name)) imports.add(markers.get(name));
+      const marker = markers.get(name);
+      if (marked && marker) imports.add(marker);
       children.push(projected(one, places, fields, markers, depth + 1, imports, marked));
     }
   }
@@ -194,7 +196,8 @@ export function renderSubject(model: PlaygroundModel, places: Places,
   const blocks = slots.map((knob) => {
     const marked = knob.member === 'content' ? '' : ` ${knob.member}`;
     const draws = knob.control === 'slotText' || (knob.nodes ?? []).length > 0;
-    if (marked && draws && markers.has(knob.member)) imports.add(markers.get(knob.member));
+    const marker = markers.get(knob.member);
+    if (marked && draws && marker) imports.add(marker);
     return slotBlock(knob, places, fields, markers, depth + 1, imports, marked);
   });
   return `${pad}<${tag}${attrs}>\n${blocks.join('\n')}\n${pad}</${tag}>`;
@@ -213,7 +216,7 @@ export function renderTree(model: PlaygroundModel, places: Places, fields: Field
     const pad = '  '.repeat(level);
     if (node === '$subject') return renderSubject(model, places, fields, markers, level, imports);
     if (!holdsSubject(node)) return renderNode(node, places, fields, markers, level, imports);
-    const place = places.get(node.component);
+    const place = placeOf(places, node.component);
     const tag = selector(place.name);
     imports.add(place.name);
     const attrs = nodeAttributes(node, fields);
@@ -221,7 +224,8 @@ export function renderTree(model: PlaygroundModel, places: Places, fields: Field
     for (const [name, list] of Object.entries(node.slots ?? {}) as [string, any[]][]) {
       for (const one of list) {
         const marked = name === 'content' ? '' : ` ${name}`;
-        if (marked && markers.has(name)) imports.add(markers.get(name));
+        const marker = markers.get(name);
+        if (marked && marker) imports.add(marker);
         children.push(holdsSubject(one)
           ? wrap(one, level + 1)
           : projected(one, places, fields, markers, level + 1, imports, marked));
@@ -261,7 +265,10 @@ export function angularEntry(model: PlaygroundModel, places: Places,
 
   const componentImports = [...new Set(used)]
     .filter((name) => places.has(name))
-    .map((name) => `import { ${name} } from '${places.get(name).self ? `./${name}` : importPath(places.get(name))}';`);
+    .map((name) => {
+      const place = placeOf(places, name);
+      return `import { ${name} } from '${place.self ? `./${name}` : importPath(place)}';`;
+    });
   const markerImports = used.filter((name) => !places.has(name));
 
   const fieldRows = fields.map(

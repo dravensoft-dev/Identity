@@ -16,6 +16,12 @@ const ANGULAR: ComponentMap = {
   needs: { table: ['pagination', 'select'] },
 };
 
+const resolved = (map: ComponentMap, sources: string[], packageName: string) => {
+  const found = resolve(map, sources, packageName);
+  if (!found) throw new Error(`resolve read nothing against a map keyed by ${map.match}`);
+  return found;
+};
+
 const REACT: ComponentMap = {
   match: 'symbol',
   draws: { ArenaButton: 'button', ArenaTable: 'table', ArenaTableRow: 'table', ArenaPagination: 'pagination', ArenaSelect: 'select', ArenaBarChart: null },
@@ -23,30 +29,30 @@ const REACT: ComponentMap = {
 };
 
 test('the key a consumer writes is not the sheet that dresses it', () => {
-  const { components } = resolve(ANGULAR, ['<arena-table-row />'], '@dravensoft/arena-angular');
+  const { components } = resolved(ANGULAR, ['<arena-table-row />'], '@dravensoft/arena-angular');
   assert.deepEqual(components, ['pagination', 'select', 'table'], 'a row wears the table, and the table brings two');
 });
 
 test('what Arena draws for you is added and named apart from what you drew', () => {
-  const found = resolve(ANGULAR, ['<arena-table></arena-table>'], '@dravensoft/arena-angular');
+  const found = resolved(ANGULAR, ['<arena-table></arena-table>'], '@dravensoft/arena-angular');
   assert.deepEqual(found.drawn, ['table']);
   assert.deepEqual(found.pulled, ['pagination', 'select']);
 });
 
 test('a sheet you already draw is never counted as one Arena pulled in', () => {
-  const found = resolve(ANGULAR, ['<arena-table /><arena-select />'], '@dravensoft/arena-angular');
+  const found = resolved(ANGULAR, ['<arena-table /><arena-select />'], '@dravensoft/arena-angular');
   assert.deepEqual(found.pulled, ['pagination'], 'select is yours, so it is not also Arena\'s doing');
   assert.deepEqual(found.components, ['pagination', 'select', 'table']);
 });
 
 test('a component that draws no classes costs no sheet, and is not a miss either', () => {
-  const found = resolve(ANGULAR, ['<arena-bar-chart /><arena-button />'], '@dravensoft/arena-angular');
+  const found = resolved(ANGULAR, ['<arena-bar-chart /><arena-button />'], '@dravensoft/arena-angular');
   assert.deepEqual(found.components, ['button']);
   assert.deepEqual(found.unplaced, [], 'it is in the map, so nothing is reported about it');
 });
 
 test('an element wearing the prefix that Arena does not ship is reported and stops nothing', () => {
-  const found = resolve(ANGULAR, ['<arena-widget /><arena-button />'], '@dravensoft/arena-angular');
+  const found = resolved(ANGULAR, ['<arena-widget /><arena-button />'], '@dravensoft/arena-angular');
   assert.deepEqual(found.unplaced, ['arena-widget']);
   assert.deepEqual(found.components, ['button'], 'the run still has a subset to write');
 });

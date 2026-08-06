@@ -44,39 +44,51 @@ export const USAGE = [
   '  --no-import     omit the @import of the package stylesheet from the theme output',
 ].join('\n');
 
-export type CliOptions = {
-  help?: boolean;
-  error?: string;
-  strict?: boolean;
-  importHeader?: boolean;
-  paths?: string[];
-  config?: string;
-  out?: string;
+export type ResolvedOptions = {
+  strict: boolean;
+  importHeader: boolean;
+  paths: string[];
+  config: string;
+  out: string;
 };
 
+export type CliOptions = Partial<ResolvedOptions> & { help?: boolean; error?: string };
+
+export function resolved(options: CliOptions): ResolvedOptions {
+  const { paths, config, out } = options;
+  if (!paths || !config || !out) {
+    throw new Error('arena-to-prod: parseArgs returned neither --help, nor an error, nor a '
+      + 'resolved option set, so every path this command was given is unknown');
+  }
+  return { strict: Boolean(options.strict), importHeader: options.importHeader !== false, paths, config, out };
+}
+
 export function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { strict: false, importHeader: true, paths: [] };
+  const paths: string[] = [];
+  const options: CliOptions = { strict: false, importHeader: true, paths };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') return { help: true };
     if (arg === '--strict') { options.strict = true; continue; }
     if (arg === '--no-import') { options.importHeader = false; continue; }
     if (arg === '--config') {
-      options.config = argv[++i];
-      if (!options.config) return { error: `${arg} needs a path` };
+      const next = argv[++i];
+      if (!next) return { error: `${arg} needs a path` };
+      options.config = next;
       continue;
     }
     if (arg.startsWith('--config=')) { options.config = arg.slice('--config='.length); continue; }
     if (arg === '--src') {
       const path = argv[++i];
       if (!path) return { error: `${arg} needs a path` };
-      options.paths.push(path);
+      paths.push(path);
       continue;
     }
-    if (arg.startsWith('--src=')) { options.paths.push(arg.slice('--src='.length)); continue; }
+    if (arg.startsWith('--src=')) { paths.push(arg.slice('--src='.length)); continue; }
     if (arg === '-o' || arg === '--out') {
-      options.out = argv[++i];
-      if (!options.out) return { error: `${arg} needs a directory` };
+      const next = argv[++i];
+      if (!next) return { error: `${arg} needs a directory` };
+      options.out = next;
       continue;
     }
     if (arg.startsWith('--out=')) { options.out = arg.slice('--out='.length); continue; }
@@ -85,7 +97,7 @@ export function parseArgs(argv: string[]): CliOptions {
   }
   options.config ??= DEFAULT_CONFIG;
   options.out ??= DEFAULT_OUT;
-  if (options.paths.length === 0) options.paths.push(DEFAULT_SOURCE);
+  if (paths.length === 0) paths.push(DEFAULT_SOURCE);
   return options;
 }
 
@@ -168,8 +180,8 @@ export function reportLines(reports: { palette: string; messages: string[] }[]) 
   return reports.flatMap(({ palette, messages }) => messages.map((m) => `${palette}: ${m}`));
 }
 
-export function autoComponents(config: ArenaConfig, options: CliOptions,
-  map: ComponentMap | null, packageName: string) {
+export function autoComponents(config: ArenaConfig, options: ResolvedOptions,
+  map: ComponentMap, packageName: string) {
   const sources = [];
   for (const path of options.paths) {
     for (const file of sourceFiles(path) ?? []) sources.push(readFileSync(file, 'utf8'));
@@ -194,8 +206,8 @@ export function autoComponents(config: ArenaConfig, options: CliOptions,
 }
 
 export function themeStep(
-  options: CliOptions & { out?: string },
-  { packageName, sheets, map }: Pick<Environment, 'packageName' | 'sheets' | 'map'>,
+  options: ResolvedOptions,
+  { packageName, sheets, map }: ThemeEnvironment,
 ) {
   let config;
   try {
@@ -233,7 +245,7 @@ export function themeStep(
   return { code: 0, reports, fatal: [] as string[], notes: auto.notes, wrote: `${out} (${css.length} bytes)` };
 }
 
-export function iconsStep(options: CliOptions & { out?: string },
+export function iconsStep(options: ResolvedOptions,
   { arena, phosphor }: { arena: string | null; phosphor: string | null }) {
   if (!phosphor) {
     return { code: 2, reports: [], fatal: ['cannot find @phosphor-icons/web; it is a peer of this package, so install it'] };
@@ -295,6 +307,12 @@ export function iconsStep(options: CliOptions & { out?: string },
   return { code: 0, reports, fatal: [] as string[], wrote: `${out} (${kept} glyph(s), ${sheets.length} weight(s), ${css.length} bytes)` };
 }
 
+export type ThemeEnvironment = {
+  packageName: string;
+  sheets: PackageSheets;
+  map?: ComponentMap | null;
+};
+
 export type Environment = {
   packageName?: string;
   arena?: string | null;
@@ -304,17 +322,18 @@ export type Environment = {
 };
 
 export function main(argv: string[], environment: Environment = {}) {
-  const options = parseArgs(argv);
-  if (options.help) { console.log(USAGE); return 0; }
-  if (options.error) { console.error(`arena-to-prod: ${options.error}\n\n${USAGE}`); return 2; }
+  const parsed = parseArgs(argv);
+  if (parsed.help) { console.log(USAGE); return 0; }
+  if (parsed.error) { console.error(`arena-to-prod: ${parsed.error}\n\n${USAGE}`); return 2; }
+  const options = resolved(parsed);
 
-  const arena = 'arena' in environment ? environment.arena : hostPackage();
+  const arena = ('arena' in environment ? environment.arena : hostPackage()) ?? null;
   const packageName = environment.packageName
     ?? (arena ? hostPackageName(arena) : null)
     ?? '@dravensoft/arena-react';
-  const sheets = 'sheets' in environment ? environment.sheets : (arena ? packageSheets(arena) : null);
-  const map = 'map' in environment ? environment.map : (arena ? componentMap(arena) : null);
-  const phosphor = 'phosphor' in environment ? environment.phosphor : phosphorRoot();
+  const sheets = ('sheets' in environment ? environment.sheets : (arena ? packageSheets(arena) : null)) ?? null;
+  const map = ('map' in environment ? environment.map : (arena ? componentMap(arena) : null)) ?? null;
+  const phosphor = ('phosphor' in environment ? environment.phosphor : phosphorRoot()) ?? null;
 
   const theme = themeStep(options, { packageName, sheets, map });
   for (const line of theme.fatal) console.error(`arena-to-prod: ${line}`);

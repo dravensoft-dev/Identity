@@ -4,9 +4,9 @@ import {
   typeExpr, contractTypes, importPath, renderNode, renderSubject, renderTree, knobsInterface,
   validatorTable, reactEntry, reactPage,
 } from './playground-react.ts';
-import type { Knob, PlaygroundModel } from '../arena/playground-model.ts';
+import type { Knob, Places, PlaygroundModel } from '../arena/playground-model.ts';
 
-const places = new Map([
+const places: Places = new Map([
   ['ArenaCard', { name: 'ArenaCard', category: 'display', dir: 'arena-card', self: true }],
   ['ArenaBadge', { name: 'ArenaBadge', category: 'display', dir: 'arena-badge' }],
   ['ArenaTable', { name: 'ArenaTable', category: 'display', dir: 'arena-table' }],
@@ -121,7 +121,7 @@ test('the entry mounts once and carries the model as a literal', () => {
   const out = reactEntry(model, places, '/* banner */\n');
   assert.ok(out.startsWith('/* banner */\n'));
   assert.match(out, /const MODEL: KnobModel = \{/);
-  assert.equal(out.match(/createRoot\(/g).length, 1);
+  assert.equal(out.match(/createRoot\(/g)?.length, 1);
 });
 
 test('the page mounts into the root the entry looks for and declares no card', () => {
@@ -169,5 +169,5 @@ test('a host recurses only down the branch the subject sits in', () => {
 test('a component reached twice is imported once', () => {
   const twice = { ...model, uses: ['ArenaBadge', 'ArenaCard'] };
   const out = reactEntry(twice, places, '');
-  assert.equal(out.match(/import \{ ArenaCard \}/g).length, 1);
+  assert.equal(out.match(/import \{ ArenaCard \}/g)?.length, 1);
 });
