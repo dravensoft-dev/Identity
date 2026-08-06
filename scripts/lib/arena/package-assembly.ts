@@ -131,7 +131,7 @@ export function componentSheets(css: string, split: (css: string) => { base: str
       + 'a barrel that imports nothing and every component would render unstyled');
   }
   const named = files.map((file) => ({
-    to: join('css', 'components', `${kebab(basename(file).split('.')[0])}.css`),
+    to: join('css', 'components', `${kebab(basename(file).split('.')[0] ?? '')}.css`),
     content: readFileSync(file, 'utf8').replace(/@import '(?:\.\.\/)+Prelude\.generated\.css';/, "@import '../prelude.css';"),
     linked: false,
   }));

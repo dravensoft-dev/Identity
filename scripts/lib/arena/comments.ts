@@ -17,12 +17,12 @@ const PUNCT_BEFORE_REGEX = new Set([
 
 function slashOpensRegex(source: string, at: number) {
   for (let i = at - 1; i >= 0; i -= 1) {
-    const ch = source[i];
+    const ch = source[i] ?? '';
     if (/\s/.test(ch)) continue;
     if (PUNCT_BEFORE_REGEX.has(ch)) return true;
     if (/[A-Za-z0-9_$]/.test(ch)) {
       let j = i;
-      while (j >= 0 && /[A-Za-z0-9_$]/.test(source[j])) j -= 1;
+      while (j >= 0 && /[A-Za-z0-9_$]/.test(source[j] ?? '')) j -= 1;
       return KEYWORDS_BEFORE_REGEX.has(source.slice(j + 1, i + 1));
     }
     return false;
@@ -52,7 +52,7 @@ function skipRegex(source: string, at: number) {
     else if (ch === '/' && !inClass) { i += 1; break; }
     i += 1;
   }
-  while (i < source.length && /[a-z]/.test(source[i])) i += 1;
+  while (i < source.length && /[a-z]/.test(source[i] ?? '')) i += 1;
   return i;
 }
 

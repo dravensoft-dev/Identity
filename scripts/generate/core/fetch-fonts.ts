@@ -41,8 +41,8 @@ function latinFaces(cssText: string) {
   let m;
   while ((m = re.exec(cssText)) !== null) {
     const block = m[1];
-    const weight = /font-weight:\s*(\d+)/.exec(block)?.[1];
-    const src = /src:\s*url\(([^)]+\.woff2)\)/.exec(block)?.[1];
+    const weight = /font-weight:\s*(\d+)/.exec(block ?? '')?.[1];
+    const src = /src:\s*url\(([^)]+\.woff2)\)/.exec(block ?? '')?.[1];
     if (weight && src) faces.push({ weight: Number(weight), src });
   }
   return faces;
@@ -131,7 +131,7 @@ export function facesFromDisk(root: string): Face[] {
 
 export function weightRange(weights: number[]): [number, number] {
   const numbers = weights.map(Number).sort((a, b) => a - b);
-  return [numbers[0], numbers[numbers.length - 1]];
+  return [numbers[0] ?? 0, numbers[numbers.length - 1] ?? 0];
 }
 
 async function main() {
@@ -149,7 +149,9 @@ async function main() {
       );
     }
     const file = `${fam.slug}.woff2`;
-    writeFileSync(join(fontsDir, file), await download(googleFaces[0].src));
+    const [face] = googleFaces;
+    if (!face) throw new Error(`fetch-fonts: Google returned no @font-face for ${file}`);
+    writeFileSync(join(fontsDir, file), await download(face.src));
     const served = googleFaces.map((f) => Number(f.weight));
     faces.push({ family: fam.css, weight: weightRange(served), file });
     console.log(`${fam.css}: one variable file covering ${served.length} served weight(s)`);

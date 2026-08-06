@@ -66,7 +66,8 @@ export function proseSegments(source: string) {
       const opening = OPENS_FENCE.exec(raw);
       const closing = CLOSES_FENCE.exec(raw);
 
-      if (fence && closing && closing[1][0] === fence[0] && closing[1].length >= fence.length) {
+      const run = closing?.[1] ?? '';
+    if (fence && closing && run[0] === fence[0] && run.length >= fence.length) {
         flush();
         fence = null;
         advanceTo(Math.min(end + 1, source.length));

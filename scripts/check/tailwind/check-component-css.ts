@@ -40,6 +40,7 @@ export function propertiesIn(css: string) {
 export function themeLeaks(css: string) {
   const leaked = new Set();
   for (const name of propertiesIn(css)) {
+    if (name === undefined) continue;
     const namespace = THEME_NAMESPACES.find((ns) => name === ns || name.startsWith(`${ns}-`));
     if (namespace) leaked.add(name);
   }
@@ -67,13 +68,14 @@ export function sheetProblems(manifests: Manifests, base = root) {
       if (!emitted.has(name)) problems.push(`${manifest.component}: the manifest names .${name}, which has no rule`);
     }
     for (const name of emitted) {
-      if (!derived.has(name)) problems.push(`${manifest.component}: .${name} has a rule no manifest derives`);
+      if (name !== undefined && !derived.has(name)) problems.push(`${manifest.component}: .${name} has a rule no manifest derives`);
     }
     for (const leak of themeLeaks(css)) {
       problems.push(`${manifest.component}: reads --${leak}, a Tailwind theme property, so the strip `
         + 'did not run over it and an adopter who declares that property rescales this component silently');
     }
     for (const name of propertiesIn(css)) {
+      if (name === undefined) continue;
       if (tokens.has(name) || name.startsWith('tw-') || EXTERNAL_PROPERTIES.has(name)) continue;
       problems.push(`${manifest.component}: reads --${name}, which is no Arena token and is not `
         + 'declared external, so nothing in either package defines it');

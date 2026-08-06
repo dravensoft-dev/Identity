@@ -56,7 +56,9 @@ export async function buildVendor(opts: { root?: string } = {}) {
       const messages = result.logs.map((l) => l.message).join('\n');
       throw new Error(`build-vendor: ${e.entry} failed to bundle\n${messages}`);
     }
-    const raw = await result.outputs[0].text();
+    const [bundled] = result.outputs;
+  if (!bundled) throw new Error('build-vendor: Bun.build produced no output');
+  const raw = await bundled.text();
     if (!e.real) {
       files.set(e.out, RECIPE_BANNER + raw);
       continue;

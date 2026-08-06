@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { pascal, readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const BUNDLE_DIR = 'build/demo/js';
 
@@ -43,7 +44,7 @@ export function pageProblems(tree: Record<string, string[]>, read: (path: string
       const src = /<script[^>]*\btype="module"[^>]*\bsrc="([^"]+)"/.exec(pageSource);
       if (!src) {
         problems.push(`${page}: loads no module script, so it renders an empty document`);
-      } else if (!src[1].endsWith(`/${BUNDLE_DIR}/${name}${ENTRY_SUFFIX.replace(/\.ts$/, '.js')}`)) {
+      } else if (!captured(src).endsWith(`/${BUNDLE_DIR}/${name}${ENTRY_SUFFIX.replace(/\.ts$/, '.js')}`)) {
         problems.push(
           `${page}: loads "${src[1]}", which is not this component's bundled entry `
           + `(…/${BUNDLE_DIR}/${name}${ENTRY_SUFFIX.replace(/\.ts$/, '.js')})`,

@@ -203,7 +203,7 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
     const full = join(dir, from);
     if (!existsSync(full)) continue;
     for (const specifier of importsIn(readFileSync(full, 'utf8'))) {
-      const target = join(dirname(from), specifier).split(sep).join('/');
+      const target = join(dirname(from), specifier ?? '').split(sep).join('/');
       if (existsSync(join(dir, target))) queue.push(target);
       else problems.push(`${pkg.name}: ${from} imports ${specifier}, which was never emitted`);
     }

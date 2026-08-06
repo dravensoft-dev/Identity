@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],
@@ -63,7 +64,7 @@ export function presetTokens(css: string) {
   const m = css.match(/@theme\s*\{([\s\S]*)\}/);
   if (!m) return out;
 
-  const body = m[1].replace(/\/\*[\s\S]*?\*\//g, '');
+  const body = captured(m).replace(/\/\*[\s\S]*?\*\//g, '');
   for (const line of body.split(';')) {
     const i = line.indexOf(':');
     if (i === -1) continue;
@@ -71,7 +72,7 @@ export function presetTokens(css: string) {
 
     if (!key.startsWith('--') || key.startsWith('--default-')) continue;
     const ref = line.slice(i + 1).match(/^\s*var\(--([a-z0-9-]+)\)\s*$/);
-    if (ref) out.add(ref[1]);
+    if (ref) out.add(captured(ref));
   }
   return out;
 }

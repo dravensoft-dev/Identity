@@ -21,7 +21,7 @@ test('the invocation comes from testStep and gains the two junit flags, nothing 
   for (const i of [1, 2]) {
     assert.deepEqual(
       steps[i]?.args,
-      [...AUTHORITY[i]?.args, '--reporter=junit', `--reporter-outfile=out/suite-${i}.xml`],
+      [...(AUTHORITY[i]?.args ?? []), '--reporter=junit', `--reporter-outfile=out/suite-${i}.xml`],
       `step ${i} was rebuilt rather than extended`,
     );
     assert.equal(steps[i]?.outfile, `out/suite-${i}.xml`);

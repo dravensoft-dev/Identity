@@ -18,6 +18,7 @@ import {
 } from '../../../frameworks/tailwind/ManifestClasses.js';
 import type { ArenaClassManifest, ArenaSelection } from '../../../frameworks/tailwind/ArenaStyles.ts';
 import type { ComponentManifest, Manifests, SlotClasses } from './manifest-shapes.ts';
+import { captured } from '../arena/captures.ts';
 
 export const classesManifest = rawClassesManifest as (manifest: ComponentManifest) => ArenaClassManifest;
 export const classesFor =
@@ -80,7 +81,9 @@ export function themeKeyMap(themeCss: string) {
 
 export function stripProblems(css: string, themeMap: Map<string, string>) {
   const problems = [];
-  for (const [, key, token] of css.matchAll(INDIRECTION)) {
+  for (const m of css.matchAll(INDIRECTION)) {
+    const key = captured(m);
+    const token = captured(m, 2);
     if (!isThemeKey(key)) continue;
     if (themeMap.get(key) !== token) {
       problems.push(`var(--${key}, var(--${token})) is not a pair Theme.css declares, so the strip `

@@ -20,8 +20,8 @@ function readVar(body: string, name: string) {
 }
 function theme(selector: string) {
   const body = block(selector);
-  const ramp = Array.from({ length: SLOTS }, (_, i) => readVar(body, `color-cat-${i + 1}`));
-  return { ramp, surface: readVar(body, 'color-base-200') };
+  const ramp = Array.from({ length: SLOTS }, (_, i) => readVar(body ?? '', `color-cat-${i + 1}`));
+  return { ramp, surface: readVar(body ?? '', 'color-base-200') };
 }
 
 const THEMES = [

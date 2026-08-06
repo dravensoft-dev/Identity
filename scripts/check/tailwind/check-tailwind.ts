@@ -2,12 +2,13 @@ import { fileURLToPath } from 'node:url';
 import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export function themeKeys(css: string) {
   const out = new Map();
   const m = css.match(/@layer theme\s*\{\s*:root[^{]*\{([\s\S]*?)\n\s*\}/);
   if (!m) return out;
-  for (const line of m[1].split(';')) {
+  for (const line of captured(m).split(';')) {
     const i = line.indexOf(':');
     if (i === -1) continue;
     const name = line.slice(0, i).trim();

@@ -23,6 +23,7 @@ import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.ts';
 import { memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ComponentContract, MemberSpec, TypeContract } from '../../lib/arena/contract-shapes.ts';
 import type { Fixture, FixtureChild } from '../../lib/arena/playground-model.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 type Contracts = Map<string, ComponentContract>;
 type Types = Map<string, TypeContract>;
@@ -113,7 +114,8 @@ export function objectProblems(where: string, typeName: string | undefined, valu
   const problems = [];
   for (const [key, held] of Object.entries(value)) {
     if (!(key in fields)) { problems.push(`${where}.${key}: ${typeName} declares no such field`); continue; }
-    problems.push(...valueProblems(`${where}.${key}`, fields[key], held, types));
+    const field = fields[key];
+    if (field) problems.push(...valueProblems(`${where}.${key}`, field, held, types));
   }
   for (const [key, field] of fieldEntries(fields))
     if (field.required && !(key in value)) problems.push(`${where}: ${typeName}.${key} is required and the fixture omits it`);
@@ -202,7 +204,7 @@ export function slotProblems(name: string, contract: ComponentContract,
 export function knobTarget(contract: Pick<ComponentContract, 'api'>, target: string): {
   spec?: MemberSpec | null; problem?: string; member?: string; field?: string; objectType?: string;
 } {
-  const [member, field] = String(target).split('.');
+  const [member = '', field] = String(target).split('.');
   const spec = contract.api?.[member];
   if (!spec) return { problem: `names ${member}, which the contract does not declare` };
   if (field === undefined) return { spec };
@@ -324,9 +326,9 @@ export function modelParityProblems(files: Map<string, string>) {
   for (const [rel, body] of files) {
     const match = /\/(\w+)\.demo\.entry\.generated\.tsx?$/.exec(rel);
     if (!match) continue;
-    const found = byComponent.get(match[1]) ?? [];
+    const found = byComponent.get(captured(match)) ?? [];
     found.push([rel, modelLiteral(body)]);
-    byComponent.set(match[1], found);
+    byComponent.set(captured(match), found);
   }
   const problems = [];
   for (const [component, entries] of byComponent) {

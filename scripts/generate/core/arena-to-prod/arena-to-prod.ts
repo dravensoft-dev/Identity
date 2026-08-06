@@ -19,6 +19,7 @@ import type { ComponentMap } from './components.ts';
 import { scan, drawn, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.ts';
 import type { IconScan } from './icon-css.ts';
 import { AUTO, resolve as resolveComponents } from './components.ts';
+import { captured } from '../../../lib/arena/captures.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -68,6 +69,7 @@ export function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = { strict: false, importHeader: true, paths };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
+    if (arg === undefined) continue;
     if (arg === '--help' || arg === '-h') return { help: true };
     if (arg === '--strict') { options.strict = true; continue; }
     if (arg === '--no-import') { options.importHeader = false; continue; }
@@ -122,7 +124,8 @@ export const SHEET_IMPORT = /@import\s+'\.\/([^']+)';/g;
 
 export function packageSheets(root: string): PackageSheets {
   try {
-    const layers = [...readFileSync(join(root, 'arena.css'), 'utf8').matchAll(SHEET_IMPORT)].map(([, to]) => to);
+    const layers = [...readFileSync(join(root, 'arena.css'), 'utf8').matchAll(SHEET_IMPORT)]
+      .map((m) => captured(m));
     const components = readdirSync(join(root, 'css', 'components'))
       .filter((name) => name.endsWith('.css'))
       .map((name) => basename(name, '.css'))

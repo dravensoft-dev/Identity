@@ -13,6 +13,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const PAGE_DIR = 'intro';
 export const GENERATED_SUFFIX = '.generated.js';
@@ -35,7 +36,7 @@ export function moduleEntries(root = repoRoot) {
   for (const page of pages(root)) {
     const html = readFileSync(join(root, PAGE_DIR, page), 'utf8');
     for (const m of html.matchAll(MODULE_ENTRY)) {
-      const out = m[1].replace(/^\.\//, '');
+      const out = captured(m).replace(/^\.\//, '');
       if (!out.endsWith(GENERATED_SUFFIX)) {
         throw new Error(
           `build-intro: ${PAGE_DIR}/${page} loads "${m[1]}" as a module, and a module entry must be `
@@ -63,7 +64,9 @@ export async function buildIntro(opts: { root?: string } = {}) {
       const messages = result.logs.map((l) => l.message).join('\n');
       throw new Error(`build-intro: ${PAGE_DIR}/${source} failed to bundle\n${messages}`);
     }
-    built.set(out, BANNER(`${PAGE_DIR}/${source}`) + await result.outputs[0].text());
+    const [bundled] = result.outputs;
+    if (!bundled) throw new Error(`build-intro: Bun.build produced no output for ${source}`);
+    built.set(out, BANNER(`${PAGE_DIR}/${source}`) + await bundled.text());
   }
 
   if (built.size === 0) {

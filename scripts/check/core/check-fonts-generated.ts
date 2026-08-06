@@ -11,14 +11,15 @@ import { createHash } from 'node:crypto';
 import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-fonts.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export function facesIn(css: string) {
   const faces = new Set<string>();
   const re = /@font-face\s*{([^}]*)}/g;
   let m;
   while ((m = re.exec(css)) !== null) {
-    const fam = /font-family:\s*['"]([^'"]+)['"]/.exec(m[1]);
-    if (fam) faces.add(fam[1]);
+    const fam = /font-family:\s*['"]([^'"]+)['"]/.exec(captured(m));
+    if (fam) faces.add(captured(fam));
   }
   return faces;
 }

@@ -11,6 +11,7 @@ import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { numericConstants } from './check-duplicate-constants.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 const LAYERS_WITH_MODULES = ['react', 'angular'];
 
@@ -23,8 +24,8 @@ export function importedNames(source: string) {
   const names = new Set<string>();
   const re = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*tokens\.generated(?:\.js|\.ts)?['"]/gi;
   for (const m of source.matchAll(re)) {
-    for (const raw of m[1].split(',')) {
-      const name = raw.trim().split(/\s+as\s+/)[0].trim();
+    for (const raw of captured(m).split(',')) {
+      const name = (raw.trim().split(/\s+as\s+/)[0] ?? '').trim();
       if (name) names.add(name);
     }
   }

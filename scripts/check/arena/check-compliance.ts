@@ -183,6 +183,7 @@ export function validateCoverage(
       continue;
     }
     const suite = suites[suiteFile];
+    if (!suite) continue;
     if (suite.layer !== layer) {
       problems.push(
         `COVERED maps "${key}" to "${suiteFile}", which is a suite of the ${suite.layer} layer. ` +

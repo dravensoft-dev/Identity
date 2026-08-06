@@ -31,10 +31,10 @@ export const isScript = (name: string) =>
   SCRIPT_EXTENSIONS.some((ext) => name.endsWith(ext)) && !isSuite(name);
 
 function classify(segments: string[], i: number) {
-  if (segments[i] === 'scripts' && PHASES.includes(segments[i + 1]) && DOMAINS.includes(segments[i + 2])) {
+  if (segments[i] === 'scripts' && PHASES.includes(segments[i + 1] ?? '') && DOMAINS.includes(segments[i + 2] ?? '')) {
     return segments[i + 2];
   }
-  if (segments[i] === 'frameworks' && DOMAINS.includes(segments[i + 1])) return segments[i + 1];
+  if (segments[i] === 'frameworks' && DOMAINS.includes(segments[i + 1] ?? '')) return segments[i + 1];
   return null;
 }
 

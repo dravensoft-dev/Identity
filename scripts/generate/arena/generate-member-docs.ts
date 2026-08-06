@@ -12,6 +12,7 @@ import { normaliseDoc } from '../../lib/arena/api-surface.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const MEMBER_START: Record<string, RegExp> = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
@@ -20,8 +21,9 @@ export const MEMBER_START: Record<string, RegExp> = {
 
 export function stripDocAbove(lines: string[], at: number) {
   let start = at;
-  while (start > 0 && lines[start - 1].trim().startsWith('*')) start -= 1;
-  if (start > 0 && lines[start - 1].trim().startsWith('/**')) return start - 1;
+  const above = (n: number) => lines[n - 1]?.trim() ?? '';
+  while (start > 0 && above(start).startsWith('*')) start -= 1;
+  if (start > 0 && above(start).startsWith('/**')) return start - 1;
   const single = lines[at - 1]?.trim();
   if (single && single.startsWith('/**') && single.endsWith('*/')) return at - 1;
   return at;
@@ -33,7 +35,8 @@ export function unpackMembers(source: string) {
   return source.split('\n').flatMap((line) => {
     const packed = PACKED_MEMBERS.exec(line);
     if (!packed) return [line];
-    return packed[2].trim().split(';').filter((d) => d.trim()).map((d) => `${packed[1]}${d.trim()};`);
+    const indent = captured(packed);
+    return captured(packed, 2).trim().split(';').filter((d) => d.trim()).map((d) => `${indent}${d.trim()};`);
   }).join('\n');
 }
 
@@ -43,14 +46,17 @@ export function applyDocs(source: string, docs: Map<string, string>, layer: stri
   const lines = (layer === 'react' ? unpackMembers(source) : source).split('\n');
   const out = [];
   let reachable = layer !== 'react';
+  const start = MEMBER_START[layer];
+  if (!start) throw new Error(`applyDocs: no member pattern is declared for a layer called "${layer}"`);
   for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i] ?? '';
     if (layer === 'react') {
-      if (REACT_PROPS_OPEN.test(lines[i])) reachable = true;
-      else if (reachable && /^\}/.test(lines[i])) reachable = false;
+      if (REACT_PROPS_OPEN.test(line)) reachable = true;
+      else if (reachable && /^\}/.test(line)) reachable = false;
     }
-    const match = reachable ? MEMBER_START[layer].exec(lines[i]) : null;
-    const wanted = match ? docs.get(match[2]) : undefined;
-    if (!match || wanted === undefined) { out.push(lines[i]); continue; }
+    const match = reachable ? start.exec(line) : null;
+    const wanted = match ? docs.get(captured(match, 2)) : undefined;
+    if (!match || wanted === undefined) { out.push(line); continue; }
 
     const from = stripDocAbove(lines, i);
     out.length -= (i - from);

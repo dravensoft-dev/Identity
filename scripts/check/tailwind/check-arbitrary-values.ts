@@ -10,6 +10,7 @@ import { join, relative } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { UNMODELLED_UNITS } from '../arena/check-dimension-literals.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const SKIPPED_NAMES = new Set(['node_modules', 'dist', 'vendor']);
 
@@ -50,7 +51,7 @@ export function isLegalBracket(content: string) {
 
   const rest = value.replace(TOKEN, ' ').replace(ZERO_RUN, ' ');
   for (const m of rest.matchAll(UNIT_LITERAL))
-    if (!UNMODELLED_UNITS.includes(m[1])) return false;
+    if (!UNMODELLED_UNITS.includes(captured(m))) return false;
 
   for (const m of rest.matchAll(BARE_NUMBER))
     if (!insideMathParens(rest, m.index)) return false;
@@ -61,7 +62,7 @@ export function scanText(text: string) {
   const out = [];
   for (const m of text.matchAll(CANDIDATE)) {
     const [, cls, content] = m;
-    if (isLegalBracket(content)) continue;
+    if (content === undefined || isLegalBracket(content)) continue;
     out.push({ cls, content });
   }
   return out;
@@ -70,7 +71,7 @@ export function scanText(text: string) {
 export function findMarkers(text: string) {
   return [...text.matchAll(MARKER)].map((m) => ({
     raw: m[0],
-    classes: m[1].trim().split(/\s+/).filter(Boolean),
+    classes: captured(m).trim().split(/\s+/).filter(Boolean),
   }));
 }
 
@@ -93,7 +94,7 @@ export function scanFile(relPath: string, text: string) {
   const allowed = isMarkdown ? markerAllowlist(text) : new Set<string>();
 
   for (const { cls } of candidates)
-    if (!allowed.has(cls)) errs.push(`${relPath}: \`${cls}\` — a raw value, not a token`);
+    if (cls !== undefined && !allowed.has(cls)) errs.push(`${relPath}: \`${cls}\` — a raw value, not a token`);
 
   if (isMarkdown) {
     const flagged = new Set(candidates.map((c) => c.cls));

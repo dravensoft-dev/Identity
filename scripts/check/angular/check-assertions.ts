@@ -82,7 +82,7 @@ export function assertionProblems(files: string[], read: (path: string) => strin
       const parsed = splitArguments(source, match.index + match[0].length - 1);
       if (!parsed || parsed.args.length < 2) continue;
       EQUALITY.lastIndex = parsed.end;
-      const [actual, expected] = parsed.args;
+      const [actual = '', expected = ''] = parsed.args;
       if (!isNodeExpression(actual) && !isNodeExpression(expected)) continue;
       const line = source.slice(0, match.index).split('\n').length;
       problems.push(

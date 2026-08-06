@@ -43,7 +43,7 @@ export function fontEntries(root: string) {
 
   const out: Record<string, { family: string; src: string }> = {};
   for (const [role, token] of childEntries(typographyContract(root).font)) {
-    const family = (token.$value as string[])[0];
+    const family = (token.$value as string[])[0] ?? '';
     out[role] = { family, src: googleFontsUrl(family, weights) };
   }
   return out;

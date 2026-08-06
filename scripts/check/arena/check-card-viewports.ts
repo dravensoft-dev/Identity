@@ -137,7 +137,7 @@ export const UNDER_RUN_SLACK = 120;
 const SKIP_DIRS = new Set(['node_modules', '.git', '.claude-plugin', 'assets']);
 
 export function parseDsCard(html: string): DsCard | null {
-  const first = html.split('\n', 1)[0];
+  const first = html.split('\n', 1)[0] ?? '';
   if (!first.includes('@dsCard')) return null;
   const attr = (name: string) => new RegExp(`${name}="([^"]*)"`).exec(first)?.[1];
   const viewport = attr('viewport');
@@ -270,7 +270,8 @@ export async function mapWithConcurrency<T, R>(items: T[], limit: number,
   async function worker() {
     while (next < items.length) {
       const index = next++;
-      results[index] = await fn(items[index]);
+      const item = items[index];
+    if (item !== undefined) results[index] = await fn(item);
     }
   }
   const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
@@ -281,7 +282,7 @@ export async function mapWithConcurrency<T, R>(items: T[], limit: number,
 export function interleaveForDispatch<T>(items: T[], groups: number): T[] {
   const width = Math.max(1, Math.min(groups, items.length || 1));
   const rows: T[][] = Array.from({ length: width }, (): T[] => []);
-  items.forEach((item, i) => rows[i % width].push(item));
+  items.forEach((item, i) => rows[i % width]?.push(item));
   return rows.flat();
 }
 

@@ -48,7 +48,7 @@ export function topLevelChildren(body: string) {
 
 export function ownersOf(text: string, bases: Set<string>) {
   const found = new Set([...text.matchAll(SLOT_CLASS)].map((m) => m[1]));
-  const stray = [...found].filter((base) => !bases.has(base));
+  const stray = [...found].filter((base) => base !== undefined && !bases.has(base));
   if (stray.length > 0) {
     throw new Error(`component-sheets: no manifest is named by ${stray.map((b) => `.${b}__`).join(', ')}, `
       + 'so those rules would ship nowhere');
@@ -82,7 +82,7 @@ export function splitUtilities(css: string, bases: Set<string>) {
       if (owners.size > 1) {
         throw new Error(`component-sheets: one selector names two manifests, which no emitter should produce:\n${child.head}`);
       }
-      add([...owners][0], child.text);
+      add([...owners][0] ?? '', child.text);
       continue;
     }
     for (const owner of owners) {
@@ -90,7 +90,7 @@ export function splitUtilities(css: string, bases: Set<string>) {
         .filter((grand) => ownersOf(grand.text, bases).has(owner))
         .map((grand) => grand.text.replace(/^/gm, '  '))
         .join('\n');
-      add(owner, `${child.head} {\n${kept}\n}`);
+      add(owner ?? '', `${child.head} {\n${kept}\n}`);
     }
   }
 

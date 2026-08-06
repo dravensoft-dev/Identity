@@ -9,6 +9,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { LAYERS, pascal } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
+import { captured } from './captures.ts';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g;
 const SOURCE = /\.(tsx?|jsx?|mjs)$/;
@@ -34,13 +35,13 @@ export function componentSources(layer: string, root = repoRoot) {
 export function importedComponents(text: string, path: string, layer: string, root = repoRoot) {
   const prefix = `frameworks/${layer}/components/`;
   const names: string[] = [];
-  for (const [, specifier] of text.matchAll(SPECIFIER)) {
-    const target = relative(root, resolve(dirname(path), specifier)).split('\\').join('/');
+  for (const m of text.matchAll(SPECIFIER)) {
+    const target = relative(root, resolve(dirname(path), captured(m))).split('\\').join('/');
     if (!target.startsWith(prefix)) continue;
     const parts = target.slice(prefix.length).replace(SOURCE, '').split('/');
     if (parts.length !== 3) continue;
     const [, dir, stem] = parts;
-    if (stem !== pascal(dir)) continue;
+    if (dir === undefined || stem !== pascal(dir)) continue;
     if (!names.includes(stem)) names.push(stem);
   }
   return names;

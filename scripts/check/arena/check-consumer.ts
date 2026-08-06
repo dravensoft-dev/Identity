@@ -17,6 +17,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { PACKAGES, distDir } from './check-packages.ts';
 import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const CLI = 'bin/arena-to-prod.ts';
 export const GLYPH = 'ph-bell';
@@ -152,7 +153,7 @@ export const DOCUMENTED_LIST = /"components":\s*\[([^\]]*)\]/g;
 export function documented(page: string) {
   const lists = [...page.matchAll(DOCUMENTED_LIST)];
   if (lists.length !== 1) return { lists: lists.length, names: null };
-  const names = lists[0][1].split(',').map((one) => one.trim().replace(/^"|"$/g, '')).filter(Boolean);
+  const names = captured(lists[0] ?? null).split(',').map((one) => one.trim().replace(/^"|"$/g, '')).filter(Boolean);
   return { lists: 1, names };
 }
 
@@ -162,16 +163,17 @@ export function collect(base = root) {
   const dirs = [];
   try {
     for (const { layer } of PACKAGES) {
-      const auto = fixture(layer, SOURCES[layer], AUTO, base);
-      const stale = fixture(layer, STALE[layer], AUTO, base);
+      const sources = SOURCES[layer] ?? {};
+      const auto = fixture(layer, sources, AUTO, base);
+      const stale = fixture(layer, STALE[layer] ?? {}, AUTO, base);
       const { lists, names: list } = documented(readFileSync(join(distDir(layer, base), 'README.md'), 'utf8'));
       if (!list) {
         problems.push(`${layer}: the shipped README spells ${lists} stylesheet.components lists rather than one, `
           + 'so the example a consumer copies is either absent or shadowed by another');
         continue;
       }
-      const named = fixture(layer, SOURCES[layer], { components: list }, base);
-      const unknown = fixture(layer, SOURCES[layer], { components: ['button'] }, base);
+      const named = fixture(layer, sources, { components: list }, base);
+      const unknown = fixture(layer, sources, { components: ['button'] }, base);
       dirs.push(auto, stale, named, unknown);
 
       const result = runCli(layer, auto, base);

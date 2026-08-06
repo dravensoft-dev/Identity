@@ -71,7 +71,8 @@ export function* layerFiles(layerDir: string): Generator<string> {
 }
 
 export function foreignTokens(layer: string) {
-  return FORBIDDEN[layer].flatMap((other) => LAYER_TOKENS[other].map(([token, re]) => ({ other, token, re })));
+  return (FORBIDDEN[layer] ?? [])
+    .flatMap((other) => (LAYER_TOKENS[other] ?? []).map(([token, re]) => ({ other, token, re })));
 }
 
 export function textualHits(text: string, tokens: ReturnType<typeof foreignTokens>) {
@@ -91,10 +92,10 @@ export function referencesIn(text: string, ext: string) {
 }
 
 export function escapingSpecifiers(text: string, filePath: string, layer: string) {
-  const foreign = FORBIDDEN[layer].concat(layer === 'angular' ? ['tailwind'] : []);
+  const foreign = (FORBIDDEN[layer] ?? []).concat(layer === 'angular' ? ['tailwind'] : []);
   const found = [];
   for (const spec of referencesIn(text, extname(filePath))) {
-    if (!spec.startsWith('.')) continue;
+    if (!spec || !spec.startsWith('.')) continue;
     const target = relative(root, resolve(dirname(filePath), spec)).replace(/\\/g, '/');
     if (!foreign.some((other) => target.startsWith(`frameworks/${other}/`))) continue;
     found.push(target);

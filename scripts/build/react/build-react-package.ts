@@ -20,6 +20,7 @@ import {
   writeComponentMap,
 } from '../../lib/arena/package-assembly.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
@@ -67,7 +68,7 @@ export function rewriteSourceSpecifiers(code: string) {
 }
 
 export function relativeSpecifiers(code: string) {
-  return [...code.matchAll(RELATIVE_SPECIFIER)].map((m) => m[3]);
+  return [...code.matchAll(RELATIVE_SPECIFIER)].map((m) => captured(m, 3));
 }
 
 export function unresolvedProblems(dir: string) {

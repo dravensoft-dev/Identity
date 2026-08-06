@@ -76,7 +76,7 @@ export function gatesFor(domains: string[]) {
   if (unknown.length > 0) {
     throw new Error(`check-all: no domain called ${unknown.join(', ')}; the five are ${DOMAINS.join(', ')}`);
   }
-  const selected = GATES.filter((g) => domains.includes(g.file.split('/')[0]));
+  const selected = GATES.filter((g) => domains.includes(g.file.split('/')[0] ?? ''));
   if (selected.length === 0) {
     throw new Error(`check-all: ${domains.join(', ')} selected no gate, and a run of nothing reports nothing wrong with everything`);
   }

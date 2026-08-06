@@ -36,22 +36,26 @@ function attribute(chunk: string, name: string) {
   return m ? m[1] : null;
 }
 
+export type CaseStatus = 'pass' | 'fail' | 'skip';
+
+export type Tally = { pass: number; fail: number; skip: number };
+
 export function parseJunit(xml: string) {
-  const cases = [];
+  const cases: { file: string | null; status: CaseStatus }[] = [];
   for (const suite of String(xml).split('<testsuite ').slice(1)) {
     const suiteFile = attribute(suite.slice(0, suite.indexOf('>')), 'file');
     for (const raw of suite.split('<testcase ').slice(1)) {
       const selfClosing = /^[^>]*\/>/.test(raw);
       const chunk = selfClosing ? raw.slice(0, raw.indexOf('>')) : raw.slice(0, raw.indexOf('</testcase>'));
-      const status = /<failure\b/.test(chunk) ? 'fail' : /<skipped\b/.test(chunk) ? 'skip' : 'pass';
-      cases.push({ file: attribute(chunk.slice(0, chunk.indexOf('>') + 1), 'file') ?? suiteFile, status });
+      const status: CaseStatus = /<failure\b/.test(chunk) ? 'fail' : /<skipped\b/.test(chunk) ? 'skip' : 'pass';
+      cases.push({ file: attribute(chunk.slice(0, chunk.indexOf('>') + 1), 'file') ?? suiteFile ?? null, status });
     }
   }
   return cases;
 }
 
-export function tally(cases: { file: string | null; status: string }[]) {
-  const byDomain = new Map<string, Record<string, number>>(DOMAINS.map((d: string) => [d, { pass: 0, fail: 0, skip: 0 }]));
+export function tally(cases: { file: string | null; status: CaseStatus }[]) {
+  const byDomain = new Map<string, Tally>(DOMAINS.map((d: string) => [d, { pass: 0, fail: 0, skip: 0 }]));
   const unclassified = [];
   for (const c of cases) {
     const domain = domainOfTestPath(c.file ?? '');

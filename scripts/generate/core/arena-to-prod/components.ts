@@ -22,7 +22,8 @@ export function selectorKeys(map: ComponentMap, sources: string[]) {
   const drawn = new Set();
   const unplaced = new Set();
   for (const source of sources) {
-    for (const [, selector] of source.matchAll(SELECTOR_LIKE)) {
+    for (const m of source.matchAll(SELECTOR_LIKE)) {
+      const selector = m[1] ?? '';
       (selector in map.draws ? drawn : unplaced).add(selector);
     }
   }
@@ -39,7 +40,7 @@ export function symbolKeys(map: ComponentMap, sources: string[], packageName: st
   const shape = namedImports(packageName);
   for (const source of sources) {
     for (const [, list] of source.matchAll(shape)) {
-      for (const one of list.split(',')) written.add(one.trim().split(/\s+as\s+/)[0].trim());
+      for (const one of (list ?? '').split(',')) written.add((one.trim().split(/\s+as\s+/)[0] ?? '').trim());
     }
     for (const [, name] of source.matchAll(JSX_OPEN)) written.add(name);
   }

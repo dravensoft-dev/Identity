@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { join, extname, relative } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 const EXEMPT = new Map([
   ['SSR_VIEWPORT_H',
@@ -33,12 +34,12 @@ export function numericConstants(source: string) {
   const found = new Map<string, string>();
   const re = /^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*=\s*([^;]+);/gm;
   for (const m of source.matchAll(re)) {
-    const raw = m[2].replace(/\s*as\s+const\s*$/, '').trim();
-    if (/^-?\d+(\.\d+)?$/.test(raw)) { found.set(m[1], raw); continue; }
+    const raw = captured(m, 2).replace(/\s*as\s+const\s*$/, '').trim();
+    if (/^-?\d+(\.\d+)?$/.test(raw)) { found.set(captured(m), raw); continue; }
     if (/^\{[^{}]*\}$/.test(raw)) {
       const body = raw.slice(1, -1).trim();
       if (body && /^([\w$]+\s*:\s*-?\d+(\.\d+)?\s*,?\s*)+$/.test(body)) {
-        found.set(m[1], `{${body.replace(/\s+/g, '').replace(/,$/, '')}}`);
+        found.set(captured(m), `{${body.replace(/\s+/g, '').replace(/,$/, '')}}`);
       }
     }
   }

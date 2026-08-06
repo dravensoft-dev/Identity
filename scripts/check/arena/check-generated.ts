@@ -135,7 +135,7 @@ function startsFile(source: string, comment: { text: string }) {
 
 export function claimsGeneration(source: string) {
   const [first] = findComments(source);
-  return Boolean(first) && startsFile(source, first) && /GENERATED (by|from)/i.test(first.text);
+  return Boolean(first) && startsFile(source, first ?? { text: '' }) && /GENERATED (by|from)/i.test(first?.text ?? '');
 }
 
 export function unmarkedProblems(root = ROOT) {

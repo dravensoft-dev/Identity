@@ -48,11 +48,13 @@ export function splitCompiledSheet(css: string) {
   }
   const order = `${declarations.join('\n')}\n`;
 
-  const head = css.slice(0, found[0].at);
+  const [first] = found;
+  if (!first) throw new Error('sheet-split: the compiled sheet declares no @layer block at all');
+  const head = css.slice(0, first.at);
   const withoutOrder = (text: string) => text.replace(ORDER, '').replace(/\n{3,}/g, '\n\n');
 
   return {
     base: order + css.slice(base.at, close + 1) + '\n',
-    utilities: order + withoutOrder(head) + css.slice(found[0].at, base.at) + css.slice(close + 2),
+    utilities: order + withoutOrder(head) + css.slice(first.at, base.at) + css.slice(close + 2),
   };
 }

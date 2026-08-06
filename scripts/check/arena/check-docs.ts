@@ -233,6 +233,7 @@ export function punctuationProblems(root = ROOT) {
     if (exempt(Object.keys(PROSE_EXEMPT), rel)) continue;
     for (const segment of proseSegments(readFileSync(path, 'utf8'))) {
       for (const [character, name] of BANNED_PUNCTUATION) {
+        if (character === undefined) continue;
         let at = segment.text.indexOf(character);
         while (at !== -1) {
           problems.push(
@@ -307,6 +308,7 @@ export function commentRuleProblems(root = ROOT) {
     if (comments.length === 0) continue;
 
     const [first, ...rest] = comments;
+    if (!first) continue;
     const headerAllowed = allowsHeader(rel);
 
     if (!headerAllowed) {
@@ -335,6 +337,7 @@ export function consumerBranchProblems(root = ROOT) {
     const rel = relative(root, path);
     const source = readFileSync(path, 'utf8');
     for (const [pattern, reason] of CONTRIBUTOR_PATHS) {
+      if (!pattern) continue;
       for (const hit of source.match(pattern) ?? []) {
         if ([...CONSUMER_OWN_OUTPUT.keys()].some((name) => name.startsWith(hit))) continue;
         problems.push(

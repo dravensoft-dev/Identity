@@ -13,6 +13,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './repo-root.ts';
 import { kebab } from './layers.ts';
+import { captured } from './captures.ts';
 
 export const MAP_FILE = 'components.json';
 
@@ -47,14 +48,14 @@ export function componentFiles(layer: string, extension: string, root = repoRoot
 
 export function sheetOf(file: string, source: string) {
   const direct = MANIFEST_IMPORT.exec(source);
-  if (direct) return kebab(direct[1]);
+  if (direct) return kebab(captured(direct));
   const variants = VARIANTS_IMPORT.exec(source);
   if (!variants) return null;
   for (const extension of ['.ts', '.tsx']) {
     const named = join(file, '..', `${variants[1]}${extension}`);
     if (!existsSync(named)) continue;
     const manifest = MANIFEST_IMPORT.exec(readFileSync(named, 'utf8'));
-    return manifest ? kebab(manifest[1]) : null;
+    return manifest ? kebab(captured(manifest)) : null;
   }
   return null;
 }
@@ -63,7 +64,7 @@ export function close(needs: ComponentSheetMap['needs']): ComponentSheetMap['nee
   const closed: ComponentSheetMap['needs'] = {};
   for (const sheet of Object.keys(needs)) {
     const reached = new Set<string>();
-    const pending = [...needs[sheet]];
+    const pending = [...(needs[sheet] ?? [])];
     while (pending.length) {
       const one = pending.pop();
       if (one === undefined || one === sheet || reached.has(one)) continue;
@@ -97,10 +98,10 @@ export function angularComponentMap(root = repoRoot) {
     const source = readFileSync(file, 'utf8');
     return {
       symbol,
-      keys: [...source.matchAll(SELECTOR)].map(([, selector]) => selector),
+      keys: [...source.matchAll(SELECTOR)].map((m) => captured(m)),
       sheet: sheetOf(file, source),
       uses: [...source.matchAll(DECORATOR_IMPORTS)]
-        .flatMap(([, list]) => list.split(',').map((name) => name.trim()))
+        .flatMap((m) => captured(m).split(',').map((name) => name.trim()))
         .filter((name) => /^[A-Z][A-Za-z0-9]*$/.test(name)),
     };
   });
@@ -112,9 +113,9 @@ export function reactComponentMap(root = repoRoot) {
     const source = readFileSync(file, 'utf8');
     return {
       symbol,
-      keys: [...source.matchAll(EXPORTED)].map(([, name]) => name).filter((name) => COMPONENT_NAME.test(name)),
+      keys: [...source.matchAll(EXPORTED)].map((m) => captured(m)).filter((name) => COMPONENT_NAME.test(name)),
       sheet: sheetOf(file, source),
-      uses: [...source.matchAll(LAYER_IMPORT)].map(([, name]) => name),
+      uses: [...source.matchAll(LAYER_IMPORT)].map((m) => captured(m)),
     };
   });
   return mapFrom(entries.filter((e) => e.keys.length), 'symbol');

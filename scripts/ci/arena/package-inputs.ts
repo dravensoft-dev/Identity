@@ -54,7 +54,7 @@ export function uncoveredChainEntries(inputs: Record<string, string> = SHARED_IN
 function main() {
   const [layer] = process.argv.slice(2);
   try {
-    console.log(pathspecs(layer).join('\n'));
+    console.log(pathspecs(layer ?? '').join('\n'));
   } catch (err) {
     console.error((err as Error).message);
     process.exit(1);

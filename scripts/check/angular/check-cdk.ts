@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaTokenNames, referencedTokens } from '../../lib/core/arena-tokens.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');
@@ -25,14 +26,14 @@ export function bridgeSelectors(css: string) {
 export function cdkClasses(css: string) {
   const out = new Set<string>();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  for (const m of stripped.matchAll(/\.(cdk-[a-z0-9-]+)/g)) out.add(m[1]);
+  for (const m of stripped.matchAll(/\.(cdk-[a-z0-9-]+)/g)) out.add(captured(m));
   return out;
 }
 
 export function importedSheets(css: string) {
   const out = new Set<string>();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  for (const m of stripped.matchAll(/@import\s+['"]([^'"]+)['"]/g)) out.add(m[1]);
+  for (const m of stripped.matchAll(/@import\s+['"]([^'"]+)['"]/g)) out.add(captured(m));
   return out;
 }
 

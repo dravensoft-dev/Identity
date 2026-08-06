@@ -2,9 +2,9 @@ export function parseDecls(cssText: string) {
   const stripped = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
   const out = new Map();
   for (const m of stripped.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    const selector = m[1].trim();
+    const selector = (m[1] ?? '').trim();
     const decls = out.get(selector) ?? new Map();
-    for (const d of m[2].split(';')) {
+    for (const d of (m[2] ?? '').split(';')) {
       const i = d.indexOf(':');
       if (i === -1) continue;
       const name = d.slice(0, i).trim();

@@ -9,6 +9,8 @@
  * WeightRules is one weight sheet parsed: its @font-face, its shared base rule and
  * one declaration list per glyph. */
 
+import { captured } from '../../../lib/arena/captures.ts';
+
 export const WEIGHT_CLASSES = {
   thin: 'ph-thin',
   light: 'ph-light',
@@ -77,13 +79,16 @@ export function sheetRules(css: string, weight: string): WeightRules {
   const icon = new RegExp(`^\\.${selector}\\.(ph-[a-z0-9-]+):(before|after)$`);
   const out: WeightRules = { fontFace: null, base: null, glyphs: new Map() };
 
-  for (const [, head, body] of css.replace(COMMENT, '').matchAll(BLOCK)) {
+  for (const m of css.replace(COMMENT, '').matchAll(BLOCK)) {
+    const head = captured(m);
+    const body = captured(m, 2);
     const at = head.trim();
     if (at === '@font-face') { out.fontFace = declarations(body); continue; }
     if (at === `.${selector}`) { out.base = declarations(body); continue; }
     const match = icon.exec(at);
     if (!match) continue;
-    const [, glyph, pseudo] = match;
+    const glyph = captured(match);
+    const pseudo = captured(match, 2);
     let rules = out.glyphs.get(glyph);
     if (!rules) { rules = []; out.glyphs.set(glyph, rules); }
     rules.push([pseudo, declarations(body)]);

@@ -9,6 +9,7 @@
 import { playgroundPage, sheetLinks } from '../arena/playground-page.ts';
 import { kebab } from '../arena/layers.ts';
 import { placeOf, SUBJECT } from '../arena/playground-model.ts';
+import { captured } from '../arena/captures.ts';
 import type { MemberSpec } from '../arena/contract-shapes.ts';
 import type { FixtureNode, Knob, Place, Places, PlaygroundEvent, PlaygroundModel }
   from '../arena/playground-model.ts';
@@ -38,8 +39,8 @@ export const MARKERS_SOURCE = 'frameworks/angular/ProjectionMarkers.ts';
 
 export function markerNames(source: string): Markers {
   const found: Markers = new Map();
-  for (const [, selector, name] of source.matchAll(/selector:\s*'\[(\w+)\]'[^}]*}\)\s*export class (\w+)/g)) {
-    found.set(selector, name);
+  for (const m of source.matchAll(/selector:\s*'\[(\w+)\]'[^}]*}\)\s*export class (\w+)/g)) {
+    found.set(captured(m), captured(m, 2));
   }
   return found;
 }
@@ -93,7 +94,7 @@ export function collectFields(node: FixtureNode | string | null, contracts: Map<
     const api = contracts.get(node.component)?.api ?? {};
     for (const [member, value] of Object.entries(node.members ?? {}) as [string, any][]) {
       if (staticAttribute(value)) continue;
-      const name = `${prefix}${node.component}${member[0].toUpperCase()}${member.slice(1)}${into.length}`;
+      const name = `${prefix}${node.component}${member.slice(0, 1).toUpperCase()}${member.slice(1)}${into.length}`;
       into.push({ name, type: fieldTypeFor(api[member] ?? {}), value, member, node });
     }
     for (const list of Object.values(node.slots ?? {}) as any[][]) {

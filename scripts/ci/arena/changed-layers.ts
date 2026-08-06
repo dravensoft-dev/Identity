@@ -38,7 +38,7 @@ export function layersChanged(paths: string[]) {
   const shared = paths.some((p) => Object.keys(SHARED).some((prefix) => reaches(prefix, p)));
   for (const layer of Object.keys(LAYER_INPUTS)) {
     changed[layer] = shared
-      || paths.some((p) => Object.keys(LAYER_INPUTS[layer]).some((prefix) => reaches(prefix, p)));
+      || paths.some((p) => Object.keys(LAYER_INPUTS[layer] ?? {}).some((prefix) => reaches(prefix, p)));
   }
   return changed;
 }

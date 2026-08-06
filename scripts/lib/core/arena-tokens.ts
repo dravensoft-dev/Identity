@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.ts';
 import { repoRoot } from '../arena/repo-root.ts';
+import { captured } from '../arena/captures.ts';
 
 const GENERATED = ['palette.generated.css', 'typography.generated.css', 'spacing.generated.css', 'effects.generated.css'];
 
@@ -21,7 +22,7 @@ export function arenaTokens(root = repoRoot) {
 export function referencedTokens(css: string) {
   const out = new Set<string>();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  for (const m of stripped.matchAll(/var\(\s*--([a-z0-9-]+)\s*[,)]/g)) out.add(m[1]);
+  for (const m of stripped.matchAll(/var\(\s*--([a-z0-9-]+)\s*[,)]/g)) out.add(captured(m));
   return out;
 }
 

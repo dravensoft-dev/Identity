@@ -14,6 +14,7 @@ import type { ContractCandidate, MemberCandidate } from '../../lib/arena/contrac
 import {
   CONSUMER_LAYERS, componentDir, loadCategories, loadContract, escapeCell,
 } from './generate-skills.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 export const CONSUMER_DATA = 'Record<string, unknown>';
 
@@ -78,10 +79,11 @@ export function fenceEnd(source: string) {
   const lines = source.split('\n');
   let fence = null;
   for (let i = 0; i < lines.length; i += 1) {
-    const closing = CLOSES_FENCE.exec(lines[i]);
-    if (fence && closing && closing[1][0] === fence[0] && closing[1].length >= fence.length) return i;
+    const closing = CLOSES_FENCE.exec(lines[i] ?? '');
+    const run = closing ? captured(closing) : '';
+    if (fence && closing && run[0] === fence[0] && run.length >= fence.length) return i;
     if (fence) continue;
-    const opening = OPENS_FENCE.exec(lines[i]);
+    const opening = OPENS_FENCE.exec(lines[i] ?? '');
     if (opening) fence = opening[1];
   }
   return -1;

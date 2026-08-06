@@ -22,7 +22,9 @@ export const PROJECTS = [
 export function typecheck(opts: { root?: string; project?: string } = {}) {
   const root = opts.root ?? repoRoot;
   const bin = ngcBin(root);
-  const project = join(root, opts.project ?? PROJECTS[0].project);
+  const first = PROJECTS[0];
+  if (!first) throw new Error('check-angular: PROJECTS is empty, so this gate would compile nothing');
+  const project = join(root, opts.project ?? first.project);
   const out = mkdtempSync(join(tmpdir(), 'arena-ngc-'));
   try {
     const r = spawnSync(process.execPath, [bin, '-p', project, '--outDir', out], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
