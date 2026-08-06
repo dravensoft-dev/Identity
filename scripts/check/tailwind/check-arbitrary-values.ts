@@ -57,7 +57,7 @@ export function isLegalBracket(content) {
   return true;
 }
 
-export function scanText(text) {
+export function scanText(text: string) {
   const out = [];
   for (const m of text.matchAll(CANDIDATE)) {
     const [, cls, content] = m;
@@ -67,20 +67,20 @@ export function scanText(text) {
   return out;
 }
 
-export function findMarkers(text) {
+export function findMarkers(text: string) {
   return [...text.matchAll(MARKER)].map((m) => ({
     raw: m[0],
     classes: m[1].trim().split(/\s+/).filter(Boolean),
   }));
 }
 
-export function markerAllowlist(text) {
+export function markerAllowlist(text: string) {
   const out = new Set();
   for (const { classes } of findMarkers(text)) for (const cls of classes) out.add(cls);
   return out;
 }
 
-export function scanFile(relPath, text) {
+export function scanFile(relPath, text: string) {
   const isMarkdown = relPath.endsWith('.md');
   const markers = findMarkers(text);
   const errs = [];
@@ -105,7 +105,7 @@ export function scanFile(relPath, text) {
   return errs;
 }
 
-export function* walk(dir, emitted = emittedTree()) {
+export function* walk(dir: string, emitted = emittedTree()) {
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
     if (statSync(p).isDirectory()) {

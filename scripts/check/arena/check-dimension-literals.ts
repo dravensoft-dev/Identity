@@ -84,7 +84,7 @@ function stripInterpolations(raw) {
   return out;
 }
 
-export function scanValue(prop, rawValue) {
+export function scanValue(prop: string, rawValue) {
   if (!PROPS.has(prop)) return null;
   const raw = stripInterpolations(rawValue);
   if (ZERO.test(raw)) return null;
@@ -102,7 +102,7 @@ export function scanValue(prop, rawValue) {
   return null;
 }
 
-export function skipString(text, i, quote) {
+export function skipString(text: string, i, quote) {
   for (let j = i + 1; j < text.length; j++) {
     if (text[j] === '\\') { j++; continue; }
     if (text[j] === quote) return j;
@@ -110,7 +110,7 @@ export function skipString(text, i, quote) {
   return text.length - 1;
 }
 
-export function blankComments(text) {
+export function blankComments(text: string) {
   let out = '';
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
@@ -139,7 +139,7 @@ export function blankComments(text) {
   return out;
 }
 
-export function readValue(text, start, stopChars) {
+export function readValue(text: string, start, stopChars) {
   let i = start, depth = 0;
   for (; i < text.length; i++) {
     const c = text[i];
@@ -152,7 +152,7 @@ export function readValue(text, start, stopChars) {
   return { text: text.slice(start, i), end: i };
 }
 
-function stripOuterParens(text) {
+function stripOuterParens(text: string) {
   const t = text.trim();
   if (t[0] !== '(' || t[t.length - 1] !== ')') return t;
   let depth = 0;
@@ -165,7 +165,7 @@ function stripOuterParens(text) {
   return t;
 }
 
-function splitTernary(text) {
+function splitTernary(text: string) {
   let depth = 0, qDepth = 0, qStart = -1;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
@@ -185,7 +185,7 @@ function splitTernary(text) {
   return null;
 }
 
-function splitFallback(text) {
+function splitFallback(text: string) {
   const parts = [];
   let depth = 0, start = 0;
   for (let i = 0; i < text.length; i++) {
@@ -203,7 +203,7 @@ function splitFallback(text) {
   return parts;
 }
 
-export function expressionLeaves(text) {
+export function expressionLeaves(text: string) {
   const stripped = stripOuterParens(text);
   const ternary = splitTernary(stripped);
   if (ternary) return [...expressionLeaves(ternary.a), ...expressionLeaves(ternary.b)];
@@ -212,7 +212,7 @@ export function expressionLeaves(text) {
   return [stripped.trim()];
 }
 
-function splitArgs(text) {
+function splitArgs(text: string) {
   const args = [];
   let depth = 0, start = 0;
   for (let i = 0; i < text.length; i++) {
@@ -228,7 +228,7 @@ function splitArgs(text) {
 const CALL_SHAPE = /^([a-zA-Z_$][\w.$]*)\(([^()]*)\)$/;
 const ARITH_SHAPE = /^[a-zA-Z_$][\w.$]*(?:\([^()]*\))?\s*[*+/-]\s*-?\d*\.?\d+$/;
 
-function scanLeaf(prop, leaf) {
+function scanLeaf(prop: string, leaf) {
   const trimmed = leaf.trim();
   if (!trimmed) return [];
 
@@ -251,7 +251,7 @@ function scanLeaf(prop, leaf) {
   return [];
 }
 
-function lineOf(text, index) {
+function lineOf(text: string, index) {
   return text.slice(0, index).split('\n').length;
 }
 
@@ -259,7 +259,7 @@ const COLON_STOP = new Set([',', '}']);
 
 const PROP_COLON = /(?<![\w.-])([a-zA-Z]+)\s*:\s*/g;
 
-function scanColonValues(text) {
+function scanColonValues(text: string) {
   const out = [];
   for (const m of text.matchAll(PROP_COLON)) {
     const prop = m[1];
@@ -283,7 +283,7 @@ const LOCAL_DECL = /(?<![\w.])(?:const|let)\s+([a-zA-Z_$][\w$]*)\s*=\s*/g;
 const STATEMENT_STOP = new Set([',', ';', '}']);
 const BARE_IDENTIFIER = /^[a-zA-Z_$][\w$]*$/;
 
-function localDeclarations(text) {
+function localDeclarations(text: string) {
   const decls = new Map();
   for (const m of text.matchAll(LOCAL_DECL)) {
     const name = m[1];
@@ -295,7 +295,7 @@ function localDeclarations(text) {
   return decls;
 }
 
-function scanDataflow(text) {
+function scanDataflow(text: string) {
   const bareUsages = new Map();
   for (const m of text.matchAll(PROP_COLON)) {
     const prop = m[1];
@@ -322,11 +322,11 @@ function scanDataflow(text) {
   return out;
 }
 
-function camel(prop) {
+function camel(prop: string) {
   return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
-function stringLiteralRuns(text) {
+function stringLiteralRuns(text: string) {
   const runs = [];
   let i = 0;
   while (i < text.length) {
@@ -439,7 +439,7 @@ export function stalePassthrough(seenComponents) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
-export function* sourceFiles(dir) {
+export function* sourceFiles(dir: string) {
   for (const entry of readdirSync(dir).sort()) {
     if (entry === 'dist') continue;
     const p = join(dir, entry);

@@ -34,7 +34,7 @@ export const PROSE_EXEMPT = {
 
 export const SIZE_ALLOWANCE = new Map<string, { limit: number; reason: string }>([]);
 
-export function limitFor(rel) {
+export function limitFor(rel: string) {
   return SIZE_ALLOWANCE.get(rel)?.limit ?? MAX_DOCUMENT_CHARS;
 }
 
@@ -48,7 +48,7 @@ export const READ_DESPITE_THE_DOT = new Set(['.gitkeep', '.github']);
 
 export { emittedTree };
 
-function walk(dir, keep, emitted) {
+function walk(dir: string, keep, emitted) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.') && !READ_DESPITE_THE_DOT.has(entry.name)) continue;
@@ -65,11 +65,11 @@ function walk(dir, keep, emitted) {
 
 export const SHEBANG = /^#![^\n]*\n/;
 
-function startsFile(source, comment) {
+function startsFile(source: string, comment) {
   return source.slice(0, source.indexOf(comment.text)).replace(SHEBANG, '').trim() === '';
 }
 
-export function isGenerated(path) {
+export function isGenerated(path: string) {
   return /\.generated\./.test(path);
 }
 
@@ -80,7 +80,7 @@ export function allowsHeader(repoRelativePath) {
     || basename(repoRelativePath).includes('.test.');
 }
 
-function isPragma(text) {
+function isPragma(text: string) {
   return /^\/[/*]\s*(@ts-|eslint-|prettier-|c8 |istanbul )/.test(text);
 }
 
@@ -174,7 +174,7 @@ export const RULE_OWNERS = [
   },
 ];
 
-export function statesRule(text, phrase) {
+export function statesRule(text: string, phrase) {
   return typeof phrase === 'string' ? text.includes(phrase) : phrase.test(text);
 }
 
@@ -206,7 +206,7 @@ export function ruleOwnerProblems(root = ROOT, owners = RULE_OWNERS) {
 
 export const MEMBER_DOC_TREE = /^frameworks\/[^/]+\/components\//;
 
-function isMemberDoc(text, repoRelativePath) {
+function isMemberDoc(text: string, repoRelativePath) {
   return MEMBER_DOC_TREE.test(repoRelativePath)
     && !repoRelativePath.includes('.test.')
     && text.startsWith('/**');
@@ -216,11 +216,11 @@ function documents(root) {
   return walk(root, (p) => p.endsWith('.md'), emittedTree(root));
 }
 
-function exempt(list, rel) {
+function exempt(list, rel: string) {
   return list.some((e) => rel === e || rel.startsWith(e));
 }
 
-function quote(text) {
+function quote(text: string) {
   const run = text.trim();
   return run.length > QUOTED_RUN_CHARS ? `${run.slice(0, QUOTED_RUN_CHARS)}...` : run;
 }

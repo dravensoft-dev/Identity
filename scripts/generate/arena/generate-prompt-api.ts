@@ -19,18 +19,19 @@ export const CONSUMER_DATA = 'Record<string, unknown>';
 export const OPEN_LINE = /^<!-- @api GENERATED from [^\n]*-->$/m;
 export const CLOSE_LINE = '<!-- @api end -->';
 
-export const openLine = (component) => `<!-- @api GENERATED from contracts/api/components/${component}.json.`
+export const openLine = (component: string) => `<!-- @api GENERATED from contracts/api/components/${component}.json.`
   + ' Edit the contract, not this table. -->';
 
 const OPENS_FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const CLOSES_FENCE = /^ {0,3}(`+|~+)[ \t]*$/;
 
-export function typeOf(name) {
+export function typeOf(name: string) {
   return name === 'consumerData' ? CONSUMER_DATA : name;
 }
 
 export function signature(params = {}) {
-  return Object.entries(params).map(([name, type]) => `${name}: ${typeOf(type)}`).join(', ');
+  return (Object.entries(params) as [string, string][])
+    .map(([name, type]) => `${name}: ${typeOf(type)}`).join(', ');
 }
 
 export function typeCell(spec) {
@@ -46,13 +47,13 @@ export function defaultCell(spec) {
   return spec.default === undefined ? '' : `\`${escapeCell(JSON.stringify(spec.default))}\``;
 }
 
-export function memberRow(name, spec, layer) {
+export function memberRow(name: string, spec, layer: string) {
   const bound = bindingName(name, spec.form, layer);
   return `| \`${bound}${spec.required ? '*' : ''}\` | ${spec.form} | ${typeCell(spec)} | ${
     defaultCell(spec)} | ${escapeCell(normaliseDoc(spec.description ?? ''))} |`;
 }
 
-export function renderRegion(contract, layer) {
+export function renderRegion(contract, layer: string) {
   const members = Object.entries(contract.api ?? {});
   const lines = [
     openLine(contract.component),
@@ -72,7 +73,7 @@ export function renderRegion(contract, layer) {
   return lines.join('\n');
 }
 
-export function fenceEnd(source) {
+export function fenceEnd(source: string) {
   const lines = source.split('\n');
   let fence = null;
   for (let i = 0; i < lines.length; i += 1) {
@@ -85,7 +86,7 @@ export function fenceEnd(source) {
   return -1;
 }
 
-export function applyRegion(source, region) {
+export function applyRegion(source: string, region) {
   const lines = source.split('\n');
   const opensAt = lines.findIndex((line) => OPEN_LINE.test(line));
 

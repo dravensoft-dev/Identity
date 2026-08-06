@@ -38,7 +38,7 @@ export function previewFor(group, type) {
 
 export function flattenTokens(tree) {
   const out = [];
-  const walk = (node, path, inheritedType) => {
+  const walk = (node, path: string[], inheritedType) => {
     const type = node.$type ?? inheritedType;
     if (node.$value !== undefined) {
       out.push({

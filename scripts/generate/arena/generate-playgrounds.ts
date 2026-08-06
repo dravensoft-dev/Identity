@@ -22,11 +22,11 @@ export const CODEC_BANNER =
   + ' * Edit the source, not this copy: every layer carries the same bytes so the same URL cannot\n'
   + ' * resolve to two different views. */\n';
 
-export function codecTarget(layer) {
+export function codecTarget(layer: string) {
   return join('frameworks', layer, 'playground', 'PlaygroundCodec.generated.ts');
 }
 
-export function renderCodec(source) {
+export function renderCodec(source: string) {
   return `${CODEC_BANNER}\n${source}`;
 }
 

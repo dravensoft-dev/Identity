@@ -88,7 +88,7 @@ export function pageProblems(tree: Record<string, string[]>, read) {
 }
 
 function main() {
-  const read = (rel) => {
+  const read = (rel: string) => {
     const path = join(repoRoot, rel);
     return existsSync(path) ? readFileSync(path, 'utf8') : null;
   };

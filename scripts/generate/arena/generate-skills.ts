@@ -19,7 +19,7 @@ export const CONSUMER_LAYERS = LAYERS.filter((layer) => layer !== 'tailwind');
 
 export const INDEX_TARGET = 'frameworks/SKILL.md';
 
-export const layerTarget = (layer) => `frameworks/${layer}/SKILL.md`;
+export const layerTarget = (layer: string) => `frameworks/${layer}/SKILL.md`;
 
 export const SKILL_TARGETS = [INDEX_TARGET, ...CONSUMER_LAYERS.map(layerTarget)];
 
@@ -75,7 +75,7 @@ ${CONSUMER_LAYERS
   applies, which is a claim the binding argues rather than an omission.
 - **Layers** is which layers ship the component today.`;
 
-export function layerHeader(layer) {
+export function layerHeader(layer: string) {
   return `${GENERATED}
 
 # Arena components, the ${LAYER_TITLE[layer]} layer
@@ -99,25 +99,25 @@ export function loadCategories(base = root) {
   return JSON.parse(readFileSync(join(base, 'frameworks/Components.json'), 'utf8'));
 }
 
-export function loadContract(component, base = root) {
+export function loadContract(component: string, base = root) {
   const path = join(base, 'contracts/api/components', `${component}.json`);
   if (!existsSync(path)) return null;
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function componentDir(layer, category, component) {
+export function componentDir(layer: string, category: string, component: string) {
   return join('frameworks', layer, 'components', category, kebab(component));
 }
 
-export function layersFor(category, component, base = root) {
+export function layersFor(category: string, component: string, base = root) {
   return CONSUMER_LAYERS.filter((layer) => existsSync(join(base, componentDir(layer, category, component))));
 }
 
-export function promptPath(category, component) {
+export function promptPath(category: string, component: string) {
   return `./components/${category}/${kebab(component)}/${component}.prompt.md`;
 }
 
-export function memberList(contract, layer?) {
+export function memberList(contract, layer?: string) {
   if (!contract) return [];
   return memberEntries(contract.api).map(([name, member]) => {
     const bound = layer ? bindingName(name, member.form, layer) : name;
@@ -125,7 +125,7 @@ export function memberList(contract, layer?) {
   });
 }
 
-export function patternsFor(category, component, layers, base = root) {
+export function patternsFor(category: string, component: string, layers, base = root) {
   const found = new Map();
   for (const layer of layers) {
     const path = join(base, componentDir(layer, category, component), `${component}.behaviour.json`);
@@ -142,18 +142,18 @@ export function patternsFor(category, component, layers, base = root) {
 export function renderPatterns(found, layers) {
   const names = [...found.keys()].sort();
   if (names.length === 0) return '';
-  const everywhere = (pattern) => layers.every((layer) => found.get(pattern).has(layer));
+  const everywhere = (pattern) => layers.every((layer: string) => found.get(pattern).has(layer));
   return names
     .map((pattern) => (everywhere(pattern) ? pattern : `${pattern} (${[...found.get(pattern)].sort().join(', ')})`))
     .join(', ');
 }
 
-export function escapeCell(text) {
+export function escapeCell(text: string) {
   return String(text).split('|').join('\\|').split('\n').join(' ');
 }
 
-export function rowsFor(category, components, base = root) {
-  return components.map((component) => {
+export function rowsFor(category: string, components, base = root) {
+  return components.map((component: string) => {
     const layers = layersFor(category, component, base);
     const contract = loadContract(component, base);
     return {
@@ -178,7 +178,7 @@ export function renderRow(row) {
   } | ${row.layers.join(', ') || '(no layer)'} |`;
 }
 
-export function renderLayerRow(row, layer) {
+export function renderLayerRow(row, layer: string) {
   return `| \`${row.component}\` | ${escapeCell(row.description)} | ${
     taken(memberList(row.contract, layer))
   } | [\`${row.component}.prompt.md\`](${promptPath(row.category, row.component)}) |`;
@@ -212,7 +212,7 @@ export function renderIndex(base = root) {
   return out.join('\n');
 }
 
-export function renderLayerIndex(layer, base = root) {
+export function renderLayerIndex(layer: string, base = root) {
   const categories = loadCategories(base);
   const out = [layerHeader(layer)];
   let count = 0;

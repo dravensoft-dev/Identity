@@ -14,7 +14,7 @@ import {
   renderRegion, promptPaths, OPEN_LINE, CLOSE_LINE,
 } from '../../generate/arena/generate-prompt-api.ts';
 
-export function regionOf(source) {
+export function regionOf(source: string) {
   const lines = source.split('\n');
   const opensAt = lines.findIndex((line) => OPEN_LINE.test(line));
   if (opensAt === -1) return null;

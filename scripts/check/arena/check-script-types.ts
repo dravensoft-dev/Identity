@@ -20,7 +20,7 @@ export const PROJECTS = [
 
 export const CHECKED_EXTENSIONS = ['.ts', '.mjs'];
 
-export function sourcesUnder(dir) {
+export function sourcesUnder(dir: string) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -33,8 +33,8 @@ export function sourcesUnder(dir) {
 export function unreachedProblems(onDisk, included, root = repoRoot) {
   const reached = new Set(included);
   return onDisk
-    .filter((path) => !reached.has(path))
-    .map((path) => `${relative(root, path)} is on disk and the project's globs do not reach it`);
+    .filter((path: string) => !reached.has(path))
+    .map((path: string) => `${relative(root, path)} is on disk and the project's globs do not reach it`);
 }
 
 function main() {

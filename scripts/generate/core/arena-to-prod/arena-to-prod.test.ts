@@ -76,7 +76,7 @@ const readable = {
   },
 };
 
-const PHOSPHOR_SHEET = (selector, family) => `@font-face {
+const PHOSPHOR_SHEET = (selector: string, family: string) => `@font-face {
   font-family: "${family}";
   src: url("./${family}.woff2") format("woff2"), url("./${family}.ttf") format("truetype");
   font-weight: normal;

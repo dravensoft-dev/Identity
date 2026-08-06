@@ -60,7 +60,7 @@ const fixture = {
 };
 
 const model = () => playgroundModel(contract, fixture, types);
-const knob = (name) => model().knobs.find((k) => k.member === name);
+const knob = (name: string) => model().knobs.find((k) => k.member === name);
 
 test('typeOf throws by name on a type no contract declares', () => {
   assert.throws(() => typeOf(types, 'Nope'), UnmodelledForm);

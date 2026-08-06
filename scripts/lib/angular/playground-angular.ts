@@ -26,7 +26,7 @@ function validatorFor(name: string | undefined): ((value: string) => string) | u
 
 export const MARKERS_SOURCE = 'frameworks/angular/ProjectionMarkers.ts';
 
-export function markerNames(source) {
+export function markerNames(source: string) {
   const found = new Map();
   for (const [, selector, name] of source.matchAll(/selector:\s*'\[(\w+)\]'[^}]*}\)\s*export class (\w+)/g)) {
     found.set(selector, name);
@@ -34,7 +34,7 @@ export function markerNames(source) {
   return found;
 }
 
-export function selector(name) {
+export function selector(name: string) {
   return kebab(name);
 }
 
@@ -139,7 +139,7 @@ export function projected(node, places, fields, markers, depth, imports, marked)
   return `${pad}${rendered.replace(/^(<[\w-]+)/, `$1${marked}`)}`;
 }
 
-export function escapeText(text) {
+export function escapeText(text: string) {
   return text.replace(/\{\{/g, '{{ "{{" }}').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 }
 

@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { proseSegments } from './markdown-prose.ts';
 
-const texts = (source) => proseSegments(source).map((s) => s.text);
+const texts = (source: string) => proseSegments(source).map((s) => s.text);
 
 test('a plain paragraph is one segment per line', () => {
   assert.deepEqual(proseSegments('one\ntwo\n'), [

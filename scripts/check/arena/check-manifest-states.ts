@@ -55,19 +55,19 @@ export function sourceImplements(sourceText) {
 
 export function classStringsBySlot(manifest) {
   const bySlot = new Map();
-  const add = (slot, cls) => {
+  const add = (slot, cls: string) => {
     if (typeof cls !== 'string') return;
     if (!bySlot.has(slot)) bySlot.set(slot, []);
     bySlot.get(slot).push(cls);
   };
-  for (const [slot, cls] of Object.entries(manifest.slots || {})) add(slot, cls);
+  for (const [slot, cls] of Object.entries(manifest.slots || {}) as [string, string][]) add(slot, cls);
   for (const variantGroup of Object.values(manifest.variants || {}))
     for (const branch of Object.values(variantGroup))
-      for (const [slot, cls] of Object.entries(branch || {})) add(slot, cls);
+      for (const [slot, cls] of Object.entries(branch || {}) as [string, string][]) add(slot, cls);
   return bySlot;
 }
 
-export function readContract(name) {
+export function readContract(name: string) {
   const path = join(CONTRACTS_DIR, `${name}.json`);
   if (!existsSync(path)) return null;
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -119,7 +119,7 @@ export function manifestProblems(manifest, declared) {
 
 export const SOURCE_EXTENSIONS = ['.tsx', '.jsx'];
 
-export function reactSourceFor(name, category) {
+export function reactSourceFor(name: string, category: string) {
   const dir = join(REACT_COMPONENTS_DIR, category, kebab(name));
   for (const ext of SOURCE_EXTENSIONS) {
     const path = join(dir, `${name}${ext}`);
@@ -128,7 +128,7 @@ export function reactSourceFor(name, category) {
   return null;
 }
 
-export function missingReactSource(name, category) {
+export function missingReactSource(name: string, category: string) {
   const dir = join(REACT_COMPONENTS_DIR, category, kebab(name));
   if (!existsSync(dir) || reactSourceFor(name, category)) return null;
   return `${name}: frameworks/react/components/${category}/${kebab(name)}/ holds no ${name}.tsx and `
@@ -154,7 +154,7 @@ export function unaskedHandDrawn(asked, handDrawn = HAND_DRAWN) {
   return problems;
 }
 
-export function reactProblems(name, category) {
+export function reactProblems(name: string, category: string) {
   const path = reactSourceFor(name, category);
   if (!path) return { findings: [], sites: 0 };
   const contract = readContract(name);

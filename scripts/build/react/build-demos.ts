@@ -27,11 +27,11 @@ export const ROOT_MODULES = [
 export const SOURCE_EXTENSIONS = ['.jsx', '.tsx'];
 export const COMPILED_EXTENSIONS = ['.jsx', '.tsx', '.ts'];
 
-export function loaderFor(path) {
+export function loaderFor(path: string) {
   return path.endsWith('.tsx') || path.endsWith('.ts') ? 'tsx' : 'jsx';
 }
 
-export function findSourceFiles(dir) {
+export function findSourceFiles(dir: string) {
   const found = [];
   const walk = (d) => {
     for (const entry of readdirSync(d, { withFileTypes: true })) {

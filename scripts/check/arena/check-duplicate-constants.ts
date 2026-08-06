@@ -29,7 +29,7 @@ const EXEMPT = new Map([
    + 'whole requirement, so drift between the layers costs nothing here.'],
 ]);
 
-export function numericConstants(source) {
+export function numericConstants(source: string) {
   const found = new Map();
   const re = /^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*=\s*([^;]+);/gm;
   for (const m of source.matchAll(re)) {
@@ -47,7 +47,7 @@ export function numericConstants(source) {
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-export function* sourceFiles(dir) {
+export function* sourceFiles(dir: string) {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
     const path = join(dir, entry);

@@ -58,7 +58,7 @@ export const EXCLUDED = new Map([
   ['limit-pagination-siblings', 'script-readable: an array bound, and the elision threshold derives from it in JS'],
 ]);
 
-export function presetTokens(css) {
+export function presetTokens(css: string) {
   const out = new Set();
   const m = css.match(/@theme\s*\{([\s\S]*)\}/);
   if (!m) return out;

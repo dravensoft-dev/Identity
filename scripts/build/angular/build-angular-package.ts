@@ -80,7 +80,7 @@ export function libTsconfig() {
 export const VARIANTS = '.variants.ts';
 export const STYLE_FACTORY = /^(export const \w+ = )(arenaStyles\()/gm;
 
-export function annotatePure(source) {
+export function annotatePure(source: string) {
   return source.replace(STYLE_FACTORY, '$1/*@__PURE__*/$2');
 }
 

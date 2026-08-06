@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { basename, join, relative } from 'node:path';
 import { repoRoot } from '../arena/repo-root.ts';
 
-export function manifestClasses(manifest) {
-  const out = new Set();
+export function manifestClasses(manifest): string[] {
+  const out = new Set<string>();
   const eat = (v) => {
     if (typeof v === 'string') for (const c of v.split(/\s+/)) { if (c) out.add(c); }
     else if (v && typeof v === 'object') for (const child of Object.values(v)) eat(child);
@@ -15,7 +15,7 @@ export function manifestClasses(manifest) {
   return [...out].sort();
 }
 
-export function escapeClass(cls) {
+export function escapeClass(cls: string) {
   const backslash = (s) => s.replace(/[^A-Za-z0-9_-]/g, (ch) => `\\${ch}`);
   if (/^[0-9]/.test(cls))
     return `\\${cls.codePointAt(0).toString(16)} ${backslash(cls.slice(1))}`;
@@ -24,7 +24,7 @@ export function escapeClass(cls) {
 
 export function manifestFiles(componentsDir) {
   const out = [];
-  const walk = (dir) => {
+  const walk = (dir: string) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const p = join(dir, e.name);
       if (e.isDirectory()) walk(p);

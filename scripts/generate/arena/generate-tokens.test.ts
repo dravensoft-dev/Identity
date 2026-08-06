@@ -13,12 +13,12 @@ const DESIGN = join(repoRoot, 'contracts/design');
 const SOURCES = [...new Set(FILES.flatMap((f) => f.blocks.map((b) => b.source)))];
 const REFERENCE = /"\$value"\s*:\s*"\{([^}]+)\}"/g;
 
-function referencedGroups(source) {
+function referencedGroups(source: string) {
   const text = readFileSync(join(DESIGN, source), 'utf8');
   return [...text.matchAll(REFERENCE)].map((m) => m[1].split('.')[0]);
 }
 
-function topLevelGroups(source) {
+function topLevelGroups(source: string) {
   return Object.keys(JSON.parse(readFileSync(join(DESIGN, source), 'utf8')));
 }
 

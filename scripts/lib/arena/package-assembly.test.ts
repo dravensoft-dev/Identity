@@ -181,7 +181,7 @@ function tailwindTree(names) {
   return tree(files);
 }
 
-const importsIn = (css) => [...css.matchAll(/@import\s+'([^']+)'/g)].map((m) => m[1]);
+const importsIn = (css: string) => [...css.matchAll(/@import\s+'([^']+)'/g)].map((m) => m[1]);
 
 test('every import the component barrel writes resolves to a sheet the same call emits', () => {
   const root = tailwindTree(['tag', 'button']);

@@ -132,7 +132,7 @@ export const COVERED = {
   'ArenaSideNavCollapsible:angular': 'SideNavNesting.test.ts',
 };
 
-export function suiteMentions(source, tail) {
+export function suiteMentions(source: string, tail) {
   const escaped = tail.split('/').map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return new RegExp(escaped.join(`(?:/|['"]\\s*,\\s*['"])`)).test(source);
 }
@@ -242,7 +242,7 @@ function collectBindings() {
   return inventoryFrom(byKey);
 }
 
-export function walkSuites(dir) {
+export function walkSuites(dir: string) {
   const out = [];
   if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {

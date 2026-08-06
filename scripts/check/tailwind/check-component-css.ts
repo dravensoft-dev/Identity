@@ -28,15 +28,15 @@ export const EXTERNAL_PROPERTIES = new Map([
   ['picker-invert', 'written by arena-to-prod into the consuming project\'s own stylesheet, never by the package'],
 ]);
 
-export function selectorsIn(css) {
+export function selectorsIn(css: string) {
   return new Set([...css.matchAll(/\.(arena-[a-z0-9_-]+)/g)].map((m) => m[1]));
 }
 
-export function propertiesIn(css) {
+export function propertiesIn(css: string) {
   return new Set([...css.matchAll(/var\(\s*--([a-z0-9-]+)/g)].map((m) => m[1]));
 }
 
-export function themeLeaks(css) {
+export function themeLeaks(css: string) {
   const leaked = new Set();
   for (const name of propertiesIn(css)) {
     const namespace = THEME_NAMESPACES.find((ns) => name === ns || name.startsWith(`${ns}-`));

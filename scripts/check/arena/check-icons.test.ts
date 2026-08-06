@@ -76,7 +76,7 @@ test('everyGlyph is the union, so a glyph in one weight is a known name', () => 
 });
 
 test('the token pattern takes a class name and leaves ordinary prose alone', () => {
-  const of = (text) => [...text.matchAll(ICON_TOKEN)].map((m) => m[0]);
+  const of = (text: string) => [...text.matchAll(ICON_TOKEN)].map((m) => m[0]);
   assert.deepEqual(of('class="ph-bold ph-caret-up"'), ['ph-bold', 'ph-caret-up']);
   assert.deepEqual(of('a pH of 7, and the ph value'), []);
   assert.deepEqual(of('ph-arrow-fat-line-up'), ['ph-arrow-fat-line-up']);

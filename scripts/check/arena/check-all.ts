@@ -130,14 +130,14 @@ export function summarize(results) {
   return [...lines, '', tail].join('\n');
 }
 
-function runStep(name, args) {
+function runStep(name: string, args) {
   console.log(`\n> ${name}\n`);
   const r = spawnSync(process.execPath, args, { stdio: 'inherit', cwd: repoRoot });
   if (r.error) console.error(`  failed to spawn: ${r.error.message || r.error}`);
   return { name, status: r.error ? 'fail' : stepStatus(r.status) };
 }
 
-export function testFilesUnder(dir) {
+export function testFilesUnder(dir: string) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);

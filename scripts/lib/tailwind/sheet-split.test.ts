@@ -76,7 +76,7 @@ test('THE REAL SHEET: the two halves reassemble to every rule the one file carri
   const css = readFileSync(join(repoRoot, 'frameworks/tailwind/Utilities.generated.css'), 'utf8');
   const { base, utilities } = splitCompiledSheet(css);
 
-  const rules = (text) => (text.match(/\{/g) ?? []).length;
+  const rules = (text: string) => (text.match(/\{/g) ?? []).length;
   assert.equal(rules(base) + rules(utilities), rules(css),
     'a layer declaration opens no block, so the brace counts add up exactly; a mismatch means '
     + 'a rule was dropped or duplicated');
@@ -102,7 +102,7 @@ test('THE REAL SHEET: nothing is rewritten, only moved -- the halves are the ori
   assert.ok(css.includes(block.trimEnd()),
     'the base half is a verbatim slice of the compiled sheet, not a re-serialisation of it');
 
-  const strip = (text) => text.replace(/^@layer [^{};]*;$/gm, '').replace(/\s+/g, ' ').trim();
+  const strip = (text: string) => text.replace(/^@layer [^{};]*;$/gm, '').replace(/\s+/g, ' ').trim();
   assert.equal(
     strip(utilities),
     strip(css.replace(block.trimEnd(), '')),
@@ -112,7 +112,7 @@ test('THE REAL SHEET: nothing is rewritten, only moved -- the halves are the ori
 
 test('the layer order survives the cut, which is the only thing the cascade depends on', () => {
   const css = readFileSync(join(repoRoot, 'frameworks/tailwind/Utilities.generated.css'), 'utf8');
-  const declared = (text) => (text.match(/^@layer [^{};]*;$/gm) ?? []);
+  const declared = (text: string) => (text.match(/^@layer [^{};]*;$/gm) ?? []);
   const { base, utilities } = splitCompiledSheet(css);
 
   assert.deepEqual(declared(base), declared(css));

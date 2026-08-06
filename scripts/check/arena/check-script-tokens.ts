@@ -14,7 +14,7 @@ export function cssCounterpart(value) {
   return m ? Number(m[1]) : null;
 }
 
-export function importedNames(source) {
+export function importedNames(source: string) {
   const names = new Set();
   const re = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*tokens\.generated(?:\.js|\.ts)?['"]/gi;
   for (const m of source.matchAll(re)) {
@@ -80,7 +80,7 @@ export function cssDiscoveryProblems(existingProblems, cssFileCount) {
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-export function* sourceFiles(dir) {
+export function* sourceFiles(dir: string) {
   for (const entry of readdirSync(dir)) {
     if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
     const path = join(dir, entry);

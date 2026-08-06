@@ -114,7 +114,7 @@ export const UNTRACKED = {
   'frameworks/react/ArenaStyles.generated.js': 'the compiled sibling of that, which a demo page loads.',
 };
 
-function walk(dir, root) {
+function walk(dir: string, root) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.')) continue;
@@ -129,11 +129,11 @@ function walk(dir, root) {
   return found;
 }
 
-function startsFile(source, comment) {
+function startsFile(source: string, comment) {
   return source.slice(0, source.indexOf(comment.text)).trim() === '';
 }
 
-export function claimsGeneration(source) {
+export function claimsGeneration(source: string) {
   const [first] = findComments(source);
   return Boolean(first) && startsFile(source, first) && /GENERATED (by|from)/i.test(first.text);
 }
@@ -177,7 +177,7 @@ export function trackingProblems(root = ROOT, run = gitRun) {
   return problems;
 }
 
-export function matches(pattern, path) {
+export function matches(pattern, path: string) {
   const rx = pattern
     .split('**/').map((part) => part.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*'))
     .join('(?:.*/)?');

@@ -22,7 +22,7 @@ export function families(root) {
     });
 }
 
-async function google(css, weights) {
+async function google(css: string, weights) {
   const url = googleFontsUrl(css, weights);
   const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) throw new Error(`CSS fetch failed for ${css}: ${res.status}`);

@@ -25,9 +25,9 @@ export const STAYS_JAVASCRIPT = new Map([
    + 'to the one above, so it is the same file and takes the same answer'],
 ]);
 
-export const isSuite = (name) => SUITE_EXTENSIONS.some((ext) => name.endsWith(`.test${ext}`));
+export const isSuite = (name: string) => SUITE_EXTENSIONS.some((ext) => name.endsWith(`.test${ext}`));
 
-export const isScript = (name) =>
+export const isScript = (name: string) =>
   SCRIPT_EXTENSIONS.some((ext) => name.endsWith(ext)) && !isSuite(name);
 
 function classify(segments, i) {
@@ -38,7 +38,7 @@ function classify(segments, i) {
   return null;
 }
 
-export function domainOfTestPath(path) {
+export function domainOfTestPath(path: string) {
   const segments = String(path).split(/[\\/]+/).filter((s) => s !== '' && s !== '.');
   for (let i = segments.length - 1; i >= 0; i--) {
     const domain = classify(segments, i);

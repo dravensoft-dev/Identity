@@ -25,11 +25,11 @@ export const PACKAGES = [
 
 export const GENERATED_PALETTE = 'contracts/design-generated/palette.generated.css';
 
-export const distDir = (layer, base = root) => join(base, 'frameworks', layer, 'dist');
+export const distDir = (layer: string, base = root) => join(base, 'frameworks', layer, 'dist');
 
-const isColour = (name) => name.startsWith('color-');
+const isColour = (name: string) => name.startsWith('color-');
 
-export function stripAtStatements(css) {
+export function stripAtStatements(css: string) {
   return css.replace(/^[ \t]*@[a-z-]+[^{}\n]*;[ \t]*$/gim, '');
 }
 
@@ -99,7 +99,7 @@ function exportTargets(exports) {
   return out;
 }
 
-export function globMatches(target, dir) {
+export function globMatches(target, dir: string) {
   const rel = target.replace(/^\.\//, '');
   const pattern = new RegExp(`^${rel.split('*').map((p) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
   const found = [];
@@ -115,7 +115,7 @@ export function globMatches(target, dir) {
   return found;
 }
 
-export function exportProblems(pkg, manifest, dir) {
+export function exportProblems(pkg, manifest, dir: string) {
   const problems = [];
   const targets = exportTargets(manifest.exports ?? {});
   if (targets.length === 0) problems.push(`${pkg.name}: no exports target resolves to a file, so the package exposes nothing`);
@@ -141,7 +141,7 @@ export function exportProblems(pkg, manifest, dir) {
   return problems;
 }
 
-export function componentMapProblems(pkg, dir) {
+export function componentMapProblems(pkg, dir: string) {
   const at = join(dir, MAP_FILE);
   if (!existsSync(at)) {
     return [`${pkg.name}: no ${MAP_FILE}, so "components": "auto" has nothing to resolve a template against`];
@@ -171,11 +171,11 @@ export function componentMapProblems(pkg, dir) {
 
 const RELATIVE_IMPORT = /@import\s+(?:url\(\s*)?['"](\.[^'"]*)['"]/g;
 
-export function importsIn(css) {
+export function importsIn(css: string) {
   return [...css.matchAll(RELATIVE_IMPORT)].map((match) => match[1]);
 }
 
-export function styleProblems(pkg, dir) {
+export function styleProblems(pkg, dir: string) {
   const problems = [];
   const seen = new Set();
   const queue = ['arena.css'];

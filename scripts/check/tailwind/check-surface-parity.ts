@@ -63,7 +63,7 @@ export function parityProblems(pairs, read) {
 }
 
 function main() {
-  const read = (file) => JSON.parse(readFileSync(join(MANIFESTS, file), 'utf8'));
+  const read = (file: string) => JSON.parse(readFileSync(join(MANIFESTS, file), 'utf8'));
   const problems = parityProblems(PAIRS, read);
   if (PAIRS.length === 0) problems.push('PAIRS is empty -- a gate with nothing to compare finds nothing by construction');
 

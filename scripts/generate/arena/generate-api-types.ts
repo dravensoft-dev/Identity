@@ -27,7 +27,7 @@ export function loadTypes(dir = join(root, 'contracts/api/types')) {
     .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
 }
 
-export function docComment(text, indent = '') {
+export function docComment(text: string, indent = '') {
   const lines = text.split('\n');
   if (lines.length === 1) return `${indent}/** ${text} */`;
   return [`${indent}/**`, ...lines.map((l) => `${indent} *  ${l}`), `${indent} */`].join('\n');

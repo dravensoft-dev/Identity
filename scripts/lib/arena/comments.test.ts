@@ -62,7 +62,7 @@ test('an unterminated block comment is still reported rather than swallowing the
   assert.equal(found[0].line, 2);
 });
 
-const at = (source, needle) => source.indexOf(needle);
+const at = (source: string, needle) => source.indexOf(needle);
 
 test('a real statement keyword is outside every literal, and one inside a template is inside one', () => {
   const source = "import { b } from './y.mjs';\nconst t = `import { y } from './gone.mjs';`;\n";

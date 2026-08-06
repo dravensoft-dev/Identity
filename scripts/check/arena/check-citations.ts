@@ -17,7 +17,7 @@ export const SKIPPED_ANYWHERE = new Set(['node_modules', '.git']);
 
 export const SKIPPED_UNDER_FRAMEWORKS = new Set(['dist', 'build', 'vendor']);
 
-export function skips(name, relativeDirectory) {
+export function skips(name: string, relativeDirectory) {
   if (SKIPPED_ANYWHERE.has(name)) return true;
   return SKIPPED_UNDER_FRAMEWORKS.has(name) && relativeDirectory.startsWith('frameworks');
 }
@@ -41,7 +41,7 @@ export function repoRoots(base = root) {
 
 export function pathPattern(roots) {
   if (roots.length === 0) return /(?!)/g;
-  const alternation = roots.map((name) => name.replace(/\./g, '\\.')).join('|');
+  const alternation = roots.map((name: string) => name.replace(/\./g, '\\.')).join('|');
   return new RegExp(
     `(?<![A-Za-z0-9._/-])(?:${alternation})\\/[A-Za-z0-9._-]+(?:\\/[A-Za-z0-9._-]+)*`,
     'g',
@@ -50,7 +50,7 @@ export function pathPattern(roots) {
 
 export function documents(base = root) {
   const found = [];
-  const walk = (dir, relative) => {
+  const walk = (dir: string, relative) => {
     for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (skips(entry.name, relative)) continue;
       const path = join(dir, entry.name);
@@ -70,7 +70,7 @@ export const BARE_DOCUMENT = /(?<![A-Za-z0-9._/-])[A-Za-z][A-Za-z0-9-]*(?:\.[a-z
 
 export function basenames(base = root) {
   const found = new Set();
-  const walk = (dir, relative) => {
+  const walk = (dir: string, relative) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (skips(entry.name, relative)) continue;
       if (entry.isDirectory()) walk(join(dir, entry.name), relative ? `${relative}/${entry.name}` : entry.name);

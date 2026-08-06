@@ -37,7 +37,7 @@ export const STALE = {
   angular: { 'src/app.html': '<arena-nothing-at-all></arena-nothing-at-all>\n' },
 };
 
-export function assembled(layer, base = root) {
+export function assembled(layer: string, base = root) {
   return existsSync(join(distDir(layer, base), 'package.json'));
 }
 
@@ -52,7 +52,7 @@ export function assemble(base = root) {
   return { built: true, missing };
 }
 
-export function fixture(layer, files, stylesheet, base = root) {
+export function fixture(layer: string, files, stylesheet, base = root) {
   const dir = mkdtempSync(join(tmpdir(), `arena-consumer-${layer}-`));
   const example = JSON.parse(readFileSync(join(distDir(layer, base), 'arena.config.example.json'), 'utf8'));
   writeFileSync(join(dir, 'arena.config.json'), JSON.stringify({ ...example, stylesheet }, null, 2));
@@ -63,21 +63,21 @@ export function fixture(layer, files, stylesheet, base = root) {
   return dir;
 }
 
-export function runCli(layer, dir, base = root) {
+export function runCli(layer: string, dir: string, base = root) {
   const run = spawnSync('node', [join(distDir(layer, base), CLI), '--src', 'src', '--out', 'out'],
     { cwd: dir, encoding: 'utf8' });
-  const read = (name) => {
+  const read = (name: string) => {
     const at = join(dir, 'out', name);
     return existsSync(at) ? readFileSync(at, 'utf8') : null;
   };
   return { status: run.status, stderr: run.stderr ?? '', theme: read(THEME_SHEET), icons: read(ICONS_SHEET) };
 }
 
-export function importedSheets(css) {
+export function importedSheets(css: string) {
   return [...(css ?? '').matchAll(/@import '[^']*\/css\/components\/([^']+)\.css';/g)].map((m) => m[1]).sort();
 }
 
-export function mergeProblems(layer, result, base = root) {
+export function mergeProblems(layer: string, result, base = root) {
   const problems = [];
   const bins = readdirSync(join(distDir(layer, base), 'bin'))
     .filter((f) => f.endsWith('.ts') || f.endsWith('.mjs'));
@@ -98,7 +98,7 @@ export function mergeProblems(layer, result, base = root) {
   return problems;
 }
 
-export function renameProblems(layer, result, expected, base = root) {
+export function renameProblems(layer: string, result, expected, base = root) {
   const problems = [];
   const sheet = join(distDir(layer, base), 'css', 'components', 'arena-button.css');
   if (!existsSync(sheet)) {
@@ -117,7 +117,7 @@ export function renameProblems(layer, result, expected, base = root) {
   return problems;
 }
 
-export function staleNameProblems(layer, result) {
+export function staleNameProblems(layer: string, result) {
   if (result.status === 0 && importedSheets(result.theme).length > 0) {
     return [`${layer}: a source naming the pre-rename symbol still resolved `
       + `[${importedSheets(result.theme).join(', ')}]. Nothing may answer to the old name: there is no alias `
@@ -126,7 +126,7 @@ export function staleNameProblems(layer, result) {
   return [];
 }
 
-export function listProblems(layer, named, unknown, list = []) {
+export function listProblems(layer: string, named, unknown, list = []) {
   const problems = [];
   if (named.status !== 0) {
     problems.push(`${layer}: the sheet list its own README documents, [${list.join(', ')}], was refused:\n    ${named.stderr.trim()}`);
@@ -145,7 +145,7 @@ const AUTO = { components: 'auto', preflight: false };
 
 export const DOCUMENTED_LIST = /"components":\s*\[([^\]]*)\]/g;
 
-export function documented(page) {
+export function documented(page: string) {
   const lists = [...page.matchAll(DOCUMENTED_LIST)];
   if (lists.length !== 1) return { lists: lists.length, names: null };
   const names = lists[0][1].split(',').map((one) => one.trim().replace(/^"|"$/g, '')).filter(Boolean);

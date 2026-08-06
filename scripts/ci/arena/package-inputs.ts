@@ -37,7 +37,7 @@ export const PACKAGE_INPUTS = {
   },
 };
 
-export function pathspecs(layer) {
+export function pathspecs(layer: string) {
   const inputs = PACKAGE_INPUTS[layer];
   if (!inputs) throw new Error(`package-inputs: no package is assembled from a layer called "${layer}"`);
   return Object.keys(inputs).sort();

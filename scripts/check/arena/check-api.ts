@@ -30,7 +30,7 @@ export function zeroContractProblems({ contracts, types }) {
 
 export { bindingName };
 
-export function docProblems(contract, docs, layer) {
+export function docProblems(contract, docs, layer: string) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
   const wanted = new Map();
@@ -117,7 +117,7 @@ export function validateTypes(types) {
 export function validateContract(contract, typeNames) {
   const problems = [];
   const where = contract.component ?? '(unnamed)';
-  const declared = (name, kind) => {
+  const declared = (name: string, kind) => {
     if (!typeNames.has(name)) return `${where}: names type "${name}", which contracts/api/types/ does not declare`;
     if (typeNames.get(name) !== kind) return `${where}: "${name}" is a ${typeNames.get(name)}, used where a ${kind} belongs`;
     return null;
@@ -183,7 +183,7 @@ export function validateContract(contract, typeNames) {
   return problems;
 }
 
-export function compareSurface(contract, members, layer, types = new Map()) {
+export function compareSurface(contract, members, layer: string, types = new Map()) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
 
@@ -310,7 +310,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
   return problems;
 }
 
-const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
+const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 
 export const REACT_SURFACE_EXTENSIONS = ['.tsx', '.d.ts'];
 
@@ -390,7 +390,7 @@ export function reactImplementationProblems(contract, declarationPath, readFile 
 function reactImplementations() {
   const { implementations, problems } = resolveReactImplementations(
     readLayer('react'),
-    (path) => existsSync(join(root, path)),
+    (path: string) => existsSync(join(root, path)),
   );
   return {
     implementations: new Map([...implementations].map(([name, path]) => [name, join(root, path)])),
@@ -418,7 +418,7 @@ export function resolveAngularImplementations(tree: Record<string, string[]>, ex
 function angularImplementations() {
   const { implementations, problems } = resolveAngularImplementations(
     readLayer('angular'),
-    (path) => existsSync(join(root, path)),
+    (path: string) => existsSync(join(root, path)),
   );
   return {
     implementations: new Map([...implementations].map(([name, path]) => [name, join(root, path)])),

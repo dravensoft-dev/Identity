@@ -8,7 +8,7 @@ import { PAIRS, SURFACE, surfaceClasses, slotClasses, parityProblems } from './c
 const CARD = { slots: { root: 'block bg-base-200 border-[length:var(--bw)] rounded-lg overflow-hidden' },
   variants: { accent: { false: { root: 'border-base-300' } } } };
 const UNAUTH = { slots: { panel: 'bg-base-200 border-[length:var(--bw)] border-base-300 rounded-lg overflow-hidden shadow-3 p-5' } };
-const read = (file) => (file.includes('card/ArenaCard') ? CARD : UNAUTH);
+const read = (file: string) => (file.includes('card/ArenaCard') ? CARD : UNAUTH);
 
 test('surfaceClasses keeps background, border and radius and drops everything else', () => {
   assert.deepEqual(surfaceClasses('block bg-base-200 rounded-lg p-5 shadow-3 overflow-hidden'),

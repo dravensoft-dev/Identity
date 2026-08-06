@@ -127,7 +127,7 @@ export function componentMap(root) {
   }
 }
 
-export function sourceFiles(path) {
+export function sourceFiles(path: string) {
   const found = [];
   const walk = (at) => {
     for (const entry of readdirSync(at, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {

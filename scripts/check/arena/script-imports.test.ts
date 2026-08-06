@@ -30,12 +30,12 @@ export const VENDORED_VERBATIM = new Set([
 export function guardProblems(paths, root = repoRoot) {
   return paths
     .map((p) => relative(root, p).split(sep).join('/'))
-    .filter((rel) => !VENDORED_VERBATIM.has(rel))
-    .filter((rel) => EXTENSION_COUPLED_GUARD.test(readFileSync(join(root, rel), 'utf8')))
-    .map((rel) => `${rel} decides whether it is the program by matching its own filename`);
+    .filter((rel: string) => !VENDORED_VERBATIM.has(rel))
+    .filter((rel: string) => EXTENSION_COUPLED_GUARD.test(readFileSync(join(root, rel), 'utf8')))
+    .map((rel: string) => `${rel} decides whether it is the program by matching its own filename`);
 }
 
-export function scriptsUnder(dir) {
+export function scriptsUnder(dir: string) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -48,7 +48,7 @@ export function scriptsUnder(dir) {
 
 export const isInterpolated = (specifier) => specifier.includes('${');
 
-export function unresolvedSpecifiers(path) {
+export function unresolvedSpecifiers(path: string) {
   const source = readFileSync(path, 'utf8');
   const literals = literalRanges(source);
   const bad = [];

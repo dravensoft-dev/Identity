@@ -9,7 +9,7 @@ import {
 import { pascal, kebab } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
+const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 
 export function describeBinding(binding) {
   return bindingCases(binding)

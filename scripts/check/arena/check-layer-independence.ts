@@ -70,11 +70,11 @@ export function* layerFiles(layerDir) {
   }
 }
 
-export function foreignTokens(layer) {
+export function foreignTokens(layer: string) {
   return FORBIDDEN[layer].flatMap((other) => LAYER_TOKENS[other].map(([token, re]) => ({ other, token, re })));
 }
 
-export function textualHits(text, tokens) {
+export function textualHits(text: string, tokens) {
   const hits = [];
   const lines = text.split('\n');
   for (const [index, line] of lines.entries())
@@ -86,11 +86,11 @@ export function textualHits(text, tokens) {
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
 const HTML_REFERENCE = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
 
-export function referencesIn(text, ext) {
+export function referencesIn(text: string, ext) {
   return [...text.matchAll(MODULE_EXT.has(ext) ? SPECIFIER : HTML_REFERENCE)].map((m) => m[1]);
 }
 
-export function escapingSpecifiers(text, filePath, layer) {
+export function escapingSpecifiers(text: string, filePath: string, layer: string) {
   const foreign = FORBIDDEN[layer].concat(layer === 'angular' ? ['tailwind'] : []);
   const found = [];
   for (const spec of referencesIn(text, extname(filePath))) {

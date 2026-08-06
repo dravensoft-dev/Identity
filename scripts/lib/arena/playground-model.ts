@@ -23,7 +23,7 @@ export class UnmodelledForm extends Error {
   constructor(message) { super(message); this.name = 'UnmodelledForm'; }
 }
 
-export function typeOf(types, name) {
+export function typeOf(types, name: string) {
   const found = types instanceof Map ? types.get(name) : types?.[name];
   if (!found) throw new UnmodelledForm(`no type named ${name} is declared in contracts/api/types`);
   return found;
@@ -99,7 +99,7 @@ export function isTextNodes(nodes) {
   return Array.isArray(nodes) && nodes.length === 1 && typeof nodes[0] === 'object' && typeof nodes[0].text === 'string';
 }
 
-export function knobFor(component, name, spec, fixture, types) {
+export function knobFor(component: string, name: string, spec, fixture, types) {
   if (spec.form === 'slot' && spec.params) {
     throw new UnmodelledForm(
       `${component}.${name} is a parameterised slot, which is a per-item renderer no layer may declare`,
@@ -137,7 +137,7 @@ export function knobFor(component, name, spec, fixture, types) {
   };
 }
 
-export function eventFor(name, spec, fixture) {
+export function eventFor(name: string, spec, fixture) {
   return {
     name,
     payload: spec.payload ?? null,

@@ -35,7 +35,7 @@ export const CSS_CHAIN = [
   { from: 'contracts/design/environment.css', to: 'css/environment.css' },
 ];
 
-export const arenaCssHeader = (name) => [
+export const arenaCssHeader = (name: string) => [
   `/* ${name} -- the invariant half of Arena's stylesheet.`,
   '   Import this FIRST, then the file arena-to-prod wrote from your arena.config.json,',
   '   whose palette and font values are meant to win. reset.css leads so anything can',
@@ -44,11 +44,11 @@ export const arenaCssHeader = (name) => [
   "   device's safe-area insets with the spacing scale and defines no length of its own. */",
 ].join('\n');
 
-export function excluded(name) {
+export function excluded(name: string) {
   return EXCLUDED_NAMES.has(name) || EXCLUDED_PATTERNS.some((p) => p.test(name));
 }
 
-export function collectFiles(dir, keep = (_file) => true) {
+export function collectFiles(dir: string, keep = (_file) => true) {
   const found = [];
   const walk = (current) => {
     for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
@@ -62,26 +62,26 @@ export function collectFiles(dir, keep = (_file) => true) {
   return found;
 }
 
-export function reset(dir) {
+export function reset(dir: string) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
 }
 
-export function write(dir, rel, content) {
+export function write(dir: string, rel: string, content) {
   const full = join(dir, rel);
   mkdirSync(dirname(full), { recursive: true });
   writeFileSync(full, content);
   return full;
 }
 
-export function copy(from, dir, rel) {
+export function copy(from, dir: string, rel: string) {
   const full = join(dir, rel);
   mkdirSync(dirname(full), { recursive: true });
   copyFileSync(from, full);
   return full;
 }
 
-export function copyTree(from, dir, rel, keep?) {
+export function copyTree(from, dir: string, rel: string, keep?) {
   const written = [];
   for (const file of collectFiles(from, keep)) {
     written.push(copy(file, dir, join(rel, relative(from, file))));
@@ -89,7 +89,7 @@ export function copyTree(from, dir, rel, keep?) {
   return written;
 }
 
-export function writeCssChain(dir, name, extra = [], root = repoRoot) {
+export function writeCssChain(dir: string, name: string, extra = [], root = repoRoot) {
   const chain = [...CSS_CHAIN, ...extra];
   for (const entry of chain) {
     if (entry.content !== undefined) write(dir, entry.to, entry.content);
@@ -119,7 +119,7 @@ export const SHEET_BANNERS = {
   ].join('\n'),
 };
 
-export function componentSheets(css, split, root = repoRoot) {
+export function componentSheets(css: string, split, root = repoRoot) {
   const { base } = split(css);
   const dir = join(root, 'frameworks', 'tailwind');
   const consume = join(root, ...CONSUME.split('/'));
@@ -145,7 +145,7 @@ export function componentSheets(css, split, root = repoRoot) {
 
 export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.ts' };
 
-export function copyCli(dir, root = repoRoot) {
+export function copyCli(dir: string, root = repoRoot) {
   const written = [];
   for (const name of Object.keys(CLI_BINS)) {
     const from = join(root, 'scripts', 'generate', 'core', name);
@@ -167,7 +167,7 @@ export function copyCli(dir, root = repoRoot) {
   return written;
 }
 
-export function writeComponentMap(dir, layer, root = repoRoot) {
+export function writeComponentMap(dir: string, layer: string, root = repoRoot) {
   const map = componentMap(layer, root);
   const claimed = new Set(Object.values(map.draws).filter(Boolean));
   if (claimed.size === 0) {
@@ -195,7 +195,7 @@ export function baseManifest(root = repoRoot) {
   };
 }
 
-export function report(name, dir, files) {
+export function report(name: string, dir: string, files) {
   const bytes = files.reduce((total, f) => total + (existsSync(f) ? statSync(f).size : 0), 0);
   return `${name}: ${files.length} file(s), ${(bytes / 1024).toFixed(0)} KiB, in ${relative(repoRoot, dir)}`;
 }

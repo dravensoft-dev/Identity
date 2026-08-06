@@ -79,7 +79,7 @@ export function categories(root = repoRoot): ComponentTree {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function categoryOf(name, root = repoRoot) {
+export function categoryOf(name: string, root = repoRoot) {
   for (const [category, names] of Object.entries(categories(root)))
     if (names.includes(name)) return category;
   return null;
@@ -93,25 +93,25 @@ export function inScope(root = repoRoot) {
   return everyComponent(root).filter((name) => !HAND_DRAWN.has(name));
 }
 
-export function hasOwnManifest(name, root = repoRoot) {
+export function hasOwnManifest(name: string, root = repoRoot) {
   const category = categoryOf(name, root);
   if (!category) return false;
   const dir = root === repoRoot ? MANIFEST_DIR : join(root, 'frameworks/tailwind/components');
   return existsSync(join(dir, category, kebab(name), `${name}.manifest.json`));
 }
 
-export function coveringManifest(name) {
+export function coveringManifest(name: string) {
   for (const [manifest, { covers }] of MANIFEST_COVERS)
     if (manifest !== name && covers.includes(name)) return manifest;
   return null;
 }
 
-export function manifestFor(name, root = repoRoot) {
+export function manifestFor(name: string, root = repoRoot) {
   if (hasOwnManifest(name, root)) return name;
   return coveringManifest(name);
 }
 
-export function coveredContracts(name) {
+export function coveredContracts(name: string) {
   return MANIFEST_COVERS.get(name)?.covers ?? [name];
 }
 

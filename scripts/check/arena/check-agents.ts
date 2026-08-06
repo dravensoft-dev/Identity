@@ -27,7 +27,7 @@ export const SURVIVORS = new Map([
 export const SKIPPED_ANYWHERE = new Set(['node_modules', '.git']);
 export const SKIPPED_UNDER_FRAMEWORKS = new Set(['dist', 'vendor']);
 
-export function skips(name, relativeDirectory) {
+export function skips(name: string, relativeDirectory) {
   if (SKIPPED_ANYWHERE.has(name)) return true;
   return SKIPPED_UNDER_FRAMEWORKS.has(name) && relativeDirectory.startsWith('frameworks');
 }

@@ -36,7 +36,7 @@ function main() {
   const { files, problems, count } = buildBarrel(root);
   const all = [
     ...problems,
-    ...driftProblems(files, (rel) => readFileSync(join(root, rel), 'utf8')),
+    ...driftProblems(files, (rel: string) => readFileSync(join(root, rel), 'utf8')),
     ...stalePrivateProblems(files),
   ];
 

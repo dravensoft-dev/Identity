@@ -27,7 +27,7 @@ export const SCALAR_TAIL = new RegExp(
 
 const EQUALITY = /assert\.(equal|strictEqual|notEqual|notStrictEqual|deepEqual|deepStrictEqual)\(/g;
 
-export function splitArguments(source, open) {
+export function splitArguments(source: string, open) {
   const args = [];
   let depth = 0;
   let start = open + 1;
@@ -56,7 +56,7 @@ export function isNodeExpression(argument) {
 
 export function suiteFiles(root, list = readdirSync) {
   const found = [];
-  const walk = (dir) => {
+  const walk = (dir: string) => {
     for (const entry of list(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name);
       if (entry.isDirectory()) walk(path);
@@ -100,7 +100,7 @@ export function assertionProblems(files, read) {
 function main() {
   const root = join(repoRoot, SUITE_ROOT);
   const files = suiteFiles(root).map((path) => relative(repoRoot, path));
-  const problems = assertionProblems(files, (rel) => readFileSync(join(repoRoot, rel), 'utf8'));
+  const problems = assertionProblems(files, (rel: string) => readFileSync(join(repoRoot, rel), 'utf8'));
   if (problems.length) {
     console.error(`check-assertions: ${problems.length} problem(s)\n`);
     for (const problem of problems) console.error(`  ${problem}`);

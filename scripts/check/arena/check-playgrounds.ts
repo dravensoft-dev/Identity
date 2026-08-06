@@ -27,7 +27,7 @@ export const FIXTURE_SUFFIX = '.demo.json';
 
 const SEEDABLE = new Set(['primitive', 'enum', 'object', 'array', 'functionInput']);
 
-export function loadJson(path) {
+export function loadJson(path: string) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
@@ -115,7 +115,7 @@ export function objectProblems(where, typeName, value, types) {
   return problems;
 }
 
-export function seedProblems(name, contract, fixture, types) {
+export function seedProblems(name: string, contract, fixture, types) {
   const api = contract.api ?? {};
   const seed = fixture.seed ?? {};
   const problems = [];
@@ -177,7 +177,7 @@ export function listProblems(where, list, contracts, types, options) {
   return list.flatMap((node, i) => nodeProblems(`${where}[${i}]`, node, contracts, types, options));
 }
 
-export function slotProblems(name, contract, fixture, contracts, types) {
+export function slotProblems(name: string, contract, fixture, contracts, types) {
   const api = contract.api ?? {};
   const problems = [];
   for (const [slot, list] of Object.entries(fixture.slots ?? {})) {
@@ -199,7 +199,7 @@ export function knobTarget(contract, target) {
   return { spec: null, member, field, objectType: spec.type };
 }
 
-export function bindProblems(name, contract, fixture, types) {
+export function bindProblems(name: string, contract, fixture, types) {
   const api = contract.api ?? {};
   const problems = [];
   for (const [event, target] of Object.entries(fixture.bind ?? {})) {
@@ -238,12 +238,12 @@ export function bindProblems(name, contract, fixture, types) {
   return problems;
 }
 
-export function hostProblems(name, fixture, contracts, types) {
+export function hostProblems(name: string, fixture, contracts, types) {
   if (!('host' in fixture) || fixture.host === null) return [];
   return nodeProblems(`${name}.host`, fixture.host, contracts, types, { allowSubject: true });
 }
 
-export function shapeProblems(name, fixture) {
+export function shapeProblems(name: string, fixture) {
   const problems = [];
   if (fixture.component !== name)
     problems.push(`${name}${FIXTURE_SUFFIX}: declares component "${fixture.component}", and the file name says ${name}`);
@@ -253,7 +253,7 @@ export function shapeProblems(name, fixture) {
   return problems;
 }
 
-export function fixtureProblems(name, contract, fixture, contracts, types) {
+export function fixtureProblems(name: string, contract, fixture, contracts, types) {
   const problems = [
     ...shapeProblems(name, fixture),
     ...seedProblems(name, contract, fixture, types),
@@ -295,7 +295,7 @@ export function emissionProblems(base = root, files = buildPlaygrounds(base).fil
   return problems;
 }
 
-export function modelLiteral(source) {
+export function modelLiteral(source: string) {
   const open = source.indexOf('const MODEL: KnobModel = ');
   if (open === -1) return null;
   const start = source.indexOf('{', open);
@@ -330,7 +330,7 @@ const PAGE_LIKE = /\b[A-Za-z][A-Za-z0-9]*\.(?:card|demo)(?:\.generated)?\.(?:htm
 
 export function basenameIndex(base = root) {
   const seen = new Set();
-  const walk = (dir) => {
+  const walk = (dir: string) => {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir).sort()) {
       if (entry === 'node_modules' || entry === 'dist' || entry === 'build' || entry === 'vendor') continue;
@@ -344,7 +344,7 @@ export function basenameIndex(base = root) {
 }
 
 export function* citingFiles(base = root) {
-  const walk = function* (dir) {
+  const walk = function* (dir: string) {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir).sort()) {
       if (entry === 'node_modules' || entry === 'dist' || entry === 'build' || entry === 'vendor') continue;
@@ -397,7 +397,7 @@ export function pagePaths(base = root, files = buildPlaygrounds(base).files) {
   return [...files.keys()].filter((rel) => rel.endsWith('.demo.generated.html')).sort();
 }
 
-export function smokeProblems(page, seen) {
+export function smokeProblems(page: string, seen) {
   const problems = [];
   if (!seen.mounted) {
     problems.push(`${page}: mounted nothing — run bun run build first, since a page loads a generated sibling`);
@@ -455,7 +455,7 @@ const WATCH = "window.__arenaErrors=[];"
   + "const ce=console.error;console.error=(...a)=>{"
   + "window.__arenaErrors.push('console.error: '+a.map(String).join(' ').slice(0,200));ce(...a);};";
 
-async function visit(cdp, url, page) {
+async function visit(cdp, url, page: string) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   try {
     const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });

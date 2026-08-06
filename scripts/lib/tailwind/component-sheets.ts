@@ -13,7 +13,7 @@ const LAYER_UTILITIES = '@layer utilities {';
 export const LAYER_ORDER = '@layer properties;\n@layer theme, base, components, utilities;\n';
 export const SLOT_CLASS = /\.([a-z0-9-]+?)__/g;
 
-export function matchingBrace(css, open) {
+export function matchingBrace(css: string, open) {
   let depth = 0;
   for (let i = open; i < css.length; i++) {
     const c = css[i];
@@ -46,7 +46,7 @@ export function topLevelChildren(body) {
   return children;
 }
 
-export function ownersOf(text, bases) {
+export function ownersOf(text: string, bases) {
   const found = new Set([...text.matchAll(SLOT_CLASS)].map((m) => m[1]));
   const stray = [...found].filter((base) => !bases.has(base));
   if (stray.length > 0) {
@@ -56,7 +56,7 @@ export function ownersOf(text, bases) {
   return found;
 }
 
-export function splitUtilities(css, bases) {
+export function splitUtilities(css: string, bases) {
   const at = css.indexOf(LAYER_UTILITIES);
   if (at === -1) {
     throw new Error('component-sheets: the compiled sheet carries no `@layer utilities` block, '
@@ -68,7 +68,7 @@ export function splitUtilities(css, bases) {
   const shared = (css.slice(0, at) + css.slice(close + 1)).replace(/\n{3,}/g, '\n\n').trim();
 
   const components = new Map();
-  const add = (owner, text) => {
+  const add = (owner, text: string) => {
     if (!components.has(owner)) components.set(owner, []);
     components.get(owner).push(text);
   };
@@ -97,7 +97,7 @@ export function splitUtilities(css, bases) {
   return { shared, components };
 }
 
-export function dedent(text) {
+export function dedent(text: string) {
   const indents = text.split('\n').slice(1).filter((line) => line.trim())
     .map((line) => line.match(/^ */)[0].length);
   const shortest = indents.length === 0 ? 0 : Math.min(...indents);

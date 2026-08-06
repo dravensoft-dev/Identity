@@ -28,11 +28,11 @@ export const ROOT_JS = ['Tokens.generated.js'];
 export const ROOT_TS = ['AnchorActivation.ts', 'DataVisuals.ts', 'UseArenaContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'WarnOnce.ts', 'Api.generated.ts', 'ArenaStyles.generated.ts', 'Index.generated.ts'];
 export const DIST_PROJECT = 'frameworks/react/tsconfig.dist.json';
 
-export function isSource(path) {
+export function isSource(path: string) {
   return (path.endsWith('.ts') || path.endsWith('.tsx')) && !path.endsWith('.d.ts');
 }
 
-export function distFiles(dir, keep, found = []) {
+export function distFiles(dir: string, keep, found = []) {
   if (!existsSync(dir)) return found;
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
@@ -51,10 +51,10 @@ export function emitDeclarations(root, outDir) {
     throw new Error(`build-react-package: the declaration emit did not typecheck\n${r.stdout || ''}${r.stderr || ''}`);
 }
 
-export function untypedProblems(compiled, dir) {
+export function untypedProblems(compiled, dir: string) {
   return compiled
-    .filter((rel) => !existsSync(join(dir, rel.replace(/\.js$/, '.d.ts'))))
-    .map((rel) => `${rel} ships with no declaration beside it, so the package would ship it untyped`);
+    .filter((rel: string) => !existsSync(join(dir, rel.replace(/\.js$/, '.d.ts'))))
+    .map((rel: string) => `${rel} ships with no declaration beside it, so the package would ship it untyped`);
 }
 
 export const MODULE_EXTENSION = /\.[jt]sx?$/;
@@ -70,7 +70,7 @@ export function relativeSpecifiers(code) {
   return [...code.matchAll(RELATIVE_SPECIFIER)].map((m) => m[3]);
 }
 
-export function unresolvedProblems(dir) {
+export function unresolvedProblems(dir: string) {
   const problems = [];
   for (const path of distFiles(dir, (p) => p.endsWith('.js') || p.endsWith('.d.ts'))) {
     for (const specifier of relativeSpecifiers(readFileSync(path, 'utf8'))) {
@@ -81,7 +81,7 @@ export function unresolvedProblems(dir) {
   return problems;
 }
 
-export function assembleModules(root, dir) {
+export function assembleModules(root, dir: string) {
   const layer = join(root, LAYER);
   const written = [];
   const compiled = [];
@@ -91,7 +91,7 @@ export function assembleModules(root, dir) {
   const sources = collectFiles(join(layer, 'components'), isSource);
   if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
 
-  const emit = (from, rel) => {
+  const emit = (from, rel: string) => {
     written.push(write(dir, rel, rewriteSourceSpecifiers(transpilers.get('tsx').transformSync(readFileSync(from, 'utf8')))));
     compiled.push(rel);
   };

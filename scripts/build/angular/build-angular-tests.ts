@@ -28,7 +28,7 @@ const EXTERNAL_INPUTS = [
   fileURLToPath(import.meta.url),
 ];
 
-function pruneOrphans(dir) {
+function pruneOrphans(dir: string) {
   const pruned = [];
   walk(dir);
   return pruned;
@@ -54,7 +54,7 @@ function pruneOrphans(dir) {
   }
 }
 
-function collectTestSources(dir) {
+function collectTestSources(dir: string) {
   const out = [];
   walk(dir);
   return out;
@@ -69,7 +69,7 @@ function collectTestSources(dir) {
   }
 }
 
-function collectEmittedTests(dir) {
+function collectEmittedTests(dir: string) {
   const out = [];
   if (!existsSync(dir)) return out;
   walk(dir);
@@ -115,7 +115,7 @@ function collectInputs() {
   }
 }
 
-function stamp(path) {
+function stamp(path: string) {
   return { path: relative(repoRoot, path), mtimeMs: statSync(path).mtimeMs };
 }
 

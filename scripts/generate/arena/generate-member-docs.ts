@@ -27,7 +27,7 @@ export function stripDocAbove(lines, at) {
 
 export const PACKED_MEMBERS = /^(\s*)((?:[A-Za-z_$][\w$]*\??\s*:\s*[^;{}]+;\s*){2,})$/;
 
-export function unpackMembers(source) {
+export function unpackMembers(source: string) {
   return source.split('\n').flatMap((line) => {
     const packed = PACKED_MEMBERS.exec(line);
     if (!packed) return [line];
@@ -37,7 +37,7 @@ export function unpackMembers(source) {
 
 export const REACT_PROPS_OPEN = /^export interface \w+Props\b[^{]*\{/;
 
-export function applyDocs(source, docs, layer) {
+export function applyDocs(source: string, docs, layer: string) {
   const lines = (layer === 'react' ? unpackMembers(source) : source).split('\n');
   const out = [];
   let reachable = layer !== 'react';
@@ -58,7 +58,7 @@ export function applyDocs(source, docs, layer) {
   return out.join('\n');
 }
 
-export function docsFor(contract, layer, bindingName) {
+export function docsFor(contract, layer: string, bindingName) {
   const docs = new Map();
   for (const [name, spec] of memberEntries(contract.api)) {
     if (!spec.description) continue;
@@ -108,7 +108,7 @@ async function main() {
 
   const sources = componentSources(
     resolveReactImplementations, resolveAngularImplementations, readLayer,
-    (path) => existsSync(join(root, path)),
+    (path: string) => existsSync(join(root, path)),
   );
   const written = writeMemberDocs({ contracts, sources, bindingName });
   for (const path of written) console.log(`generate-member-docs: wrote ${path.replace(`${root}/`, '')}`);

@@ -51,7 +51,7 @@ export function sheetPath(manifestFile) {
     .replace(/\.manifest\.json$/, '.styles.generated.css');
 }
 
-export function keyframesIn(css) {
+export function keyframesIn(css: string) {
   const blocks = [];
   for (const match of css.matchAll(/@keyframes\s+[A-Za-z0-9_-]+\s*\{/g)) {
     const open = match.index + match[0].length - 1;
@@ -109,7 +109,7 @@ export function buildComponentCss(opts: BuildOptions = {}) {
   return out;
 }
 
-export function preludeSpecifier(rel) {
+export function preludeSpecifier(rel: string) {
   const depth = rel.split('/').length - 1 - PRELUDE.split('/').length + 1;
   return `${'../'.repeat(depth)}${basename(PRELUDE)}`;
 }

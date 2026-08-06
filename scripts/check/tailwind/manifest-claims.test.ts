@@ -13,7 +13,7 @@ import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 
 const manifests = new Map([...layerManifests().values()].map((m) => [m.component, m]));
 
-export function resolve(component, chosen, slot) {
+export function resolve(component: string, chosen, slot) {
   const manifest = manifests.get(component);
   if (!manifest) throw new Error(`manifest-claims: no manifest called ${component}`);
   const styles = (arenaTv as any)(manifest)(chosen) as Record<string, () => string>;

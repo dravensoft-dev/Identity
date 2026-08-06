@@ -50,7 +50,7 @@ export function everyGlyph(weights) {
   return all;
 }
 
-export function tokenProblems(text, where, weights) {
+export function tokenProblems(text: string, where, weights) {
   const glyphs = everyGlyph(weights);
   const problems = [];
   for (const line of text.split('\n').entries()) {
@@ -80,7 +80,7 @@ export function tokenProblems(text, where, weights) {
 
 export function scannedFiles(root = ROOT) {
   const found = [];
-  const walk = (dir) => {
+  const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || SKIPPED_DIRECTORIES.has(entry.name)) continue;
       const full = join(dir, entry.name);

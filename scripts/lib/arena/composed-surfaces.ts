@@ -13,7 +13,7 @@ import { repoRoot } from './repo-root.ts';
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g;
 const SOURCE = /\.(tsx?|jsx?|mjs)$/;
 
-export function componentSources(layer, root = repoRoot) {
+export function componentSources(layer: string, root = repoRoot) {
   const base = join(root, 'frameworks', layer, 'components');
   const found = [];
   if (!existsSync(base)) return found;
@@ -31,7 +31,7 @@ export function componentSources(layer, root = repoRoot) {
   return found;
 }
 
-export function importedComponents(text, path, layer, root = repoRoot) {
+export function importedComponents(text: string, path: string, layer: string, root = repoRoot) {
   const prefix = `frameworks/${layer}/components/`;
   const names = [];
   for (const [, specifier] of text.matchAll(SPECIFIER)) {

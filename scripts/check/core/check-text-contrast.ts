@@ -6,25 +6,25 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 const palette = readFileSync(join(root, 'contracts/design-generated/palette.generated.css'), 'utf8');
 const colors = readFileSync(join(root, 'contracts/design/colors.css'), 'utf8');
 
-function block(css, selector, file) {
+function block(css: string, selector: string, file: string) {
   const m = css.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`));
   if (!m) throw new Error(`${file}: no ${selector} block found`);
   return m[1];
 }
-function readHex(body, name) {
+function readHex(body, name: string) {
   const m = body.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-fA-F]{6})`));
   if (!m) throw new Error(`palette.generated.css: --${name} missing or not a #rrggbb literal`);
   return m[1];
 }
 
-function tryHex(body, name) {
+function tryHex(body, name: string) {
   try { return readHex(body, name); } catch { return null; }
 }
 const MISSING = 'not declared in contracts/design-generated/palette.generated.css — every theme block must define it';
 
 const structure = block(colors, ':root,\\s*\\.arena-light', 'colors.css');
 
-function resolvePercent(name, seen = new Set()) {
+function resolvePercent(name: string, seen = new Set()) {
   if (seen.has(name)) throw new Error(`colors.css: --${name} is a circular reference`);
   seen.add(name);
   const m = structure.match(new RegExp(`--${name}\\s*:\\s*([^;]+);`));

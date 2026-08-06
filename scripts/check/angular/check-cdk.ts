@@ -14,7 +14,7 @@ import { arenaTokenNames, referencedTokens } from '../../lib/core/arena-tokens.t
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');
 
-export function bridgeSelectors(css) {
+export function bridgeSelectors(css: string) {
   const out = new Set();
   const noAtRules = css.replace(/@[a-z-]+[^;{}]*;/gi, '');
   for (const selector of parseDecls(noAtRules).keys())
@@ -22,14 +22,14 @@ export function bridgeSelectors(css) {
   return out;
 }
 
-export function cdkClasses(css) {
+export function cdkClasses(css: string) {
   const out = new Set();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   for (const m of stripped.matchAll(/\.(cdk-[a-z0-9-]+)/g)) out.add(m[1]);
   return out;
 }
 
-export function importedSheets(css) {
+export function importedSheets(css: string) {
   const out = new Set();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   for (const m of stripped.matchAll(/@import\s+['"]([^'"]+)['"]/g)) out.add(m[1]);
@@ -79,7 +79,7 @@ function main() {
     css,
     readFileSync(prebuilt, 'utf8'),
     arenaTokenNames(repoRoot),
-    (sheet) => existsSync(join(repoRoot, 'node_modules', sheet)),
+    (sheet: string) => existsSync(join(repoRoot, 'node_modules', sheet)),
   );
 
   if (errs.length) {

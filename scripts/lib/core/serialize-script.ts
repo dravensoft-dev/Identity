@@ -1,6 +1,8 @@
+import type { DtcgToken } from './dtcg-shapes.ts';
+
 const NUMERIC = new Set(['dimension', 'duration', 'number']);
 
-export function serializeScript(token) {
+export function serializeScript(token: DtcgToken) {
   if (!NUMERIC.has(token.$type)) {
     throw new Error(`serializeScript: $type "${token.$type}" is not script-readable`);
   }

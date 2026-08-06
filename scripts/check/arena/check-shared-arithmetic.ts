@@ -54,7 +54,7 @@ export function normalise(body) {
   return body.replace(/\s+/g, ' ').trim();
 }
 
-export function exportedFunctions(source) {
+export function exportedFunctions(source: string) {
   const found = new Map();
   const re = /^export function (\w+)[\s\S]*?^\}/gm;
   for (const match of source.matchAll(re)) {
@@ -65,7 +65,7 @@ export function exportedFunctions(source) {
   return found;
 }
 
-export function pairProblems(rel, react, angular, divergent = DIVERGENT) {
+export function pairProblems(rel: string, react, angular, divergent = DIVERGENT) {
   const problems = [];
   const claimed = [];
   const shared = [...react.keys()].filter((name) => angular.has(name)).sort();

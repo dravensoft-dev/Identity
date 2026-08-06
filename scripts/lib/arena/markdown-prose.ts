@@ -8,22 +8,22 @@
 const OPENS_FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const CLOSES_FENCE = /^ {0,3}(`+|~+)[ \t]*$/;
 
-function runLength(source, at, character) {
+function runLength(source: string, at, character) {
   let length = 0;
   while (source[at + length] === character) length += 1;
   return length;
 }
 
-function lineEnd(source, at) {
+function lineEnd(source: string, at) {
   const found = source.indexOf('\n', at);
   return found === -1 ? source.length : found;
 }
 
-function blankFollows(source, newlineAt) {
+function blankFollows(source: string, newlineAt) {
   return /^[ \t]*(\n|$)/.test(source.slice(newlineAt + 1));
 }
 
-function spanEnd(source, at, arenaTicks) {
+function spanEnd(source: string, at, arenaTicks) {
   for (let i = at + arenaTicks; i < source.length; i += 1) {
     if (source[i] === '\n') {
       if (blankFollows(source, i)) return -1;
@@ -37,7 +37,7 @@ function spanEnd(source, at, arenaTicks) {
   return -1;
 }
 
-export function proseSegments(source) {
+export function proseSegments(source: string) {
   const segments = [];
   let line = 1;
   let column = 1;

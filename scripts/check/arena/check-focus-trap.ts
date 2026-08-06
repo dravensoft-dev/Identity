@@ -41,7 +41,7 @@ export const TRAPS = [
   { name: 'ArenaCommandPalette:angular', page: 'frameworks/angular/components/navigation/arena-command-palette/ArenaCommandPalette.demo.generated.html' },
 ];
 
-export function walkProblems(name, walk) {
+export function walkProblems(name: string, walk) {
   const problems = [];
   if (!walk.panel) return [`${name}: no ${PANEL} rendered, so nothing was walked`];
   if (walk.focusables === 0) {

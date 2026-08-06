@@ -11,7 +11,7 @@ import {
   reactRendersManifest, styleObjectBodies, valueIsLiteral,
 } from './check-appearance.ts';
 
-const at = (path, text) => literalStyleProblems(text, path).map((p) => `${p.key}=${p.value}`);
+const at = (path: string, text: string) => literalStyleProblems(text, path).map((p) => `${p.key}=${p.value}`);
 
 test('a quoted string, a number and a keyword are literals', () => {
   assert.equal(valueIsLiteral("'var(--crimson)'"), true);

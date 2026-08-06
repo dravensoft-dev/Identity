@@ -34,7 +34,7 @@ const STATUS_RAMP = new Map([
 ]);
 
 const fillsAtFullStrength = (manifest) => everyClassString(manifest)
-  .flatMap(({ where, classes }) => classes.filter((cls) => /^bg-(error|danger)$/.test(cls)).map((cls) => `${where}: ${cls}`));
+  .flatMap(({ where, classes }) => classes.filter((cls: string) => /^bg-(error|danger)$/.test(cls)).map((cls: string) => `${where}: ${cls}`));
 
 test('danger is outline: no manifest paints a full-strength error background', () => {
   const offenders = [...manifests.values()]

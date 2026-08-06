@@ -19,11 +19,11 @@ import {
 export { classBase, classesManifest, compoundClass, slotClass, variantClass };
 
 export const INDIRECTION = /var\(\s*--([a-z0-9-]+)\s*,\s*var\(\s*--([a-z0-9-]+)\s*\)\s*\)/g;
-export const isThemeKey = (name) => !name.startsWith('tw-');
+export const isThemeKey = (name: string) => !name.startsWith('tw-');
 
 export function applyRules(manifest) {
   const rules = [];
-  const push = (selector, classes) => {
+  const push = (selector: string, classes) => {
     const trimmed = String(classes ?? '').trim();
     if (trimmed) rules.push({ selector, classes: trimmed });
   };
@@ -69,7 +69,7 @@ export function themeKeyMap(themeCss) {
   return map;
 }
 
-export function stripProblems(css, themeMap) {
+export function stripProblems(css: string, themeMap) {
   const problems = [];
   for (const [, key, token] of css.matchAll(INDIRECTION)) {
     if (!isThemeKey(key)) continue;
@@ -81,11 +81,11 @@ export function stripProblems(css, themeMap) {
   return [...new Set(problems)];
 }
 
-export function stripIndirection(css) {
+export function stripIndirection(css: string) {
   let out = css;
   for (let previous = null; previous !== out;) {
     previous = out;
-    out = out.replace(INDIRECTION, (match, key, token) => (isThemeKey(key) ? `var(--${token})` : match));
+    out = out.replace(INDIRECTION, (match, key: string, token: string) => (isThemeKey(key) ? `var(--${token})` : match));
   }
   return out;
 }

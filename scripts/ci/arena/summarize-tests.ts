@@ -31,7 +31,7 @@ export function stepsWithJunit(dir = REPORT_DIR): { name: string; args: string[]
   });
 }
 
-function attribute(chunk, name) {
+function attribute(chunk, name: string) {
   const m = new RegExp(`\\b${name}="([^"]*)"`).exec(chunk);
   return m ? m[1] : null;
 }
@@ -61,7 +61,7 @@ export function tally(cases) {
   return { byDomain, unclassified, total: cases.length, files: cases.map((c) => c.file) };
 }
 
-export function suiteDomains(dir) {
+export function suiteDomains(dir: string) {
   const found = new Set();
   const walk = (current) => {
     for (const entry of readdirSync(current, { withFileTypes: true })) {

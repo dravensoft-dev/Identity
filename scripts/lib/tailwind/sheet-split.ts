@@ -8,7 +8,7 @@
 const ORDER = /^@layer [^{};]*;$/gm;
 const BLOCK = /^@layer ([a-z-]+) \{$/gm;
 
-function matchingBrace(css, open) {
+function matchingBrace(css: string, open) {
   let depth = 0;
   for (let i = open; i < css.length; i++) {
     const c = css[i];
@@ -23,11 +23,11 @@ function matchingBrace(css, open) {
   return -1;
 }
 
-function blocks(css) {
+function blocks(css: string) {
   return [...css.matchAll(BLOCK)].map((m) => ({ name: m[1], at: m.index, open: m.index + m[0].length - 1 }));
 }
 
-export function splitCompiledSheet(css) {
+export function splitCompiledSheet(css: string) {
   const found = blocks(css);
   const base = found.find((b) => b.name === 'base');
   if (!base) {
@@ -49,7 +49,7 @@ export function splitCompiledSheet(css) {
   const order = `${declarations.join('\n')}\n`;
 
   const head = css.slice(0, found[0].at);
-  const withoutOrder = (text) => text.replace(ORDER, '').replace(/\n{3,}/g, '\n\n');
+  const withoutOrder = (text: string) => text.replace(ORDER, '').replace(/\n{3,}/g, '\n\n');
 
   return {
     base: order + css.slice(base.at, close + 1) + '\n',

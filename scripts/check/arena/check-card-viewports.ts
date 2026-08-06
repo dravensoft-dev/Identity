@@ -129,7 +129,7 @@ const SKIP_DIRS = new Set(['node_modules', '.git', '.claude-plugin', 'assets']);
 export function parseDsCard(html) {
   const first = html.split('\n', 1)[0];
   if (!first.includes('@dsCard')) return null;
-  const attr = (name) => new RegExp(`${name}="([^"]*)"`).exec(first)?.[1];
+  const attr = (name: string) => new RegExp(`${name}="([^"]*)"`).exec(first)?.[1];
   const viewport = attr('viewport');
   const size = viewport && /^(\d+)x(\d+)$/.exec(viewport.trim());
   if (!size) return null;
@@ -138,7 +138,7 @@ export function parseDsCard(html) {
 
 export function findCardPages(root) {
   const found = [];
-  const walk = (dir) => {
+  const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
       const path = join(dir, entry.name);
@@ -224,7 +224,7 @@ export function summarizeCards(results) {
   return { text: lines.join('\n'), failed: clips.length, warned: unders.length, unrendered: unrendered.length };
 }
 
-export async function measureCardPage(cdp, file, pageRoot, port) {
+export async function measureCardPage(cdp, file: string, pageRoot, port) {
   const declared = parseDsCard(readFileSync(join(pageRoot, file), 'utf8'));
   const url = `http://127.0.0.1:${port}/${file.split('/').map(encodeURIComponent).join('/')}`;
   try {
@@ -290,7 +290,7 @@ async function main() {
   try {
     const dispatchOrder = interleaveForDispatch(pages, PAGE_CONCURRENCY);
     const byFile = new Map();
-    await mapWithConcurrency(dispatchOrder, PAGE_CONCURRENCY, async (file) => {
+    await mapWithConcurrency(dispatchOrder, PAGE_CONCURRENCY, async (file: string) => {
       byFile.set(file, await measureCardPage(cdp, file, root, server.port));
     });
     results = pages.map((file) => byFile.get(file));

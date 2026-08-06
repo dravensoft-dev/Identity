@@ -74,7 +74,7 @@ function fakeCdp(failingUrls) {
 
 test('measureCardPage records a rejecting page as unrendered, and the sweep still measures the pages after it', async () => {
   const root = mkdtempSync(join(tmpdir(), 'arena-cards-'));
-  const card = (name) => `<!-- @dsCard group="G" viewport="100x100" name="${name}" -->\n<!doctype html>`;
+  const card = (name: string) => `<!-- @dsCard group="G" viewport="100x100" name="${name}" -->\n<!doctype html>`;
   writeFileSync(join(root, 'a.html'), card('a'));
   writeFileSync(join(root, 'b.html'), card('b'));
   writeFileSync(join(root, 'c.html'), card('c'));
@@ -240,7 +240,7 @@ test('mapWithConcurrency keeps results in filename order even when a later file 
   const delayMs = { 'a.html': 120, 'b.html': 5, 'c.html': 80, 'd.html': 35 };
   const completions = [];
 
-  const results = await mapWithConcurrency(files, 4, async (file) => {
+  const results = await mapWithConcurrency(files, 4, async (file: string) => {
     await new Promise((r) => setTimeout(r, delayMs[file]));
     completions.push(file);
     return { file, status: 'ok' };

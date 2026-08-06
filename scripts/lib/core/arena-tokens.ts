@@ -18,7 +18,7 @@ export function arenaTokens(root = repoRoot) {
   return names;
 }
 
-export function referencedTokens(css) {
+export function referencedTokens(css: string) {
   const out = new Set();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   for (const m of stripped.matchAll(/var\(\s*--([a-z0-9-]+)\s*[,)]/g)) out.add(m[1]);

@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 
-export function themeKeys(css) {
+export function themeKeys(css: string) {
   const out = new Map();
   const m = css.match(/@layer theme\s*\{\s*:root[^{]*\{([\s\S]*?)\n\s*\}/);
   if (!m) return out;
@@ -16,7 +16,7 @@ export function themeKeys(css) {
   return out;
 }
 
-export function checkCompiled(css, manifests, tokens) {
+export function checkCompiled(css: string, manifests, tokens) {
   const errs = [];
 
   if (manifests.size === 0)

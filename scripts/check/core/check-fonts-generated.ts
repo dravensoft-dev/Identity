@@ -12,7 +12,7 @@ import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-f
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-export function facesIn(css) {
+export function facesIn(css: string) {
   const faces = new Set();
   const re = /@font-face\s*{([^}]*)}/g;
   let m;
@@ -66,7 +66,7 @@ async function main() {
     errs.push('found 0 .woff2 under assets/fonts -- an empty result set is a failure, not a clean pass; check the discovery path');
   } else {
     const recorded = JSON.parse(readFileSync(join(root, FONTS), 'utf8'));
-    const hashOf = (file) => createHash('sha256').update(readFileSync(join(root, 'assets', 'fonts', file))).digest('hex');
+    const hashOf = (file: string) => createHash('sha256').update(readFileSync(join(root, 'assets', 'fonts', file))).digest('hex');
     errs.push(...recordProblems(recorded, present, hashOf));
   }
 

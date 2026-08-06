@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assertionProblems, isNodeExpression, splitArguments, suiteFiles, SUITE_ROOT } from './check-assertions.ts';
 
-const scan = (source) => assertionProblems(['a.test.ts'], () => source);
+const scan = (source: string) => assertionProblems(['a.test.ts'], () => source);
 
 test('an identity assertion over document.activeElement is caught', () => {
   const problems = scan(`assert.equal(document.activeElement, input, 'opening must move focus');`);

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { scan, drawn, sheetRules, subset, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.ts';
 
-const sheet = (selector, extra = '') => `@font-face {
+const sheet = (selector: string, extra = '') => `@font-face {
   font-family: "Phosphor-Bold";
   src:
     url("./Phosphor-Bold.woff2") format("woff2"),

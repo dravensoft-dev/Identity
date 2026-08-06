@@ -7,7 +7,7 @@ import { DOMAINS, SCRIPT_EXTENSIONS, SUITE_EXTENSIONS, STAYS_JAVASCRIPT,
 import { LAYERS } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
 
-function suitesUnder(dir) {
+function suitesUnder(dir: string) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -65,7 +65,7 @@ test('every suite under scripts/ classifies, so the summary can never silently d
   assert.ok(suites.length > 0, 'a walk with nothing to walk proves nothing');
   const unclassified = suites
     .map((p) => relative(repoRoot, p))
-    .filter((rel) => domainOfTestPath(rel) === null);
+    .filter((rel: string) => domainOfTestPath(rel) === null);
   assert.deepEqual(unclassified, []);
 });
 
@@ -102,7 +102,7 @@ test('a .ts path classifies by its directory, so the domain survives the rename'
   assert.equal(domainOfTestPath('scripts/lib/arena/domains.test.ts'), 'arena');
 });
 
-function mjsUnder(dir) {
+function mjsUnder(dir: string) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);

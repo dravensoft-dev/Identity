@@ -20,7 +20,7 @@ const ENTRY =
   + 'bootstrapApplication(Demo, { providers: [provideZonelessChangeDetection()] });\n';
 
 function reader(files) {
-  return (rel) => (rel in files ? files[rel] : null);
+  return (rel: string) => (rel in files ? files[rel] : null);
 }
 
 const GOOD = {
@@ -83,7 +83,7 @@ test('an entry without @angular/compiler fails, because the library ships partia
 });
 
 test('every component in the shipped tree has a page, and the count is the tree rather than a list', () => {
-  const read = (rel) => {
+  const read = (rel: string) => {
     const path = join(repoRoot, rel);
     return existsSync(path) ? readFileSync(path, 'utf8') : null;
   };

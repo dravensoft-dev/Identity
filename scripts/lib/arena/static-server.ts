@@ -16,7 +16,7 @@ const TYPES = {
   '.woff2': 'font/woff2',
 };
 
-export function contentType(path) {
+export function contentType(path: string) {
   return TYPES[extname(path).toLowerCase()] ?? 'application/octet-stream';
 }
 

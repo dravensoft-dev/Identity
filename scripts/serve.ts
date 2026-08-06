@@ -17,9 +17,9 @@ function resolve(pathname) {
   return path.startsWith(root) ? path : null;
 }
 
-const isDir = (path) => { try { return statSync(path).isDirectory(); } catch { return false; } };
+const isDir = (path: string) => { try { return statSync(path).isDirectory(); } catch { return false; } };
 
-function listing(path, pathname) {
+function listing(path: string, pathname) {
   const entries = readdirSync(path).sort();
   const items = entries
     .map((name) => {

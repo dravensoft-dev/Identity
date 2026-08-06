@@ -29,7 +29,7 @@ export const LAYER_INPUTS = {
   tailwind: { 'frameworks/tailwind/': 'its own layer' },
 };
 
-function reaches(prefix, path) {
+function reaches(prefix, path: string) {
   return prefix.endsWith('/') ? path.startsWith(prefix) : path === prefix;
 }
 

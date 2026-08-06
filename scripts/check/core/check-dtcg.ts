@@ -71,9 +71,9 @@ function checkValue(type, v, at, errs) {
   }
 }
 
-export function validateTree(tree, file) {
+export function validateTree(tree, file: string) {
   const errs = [];
-  const walk = (node, path, inheritedType) => {
+  const walk = (node, path: string[], inheritedType) => {
     const type = node.$type ?? inheritedType;
     if (node.$extensions !== undefined) {
       if (!isObj(node.$extensions)) errs.push(`${file}:${path.join('.')}: $extensions must be an object`);

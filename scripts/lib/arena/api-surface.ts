@@ -10,7 +10,7 @@ export class UnrecognisedShape extends Error {
 
 const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 
-export function bindingName(name, form, layer) {
+export function bindingName(name: string, form, layer: string) {
   if (layer !== 'react') return name;
   if (form === 'slot') return name === 'content' ? 'children' : name;
   if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
@@ -145,7 +145,7 @@ export function classify(raw) {
   throw new UnrecognisedShape(`unreadable type annotation: ${ts}`);
 }
 
-export function braceBody(source, openIndex, open = '{', close = '}') {
+export function braceBody(source: string, openIndex, open = '{', close = '}') {
   let depth = 0;
   for (let i = openIndex; i < source.length; i += 1) {
     if (source[i] === open) depth += 1;
@@ -157,11 +157,11 @@ export function braceBody(source, openIndex, open = '{', close = '}') {
   throw new UnrecognisedShape(`unbalanced ${open}${close}`);
 }
 
-function stripComments(text) {
+function stripComments(text: string) {
   return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
 
-function splitTopLevel(text, sep, { brackets = '(){}[]<>', closeBrace = false } = {}) {
+function splitTopLevel(text: string, sep, { brackets = '(){}[]<>', closeBrace = false } = {}) {
   const parts = [];
   const stack = [];
   let current = '';
@@ -193,7 +193,7 @@ function splitTopLevel(text, sep, { brackets = '(){}[]<>', closeBrace = false } 
   return parts;
 }
 
-export function normaliseDoc(text) {
+export function normaliseDoc(text: string) {
   return text
     .split('\n')
     .map((line) => line.replace(/^\s*\*/, ''))
@@ -209,7 +209,7 @@ export function memberDocs(body) {
   return docs;
 }
 
-export function reactSurface(source, interfaceName) {
+export function reactSurface(source: string, interfaceName) {
   const decl = new RegExp(`export\\s+interface\\s+${interfaceName}\\b([^{]*)\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export interface ${interfaceName}" in this source`);
   const heritage = /extends\s+([^{]+)/.exec(decl[1]);
@@ -221,7 +221,7 @@ export function reactSurface(source, interfaceName) {
   };
 }
 
-export function reactImplementation(source, componentName) {
+export function reactImplementation(source: string, componentName) {
   const decl = new RegExp(`(?:export\\s+)?function\\s+${componentName}\\s*\\(`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "function ${componentName}(" in this source -- neither a bare export nor a forwardRef wrapper`);
   const afterParen = source.slice(decl.index + decl[0].length);
@@ -291,7 +291,7 @@ export const IMPERATIVE_HANDLES = new Map([
     + 'the caller expects to be replaced is one keystroke short of useful without it.'],
 ]);
 
-export function angularSurface(source, className) {
+export function angularSurface(source: string, className) {
   const decl = new RegExp(`export\\s+class\\s+${className}\\b[^{]*\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export class ${className}" in this source`);
   const body = braceBody(source, decl.index + decl[0].length - 1);
@@ -325,7 +325,7 @@ export function angularSurface(source, className) {
   return { members: [...members, ...templateSlots(componentTemplate(source))], docs: memberDocs(body) };
 }
 
-function classMember(name, initialiser) {
+function classMember(name: string, initialiser) {
   const init = initialiser.trim();
   const generic = /^(input|output|model)(\.required)?\s*<([\s\S]*)>\s*\(([\s\S]*)\)$/.exec(init);
   if (generic) {
@@ -353,14 +353,14 @@ function classMember(name, initialiser) {
   throw new UnrecognisedShape(`unreadable member initialiser for "${name}": ${init}`);
 }
 
-function literalType(arg, name) {
+function literalType(arg, name: string) {
   if (/^'[^']*'$/.test(arg) || /^"[^"]*"$/.test(arg)) return 'string';
   if (/^-?\d+(\.\d+)?$/.test(arg)) return 'number';
   if (arg === 'true' || arg === 'false') return 'boolean';
   throw new UnrecognisedShape(`input("${arg}") on "${name}" declares no type — give it a generic`);
 }
 
-function componentTemplate(source) {
+function componentTemplate(source: string) {
   const decorator = /@Component\s*\(/.exec(source);
   if (!decorator) return '';
   let args;
@@ -373,7 +373,7 @@ function componentTemplate(source) {
   return template ? template[1] : '';
 }
 
-export function templateSlots(source) {
+export function templateSlots(source: string) {
   const out = [];
   for (const m of source.matchAll(/<ng-content\b([^>]*)>/g)) {
     const attrs = m[1];

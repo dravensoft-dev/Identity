@@ -1,3 +1,5 @@
+import type { DtcgToken } from './dtcg-shapes.ts';
+
 const EXT = 'com.dravensoft.arena';
 
 const GENERIC_FAMILIES = new Set([
@@ -17,7 +19,7 @@ const color = (c) => {
   return a === 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${trim(a)})`;
 };
 
-export function serialize(token) {
+export function serialize(token: DtcgToken) {
   const v = token.$value;
   switch (token.$type) {
     case 'dimension':

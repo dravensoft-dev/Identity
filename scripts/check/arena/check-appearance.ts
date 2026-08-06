@@ -31,7 +31,7 @@ const ENTRY_STOP = new Set([',', '}']);
 const KEY_STOP = new Set([':']);
 const LITERAL_LEAF = /^(?:-?\d*\.?\d+|true|false|null|undefined)$/;
 
-function balancedFrom(text, open) {
+function balancedFrom(text: string, open) {
   let depth = 0;
   for (let i = open; i < text.length; i++) {
     const c = text[i];
@@ -42,7 +42,7 @@ function balancedFrom(text, open) {
   return -1;
 }
 
-function nextBrace(text, from) {
+function nextBrace(text: string, from) {
   for (let i = from; i < text.length; i++) {
     const c = text[i];
     if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
@@ -54,7 +54,7 @@ function nextBrace(text, from) {
   return -1;
 }
 
-function isObjectLiteral(text, open) {
+function isObjectLiteral(text: string, open) {
   for (let i = open - 1; i >= 0; i--) {
     const c = text[i];
     if (c === ' ' || c === '\n' || c === '\t' || c === '\r') continue;
@@ -120,7 +120,7 @@ export function valueIsLiteral(raw) {
   });
 }
 
-export function literalStyleProblems(rawText, path) {
+export function literalStyleProblems(rawText, path: string) {
   const problems = [];
   for (const body of styleObjectBodies(rawText))
     for (const { key, value } of objectEntries(body.text)) {
@@ -132,7 +132,7 @@ export function literalStyleProblems(rawText, path) {
   return problems;
 }
 
-export function sourceFiles(dir, found = []) {
+export function sourceFiles(dir: string, found = []) {
   if (!existsSync(dir)) return found;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
@@ -147,40 +147,40 @@ export function sourceFiles(dir, found = []) {
   return found;
 }
 
-export function reactSource(name) {
+export function reactSource(name: string) {
   const category = categoryOf(name);
   if (!category) return null;
   const path = join(REACT_COMPONENTS, category, kebab(name), `${name}.tsx`);
   return existsSync(path) ? path : null;
 }
 
-export function angularSource(name) {
+export function angularSource(name: string) {
   const category = categoryOf(name);
   if (!category) return null;
   const path = join(ANGULAR_COMPONENTS, category, kebab(name), `${name}.ts`);
   return existsSync(path) ? path : null;
 }
 
-export function componentDir(name) {
+export function componentDir(name: string) {
   const category = categoryOf(name);
   return category ? join(REACT_COMPONENTS, category, kebab(name)) : null;
 }
 
-export function directoryOf(path) {
+export function directoryOf(path: string) {
   return path.slice(0, path.lastIndexOf('/'));
 }
 
-export function reactRendersManifest(text, manifest) {
+export function reactRendersManifest(text: string, manifest) {
   const throughRecipe = /from '[^']*Tv\.generated/.test(text) && text.includes(`${manifest}.manifest.generated`);
   const throughClasses = /from '[^']*ArenaStyles\.generated/.test(text) && text.includes(`${manifest}.classes.generated`);
   return throughRecipe || throughClasses;
 }
 
-export function angularRendersManifest(text) {
+export function angularRendersManifest(text: string) {
   return /from '[^']*\.variants'/.test(text);
 }
 
-export function adoptionProblems(name) {
+export function adoptionProblems(name: string) {
   const manifest = manifestFor(name);
   if (!manifest) {
     return [`${name}: no manifest draws its surface, and nothing in scope may be left with `

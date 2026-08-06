@@ -12,7 +12,7 @@ function skip(reason) {
   process.exit(code);
 }
 
-function findJsFiles(dir) {
+function findJsFiles(dir: string) {
   const found = [];
   const walk = (d) => {
     for (const entry of readdirSync(d, { withFileTypes: true })) {

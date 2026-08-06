@@ -26,7 +26,7 @@ export const EXPORTED = /export (?:function|const) ([A-Za-z0-9_]+)/g;
 export const COMPONENT_NAME = /^[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*$/;
 export const LAYER_IMPORT = /from '\.\.\/\.\.\/[a-z-]+\/[a-z-]+\/([A-Z][A-Za-z0-9]*)\.tsx?'/g;
 
-export function componentFiles(layer, extension, root = repoRoot) {
+export function componentFiles(layer: string, extension, root = repoRoot) {
   const base = join(root, 'frameworks', layer, 'components');
   const found = [];
   if (!existsSync(base)) return found;
@@ -45,7 +45,7 @@ export function componentFiles(layer, extension, root = repoRoot) {
   return found;
 }
 
-export function sheetOf(file, source) {
+export function sheetOf(file: string, source: string) {
   const direct = MANIFEST_IMPORT.exec(source);
   if (direct) return kebab(direct[1]);
   const variants = VARIANTS_IMPORT.exec(source);
@@ -84,7 +84,7 @@ function mapFrom(entries, edges) {
   for (const { symbol, sheet, uses } of entries) {
     if (!sheet) continue;
     const bySymbol = new Map(entries.map((e) => [e.symbol, e.sheet]));
-    const pulled = uses.map((name) => bySymbol.get(name)).filter((s) => s && s !== sheet);
+    const pulled = uses.map((name: string) => bySymbol.get(name)).filter((s) => s && s !== sheet);
     if (pulled.length) needs[sheet] = [...new Set([...(needs[sheet] ?? []), ...pulled])].sort();
   }
   return { match: edges, draws, needs: close(needs) };
@@ -124,7 +124,7 @@ export type ComponentSheetMap = {
   needs: Record<string, string[]>;
 };
 
-export function componentMap(layer, root = repoRoot): ComponentSheetMap {
+export function componentMap(layer: string, root = repoRoot): ComponentSheetMap {
   if (layer === 'angular') return angularComponentMap(root);
   if (layer === 'react') return reactComponentMap(root);
   throw new Error(`component-map: no map is derived for a layer called "${layer}"`);

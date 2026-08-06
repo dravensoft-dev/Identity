@@ -29,7 +29,7 @@ export function surfacesDrawn(model, graph = composedGraph(), root?) {
 }
 
 export function sheetLinks(model, graph = composedGraph(), root?) {
-  const link = (rel) => `<link rel="stylesheet" href="${UP}${rel}">`;
+  const link = (rel: string) => `<link rel="stylesheet" href="${UP}${rel}">`;
   return [
     link(PREFLIGHT),
     ...surfacesDrawn(model, graph, root).map((name) => link(sheetPath(

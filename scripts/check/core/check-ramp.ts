@@ -7,18 +7,18 @@ const css = readFileSync(join(root, 'contracts/design-generated/palette.generate
 
 const SLOTS = 8;
 
-function block(selector) {
+function block(selector: string) {
   const re = new RegExp(`${selector}\\s*\\{([^}]*)\\}`);
   const m = css.match(re);
   if (!m) throw new Error(`palette.generated.css: no ${selector} block found`);
   return m[1];
 }
-function readVar(body, name) {
+function readVar(body, name: string) {
   const m = body.match(new RegExp(`--${name}\\s*:\\s*(#[0-9a-fA-F]{6})`));
   if (!m) throw new Error(`palette.generated.css: --${name} missing or not a #rrggbb literal`);
   return m[1];
 }
-function theme(selector) {
+function theme(selector: string) {
   const body = block(selector);
   const ramp = Array.from({ length: SLOTS }, (_, i) => readVar(body, `color-cat-${i + 1}`));
   return { ramp, surface: readVar(body, 'color-base-200') };

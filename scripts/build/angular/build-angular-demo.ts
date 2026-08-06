@@ -20,9 +20,9 @@ const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
 export const ENTRY_SUFFIXES = ['.demo.entry.generated.js'];
 
-export const isEntry = (name, ext = '.js') => ENTRY_SUFFIXES.some((s) => name.endsWith(s.replace('.js', ext)));
+export const isEntry = (name: string, ext = '.js') => ENTRY_SUFFIXES.some((s) => name.endsWith(s.replace('.js', ext)));
 
-function pruneOrphans(dir) {
+function pruneOrphans(dir: string) {
   const pruned = [];
   if (!existsSync(dir)) return pruned;
   walk(dir);
@@ -49,7 +49,7 @@ function pruneOrphans(dir) {
   }
 }
 
-export function collectEntries(dir) {
+export function collectEntries(dir: string) {
   const out = [];
   if (!existsSync(dir)) return out;
   walk(dir);
@@ -79,7 +79,7 @@ export function missingEntryProblems(sourceEntries, emittedEntries, emitDir = re
   return problems;
 }
 
-function collectSourceEntries(dir) {
+function collectSourceEntries(dir: string) {
   const out = [];
   if (!existsSync(dir)) return out;
   walk(dir);

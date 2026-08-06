@@ -34,7 +34,7 @@ export function fontWeights(root) {
     .sort((a, b) => a - b);
 }
 
-export function googleFontsUrl(family, weights) {
+export function googleFontsUrl(family: string, weights) {
   return `${GOOGLE_FONTS}?family=${family.replace(/ /g, '+')}:wght@${weights.join(';')}&display=swap`;
 }
 

@@ -24,13 +24,13 @@ const CONTRACT = {
 
 const TREE = { charts: ['arena-bar-chart'], display: ['arena-tag', 'arena-unauth-card'] };
 
-const layerExists = (layer, ext) => (tree, missing = []) => {
+const layerExists = (layer: string, ext) => (tree, missing = []) => {
   const gone = new Set(missing);
   const present = new Set();
   for (const [category, dirs] of Object.entries(tree) as [string, string[]][])
     for (const dir of dirs)
       if (!gone.has(dir)) present.add(`frameworks/${layer}/components/${category}/${dir}/${pascal(dir)}.${ext}`);
-  return (path) => present.has(path);
+  return (path: string) => present.has(path);
 };
 const treeExists = layerExists('angular', 'ts');
 const reactTreeExists = layerExists('react', 'd.ts');

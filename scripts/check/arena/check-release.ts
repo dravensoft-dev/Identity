@@ -17,7 +17,7 @@ function git(...args) {
 let ok = true;
 const results = [];
 
-const check = (name, pass, detail, gate = true) => {
+const check = (name: string, pass, detail, gate = true) => {
   if (!pass && gate) ok = false;
   results.push([gate ? (pass ? 'PASS' : 'FAIL') : 'INFO', name, detail]);
   return pass;
