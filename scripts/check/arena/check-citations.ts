@@ -126,7 +126,7 @@ export function citationProblems(base = root, files = documents(base), exempt = 
   return problems;
 }
 
-export function zeroDocumentProblems(files) {
+export function zeroDocumentProblems(files: string[]) {
   return files.length === 0
     ? ['found 0 documents; an empty result set is a failure, not a clean pass, because a walk that '
        + 'reaches nothing reports every path in the tree as valid']

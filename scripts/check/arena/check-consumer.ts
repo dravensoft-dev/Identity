@@ -52,7 +52,7 @@ export function assemble(base = root) {
   return { built: true, missing };
 }
 
-export function fixture(layer: string, files, stylesheet, base = root) {
+export function fixture(layer: string, files: Record<string, string>, stylesheet, base = root) {
   const dir = mkdtempSync(join(tmpdir(), `arena-consumer-${layer}-`));
   const example = JSON.parse(readFileSync(join(distDir(layer, base), 'arena.config.example.json'), 'utf8'));
   writeFileSync(join(dir, 'arena.config.json'), JSON.stringify({ ...example, stylesheet }, null, 2));

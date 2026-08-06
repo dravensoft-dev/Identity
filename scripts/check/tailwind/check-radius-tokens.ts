@@ -23,7 +23,7 @@ export function evaluateManifest(manifest) {
   return findings;
 }
 
-export function zeroManifestProblem(files) {
+export function zeroManifestProblem(files: string[]) {
   return files.length === 0
     ? 'found 0 manifests -- an empty result set is a failure, not a clean pass; check the discovery path'
     : null;

@@ -13,7 +13,7 @@ import {
   BARE_DOCUMENT, basenames, bareDocumentProblems,
 } from './check-citations.ts';
 
-function tree(files) {
+function tree(files: Record<string, string>) {
   const base = mkdtempSync(join(tmpdir(), 'arena-citations-'));
   for (const [rel, text] of Object.entries(files) as [string, string][]) {
     const path = join(base, rel);

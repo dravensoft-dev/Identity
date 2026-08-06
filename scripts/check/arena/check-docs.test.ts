@@ -16,7 +16,7 @@ import {
   RULE_OWNERS, CONTRIBUTOR_BRANCH, ruleOwnerProblems, statesRule, CONSUMER_OWN_OUTPUT,
 } from './check-docs.ts';
 
-function tree(files) {
+function tree(files: Record<string, string>) {
   const root = mkdtempSync(join(tmpdir(), 'arena-docs-'));
   for (const [path, body] of Object.entries(files) as [string, string][]) {
     const full = join(root, path);

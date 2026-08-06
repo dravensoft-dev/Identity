@@ -11,7 +11,7 @@ import {
 import { MAP_FILE } from './component-map.ts';
 import { repoRoot } from './repo-root.ts';
 
-function tree(files) {
+function tree(files: Record<string, string>) {
   const root = mkdtempSync(join(tmpdir(), 'arena-assembly-'));
   for (const [path, body] of Object.entries(files) as [string, string][]) {
     const full = join(root, path);

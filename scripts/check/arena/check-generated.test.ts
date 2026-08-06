@@ -11,7 +11,7 @@ import {
   unmarkedProblems, trackingProblems, unmarkedCoverageProblems,
 } from './check-generated.ts';
 
-function tree(files) {
+function tree(files: Record<string, string>) {
   const root = mkdtempSync(join(tmpdir(), 'arena-generated-'));
   for (const [rel, body] of Object.entries(files) as [string, string][]) {
     const path = join(root, rel);

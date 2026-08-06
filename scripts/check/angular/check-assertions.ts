@@ -67,7 +67,7 @@ export function suiteFiles(root: string, list = readdirSync) {
   return found.sort();
 }
 
-export function assertionProblems(files, read) {
+export function assertionProblems(files: string[], read) {
   const problems = [];
   for (const file of files) {
     const source = read(file);

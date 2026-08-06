@@ -13,7 +13,7 @@ import {
   zeroScanProblems,
 } from './check-agents.ts';
 
-function tree(files) {
+function tree(files: Record<string, string>) {
   const base = mkdtempSync(join(tmpdir(), 'arena-agents-'));
   for (const [rel, text] of Object.entries(files) as [string, string][]) {
     const path = join(base, rel);

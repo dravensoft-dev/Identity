@@ -195,7 +195,7 @@ export function baseManifest(root = repoRoot) {
   };
 }
 
-export function report(name: string, dir: string, files) {
+export function report(name: string, dir: string, files: string[]) {
   const bytes = files.reduce((total, f) => total + (existsSync(f) ? statSync(f).size : 0), 0);
   return `${name}: ${files.length} file(s), ${(bytes / 1024).toFixed(0)} KiB, in ${relative(repoRoot, dir)}`;
 }

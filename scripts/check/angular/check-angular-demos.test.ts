@@ -19,7 +19,7 @@ const ENTRY =
   + "import { bootstrapApplication } from '@angular/platform-browser';\n"
   + 'bootstrapApplication(Demo, { providers: [provideZonelessChangeDetection()] });\n';
 
-function reader(files) {
+function reader(files: Record<string, string>) {
   return (rel: string) => (rel in files ? files[rel] : null);
 }
 

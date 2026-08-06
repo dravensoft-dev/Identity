@@ -107,7 +107,7 @@ test('an Arena package is always a peer, never a dependency', () => {
   assert.ok(problems.some((p) => /is a dependency; an Arena package is always a peer/.test(p)));
 });
 
-function assembled(files) {
+function assembled(files: Record<string, string>) {
   const dir = mkdtempSync(join(tmpdir(), 'arena-pkg-'));
   for (const [path, body] of Object.entries(files) as [string, string][]) {
     const full = join(dir, path);

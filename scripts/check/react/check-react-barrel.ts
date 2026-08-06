@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { buildBarrel, ROOT_PRIVATE } from '../../build/react/build-react-barrel.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-export function driftProblems(files, read) {
+export function driftProblems(files: Map<string, string>, read) {
   const problems = [];
   for (const [rel, expected] of files) {
     let actual;
@@ -25,7 +25,7 @@ export function driftProblems(files, read) {
   return problems;
 }
 
-export function stalePrivateProblems(files) {
+export function stalePrivateProblems(files: Map<string, string>) {
   const barrel = [...files.values()].join('\n');
   return [...ROOT_PRIVATE.keys()]
     .filter((name) => barrel.includes(`'./${name}`))
