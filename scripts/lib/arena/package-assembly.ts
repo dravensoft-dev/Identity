@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
 import { join, dirname, relative, sep, basename } from 'node:path';
 import { repoRoot } from './repo-root.mjs';
-import { kebab } from './layers.mjs';
+import { kebab } from './layers.ts';
 import { componentMap, MAP_FILE } from './component-map.ts';
 import { manifestFiles } from '../tailwind/tailwind-compile.ts';
 import { CONSUME, sheetPath } from '../../build/tailwind/build-tailwind.ts';

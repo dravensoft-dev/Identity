@@ -9,7 +9,7 @@ import { join, basename } from 'node:path';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
 } from '../../lib/arena/behaviour-contracts.ts';
-import { kebab } from '../../lib/arena/layers.mjs';
+import { kebab } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export const SUITE_DIRS = [

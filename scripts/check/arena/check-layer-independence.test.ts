@@ -20,7 +20,7 @@ import {
   staleSpecifierAllowances,
   textualHits,
 } from './check-layer-independence.ts';
-import { LAYERS } from '../../lib/arena/layers.mjs';
+import { LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 test('the rule is the matrix: angular may name tailwind, and nothing else names anything', () => {

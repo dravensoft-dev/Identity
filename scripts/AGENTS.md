@@ -43,7 +43,7 @@ The domain is decided by what a script **touches**, never by what it is about.
 `lib/` is pure functions and the reads-and-writes test cannot separate them.
 `core/serialize-token.ts` opens no file, but every name in it is a DTCG one, so it is `core`;
 `core/behaviour-compliance.ts` is the same, in `contracts/behaviour`'s vocabulary of
-requirement keys. What is left over is `arena`, meaning the parsers, the browser harness, `layers.mjs`
+requirement keys. What is left over is `arena`, meaning the parsers, the browser harness, `layers.ts`
 and `repo-root.mjs`, because it belongs to no layer in particular. Never place a library by
 **who imports it**: `behaviour-compliance.ts` is read from both framework layers' harnesses
 and is still `core`.
@@ -61,7 +61,7 @@ stdin or are imported.
 silently, because the wrong path still exists. That module is
 the one place that counts, which is why moving *it* is the one move needing care.
 
-**A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.mjs`,
+**A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.ts`,
 `core/arena-tokens.ts` and the rest are there because more than one gate reads them, and a
 gate reaching down is the only direction allowed. Across domains the same holds in both
 directions: `core/arena-tokens.ts` imports `../arena/css-decls.mjs` and nothing forbids it,

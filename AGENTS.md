@@ -138,7 +138,7 @@ two copies and never reads either for meaning. Verify with
   that fails the day it stops being true.
 - **A document cites code as `path/to/file:member(parameters)` and never by line number.** A line
   moves under the next edit and takes every citation with it in silence, while a member carries
-  its own address: `scripts/lib/arena/layers.mjs:kebab(name)` still resolves after the file is
+  its own address: `scripts/lib/arena/layers.ts:kebab(name)` still resolves after the file is
   reordered around it. `check:citations` holds the path half of that citation to a file that is
   there, which is the half a rename breaks.
 - **The best comment is the one not written.** A method carries its own context through its name.

@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-import { LAYERS } from '../../lib/arena/layers.mjs';
+import { LAYERS } from '../../lib/arena/layers.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';

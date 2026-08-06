@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { kebab } from '../../lib/arena/layers.mjs';
+import { kebab } from '../../lib/arena/layers.ts';
 import { classBase, classesFor, arenaClassesFor } from '../../../frameworks/tailwind/ManifestClasses.js';
 import { slotClass } from '../../lib/tailwind/component-css.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
@@ -59,7 +59,7 @@ test('the harness spells a class the way the generator does, for every manifest 
   assert.ok(manifests.length > 0, 'no manifest was read, so this asserts nothing');
   for (const manifest of manifests) {
     const base = classBase(manifest.component);
-    assert.equal(base, kebab(manifest.component), `${manifest.component}: the harness and layers.mjs disagree on kebab`);
+    assert.equal(base, kebab(manifest.component), `${manifest.component}: the harness and layers.ts disagree on kebab`);
     assert.ok(base.startsWith('arena-'), `${manifest.component}: a class base no longer carries the arena prefix the DOM depends on`);
     for (const [slot, classes] of Object.entries(arenaClassesFor(manifest))) {
       for (const one of classes.split(/\s+/).filter(Boolean)) {

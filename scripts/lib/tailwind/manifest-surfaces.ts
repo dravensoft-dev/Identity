@@ -9,7 +9,8 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { kebab } from '../arena/layers.mjs';
+import { kebab } from '../arena/layers.ts';
+import type { ComponentTree } from '../arena/layers.ts';
 import { repoRoot } from '../arena/repo-root.mjs';
 
 export const MANIFEST_COVERS = new Map([
@@ -73,13 +74,13 @@ export const HAND_DRAWN = new Map([
 const COMPONENTS_JSON = join(repoRoot, 'frameworks/Components.json');
 const MANIFEST_DIR = join(repoRoot, 'frameworks/tailwind/components');
 
-export function categories(root = repoRoot) {
+export function categories(root = repoRoot): ComponentTree {
   const path = root === repoRoot ? COMPONENTS_JSON : join(root, 'frameworks/Components.json');
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
 export function categoryOf(name, root = repoRoot) {
-  for (const [category, names] of Object.entries(categories(root)) as [string, string[]][])
+  for (const [category, names] of Object.entries(categories(root)))
     if (names.includes(name)) return category;
   return null;
 }
@@ -89,7 +90,7 @@ export function everyComponent(root = repoRoot) {
 }
 
 export function inScope(root = repoRoot) {
-  return (everyComponent(root) as string[]).filter((name) => !HAND_DRAWN.has(name));
+  return everyComponent(root).filter((name) => !HAND_DRAWN.has(name));
 }
 
 export function hasOwnManifest(name, root = repoRoot) {

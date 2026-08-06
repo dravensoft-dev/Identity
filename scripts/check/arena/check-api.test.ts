@@ -7,7 +7,7 @@ import {
   bindingName, validateTypes, validateContract, compareSurface, docProblems,
   resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
 } from './check-api.ts';
-import { pascal } from '../../lib/arena/layers.mjs';
+import { pascal } from '../../lib/arena/layers.ts';
 import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
 import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.ts';
 

@@ -6,7 +6,7 @@
  * manifest edit changes what React builds while nothing tracked under it moves. */
 
 import { fileURLToPath } from 'node:url';
-import { LAYERS } from '../../lib/arena/layers.mjs';
+import { LAYERS } from '../../lib/arena/layers.ts';
 
 export const SHARED = {
   'contracts/': 'the three contract levels every layer answers to',

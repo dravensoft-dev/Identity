@@ -221,7 +221,7 @@ component present in no layer. **It says nothing about whether the category is t
 which is editorial judgement and no gate has it. Nor does a directory existing prove the
 component inside it is complete: `check:api` and `check:behaviour` hold that.
 
-`LAYERS` in `scripts/lib/arena/layers.mjs` is an exhaustive enumeration, deliberately **not** a
+`LAYERS` in `scripts/lib/arena/layers.ts` is an exhaustive enumeration, deliberately **not** a
 walk of `frameworks/`, so a layer renamed or removed wholesale becomes loud rather than quietly
 leaving a gate's scope.
 

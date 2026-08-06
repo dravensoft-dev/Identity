@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, basename } from 'node:path';
 import { componentMap, angularComponentMap, reactComponentMap, sheetOf, close, MAP_FILE } from './component-map.ts';
 import { manifestFiles } from '../tailwind/tailwind-compile.ts';
-import { kebab } from './layers.mjs';
+import { kebab } from './layers.ts';
 import { repoRoot } from './repo-root.mjs';
 
 const shipped = manifestFiles(join(repoRoot, 'frameworks', 'tailwind', 'components'))
@@ -47,7 +47,7 @@ for (const [layer, match] of [['angular', 'selector'], ['react', 'symbol']]) {
 
 test('a component with no manifest of its own resolves to no sheet, which is what a chart is', () => {
   const angular = componentMap('angular', repoRoot);
-  const react = componentMap('react', repoRoot) as { draws: Record<string, string | null> };
+  const react = componentMap('react', repoRoot);
   assert.equal(angular.draws['arena-bar-chart'], null);
   assert.equal(react.draws.ArenaBarChart, null);
   assert.ok('arena-bar-chart' in angular.draws, 'it is placed and costs nothing, which is not the same as unplaced');
@@ -55,7 +55,7 @@ test('a component with no manifest of its own resolves to no sheet, which is wha
 
 test('a component wears its parent\'s sheet, because 43 sheets dress 55 components', () => {
   const angular = componentMap('angular', repoRoot);
-  const react = componentMap('react', repoRoot) as { draws: Record<string, string | null> };
+  const react = componentMap('react', repoRoot);
   assert.equal(angular.draws['arena-side-nav-item'], 'arena-side-nav');
   assert.equal(angular.draws['arena-table-row'], 'arena-table');
   assert.equal(react.draws.ArenaSideNavItem, 'arena-side-nav');

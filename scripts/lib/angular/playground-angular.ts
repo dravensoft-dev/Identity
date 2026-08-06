@@ -7,7 +7,7 @@
  * rather than listed here, so a new one joins without an edit. */
 
 import { playgroundPage, sheetLinks } from '../arena/playground-page.ts';
-import { kebab } from '../arena/layers.mjs';
+import { kebab } from '../arena/layers.ts';
 
 export const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 

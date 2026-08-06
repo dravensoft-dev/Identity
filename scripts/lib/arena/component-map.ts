@@ -12,7 +12,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './repo-root.mjs';
-import { kebab } from './layers.mjs';
+import { kebab } from './layers.ts';
 
 export const MAP_FILE = 'components.json';
 
@@ -118,7 +118,13 @@ export function reactComponentMap(root = repoRoot) {
   return mapFrom(entries.filter((e) => e.keys.length), 'symbol');
 }
 
-export function componentMap(layer, root = repoRoot) {
+export type ComponentSheetMap = {
+  match: string;
+  draws: Record<string, string | null>;
+  needs: Record<string, string[]>;
+};
+
+export function componentMap(layer, root = repoRoot): ComponentSheetMap {
   if (layer === 'angular') return angularComponentMap(root);
   if (layer === 'react') return reactComponentMap(root);
   throw new Error(`component-map: no map is derived for a layer called "${layer}"`);

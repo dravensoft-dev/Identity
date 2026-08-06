@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { DOMAINS, SCRIPT_EXTENSIONS, domainOfTestPath, isScript, isSuite } from './domains.ts';
-import { LAYERS } from './layers.mjs';
+import { LAYERS } from './layers.ts';
 import { repoRoot } from './repo-root.mjs';
 
 function suitesUnder(dir) {

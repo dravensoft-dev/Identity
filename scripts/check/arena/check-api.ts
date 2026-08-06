@@ -12,7 +12,7 @@ import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
   bindingName,
 } from '../../lib/arena/api-surface.ts';
-import { pascal, readLayer } from '../../lib/arena/layers.mjs';
+import { pascal, readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 

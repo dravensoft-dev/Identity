@@ -10,7 +10,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, extname, relative } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
-import { emittedTree } from '../../lib/arena/layers.mjs';
+import { emittedTree } from '../../lib/arena/layers.ts';
 
 const EXEMPT = new Map([
   ['SSR_VIEWPORT_H',

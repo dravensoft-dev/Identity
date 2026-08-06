@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
-import { pascal } from './layers.mjs';
+import { pascal } from './layers.ts';
 
 export const PATTERN_DIR = 'contracts/behaviour';
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LAYER_INPUTS, SHARED, layersChanged, renderOutputs, unroutedLayers } from './changed-layers.ts';
-import { LAYERS } from '../../lib/arena/layers.mjs';
+import { LAYERS } from '../../lib/arena/layers.ts';
 
 test('a change confined to one layer routes to that layer alone', () => {
   assert.deepEqual(

@@ -5,7 +5,9 @@
  * one or the other, so a new one fails until somebody says which, rather than
  * being read as a layer no gate implements or a layer every gate skips.
  * emittedTree is anchored rather than a directory name: a walker skipping every
- * directory called build would also skip scripts/build/, the phase directory. */
+ * directory called build would also skip scripts/build/, the phase directory.
+ * ComponentTree is readLayer's answer named: six readers were each casting an
+ * Object.entries of it, so the shape is stated here instead of six times. */
 
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,18 +21,20 @@ export const NON_LAYERS = new Map([
 
 export const emittedTree = (root = repoRoot) => join(root, 'frameworks', 'angular', 'build');
 
-export function kebab(name) {
+export function kebab(name: string) {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 }
 
-export function pascal(dir) {
+export function pascal(dir: string) {
   return dir.replace(/(^|-)([a-z0-9])/g, (_, _sep, c) => c.toUpperCase());
 }
 
-export function readLayer(layer) {
+export type ComponentTree = Record<string, string[]>;
+
+export function readLayer(layer: string): ComponentTree {
   const base = join(repoRoot, 'frameworks', layer, 'components');
   if (!existsSync(base)) return {};
-  const out = {};
+  const out: ComponentTree = {};
   for (const cat of readdirSync(base, { withFileTypes: true })) {
     if (!cat.isDirectory()) continue;
     out[cat.name] = readdirSync(join(base, cat.name), { withFileTypes: true })

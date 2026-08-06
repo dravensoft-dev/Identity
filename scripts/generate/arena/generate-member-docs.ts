@@ -100,7 +100,7 @@ async function main() {
   const { existsSync, readdirSync } = await import('node:fs');
   const { bindingName, resolveReactImplementations, resolveAngularImplementations } =
     await import('../../check/arena/check-api.ts');
-  const { readLayer } = await import('../../lib/arena/layers.mjs');
+  const { readLayer } = await import('../../lib/arena/layers.ts');
 
   const dir = join(root, 'contracts/api/components');
   const contracts = readdirSync(dir).filter((f) => f.endsWith('.json')).sort()

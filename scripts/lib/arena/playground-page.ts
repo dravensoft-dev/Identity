@@ -8,7 +8,7 @@
 import { HAND_DRAWN, categoryOf, manifestFor } from '../tailwind/manifest-surfaces.ts';
 import { PREFLIGHT, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 import { composedBy, composedGraph } from './composed-surfaces.ts';
-import { kebab } from './layers.mjs';
+import { kebab } from './layers.ts';
 
 export const UP = '../../../../../';
 
@@ -16,7 +16,7 @@ export const PHOSPHOR_WEIGHTS = ['bold', 'fill', 'duotone'];
 
 export function surfacesDrawn(model, graph = composedGraph(), root?) {
   const instantiated = [model.component, ...model.uses];
-  const surfaces = new Set();
+  const surfaces = new Set<string>();
   for (const name of [...instantiated, ...composedBy(instantiated, graph)]) {
     const manifest = manifestFor(name, root);
     if (manifest) { surfaces.add(manifest); continue; }

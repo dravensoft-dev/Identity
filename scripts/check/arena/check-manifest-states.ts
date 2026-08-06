@@ -15,7 +15,7 @@ import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import {
   HAND_DRAWN, MANIFEST_COVERS, categoryOf, coveredContracts, surfaceProblems,
 } from '../../lib/tailwind/manifest-surfaces.ts';
-import { kebab } from '../../lib/arena/layers.mjs';
+import { kebab } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };

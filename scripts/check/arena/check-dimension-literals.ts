@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { emittedTree } from '../../lib/arena/layers.mjs';
+import { emittedTree } from '../../lib/arena/layers.ts';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 

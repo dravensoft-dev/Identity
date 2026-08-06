@@ -7,7 +7,7 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import { LAYERS, pascal } from './layers.mjs';
+import { LAYERS, pascal } from './layers.ts';
 import { repoRoot } from './repo-root.mjs';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g;

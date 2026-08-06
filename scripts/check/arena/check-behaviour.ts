@@ -6,7 +6,7 @@ import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
   crossLayerAgrees, bindingCases, PATTERN_DIR,
 } from '../../lib/arena/behaviour-contracts.ts';
-import { pascal, kebab } from '../../lib/arena/layers.mjs';
+import { pascal, kebab } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
