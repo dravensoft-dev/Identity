@@ -6,7 +6,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 const read = (p: string) => readFileSync(join(root, p), 'utf8');
 const readJSON = (p: string) => JSON.parse(read(p));
 
-function git(...args) {
+function git(...args: string[]) {
   try {
     return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
   } catch {

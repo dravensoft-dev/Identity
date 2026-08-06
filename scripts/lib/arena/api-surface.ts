@@ -325,7 +325,21 @@ export function angularSurface(source: string, className: string) {
   return { members: [...members, ...templateSlots(componentTemplate(source))], docs: memberDocs(body) };
 }
 
-function classMember(name: string, initialiser: string) {
+export type SurfaceMember = {
+  name: string;
+  form?: string;
+  type?: string | null;
+  required?: boolean;
+  payload?: string | null;
+  platformPayload?: boolean;
+  of?: string;
+  itemForm?: string;
+  params?: Record<string, string>;
+  returns?: string;
+  default?: unknown;
+};
+
+function classMember(name: string, initialiser: string): SurfaceMember {
   const init = initialiser.trim();
   const generic = /^(input|output|model)(\.required)?\s*<([\s\S]*)>\s*\(([\s\S]*)\)$/.exec(init);
   if (generic) {

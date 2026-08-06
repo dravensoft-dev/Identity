@@ -13,7 +13,7 @@ import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export function facesIn(css: string) {
-  const faces = new Set();
+  const faces = new Set<string>();
   const re = /@font-face\s*{([^}]*)}/g;
   let m;
   while ((m = re.exec(css)) !== null) {
@@ -23,17 +23,17 @@ export function facesIn(css: string) {
   return faces;
 }
 
-export function checkFonts(declared, faces) {
+export function checkFonts(declared: string[], faces: Set<string>) {
   return declared
     .filter((fam) => !faces.has(fam))
     .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.generated.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.ts`);
 }
 
 export async function askGoogle(
-  fonts,
+  fonts: Record<string, { family: string; src: string }>,
   get: (url: string, init?: { headers: Record<string, string> }) => Promise<{ status: number }> = fetch,
 ) {
-  const answers = [];
+  const answers: { role: string; family: string; src: string; status?: number; unreachable?: string }[] = [];
   const declared = Object.entries(fonts) as [string, { family: string; src: string }][];
   for (const [role, { family, src }] of declared) {
     try {
@@ -45,7 +45,7 @@ export async function askGoogle(
   return answers;
 }
 
-export function urlProblems(answers) {
+export function urlProblems(answers: Awaited<ReturnType<typeof askGoogle>>) {
   if (answers.length === 0) {
     return ['asked about 0 font URLs, and an empty result set is a failure, not a clean pass; check the discovery path'];
   }

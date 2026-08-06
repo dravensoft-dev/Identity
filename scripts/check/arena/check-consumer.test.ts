@@ -12,7 +12,7 @@ import {
 const ok: { status: number; stderr: string; theme: string | null; icons: string | null } =
   { status: 0, stderr: '', theme: null, icons: null };
 
-const sheetImports = (...names) => ({
+const sheetImports = (...names: string[]) => ({
   ...ok,
   theme: names.map((n) => `@import '@dravensoft/arena-react/css/components/${n}.css';`).join('\n'),
 });

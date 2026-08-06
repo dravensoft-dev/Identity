@@ -76,7 +76,7 @@ test('hasAccessibleName credits text content only when asked to', () => {
 
 test('aria-label alone names the element without consulting the resolver', () => {
   let asked = false;
-  const resolve = () => { asked = true; return null; };
+  const resolve = (): null => { asked = true; return null; };
   assert.equal(hasAccessibleName(el('div', { 'aria-label': 'Schedule' }), false, resolve), true);
   assert.equal(asked, false, 'the resolver was consulted for an element aria-label already named');
 });
@@ -597,13 +597,13 @@ test('an IDREF that resolves meets the requirement', () => {
 
 test('an IDREF that dangles does NOT meet it, though the attribute is present', () => {
   const tab = el('button', { 'aria-controls': 'panel-9' });
-  const resolve = () => null;
+  const resolve = (): null => null;
   assert.equal(evaluate(tab, 'roles.controls', 'each tab…', 'tabs', resolve), false);
 });
 
 test('a missing IDREF attribute is unmet without consulting the resolver', () => {
   let asked = false;
-  const resolve = () => { asked = true; return null; };
+  const resolve = (): null => { asked = true; return null; };
   assert.equal(evaluate(el('button'), 'roles.controls', 'x', 'tabs', resolve), false);
   assert.equal(asked, false, 'the resolver was consulted for an absent attribute');
 });

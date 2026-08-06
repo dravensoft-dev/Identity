@@ -140,7 +140,11 @@ export function suiteMentions(source: string, tail) {
 
 export function validateCoverage(
   { bindings, covered, suites }:
-    { bindings; covered; suites: Record<string, { source: string; layer: string }> },
+    {
+      bindings: ReturnType<typeof inventoryFrom>;
+      covered: Record<string, string>;
+      suites: Record<string, { source: string; layer: string }>;
+    },
 ) {
   const problems = [];
 

@@ -31,12 +31,12 @@ export function stepsWithJunit(dir = REPORT_DIR): { name: string; args: string[]
   });
 }
 
-function attribute(chunk, name: string) {
+function attribute(chunk: string, name: string) {
   const m = new RegExp(`\\b${name}="([^"]*)"`).exec(chunk);
   return m ? m[1] : null;
 }
 
-export function parseJunit(xml) {
+export function parseJunit(xml: string) {
   const cases = [];
   for (const suite of String(xml).split('<testsuite ').slice(1)) {
     const suiteFile = attribute(suite.slice(0, suite.indexOf('>')), 'file');
@@ -50,7 +50,7 @@ export function parseJunit(xml) {
   return cases;
 }
 
-export function tally(cases) {
+export function tally(cases: { file: string | null; status: string }[]) {
   const byDomain = new Map<string, Record<string, number>>(DOMAINS.map((d: string) => [d, { pass: 0, fail: 0, skip: 0 }]));
   const unclassified = [];
   for (const c of cases) {
@@ -62,7 +62,7 @@ export function tally(cases) {
 }
 
 export function suiteDomains(dir: string) {
-  const found = new Set();
+  const found = new Set<string>();
   const walk = (current: string) => {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const full = join(current, entry.name);
@@ -76,7 +76,9 @@ export function suiteDomains(dir: string) {
   return [...found].sort();
 }
 
-export function coverageProblems(counted, expectedDomains, roots = EXPECTED_ROOTS) {
+export function coverageProblems(
+  counted: ReturnType<typeof tally>, expectedDomains: string[], roots = EXPECTED_ROOTS,
+) {
   const problems = [];
   for (const domain of expectedDomains) {
     const row = counted.byDomain.get(domain);
@@ -93,7 +95,7 @@ export function coverageProblems(counted, expectedDomains, roots = EXPECTED_ROOT
   return problems;
 }
 
-export function renderSummary(counted) {
+export function renderSummary(counted: ReturnType<typeof tally>) {
   const rows = DOMAINS.map((domain) => {
     const { pass, fail, skip } = counted.byDomain.get(domain);
     return `| ${domain} | ${pass} | ${fail} | ${skip} |`;

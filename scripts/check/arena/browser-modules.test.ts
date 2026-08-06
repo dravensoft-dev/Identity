@@ -34,7 +34,7 @@ for (const file of MODULES) {
     try {
       await import(`${pathToFileURL(join(root, file)).href}?t=${Date.now()}`);
     } catch (err) {
-      error = err;
+      error = err as Error;
     }
     if (!error) return;
     assert.ok(

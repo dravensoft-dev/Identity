@@ -52,7 +52,11 @@ export function assemble(base = root) {
   return { built: true, missing };
 }
 
-export function fixture(layer: string, files: Record<string, string>, stylesheet, base = root) {
+export type CliRun = { status: number; stderr: string; theme: string | null; icons: string | null };
+
+export function fixture(
+  layer: string, files: Record<string, string>, stylesheet: Record<string, unknown>, base = root,
+) {
   const dir = mkdtempSync(join(tmpdir(), `arena-consumer-${layer}-`));
   const example = JSON.parse(readFileSync(join(distDir(layer, base), 'arena.config.example.json'), 'utf8'));
   writeFileSync(join(dir, 'arena.config.json'), JSON.stringify({ ...example, stylesheet }, null, 2));
@@ -77,7 +81,7 @@ export function importedSheets(css: string) {
   return [...(css ?? '').matchAll(/@import '[^']*\/css\/components\/([^']+)\.css';/g)].map((m) => m[1]).sort();
 }
 
-export function mergeProblems(layer: string, result, base = root) {
+export function mergeProblems(layer: string, result: CliRun, base = root) {
   const problems = [];
   const bins = readdirSync(join(distDir(layer, base), 'bin'))
     .filter((f) => f.endsWith('.ts') || f.endsWith('.mjs'));
@@ -98,7 +102,7 @@ export function mergeProblems(layer: string, result, base = root) {
   return problems;
 }
 
-export function renameProblems(layer: string, result, expected, base = root) {
+export function renameProblems(layer: string, result: CliRun, expected: string[], base = root) {
   const problems = [];
   const sheet = join(distDir(layer, base), 'css', 'components', 'arena-button.css');
   if (!existsSync(sheet)) {
@@ -117,7 +121,7 @@ export function renameProblems(layer: string, result, expected, base = root) {
   return problems;
 }
 
-export function staleNameProblems(layer: string, result) {
+export function staleNameProblems(layer: string, result: CliRun) {
   if (result.status === 0 && importedSheets(result.theme).length > 0) {
     return [`${layer}: a source naming the pre-rename symbol still resolved `
       + `[${importedSheets(result.theme).join(', ')}]. Nothing may answer to the old name: there is no alias `
@@ -126,7 +130,7 @@ export function staleNameProblems(layer: string, result) {
   return [];
 }
 
-export function listProblems(layer: string, named, unknown, list = []) {
+export function listProblems(layer: string, named: CliRun, unknown: CliRun, list: string[] = []) {
   const problems = [];
   if (named.status !== 0) {
     problems.push(`${layer}: the sheet list its own README documents, [${list.join(', ')}], was refused:\n    ${named.stderr.trim()}`);

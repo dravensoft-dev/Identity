@@ -37,7 +37,7 @@ export const LAYER_TITLE: Record<string, string> = {
   angular: 'Angular',
 };
 
-export const LAYER_IDIOM = {
+export const LAYER_IDIOM: Record<string, string> = {
   react: `\`\`\`tsx
 import { ArenaButton, ArenaTag } from '${PACKAGES.react}';
 \`\`\`

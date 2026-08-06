@@ -71,7 +71,7 @@ export const GATES = [
   { name: 'check:cdk', file: 'angular/check-cdk.ts' },
 ];
 
-export function gatesFor(domains) {
+export function gatesFor(domains: string[]) {
   const unknown = domains.filter((d) => !DOMAINS.includes(d));
   if (unknown.length > 0) {
     throw new Error(`check-all: no domain called ${unknown.join(', ')}; the five are ${DOMAINS.join(', ')}`);
@@ -83,7 +83,7 @@ export function gatesFor(domains) {
   return selected;
 }
 
-export function parseCheckArgs(argv) {
+export function parseCheckArgs(argv: string[]) {
   let domains = DOMAINS;
   let tests = true;
   for (const arg of argv) {
@@ -116,7 +116,7 @@ export function stepStatus(code: number) {
   return 'fail';
 }
 
-export function summarize(results) {
+export function summarize(results: { name: string; status: string }[]) {
   const label: Record<string, string> = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' };
   const lines = results.map((r) => `  ${label[r.status]}  ${r.name}`);
   const failed = results.filter((r) => r.status === 'fail');
