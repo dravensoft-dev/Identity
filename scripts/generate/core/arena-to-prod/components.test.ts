@@ -51,6 +51,23 @@ test('a component that draws no classes costs no sheet, and is not a miss either
   assert.deepEqual(found.unplaced, [], 'it is in the map, so nothing is reported about it');
 });
 
+test('a React symbol imported here AND opened as a tag, that the map does not know, is reported', () => {
+  const found = resolved(REACT, ["import { ArenaWidget } from '@dravensoft/arena-react';\nconst a = <ArenaWidget />;"],
+    '@dravensoft/arena-react');
+  assert.deepEqual(found.unplaced, ['ArenaWidget']);
+});
+
+test('a React import that is a type or a helper is not reported, because it opens no tag', () => {
+  const found = resolved(REACT, ["import { ArenaTone, arenaViewportBelow } from '@dravensoft/arena-react';"],
+    '@dravensoft/arena-react');
+  assert.deepEqual(found.unplaced, [], 'half of what a consumer imports from here is not a component');
+});
+
+test('a tag of the consumer\'s own is not reported, however it is spelt', () => {
+  const found = resolved(REACT, ['const a = <Card />; const b = <ArenaLikeThing />;'], '@dravensoft/arena-react');
+  assert.deepEqual(found.unplaced, [], 'a capitalised tag this package never exported belongs to whoever wrote it');
+});
+
 test('an element wearing the prefix that Arena does not ship is reported and stops nothing', () => {
   const found = resolved(ANGULAR, ['<arena-widget /><arena-button />'], '@dravensoft/arena-angular');
   assert.deepEqual(found.unplaced, ['arena-widget']);

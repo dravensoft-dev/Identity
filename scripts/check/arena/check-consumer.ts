@@ -36,6 +36,20 @@ export const SOURCES: Record<string, Record<string, string>> = {
   },
 };
 
+export const UNPLACED: Record<string, { files: Record<string, string>; name: string }> = {
+  react: {
+    files: {
+      'src/App.tsx': "import { ArenaButton, ArenaWidget } from '@dravensoft/arena-react';\n"
+        + 'export const App = () => (<><ArenaButton>Go</ArenaButton><ArenaWidget /></>);\n',
+    },
+    name: 'ArenaWidget',
+  },
+  angular: {
+    files: { 'src/app.html': '<arena-button>Go</arena-button>\n<arena-widget></arena-widget>\n' },
+    name: 'arena-widget',
+  },
+};
+
 export const STALE: Record<string, Record<string, string>> = {
   react: { 'src/App.tsx': "import { Button } from '@dravensoft/arena-react';\nexport const App = () => <Button>Go</Button>;\n" },
   angular: { 'src/app.html': '<arena-nothing-at-all></arena-nothing-at-all>\n' },
@@ -134,6 +148,14 @@ export function renameProblems(layer: string, result: CliRun, expected: string[]
   return problems;
 }
 
+export function unplacedProblems(layer: string, result: CliRun, name: string) {
+  if (result.status !== 0) return [`${layer}: the run naming ${name} exited ${result.status} instead of reporting it`];
+  if (result.stderr.includes(`${name} is not a component this package ships`)) return [];
+  return [`${layer}: a source names ${name}, which this package does not ship, and the run said nothing `
+    + 'about it. A name the scan cannot place is the one warning that separates a typo from a component '
+    + `whose sheet is simply missing, and both render with no border and no colour:\n    ${result.stderr.trim()}`];
+}
+
 export function staleNameProblems(layer: string, result: CliRun) {
   if (result.status === 0 && importedSheets(result.theme).length > 0) {
     return [`${layer}: a source naming the pre-rename symbol still resolved `
@@ -186,13 +208,16 @@ export function collect(base = root) {
       }
       const named = fixture(layer, sources, { components: list }, base);
       const unknown = fixture(layer, sources, { components: ['button'] }, base);
-      dirs.push(auto, stale, named, unknown);
+      const strange = UNPLACED[layer];
+      const unplaced = fixture(layer, strange?.files ?? {}, AUTO, base);
+      dirs.push(auto, stale, named, unknown, unplaced);
 
       const result = runCli(layer, auto, base);
       problems.push(...mergeProblems(layer, result, base));
       problems.push(...renameProblems(layer, result, ['arena-button', 'arena-table'], base));
       problems.push(...staleNameProblems(layer, runCli(layer, stale, base)));
       problems.push(...listProblems(layer, runCli(layer, named, base), runCli(layer, unknown, base), list));
+      problems.push(...unplacedProblems(layer, runCli(layer, unplaced, base), strange?.name ?? ''));
     }
   } finally {
     for (const dir of dirs) rmSync(dir, { recursive: true, force: true });

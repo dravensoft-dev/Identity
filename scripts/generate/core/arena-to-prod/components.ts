@@ -1,12 +1,13 @@
 /* Resolving "components": "auto" against the map the package carries. A key is what the consumer
  * writes and a sheet is what dresses it, so a row, an item and a tab resolve to their parent's,
  * and a chart resolves to no sheet at all, which is an answer and not a miss. Then the closure,
- * because Arena draws components a consumer never names: a table brings a pagination and a select
- * with it, and a subset without them is a render with no border and no colour that nothing
- * reports. A key it cannot place is a line on stderr rather than a stop, since an element of the
- * consumer's own may wear the prefix. What it will not do is guess from a bare word: React is
- * read through the import naming the package and the JSX opening the tag, never the identifier
- * alone, because half this library is called ArenaCard, ArenaInput, ArenaTable or ArenaMenu in somebody else's code. */
+ * because Arena draws components a consumer never names: a table brings a pagination and a
+ * select, and a subset without them renders with no border and no colour and reports nothing.
+ * A key it cannot place is a line on stderr rather than a stop, since an element of the
+ * consumer's own may wear the prefix. React is read through the import naming the package AND
+ * the JSX opening the tag, and is unplaced only when both agree and the map still does not know
+ * it: an import alone is a type or a helper as often as a component, and a tag alone belongs to
+ * whoever wrote it -- half this library is called ArenaCard or ArenaTable in somebody's code. */
 
 export const AUTO = 'auto';
 
@@ -36,17 +37,30 @@ export const namedImports = (packageName: string) =>
 export const JSX_OPEN = /<([A-Z][A-Za-z0-9]*)[\s/>]/g;
 
 export function symbolKeys(map: ComponentMap, sources: string[], packageName: string) {
-  const written = new Set();
+  const written = new Set<string>();
+  const imported = new Set<string>();
+  const opened = new Set<string>();
   const shape = namedImports(packageName);
   for (const source of sources) {
-    for (const [, list] of source.matchAll(shape)) {
-      for (const one of (list ?? '').split(',')) written.add((one.trim().split(/\s+as\s+/)[0] ?? '').trim());
+    for (const m of source.matchAll(shape)) {
+      for (const one of (m[1] ?? '').split(',')) {
+        const name = (one.trim().split(/\s+as\s+/)[0] ?? '').trim();
+        if (!name) continue;
+        written.add(name);
+        imported.add(name);
+      }
     }
-    for (const [, name] of source.matchAll(JSX_OPEN)) written.add(name);
+    for (const m of source.matchAll(JSX_OPEN)) {
+      const name = m[1] ?? '';
+      written.add(name);
+      opened.add(name);
+    }
   }
   return {
-    drawn: ([...written] as string[]).filter((key) => key in map.draws).sort(),
-    unplaced: [] as string[],
+    drawn: [...written].filter((key) => key in map.draws).sort(),
+    unplaced: [...imported]
+      .filter((key) => opened.has(key) && !(key in map.draws))
+      .sort(),
   };
 }
 
