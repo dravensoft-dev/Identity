@@ -22,8 +22,8 @@ test('validateCoverage fails a COVERED entry naming a binding that no longer exi
     suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Ghost/);
-  assert.match(problems[0], /no binding/i);
+  assert.match(problems[0] ?? '', /Ghost/);
+  assert.match(problems[0] ?? '', /no binding/i);
 });
 
 test('validateCoverage fails a COVERED entry whose suite never mentions the component', () => {
@@ -33,8 +33,8 @@ test('validateCoverage fails a COVERED entry whose suite never mentions the comp
     suites: { 'dialog-modal.test.tsx': { source: 'assertPattern for ArenaMenu.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaDialog/);
-  assert.match(problems[0], /never names/i);
+  assert.match(problems[0] ?? '', /ArenaDialog/);
+  assert.match(problems[0] ?? '', /never names/i);
 });
 
 test('validateCoverage fails a COVERED entry naming a suite file that does not exist', () => {
@@ -44,7 +44,7 @@ test('validateCoverage fails a COVERED entry naming a suite file that does not e
     suites: {},
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /gone\.test\.tsx/);
+  assert.match(problems[0] ?? '', /gone\.test\.tsx/);
 });
 
 test('validateCoverage says nothing about an uncovered binding', () => {
@@ -89,7 +89,7 @@ test('a suite from the sibling layer cannot satisfy a coverage claim', () => {
   const stale = validateCoverage({ bindings, covered: { 'ArenaAlert:angular': 'AlertTones.dom.test.tsx' },
     suites: { 'AlertTones.dom.test.tsx': { source: "join(R, 'feedback/arena-alert/ArenaAlert.behaviour.json')", layer: 'react' } } });
   assert.equal(stale.length, 1);
-  assert.match(stale[0], /react layer/);
+  assert.match(stale[0] ?? '', /react layer/);
 
   assert.deepEqual(
     validateCoverage({ bindings, covered: { 'ArenaAlert:angular': 'ArenaAlert.roleTones.test.ts' },
@@ -117,7 +117,7 @@ test('a suite from the wrong layer cannot satisfy a claim when the tails collide
     bindings, covered: { 'ArenaTag:angular': 'TagAndChipCases.dom.test.tsx' }, suites,
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /react layer/);
+  assert.match(problems[0] ?? '', /react layer/);
 });
 
 test('collectSuites tags each suite with the layer of the directory it came from', () => {
@@ -140,8 +140,8 @@ test('a composite key naming a layer the component is not bound in fails', () =>
     suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaDialog/);
-  assert.match(problems[0], /angular/);
+  assert.match(problems[0] ?? '', /ArenaDialog/);
+  assert.match(problems[0] ?? '', /angular/);
 });
 
 test('a COVERED key without a :layer suffix is rejected -- the shape is mandatory', () => {
@@ -151,8 +151,8 @@ test('a COVERED key without a :layer suffix is rejected -- the shape is mandator
     suites: { 'dialog-modal.test.tsx': { source: 'feedback/arena-dialog/ArenaDialog.behaviour.json', layer: 'react' } },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaDialog/);
-  assert.match(problems[0], /:layer|composite|<component>:<layer>/i);
+  assert.match(problems[0] ?? '', /ArenaDialog/);
+  assert.match(problems[0] ?? '', /:layer|composite|<component>:<layer>/i);
 });
 
 test('a cased binding contributes exactly one inventory row', () => {

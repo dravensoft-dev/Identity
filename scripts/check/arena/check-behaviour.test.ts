@@ -36,8 +36,8 @@ test('describeBinding renders a mixed flat/cased disagreement correctly on each 
 test('zero patterns is one named failure, not a cascade', () => {
   const problems = zeroPatternProblems(0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 pattern/);
-  assert.match(problems[0], /behaviour/);
+  assert.match(problems[0] ?? '', /0 pattern/);
+  assert.match(problems[0] ?? '', /behaviour/);
 });
 
 test('a populated catalogue has no zero problem', () => {

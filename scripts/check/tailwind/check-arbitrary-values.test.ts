@@ -43,7 +43,7 @@ test('a marker exempts the class it lists, in a .md file', () => {
 test('a listed class still fails in a .md file with no marker', () => {
   const errs = scanFile('a.prompt.md', 'Don\'t: `text-[13px]`\n');
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /`text-\[13px\]` — a raw value, not a token/);
+  assert.match(errs[0] ?? '', /`text-\[13px\]` — a raw value, not a token/);
 });
 
 test('an unlisted class still fails in a .md file that has a marker', () => {
@@ -51,7 +51,7 @@ test('an unlisted class still fails in a .md file that has a marker', () => {
     'Don\'t: `text-[13px]` or `bg-[#b52a20]`\n\n<!-- check-arbitrary-values allow: text-[13px] -->\n';
   const errs = scanFile('a.prompt.md', text);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /`bg-\[#b52a20\]` — a raw value, not a token/);
+  assert.match(errs[0] ?? '', /`bg-\[#b52a20\]` — a raw value, not a token/);
 });
 
 test('two markers in one file union their allowances', () => {
@@ -67,15 +67,15 @@ test('a stale allowance fails: a marker naming a class the file does not carry',
   const text = 'No bad examples here.\n\n<!-- check-arbitrary-values allow: text-[13px] -->\n';
   const errs = scanFile('a.prompt.md', text);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /stale allowance `text-\[13px\]`/);
+  assert.match(errs[0] ?? '', /stale allowance `text-\[13px\]`/);
 });
 
 test('a marker in a non-.md file is itself reported as an error', () => {
   const text = '// <!-- check-arbitrary-values allow: text-[13px] -->\nconst x = "text-[13px]";\n';
   const errs = scanFile('a.jsx', text);
   assert.equal(errs.length, 2);
-  assert.match(errs[0], /marker is only honoured in \.md files/);
-  assert.match(errs[1], /`text-\[13px\]` — a raw value, not a token/);
+  assert.match(errs[0] ?? '', /marker is only honoured in \.md files/);
+  assert.match(errs[1] ?? '', /`text-\[13px\]` — a raw value, not a token/);
 });
 
 test('a calc() over tokens is a derivation, not a literal', () => {

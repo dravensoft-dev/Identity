@@ -48,7 +48,7 @@ test('a Tailwind theme property is a leak, and an Arena token that merely looks 
 test('the prelude is held to the three things whose absence is silent', () => {
   const missing = preludeProblems('/nowhere');
   assert.equal(missing.length, 1);
-  assert.match(missing[0], /every border and every focus ring is invalid/);
+  assert.match(missing[0] ?? '', /every border and every focus ring is invalid/);
   assert.deepEqual(preludeProblems(), []);
 });
 

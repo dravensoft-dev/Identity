@@ -84,7 +84,7 @@ test('an unknown polarity is rejected, because it decides --picker-invert', () =
 test('a missing font role names the three tokens Arena reads', () => {
   const c = config();
   delete c.fonts.mono;
-  assert.match(configProblems(c)[0], /fonts\.mono: missing; Arena reads --font-display/);
+  assert.match(configProblems(c)[0] ?? '', /fonts\.mono: missing; Arena reads --font-display/);
 });
 
 test('the default palette lands on :root and every other on its own class', () => {
@@ -224,7 +224,7 @@ test('preflight false drops the one layer that is Tailwind\'s and not Arena\'s',
 
 test('a component the package does not ship is fatal and the message lists what it does ship', () => {
   const [problem] = configProblems(config({ stylesheet: { components: ['buton'] } }), shipped);
-  assert.match(problem, /"buton" is not a sheet this package ships, which are arena-button, arena-side-nav, arena-table/);
+  assert.match(problem ?? '', /"buton" is not a sheet this package ships, which are arena-button, arena-side-nav, arena-table/);
 });
 
 test('an empty list is a problem, because it reads as a project that renders nothing', () => {
@@ -246,5 +246,5 @@ test('a stylesheet key Arena does not have is a problem, and preflight takes a b
 
 test('without the shipped sheets a name can be held to nothing, so the run stops', () => {
   const [problem] = configProblems(config({ stylesheet: { components: ['arena-button'] } }), null);
-  assert.match(problem, /^stylesheet: the sheets this package ships cannot be read/);
+  assert.match(problem ?? '', /^stylesheet: the sheets this package ships cannot be read/);
 });

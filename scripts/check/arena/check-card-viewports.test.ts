@@ -90,8 +90,8 @@ test('measureCardPage records a rejecting page as unrendered, and the sweep stil
   assert.equal(results.length, 3, 'the failing page does not stop the loop before the pages after it');
   assert.equal(results[0].status, 'ok');
   assert.equal(results[1].status, 'unrendered', 'a rejection is recorded as a result, not thrown past the loop');
-  assert.match(results[1].message, /b\.html/, 'the message names the page');
-  assert.match(results[1].message, /stalled connection/, 'the message names the underlying error, not just "could not measure"');
+  assert.match(results[1].message ?? '', /b\.html/, 'the message names the page');
+  assert.match(results[1].message ?? '', /stalled connection/, 'the message names the underlying error, not just "could not measure"');
   assert.equal(results[2].status, 'ok', 'the page after the failing one is still measured');
 });
 

@@ -19,7 +19,7 @@ test('the gate compared a real result set rather than an empty one', () => {
 test('an untracked index is a problem, because it would reach no clone and no tag', () => {
   const problems = trackingProblems('frameworks/SKILL.md', false);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /reaches no clone and no tag/);
+  assert.match(problems[0] ?? '', /reaches no clone and no tag/);
   assert.deepEqual(trackingProblems('frameworks/SKILL.md', true), []);
 });
 

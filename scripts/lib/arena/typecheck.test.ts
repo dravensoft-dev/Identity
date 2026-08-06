@@ -35,6 +35,6 @@ test('projectFiles reports the files a project reached, which is what proves the
 
 test('a gate holding zero projects is a failure, not a clean run', () => {
   assert.equal(zeroProjectProblems(0).length, 1);
-  assert.match(zeroProjectProblems(0)[0], /reports clean by construction/);
+  assert.match(zeroProjectProblems(0)[0] ?? '', /reports clean by construction/);
   assert.deepEqual(zeroProjectProblems(1), []);
 });

@@ -104,7 +104,7 @@ test('an output claiming generation without the infix is a problem; UNMARKED exc
   });
   const problems = unmarkedProblems(root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/react\/A\.js/);
+  assert.match(problems[0] ?? '', /frameworks\/react\/A\.js/);
   rmSync(root, { recursive: true });
 });
 
@@ -113,7 +113,7 @@ test('a .generated. file that is neither tracked nor ignored reaches no clone', 
   const problems = trackingProblems(root, runner({}));
   assert.equal(problems.length, 1 + Object.keys(UNTRACKED).length,
     'the orphan, plus every UNTRACKED pattern this bare tree leaves unclaimed');
-  assert.match(problems[0], /neither tracked nor ignored/);
+  assert.match(problems[0] ?? '', /neither tracked nor ignored/);
   rmSync(root, { recursive: true });
 });
 
@@ -142,5 +142,5 @@ test('an UNMARKED entry matching no tracked file is stale and fails', () => {
   })).length, 0);
   const stale = unmarkedCoverageProblems('.', runner({ tracked: ['intro/support.js'] }));
   assert.equal(stale.length, 1);
-  assert.match(stale[0], /assets\/fonts\/\*\.woff2/);
+  assert.match(stale[0] ?? '', /assets\/fonts\/\*\.woff2/);
 });

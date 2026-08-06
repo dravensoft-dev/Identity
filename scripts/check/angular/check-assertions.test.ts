@@ -10,7 +10,7 @@ const scan = (source: string) => assertionProblems(['a.test.ts'], () => source);
 test('an identity assertion over document.activeElement is caught', () => {
   const problems = scan(`assert.equal(document.activeElement, input, 'opening must move focus');`);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /a\.test\.ts:1: assert\.equal\(\) over a DOM node/);
+  assert.match(problems[0] ?? '', /a\.test\.ts:1: assert\.equal\(\) over a DOM node/);
 });
 
 test('every equality form of node:assert is caught, not just equal', () => {
@@ -30,7 +30,7 @@ test('the node may be the second operand as well as the first', () => {
 test('an assertion spanning several lines is caught, and reported at the line it opens on', () => {
   const problems = scan(`const a = 1;\nassert.equal(\n  host.querySelector('path'),\n  null,\n  'an empty doughnut',\n);`);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /a\.test\.ts:2:/);
+  assert.match(problems[0] ?? '', /a\.test\.ts:2:/);
 });
 
 test('a scalar read off a node is not a node, however deep the expression', () => {
@@ -73,7 +73,7 @@ test('isNodeExpression judges the tail of the expression, not merely that a node
 test('an empty file set fails rather than passing vacuously', () => {
   const problems = assertionProblems([], () => '');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /found 0 suites/);
+  assert.match(problems[0] ?? '', /found 0 suites/);
 });
 
 test('suiteFiles collects only .test.ts, and walks the whole layer', () => {

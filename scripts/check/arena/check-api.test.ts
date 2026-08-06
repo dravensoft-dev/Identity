@@ -49,8 +49,8 @@ test('a component directory whose PascalCase file is missing is a problem, not a
 
   const { implementations, problems } = resolveAngularImplementations(TREE, treeExists(TREE, ['arena-tag']));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/angular\/components\/display\/arena-tag\/: is a component directory with no ArenaTag\.ts/);
-  assert.match(problems[0], /clean pass over an unchecked layer/);
+  assert.match(problems[0] ?? '', /frameworks\/angular\/components\/display\/arena-tag\/: is a component directory with no ArenaTag\.ts/);
+  assert.match(problems[0] ?? '', /clean pass over an unchecked layer/);
   assert.equal(implementations.size, 2);
   assert.ok(!implementations.has('ArenaTag'));
 });
@@ -60,8 +60,8 @@ test('a layer that yields zero implementations is a failure, not a clean pass', 
   const { implementations, problems } = resolveAngularImplementations({}, () => false);
   assert.equal(implementations.size, 0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /found 0 Angular component implementations/);
-  assert.match(problems[0], /an empty result set is a failure, not a clean pass/);
+  assert.match(problems[0] ?? '', /found 0 Angular component implementations/);
+  assert.match(problems[0] ?? '', /an empty result set is a failure, not a clean pass/);
 });
 
 test('a layer whose every component file is unreadable reports both rules, because both are true', () => {
@@ -76,7 +76,7 @@ test('a category holding no directories contributes nothing and is not itself a 
   const { implementations, problems } = resolveAngularImplementations({ forms: [] }, () => true);
   assert.equal(implementations.size, 0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /found 0 Angular component implementations/);
+  assert.match(problems[0] ?? '', /found 0 Angular component implementations/);
 });
 
 const REACT_TREE = { charts: ['arena-bar-chart'], display: ['arena-tag', 'arena-unauth-card'] };
@@ -93,8 +93,8 @@ test('a React component directory declaring no surface at all is a problem, not 
 
   const { implementations, problems } = resolveReactImplementations(REACT_TREE, reactTreeExists(REACT_TREE, ['arena-tag']));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/react\/components\/display\/arena-tag\/: is a component directory with no ArenaTag\.tsx and no ArenaTag\.d\.ts/);
-  assert.match(problems[0], /clean pass over an unchecked layer/);
+  assert.match(problems[0] ?? '', /frameworks\/react\/components\/display\/arena-tag\/: is a component directory with no ArenaTag\.tsx and no ArenaTag\.d\.ts/);
+  assert.match(problems[0] ?? '', /clean pass over an unchecked layer/);
   assert.equal(implementations.size, 2);
   assert.ok(!implementations.has('ArenaTag'));
 });
@@ -104,8 +104,8 @@ test('a React layer that yields zero implementations is a failure, not a clean p
   const { implementations, problems } = resolveReactImplementations({}, () => false);
   assert.equal(implementations.size, 0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /found 0 React component implementations/);
-  assert.match(problems[0], /an empty result set is a failure, not a clean pass/);
+  assert.match(problems[0] ?? '', /found 0 React component implementations/);
+  assert.match(problems[0] ?? '', /an empty result set is a failure, not a clean pass/);
 });
 
 test('a React layer whose every .d.ts is unreadable reports both rules, because both are true', () => {
@@ -133,8 +133,8 @@ test('a platform type is reported as an R4 violation, naming the rule', () => {
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /R4/);
-  assert.match(problems[0], /React\.CSSProperties/);
+  assert.match(problems[0] ?? '', /R4/);
+  assert.match(problems[0] ?? '', /React\.CSSProperties/);
 });
 
 test('a union between forms is reported as an R5 violation', () => {
@@ -144,7 +144,7 @@ test('a union between forms is reported as an R5 violation', () => {
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /R5/);
+  assert.match(problems[0] ?? '', /R5/);
 });
 
 test('an event payload that is a platform type is an R4 violation of its own', () => {
@@ -181,8 +181,8 @@ test('a member the contract does not name fails, even when it looks harmless', (
   ];
   const problems = compareSurface(CONTRACT, members, 'angular');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /compact/);
-  assert.match(problems[0], /does not name/);
+  assert.match(problems[0] ?? '', /compact/);
+  assert.match(problems[0] ?? '', /does not name/);
 });
 
 test('an OPTIONAL member a layer omits still fails -- required governs the consumer, never the layer', () => {
@@ -192,8 +192,8 @@ test('an OPTIONAL member a layer omits still fails -- required governs the consu
   ];
   const problems = compareSurface(CONTRACT, members, 'angular');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /separator/);
-  assert.match(problems[0], /does not declare/);
+  assert.match(problems[0] ?? '', /separator/);
+  assert.match(problems[0] ?? '', /does not declare/);
 });
 
 test('the same name in the wrong form fails', () => {
@@ -204,9 +204,9 @@ test('the same name in the wrong form fails', () => {
   ];
   const problems = compareSurface(CONTRACT, members, 'angular');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /separator/);
-  assert.match(problems[0], /slot/);
-  assert.match(problems[0], /primitive/);
+  assert.match(problems[0] ?? '', /separator/);
+  assert.match(problems[0] ?? '', /slot/);
+  assert.match(problems[0] ?? '', /primitive/);
 });
 
 test('an array of the wrong element type fails', () => {
@@ -245,9 +245,9 @@ test('a contract member required: true implemented as optional by a layer is rep
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /items/);
-  assert.match(problems[0], /required/);
-  assert.match(problems[0], /optional/);
+  assert.match(problems[0] ?? '', /items/);
+  assert.match(problems[0] ?? '', /required/);
+  assert.match(problems[0] ?? '', /optional/);
 });
 
 test('a contract member left optional (no `required` key) implemented as required by a layer is reported -- the contract is the authority in both directions', () => {
@@ -257,8 +257,8 @@ test('a contract member left optional (no `required` key) implemented as require
     'angular',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /separator/);
-  assert.match(problems[0], /required/);
+  assert.match(problems[0] ?? '', /separator/);
+  assert.match(problems[0] ?? '', /required/);
 });
 
 test('matching required-ness on a primitive and an array member reports nothing', () => {
@@ -305,8 +305,8 @@ test('a member name declared twice in one layer\'s surface is reported as a dupl
   ];
   const problems = compareSurface(contract, members, 'angular');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /icon/);
-  assert.match(problems[0], /twice/);
+  assert.match(problems[0] ?? '', /icon/);
+  assert.match(problems[0] ?? '', /twice/);
 });
 
 const LOGO_SIZE_TYPES = new Map([
@@ -324,7 +324,7 @@ test('an inline literal union whose values differ from the contract enum is repo
   const members = [{ name: 'size', form: 'enum', values: ['sm', 'md'], required: false }];
   const problems = compareSurface(contract, members, 'react', LOGO_SIZE_TYPES);
   assert.equal(problems.length, 1);
-  for (const value of ['sm', 'md', 'lg', 'xl']) assert.match(problems[0], new RegExp(value));
+  for (const value of ['sm', 'md', 'lg', 'xl']) assert.match(problems[0] ?? '', new RegExp(value));
 });
 
 test('an inline literal union naming an enum absent from the types map reports nothing -- resolution is not this function\'s job', () => {
@@ -345,8 +345,8 @@ test('a named member resolves against an enum contract member, and a type mismat
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Status/);
-  assert.match(problems[0], /ArenaTone/);
+  assert.match(problems[0] ?? '', /Status/);
+  assert.match(problems[0] ?? '', /ArenaTone/);
 });
 
 test('a named member resolves against an object contract member, and a type mismatch still fails', () => {
@@ -361,8 +361,8 @@ test('a named member resolves against an object contract member, and a type mism
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Widget/);
-  assert.match(problems[0], /ArenaCrumb/);
+  assert.match(problems[0] ?? '', /Widget/);
+  assert.match(problems[0] ?? '', /ArenaCrumb/);
 });
 
 test('a named member against a primitive contract member is reported, not coerced into matching', () => {
@@ -372,8 +372,8 @@ test('a named member against a primitive contract member is reported, not coerce
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaDirection/);
-  assert.match(problems[0], /primitive/);
+  assert.match(problems[0] ?? '', /ArenaDirection/);
+  assert.match(problems[0] ?? '', /primitive/);
 });
 
 test('a named member against an event contract member is reported, not coerced into matching', () => {
@@ -383,8 +383,8 @@ test('a named member against an event contract member is reported, not coerced i
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ClickHandler/);
-  assert.match(problems[0], /event/);
+  assert.match(problems[0] ?? '', /ClickHandler/);
+  assert.match(problems[0] ?? '', /event/);
 });
 
 test('two contract members binding to the same name in one layer is reported as a collision', () => {
@@ -397,9 +397,9 @@ test('two contract members binding to the same name in one layer is reported as 
   };
   const problems = compareSurface(contract, [{ name: 'children', form: 'slot', required: false }], 'react');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /content/);
-  assert.match(problems[0], /children/);
-  assert.match(problems[0], /collide/);
+  assert.match(problems[0] ?? '', /content/);
+  assert.match(problems[0] ?? '', /children/);
+  assert.match(problems[0] ?? '', /collide/);
 });
 
 test('a collided bound name still reports the member\'s own R4 violation (platform type)', () => {
@@ -452,9 +452,9 @@ test('an event member colliding with a literally-named onX member is reported, n
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /collide/);
-  assert.match(problems[0], /"x"/);
-  assert.match(problems[0], /"onX"/);
+  assert.match(problems[0] ?? '', /collide/);
+  assert.match(problems[0] ?? '', /"x"/);
+  assert.match(problems[0] ?? '', /"onX"/);
 });
 
 test('R1: a predefined object may not carry a slot or an event field', () => {
@@ -463,8 +463,8 @@ test('R1: a predefined object may not carry a slot or an event field', () => {
     fields: { label: { form: 'primitive', type: 'string' }, onClick: { form: 'event' } },
   }]);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /R1/);
-  assert.match(problems[0], /onClick/);
+  assert.match(problems[0] ?? '', /R1/);
+  assert.match(problems[0] ?? '', /onClick/);
 });
 
 test('an object field naming an enum type nobody declared fails', () => {
@@ -473,7 +473,7 @@ test('an object field naming an enum type nobody declared fails', () => {
     fields: { tone: { form: 'enum', type: 'Nonexistent' } },
   }]);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /Nonexistent/);
+  assert.match(problems[0] ?? '', /Nonexistent/);
 });
 
 test('an object field naming a real type that is an object, not an enum, fails', () => {
@@ -482,7 +482,7 @@ test('an object field naming a real type that is an object, not an enum, fails',
     { name: 'ArenaWidget', kind: 'object', fields: { thing: { form: 'enum', type: 'ArenaCrumb' } } },
   ]);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaCrumb/);
+  assert.match(problems[0] ?? '', /ArenaCrumb/);
 });
 
 test('an object field naming a declared enum passes', () => {
@@ -630,10 +630,10 @@ test('a functionInput whose layer parameter type differs from the contract is re
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /validate/);
-  assert.match(problems[0], /value/);
-  assert.match(problems[0], /number/);
-  assert.match(problems[0], /string/);
+  assert.match(problems[0] ?? '', /validate/);
+  assert.match(problems[0] ?? '', /value/);
+  assert.match(problems[0] ?? '', /number/);
+  assert.match(problems[0] ?? '', /string/);
 });
 
 test('a functionInput whose layer return differs from the contract is reported', () => {
@@ -647,9 +647,9 @@ test('a functionInput whose layer return differs from the contract is reported',
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /validate/);
-  assert.match(problems[0], /boolean/);
-  assert.match(problems[0], /string/);
+  assert.match(problems[0] ?? '', /validate/);
+  assert.match(problems[0] ?? '', /boolean/);
+  assert.match(problems[0] ?? '', /string/);
 });
 
 test('a functionInput matching the contract exactly reports nothing, and binds to a prop of the same name', () => {
@@ -681,8 +681,8 @@ test('a functionInput required by the contract and optional in the layer is repo
     'react',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /required/);
-  assert.match(problems[0], /optional/);
+  assert.match(problems[0] ?? '', /required/);
+  assert.match(problems[0] ?? '', /optional/);
 });
 
 test('validateContract accepts an event payload naming a declared enum', () => {
@@ -704,15 +704,15 @@ test('validateContract still rejects an event payload naming no declared type', 
 test('zero contracts is a failure, not a clean pass', () => {
   const problems = zeroContractProblems({ contracts: 0, types: 40 });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 contract/);
-  assert.match(problems[0], /contracts\/api\/components/);
+  assert.match(problems[0] ?? '', /0 contract/);
+  assert.match(problems[0] ?? '', /contracts\/api\/components/);
 });
 
 test('zero types is a failure too, named separately', () => {
   const problems = zeroContractProblems({ contracts: 50, types: 0 });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 type/);
-  assert.match(problems[0], /contracts\/api\/types/);
+  assert.match(problems[0] ?? '', /0 type/);
+  assert.match(problems[0] ?? '', /contracts\/api\/types/);
 });
 
 test('both empty are reported as two problems, not one', () => {
@@ -730,7 +730,7 @@ test('a contracted member with no doc fails, because the description would reach
   };
   const problems = docProblems(contract, new Map(), 'react');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /carries no \/\*\* \*\/ doc/);
+  assert.match(problems[0] ?? '', /carries no \/\*\* \*\/ doc/);
 });
 
 test('a doc that has drifted from its contract fails, which is what stops the copy rotting', () => {
@@ -741,14 +741,14 @@ test('a doc that has drifted from its contract fails, which is what stops the co
   assert.deepEqual(docProblems(contract, new Map([['floating', 'The shadow.']]), 'react'), []);
   const drifted = docProblems(contract, new Map([['floating', 'The shadows.']]), 'react');
   assert.equal(drifted.length, 1);
-  assert.match(drifted[0], /drifted from the contract's description/);
+  assert.match(drifted[0] ?? '', /drifted from the contract's description/);
 });
 
 test('a doc on something no contract names fails, so the shape check:docs allows is never wider than this', () => {
   const contract = { component: 'X', api: {} };
   const problems = docProblems(contract, new Map([['secretly', 'A hand-written note.']]), 'react');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /is no contracted member/);
+  assert.match(problems[0] ?? '', /is no contracted member/);
 });
 
 test('a React event is looked for under its on- name, and a slot under children', () => {
@@ -772,5 +772,5 @@ test('an Angular slot is exempt, because <ng-content> is not a declaration a doc
 test('a member the contract leaves undescribed demands no doc and permits none', () => {
   const contract = { component: 'X', api: { quiet: { form: 'primitive', type: 'boolean' } } };
   assert.deepEqual(docProblems(contract, new Map(), 'react'), []);
-  assert.match(docProblems(contract, new Map([['quiet', 'Invented.']]), 'react')[0], /is no contracted member/);
+  assert.match(docProblems(contract, new Map([['quiet', 'Invented.']]), 'react')[0] ?? '', /is no contracted member/);
 });

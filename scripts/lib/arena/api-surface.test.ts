@@ -508,13 +508,13 @@ test('literalValue reads the literals a default can be, and refuses an expressio
 
 test('a default the contract and the implementation both state must match', () => {
   assert.deepEqual(defaultProblems('react/ArenaSkeleton', 'lines', 3, '3'), []);
-  assert.match(defaultProblems('react/ArenaSkeleton', 'lines', 3, '4')[0], /declares default 3, the implementation uses 4/);
+  assert.match(defaultProblems('react/ArenaSkeleton', 'lines', 3, '4')[0] ?? '', /declares default 3, the implementation uses 4/);
 });
 
 test('an implementation default the contract does not name is undocumented API', () => {
   const problems = defaultProblems('react/ArenaDialog', 'width', undefined, "'480px'");
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /defaults to "480px" and the contract declares no default/);
+  assert.match(problems[0] ?? '', /defaults to "480px" and the contract declares no default/);
 });
 
 test('a contract default with no destructuring default is NOT reported, because the default may be applied downstream', () => {

@@ -37,14 +37,14 @@ test('a cited file that is not there is a problem, which is the spec a charter h
   });
   const problems = citationProblems(base, undefined, NONE);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /cites docs\/superpowers\/specs\/2026-07-23-8-api\.md, and nothing is there/);
+  assert.match(problems[0] ?? '', /cites docs\/superpowers\/specs\/2026-07-23-8-api\.md, and nothing is there/);
 });
 
 test('scripts/build is scanned, and naming a build directory anywhere would have hidden it', () => {
   const base = tree({
     'scripts/build/README.md': 'Run `scripts/generate/arena/generate-catalog.mjs` for the index.',
   });
-  assert.match(citationProblems(base, undefined, NONE)[0], /cites scripts\/generate\/arena\/generate-catalog\.mjs/);
+  assert.match(citationProblems(base, undefined, NONE)[0] ?? '', /cites scripts\/generate\/arena\/generate-catalog\.mjs/);
   assert.equal(documents(base).length, 1);
 });
 
@@ -71,7 +71,7 @@ test('a leading slash is a URL from a site root and never a repo path', () => {
 test('no roots matches nothing rather than everything, which is the failure the other way', () => {
   assert.equal('see /assets/a.svg'.match(pathPattern([])), null);
   assert.equal(zeroRootProblems([]).length, 1);
-  assert.match(zeroRootProblems([])[0], /matches every absolute path/);
+  assert.match(zeroRootProblems([])[0] ?? '', /matches every absolute path/);
   assert.deepEqual(zeroRootProblems(['scripts']), []);
 });
 
@@ -84,7 +84,7 @@ test('an EXEMPT entry no document cites any more fails as a stale allowance', ()
   const base = tree({ 'a.md': 'nothing cited here' });
   const problems = citationProblems(base);
   assert.equal(problems.length, EXEMPT.size);
-  assert.match(problems[0], /EXEMPT names frameworks\/angular\/BehaviourDelegated\.json, which no document cites/);
+  assert.match(problems[0] ?? '', /EXEMPT names frameworks\/angular\/BehaviourDelegated\.json, which no document cites/);
 });
 
 test('the roots come from the tree, so a new top-level directory is covered the day it lands', () => {
@@ -102,7 +102,7 @@ test('the pattern refuses a path glued to a longer word', () => {
 
 test('a walk that reaches no document is a failure, not a clean pass', () => {
   assert.equal(zeroDocumentProblems([]).length, 1);
-  assert.match(zeroDocumentProblems([])[0], /empty result set is a failure/);
+  assert.match(zeroDocumentProblems([])[0] ?? '', /empty result set is a failure/);
   assert.deepEqual(zeroDocumentProblems(['a.md']), []);
 });
 
@@ -110,7 +110,7 @@ test('a bare document name no file in the tree carries is a problem', () => {
   const base = tree({ 'a.md': 'the failure `components-divergences.md` records', 'b.md': 'x' });
   const problems = bareDocumentProblems(base);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /names components-divergences\.md, and no document in the tree/);
+  assert.match(problems[0] ?? '', /names components-divergences\.md, and no document in the tree/);
 });
 
 test('a bare name that does exist passes, wherever in the tree it sits', () => {

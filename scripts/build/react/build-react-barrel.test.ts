@@ -72,7 +72,7 @@ test('the contract types lead, and as a type-only export, so the runtime emit dr
 
 test('an empty tree is a failure rather than an empty barrel', () => {
   assert.equal(zeroComponentProblems(0).length, 1);
-  assert.match(zeroComponentProblems(0)[0], /an empty barrel is a failure, not a clean pass/);
+  assert.match(zeroComponentProblems(0)[0] ?? '', /an empty barrel is a failure, not a clean pass/);
   assert.deepEqual(zeroComponentProblems(1), []);
 });
 
@@ -80,7 +80,7 @@ test('a component with no source, or no types, is named rather than skipped', ()
   const root = layer({ 'components/display/arena-tag/ArenaTag.jsx': 'export function ArenaTag() {}' });
   const problems = missingSourceProblems(componentModules(root), root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaTag: no .*ArenaTag\.d\.ts beside the \.jsx, so the package would ship it untyped/);
+  assert.match(problems[0] ?? '', /ArenaTag: no .*ArenaTag\.d\.ts beside the \.jsx, so the package would ship it untyped/);
   rmSync(root, { recursive: true });
 });
 
@@ -97,7 +97,7 @@ test('a directory holding neither extension is named, rather than exporting noth
   const root = layer({ 'components/display/arena-tag/ArenaTag.prompt.md': '# ArenaTag\n' });
   const problems = missingSourceProblems(componentModules(root), root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /no .*ArenaTag\.jsx and no .*ArenaTag\.tsx, so the barrel would export nothing/);
+  assert.match(problems[0] ?? '', /no .*ArenaTag\.jsx and no .*ArenaTag\.tsx, so the barrel would export nothing/);
   rmSync(root, { recursive: true });
 });
 
@@ -110,7 +110,7 @@ test('two components exporting one name is caught, because export * would shadow
   });
   const problems = duplicateExportProblems(componentModules(root), root);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /FIT is exported by both ArenaTag and ArenaButton/);
+  assert.match(problems[0] ?? '', /FIT is exported by both ArenaTag and ArenaButton/);
   rmSync(root, { recursive: true });
 });
 

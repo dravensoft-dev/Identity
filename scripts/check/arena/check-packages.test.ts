@@ -26,7 +26,7 @@ test('a value that differs names both emitters and both values', () => {
 test('a missing declaration is reported as emitting nothing rather than as absent', () => {
   const { problems } = paletteEquivalenceProblems(generated, ':root{--color-base-100:#141010;}');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /--color-primary: .* arena-to-prod says \(nothing\)/);
+  assert.match(problems[0] ?? '', /--color-primary: .* arena-to-prod says \(nothing\)/);
 });
 
 test('a colour the CLI invents is a problem in the other direction', () => {
@@ -37,14 +37,14 @@ test('a colour the CLI invents is a problem in the other direction', () => {
 test('a whole missing block is one problem, not one per declaration', () => {
   const { problems } = paletteEquivalenceProblems(`${generated}.arena-light{--color-primary:#b52a20;}`, generated);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /declares \.arena-light and arena-to-prod emits no such block/);
+  assert.match(problems[0] ?? '', /declares \.arena-light and arena-to-prod emits no such block/);
 });
 
 test('a comparison that looked at nothing fails rather than passing vacuously', () => {
   const { problems, compared } = paletteEquivalenceProblems(':root{--picker-invert:1;}', ':root{--picker-invert:1;}');
   assert.equal(compared, 0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /compared 0 declarations/);
+  assert.match(problems[0] ?? '', /compared 0 declarations/);
 });
 
 test('only colours are compared, so the CLI may emit what the token pipeline does not', () => {
@@ -90,7 +90,7 @@ test('an install script is refused, whichever of the three names it takes', () =
   for (const hook of ['preinstall', 'install', 'postinstall']) {
     const problems = manifestProblems(PACKAGES[0], manifest({ scripts: { [hook]: 'node x.js' } }), '4.1.0');
     assert.equal(problems.length, 1, hook);
-    assert.match(problems[0], /declares an install script/);
+    assert.match(problems[0] ?? '', /declares an install script/);
   }
 });
 
@@ -151,7 +151,7 @@ test('a wildcard matches one path segment, the way Node resolves an exports patt
 
 test('a package exposing nothing is a problem, and so is a bin that was never emitted', () => {
   const dir = assembled({ 'README.md': '#', 'Index.d.ts': '' });
-  assert.match(exportProblems(PACKAGES[0], manifest(), dir)[0], /no exports target resolves/);
+  assert.match(exportProblems(PACKAGES[0], manifest(), dir)[0] ?? '', /no exports target resolves/);
   const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-to-prod': './bin/arena-to-prod.ts' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
     ['@dravensoft/arena-react: bin arena-to-prod points at ./bin/arena-to-prod.ts, which was never emitted']);
@@ -263,7 +263,7 @@ test('a chain that leads nowhere fails rather than passing for having found no i
   const { problems, walked } = styleProblems(PACKAGES[1], dir);
   assert.equal(walked, 1);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /reaches no component stylesheet/);
+  assert.match(problems[0] ?? '', /reaches no component stylesheet/);
   rmSync(dir, { recursive: true });
 });
 

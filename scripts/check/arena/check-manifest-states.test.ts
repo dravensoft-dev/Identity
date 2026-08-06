@@ -143,14 +143,14 @@ test('the react half asks only the components that draw by hand, because the res
 test('a hand-drawn component the react half never opened is a failure, not a clean pass', () => {
   const problems = unaskedHandDrawn(['ArenaBarChart', 'ArenaDoughnutChart']);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaLineChart/);
-  assert.match(problems[0], /never opened/);
+  assert.match(problems[0] ?? '', /ArenaLineChart/);
+  assert.match(problems[0] ?? '', /never opened/);
 });
 
 test('an empty HAND_DRAWN retires the react half rather than letting it pass over nothing', () => {
   const problems = unaskedHandDrawn([], new Map());
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /no subject at all/);
+  assert.match(problems[0] ?? '', /no subject at all/);
 });
 
 test('a name with no React source is not a finding -- a layer may simply not implement it', () => {
@@ -163,7 +163,7 @@ test('a component directory holding no source is a finding, not a silent skip', 
     'an absent directory is check:structure\'s claim, not this one\'s');
   assert.equal(missingReactSource('ArenaButton', 'forms'), null);
   assert.equal(zeroReactSourceProblems(0).length, 1);
-  assert.match(zeroReactSourceProblems(0)[0], /checked nothing/);
+  assert.match(zeroReactSourceProblems(0)[0] ?? '', /checked nothing/);
   assert.deepEqual(zeroReactSourceProblems(1), []);
 });
 

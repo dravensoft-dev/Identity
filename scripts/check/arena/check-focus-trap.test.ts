@@ -54,7 +54,7 @@ test('focus leaving the panel is reported with the presses it left on', () => {
     forward: [{ press: 1, inside: false }, { press: 2, inside: false }],
     visited: 0, wrapsForward: false, wrapsBackward: false,
   });
-  assert.match(problems[0], /focus left the panel on Tab 1, 2 -- the interior is not trapped/);
+  assert.match(problems[0] ?? '', /focus left the panel on Tab 1, 2 -- the interior is not trapped/);
 });
 
 test('a single-stop trap is valid and is not asked to wrap between elements', () => {
@@ -65,8 +65,8 @@ test('a single-stop trap is valid and is not asked to wrap between elements', ()
 });
 
 test('a panel with no Tab stop at all fails, and a missing panel fails before anything is walked', () => {
-  assert.match(walkProblems('X', { panel: true, focusables: 0 })[0], /no Tab stop at all/);
-  assert.match(walkProblems('X', { panel: false })[0], /nothing was walked/);
+  assert.match(walkProblems('X', { panel: true, focusables: 0 })[0] ?? '', /no Tab stop at all/);
+  assert.match(walkProblems('X', { panel: false })[0] ?? '', /nothing was walked/);
 });
 
 test('a trap that never claimed focus on open is reported even when containment holds', () => {
@@ -75,5 +75,5 @@ test('a trap that never claimed focus on open is reported even when containment 
     wrapsForward: true, wrapsBackward: true,
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /did not start inside the panel/);
+  assert.match(problems[0] ?? '', /did not start inside the panel/);
 });

@@ -30,7 +30,7 @@ test('a source naming the pre-rename symbol must resolve nothing, because no ali
     'a refusal is the honest answer and not a problem of its own');
   const kept = staleNameProblems('react', sheetImports('button'));
   assert.equal(kept.length, 1);
-  assert.match(kept[0], /no alias/);
+  assert.match(kept[0] ?? '', /no alias/);
 });
 
 test('the documented sheet list must pass and a pre-rename one must fail, naming what ships', () => {
@@ -39,15 +39,15 @@ test('the documented sheet list must pass and a pre-rename one must fail, naming
 
   const refusedTheDocumented = listProblems('react', { ...ok, status: 1, stderr: 'nope' }, shipped);
   assert.equal(refusedTheDocumented.length, 1);
-  assert.match(refusedTheDocumented[0], /its own README documents/);
+  assert.match(refusedTheDocumented[0] ?? '', /its own README documents/);
 
   const acceptedTheStale = listProblems('react', ok, ok);
   assert.equal(acceptedTheStale.length, 1);
-  assert.match(acceptedTheStale[0], /fails at render rather than at the command/);
+  assert.match(acceptedTheStale[0] ?? '', /fails at render rather than at the command/);
 
   const silentRefusal = listProblems('react', ok, { ...ok, status: 1, stderr: 'no' });
   assert.equal(silentRefusal.length, 1);
-  assert.match(silentRefusal[0], /does not list the sheets/);
+  assert.match(silentRefusal[0] ?? '', /does not list the sheets/);
 });
 
 test('assembly is judged by the package manifest, so a half-written dist is not mistaken for one', () => {
@@ -55,10 +55,10 @@ test('assembly is judged by the package manifest, so a half-written dist is not 
 });
 
 test('the React fixture names the package, because the symbol scan reads the import as well as the tag', () => {
-  assert.match(SOURCES.react['src/App.tsx'], /from '@dravensoft\/arena-react'/);
-  assert.match(SOURCES.react['src/App.tsx'], /<ArenaButton/);
-  assert.match(STALE.react['src/App.tsx'], /\{ Button \}/, 'the negative fixture must spell the old name exactly');
-  assert.match(SOURCES.angular['src/app.html'], /<arena-button/,
+  assert.match(SOURCES.react['src/App.tsx'] ?? '', /from '@dravensoft\/arena-react'/);
+  assert.match(SOURCES.react['src/App.tsx'] ?? '', /<ArenaButton/);
+  assert.match(STALE.react['src/App.tsx'] ?? '', /\{ Button \}/, 'the negative fixture must spell the old name exactly');
+  assert.match(SOURCES.angular['src/app.html'] ?? '', /<arena-button/,
     'the Angular element is unchanged by the rename, and this fixture is what holds that');
 });
 

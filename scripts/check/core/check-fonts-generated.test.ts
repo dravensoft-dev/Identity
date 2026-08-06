@@ -21,9 +21,9 @@ test('a declared family with no face fails, naming the family and the fix', () =
   const faces = new Set(['Archivo']);
   const errs = checkFonts(['Archivo', 'Inter'], faces);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /"Inter"/);
-  assert.match(errs[0], /no @font-face/);
-  assert.match(errs[0], /bun scripts\/generate\/core\/fetch-fonts\.ts/);
+  assert.match(errs[0] ?? '', /"Inter"/);
+  assert.match(errs[0] ?? '', /no @font-face/);
+  assert.match(errs[0] ?? '', /bun scripts\/generate\/core\/fetch-fonts\.ts/);
 });
 
 test('a generic fallback like system-ui is never in the declared list, so it is never required to have a face', () => {
@@ -56,9 +56,9 @@ test('a URL Google refuses names the role, the URL and the status, because that 
   const answers = await askGoogle(FONTS, async (url) => ({ status: url.includes('Familjen') ? 400 : 200 }));
   const problems = urlProblems(answers);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /fonts\.body/);
-  assert.match(problems[0], /answers 400/);
-  assert.match(problems[0], /Familjen\+Grotesk/);
+  assert.match(problems[0] ?? '', /fonts\.body/);
+  assert.match(problems[0] ?? '', /answers 400/);
+  assert.match(problems[0] ?? '', /Familjen\+Grotesk/);
 });
 
 test('a request that never completes is a skip, never a pass and never a failure', async () => {
@@ -71,5 +71,5 @@ test('a request that never completes is a skip, never a pass and never a failure
 test('asking about no font at all is a failure rather than a vacuous pass', async () => {
   const problems = urlProblems(await askGoogle({}, async () => ({ status: 200 })));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 font URL/);
+  assert.match(problems[0] ?? '', /0 font URL/);
 });

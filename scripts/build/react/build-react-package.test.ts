@@ -113,7 +113,7 @@ test('a compiled module with no declaration beside it never ships', () => {
     writeFileSync(join(dir, 'components', 'B.js'), 'export const b = 2;\n');
     const problems = untypedProblems(['components/A.js', 'components/B.js'], dir);
     assert.equal(problems.length, 1);
-    assert.match(problems[0], /components\/B\.js ships with no declaration/);
+    assert.match(problems[0] ?? '', /components\/B\.js ships with no declaration/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -152,7 +152,7 @@ test('a specifier naming nothing in the package fails the build rather than the 
     writeFileSync(join(dir, 'components', 'B.d.ts'), "export type { ArenaTone } from '../Api.generated';\n");
     const problems = unresolvedProblems(dir);
     assert.equal(problems.length, 1);
-    assert.match(problems[0], /B\.d\.ts names \.\.\/Api\.generated, which resolves to no file/);
+    assert.match(problems[0] ?? '', /B\.d\.ts names \.\.\/Api\.generated, which resolves to no file/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

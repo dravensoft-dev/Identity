@@ -201,7 +201,7 @@ test('matching no parameter list at all fails the gate, because every default th
   assert.equal(componentParamCount("function ArenaDialog({ width = 480 }: ArenaDialogProps) {\n}"), 1);
   assert.equal(componentParamCount('const x = 1;'), 0);
   assert.equal(zeroComponentParamProblems(0).length, 1);
-  assert.match(zeroComponentParamProblems(0)[0], /every default value in the tree reports clean/);
+  assert.match(zeroComponentParamProblems(0)[0] ?? '', /every default value in the tree reports clean/);
   assert.deepEqual(zeroComponentParamProblems(1), []);
 });
 
@@ -536,7 +536,7 @@ test('a dimension inside injected CSS is judged like any other', () => {
   const hits = scanInjectedCss(source);
   assert.equal(hits.length, 1);
   assert.equal(hits[0].prop, 'transform');
-  assert.match(hits[0].reason, /raw px/);
+  assert.match(hits[0].reason ?? '', /raw px/);
   assert.equal(hits[0].line, 2);
 });
 

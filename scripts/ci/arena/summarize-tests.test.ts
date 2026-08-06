@@ -78,14 +78,14 @@ test('a domain that owns suites and reported nothing is a problem, not a zero', 
   const counted = tally(parseJunit(XML));
   const problems = coverageProblems(counted, ['arena', 'core'], []);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /domain core owns suites and reported 0 cases/);
+  assert.match(problems[0] ?? '', /domain core owns suites and reported 0 cases/);
 });
 
 test('a tree that contributed no case is named, so a narrowed run cannot pass as a full one', () => {
   const counted = tally(parseJunit(XML));
   const problems = coverageProblems(counted, [], EXPECTED_ROOTS);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /frameworks\/angular\/build\/test\//);
+  assert.match(problems[0] ?? '', /frameworks\/angular\/build\/test\//);
 });
 
 test('a complete report raises nothing', () => {

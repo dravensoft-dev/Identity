@@ -415,7 +415,7 @@ test('comparePattern treats a binding with no exceptions field as having none', 
     behavioural: BEHAVIOURAL_MET,
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /OVERCLAIM/);
+  assert.match(problems[0] ?? '', /OVERCLAIM/);
 });
 
 test('comparePattern reports a stale exception when the requirement is met', () => {
@@ -427,8 +427,8 @@ test('comparePattern reports a stale exception when the requirement is met', () 
     behavioural: BEHAVIOURAL_MET,
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /STALE EXCEPTION/);
-  assert.match(problems[0], /roles\.label/);
+  assert.match(problems[0] ?? '', /STALE EXCEPTION/);
+  assert.match(problems[0] ?? '', /roles\.label/);
 });
 
 test('comparePattern reports an overclaim when a requirement is unmet and unexcepted', () => {
@@ -440,8 +440,8 @@ test('comparePattern reports an overclaim when a requirement is unmet and unexce
     behavioural: BEHAVIOURAL_MET,
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /OVERCLAIM/);
-  assert.match(problems[0], /roles\.label/);
+  assert.match(problems[0] ?? '', /OVERCLAIM/);
+  assert.match(problems[0] ?? '', /roles\.label/);
 });
 
 test('comparePattern is silent for a correct button, which is the case it used to fail', () => {
@@ -477,8 +477,8 @@ test('comparePattern reports a behavioural declaration the pattern no longer has
     behavioural: { ...BEHAVIOURAL_MET, 'focus.roving': true },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /never reached/);
-  assert.match(problems[0], /focus\.roving/);
+  assert.match(problems[0] ?? '', /never reached/);
+  assert.match(problems[0] ?? '', /focus\.roving/);
 });
 
 const EXCEPTS_TRAP = {
@@ -496,9 +496,9 @@ test('comparePattern reports a stale exception on a behavioural key declared met
     behavioural: { ...BEHAVIOURAL_MET },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /STALE EXCEPTION/);
-  assert.match(problems[0], /focus\.trap/);
-  assert.match(problems[0], /your behavioural test/, 'the message names where the verdict came from');
+  assert.match(problems[0] ?? '', /STALE EXCEPTION/);
+  assert.match(problems[0] ?? '', /focus\.trap/);
+  assert.match(problems[0] ?? '', /your behavioural test/, 'the message names where the verdict came from');
 });
 
 test('comparePattern reports an overclaim on a behavioural key declared unmet', () => {
@@ -509,9 +509,9 @@ test('comparePattern reports an overclaim on a behavioural key declared unmet', 
     behavioural: { ...BEHAVIOURAL_MET, 'focus.trap': false },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /OVERCLAIM/);
-  assert.match(problems[0], /focus\.trap/);
-  assert.match(problems[0], /your behavioural test/);
+  assert.match(problems[0] ?? '', /OVERCLAIM/);
+  assert.match(problems[0] ?? '', /focus\.trap/);
+  assert.match(problems[0] ?? '', /your behavioural test/);
 });
 
 test('comparePattern is silent when a behavioural verdict of false matches an exception', () => {
@@ -544,8 +544,8 @@ test('comparePattern still refuses an undecidable key absent from the map', () =
     behavioural: { 'keyboard.Escape': true },
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /focus\.trap/);
-  assert.match(problems[0], /not declared behavioural/);
+  assert.match(problems[0] ?? '', /focus\.trap/);
+  assert.match(problems[0] ?? '', /not declared behavioural/);
 });
 
 test('comparePattern uses a per-requirement subject over the fallback', () => {
@@ -569,7 +569,7 @@ test('comparePattern uses a per-requirement subject over the fallback', () => {
     behavioural: {},
   });
   assert.equal(onWrapper.length, 1);
-  assert.match(onWrapper[0], /STALE EXCEPTION/, 'and falsely stale when judged against the wrapper');
+  assert.match(onWrapper[0] ?? '', /STALE EXCEPTION/, 'and falsely stale when judged against the wrapper');
 });
 
 test('comparePattern reports a missing subject once per requirement', () => {
@@ -681,7 +681,7 @@ test('comparePattern reports a dangling reference as an OVERCLAIM', () => {
     resolveId: () => null,
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /roles\.controls: OVERCLAIM/);
+  assert.match(problems[0] ?? '', /roles\.controls: OVERCLAIM/);
 });
 
 test('a dangling reference with an exception declared is not a problem', () => {
@@ -702,7 +702,7 @@ test('a resolving reference with an exception declared is a STALE EXCEPTION', ()
     resolveId: () => el('div'),
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /STALE EXCEPTION/);
+  assert.match(problems[0] ?? '', /STALE EXCEPTION/);
 });
 
 test('an array subject is met only when every element meets it', () => {
@@ -716,7 +716,7 @@ test('an array subject is met only when every element meets it', () => {
   });
   assert.deepEqual(p([ok, ok, ok]), []);
   assert.equal(p([ok, bad, ok]).length, 1);
-  assert.match(p([ok, bad, ok])[0], /OVERCLAIM/);
+  assert.match(p([ok, bad, ok])[0] ?? '', /OVERCLAIM/);
 });
 
 test('the OVERCLAIM says how many of the collection failed', () => {
@@ -728,7 +728,7 @@ test('the OVERCLAIM says how many of the collection failed', () => {
     subjects: { 'states.selected': [ok, bad, bad] },
     resolveId: () => el('div'),
   });
-  assert.match(problems[0], /2 of 3/);
+  assert.match(problems[0] ?? '', /2 of 3/);
 });
 
 test('a quantified requirement given ONE element throws', () => {
@@ -774,7 +774,7 @@ test('an empty array reads as a missing subject, not as vacuously met', () => {
     resolveId: () => el('div'),
   });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /no subject element/);
+  assert.match(problems[0] ?? '', /no subject element/);
 });
 
 test('every QUANTIFIED and NOT_QUANTIFIED key names a real pattern requirement', () => {

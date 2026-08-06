@@ -43,15 +43,15 @@ test('a glyph that exists in the paired weight is silent', () => {
 test('a name no weight has is reported, which is the typo the gate exists for', () => {
   const problems = tokenProblems('<i class="ph-bold ph-hosue"></i>', 'a.html', ARENA_WEIGHTS);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /a\.html:1/);
-  assert.match(problems[0], /"ph-hosue" is not a Phosphor glyph in any weight/);
-  assert.match(problems[0], /empty box/);
+  assert.match(problems[0] ?? '', /a\.html:1/);
+  assert.match(problems[0] ?? '', /"ph-hosue" is not a Phosphor glyph in any weight/);
+  assert.match(problems[0] ?? '', /empty box/);
 });
 
 test('a real glyph in a weight that does not carry it is reported separately', () => {
   const problems = tokenProblems('<i class="ph-fill ph-acorn"></i>', 'a.html', ARENA_WEIGHTS);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /not in the "ph-fill" weight/);
+  assert.match(problems[0] ?? '', /not in the "ph-fill" weight/);
 });
 
 test('a bare weight class on its own is fine, since it names no glyph', () => {
@@ -61,14 +61,14 @@ test('a bare weight class on its own is fine, since it names no glyph', () => {
 test('the line number is the line the name is on', () => {
   const problems = tokenProblems('ok\nok\n<i class="ph-bold ph-nope"></i>', 'a.html', ARENA_WEIGHTS);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /a\.html:3/);
+  assert.match(problems[0] ?? '', /a\.html:3/);
 });
 
 test('no stylesheet at all is a failure, not a clean pass over nothing', () => {
   assert.deepEqual(zeroWeightProblems(ARENA_WEIGHTS), []);
   const problems = zeroWeightProblems(new Map());
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /vacuous pass/);
+  assert.match(problems[0] ?? '', /vacuous pass/);
 });
 
 test('everyGlyph is the union, so a glyph in one weight is a known name', () => {

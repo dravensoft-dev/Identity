@@ -81,5 +81,5 @@ test('an indirection the preset does not explain is a problem rather than a sile
   assert.deepEqual(stripProblems('gap: var(--spacing, var(--sp-1))', map), []);
   const problems = stripProblems('gap: var(--spacing, var(--sp-9))', map);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /is not a pair Theme\.css declares/);
+  assert.match(problems[0] ?? '', /is not a pair Theme\.css declares/);
 });

@@ -28,7 +28,7 @@ test('fails when zero manifests were found -- a gate that finds nothing must not
   const css = compiled('', '');
   const errs = checkCompiled(css, new Map(), TOKENS);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /0 manifest/i);
+  assert.match(errs[0] ?? '', /0 manifest/i);
 });
 
 test('fails a manifest class that emitted no rule', () => {
@@ -36,7 +36,7 @@ test('fails a manifest class that emitted no rule', () => {
   const manifests = new Map([['X.manifest.json', { slots: { root: 'bg-primary bg-nonsense' } }]]);
   const errs = checkCompiled(css, manifests, TOKENS);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /X\.manifest\.json.*bg-nonsense.*no rule/);
+  assert.match(errs[0] ?? '', /X\.manifest\.json.*bg-nonsense.*no rule/);
 });
 
 test('fails a theme key that does not resolve to an Arena token', () => {

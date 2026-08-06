@@ -53,8 +53,8 @@ test('missingEmitProblems names a source test with no matching emit', () => {
     ['components/charts/arena-bar-chart/ArenaBarChart.geometry.test.js'],
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /DataVisuals\.test\.ts/);
-  assert.match(problems[0], /never runs/);
+  assert.match(problems[0] ?? '', /DataVisuals\.test\.ts/);
+  assert.match(problems[0] ?? '', /never runs/);
 });
 
 test('missingEmitProblems reports one problem per missing suite, not one for the whole run', () => {

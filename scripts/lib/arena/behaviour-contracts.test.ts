@@ -20,21 +20,21 @@ test('a well-formed pattern has no problems', () => {
 });
 
 test('a pattern whose name disagrees with its filename is a problem', () => {
-  assert.match(validatePattern('modal', ok)[0], /name "dialog-modal" does not match/);
+  assert.match(validatePattern('modal', ok)[0] ?? '', /name "dialog-modal" does not match/);
 });
 
 test('a pattern with no source is a problem', () => {
   const { source, ...noSource } = ok;
-  assert.match(validatePattern('dialog-modal', noSource)[0], /source/);
+  assert.match(validatePattern('dialog-modal', noSource)[0] ?? '', /source/);
 });
 
 test('a pattern with an empty requires map is a problem', () => {
-  assert.match(validatePattern('dialog-modal', { ...ok, requires: {} })[0], /at least one requirement/);
+  assert.match(validatePattern('dialog-modal', { ...ok, requires: {} })[0] ?? '', /at least one requirement/);
 });
 
 test('a requirement key must be dotted, so an exception can name exactly one leaf', () => {
   const flat = { ...ok, requires: { trap: true } };
-  assert.match(validatePattern('dialog-modal', flat)[0], /"trap" must be dotted/);
+  assert.match(validatePattern('dialog-modal', flat)[0] ?? '', /"trap" must be dotted/);
 });
 
 test('the none pattern is one of the two allowed to have no requirements', () => {
@@ -79,11 +79,11 @@ test('a binding naming a real pattern with no exceptions is valid', () => {
 });
 
 test('a binding naming a pattern that does not exist is a problem', () => {
-  assert.match(validateBinding('ArenaDialog', 'react', { pattern: 'modal' }, patterns)[0], /unknown pattern "modal"/);
+  assert.match(validateBinding('ArenaDialog', 'react', { pattern: 'modal' }, patterns)[0] ?? '', /unknown pattern "modal"/);
 });
 
 test('binding none without a reason is a problem', () => {
-  assert.match(validateBinding('ArenaCard', 'react', { pattern: 'none' }, patterns)[0], /requires a reason/);
+  assert.match(validateBinding('ArenaCard', 'react', { pattern: 'none' }, patterns)[0] ?? '', /requires a reason/);
 });
 
 test('binding none with a reason is valid', () => {
@@ -92,7 +92,7 @@ test('binding none with a reason is valid', () => {
 
 test('binding absent without a reason is a problem', () => {
   assert.match(
-    validateBinding('ArenaCalendar', 'angular-delegated', { pattern: 'absent' }, patterns)[0],
+    validateBinding('ArenaCalendar', 'angular-delegated', { pattern: 'absent' }, patterns)[0] ?? '',
     /binding absent requires a reason/,
   );
 });
@@ -114,18 +114,18 @@ test('none and absent are distinct patterns, not the same fact spelled two ways'
 
 test('an exception naming a requirement the pattern does not have is a problem', () => {
   const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.restore', reason: 'x' }] };
-  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0], /excepts "focus.restore", which pattern "dialog-modal" does not require/);
+  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0] ?? '', /excepts "focus.restore", which pattern "dialog-modal" does not require/);
 });
 
 test('an exception without a reason is a problem', () => {
   const b = { pattern: 'dialog-modal', exceptions: [{ requirement: 'focus.trap' }] };
-  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0], /reason/);
+  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0] ?? '', /reason/);
 });
 
 test('a cases entry that does not name itself is rejected, and it used to clear the gate entirely', () => {
   const b = { cases: [{ pattern: 'none', reason: 'a label' }] };
   const problems = validateBinding('ArenaDialog', 'react', b, patterns);
-  assert.match(problems[0], /cases\[0\] declares no "name"/);
+  assert.match(problems[0] ?? '', /cases\[0\] declares no "name"/);
 });
 
 test('a nameless case skips the when rule too, so the name check must not depend on it', () => {
@@ -133,7 +133,7 @@ test('a nameless case skips the when rule too, so the name check must not depend
   assert.equal(validateBinding('ArenaDialog', 'react', nameless, patterns).length, 1);
 
   const named = { cases: [{ name: 'open', pattern: 'dialog-modal' }] };
-  assert.match(validateBinding('ArenaDialog', 'react', named, patterns)[0], /must say WHEN it is produced/);
+  assert.match(validateBinding('ArenaDialog', 'react', named, patterns)[0] ?? '', /must say WHEN it is produced/);
 });
 
 test('a duplicate case name is rejected, because crossLayerAgrees would compare only the last one', () => {
@@ -143,7 +143,7 @@ test('a duplicate case name is rejected, because crossLayerAgrees would compare 
       { name: 'open', when: 'open is true and inert', pattern: 'none', reason: 'inert' },
     ],
   };
-  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0], /declares the case name "open" more than once/);
+  assert.match(validateBinding('ArenaDialog', 'react', b, patterns)[0] ?? '', /declares the case name "open" more than once/);
 });
 
 test('distinct names on a well-formed cased binding are no problem', () => {
@@ -158,12 +158,12 @@ test('distinct names on a well-formed cased binding are no problem', () => {
 
 test('a delegated binding must name what provides the behaviour', () => {
   const b = { pattern: 'dialog-modal', delegatedTo: '' };
-  assert.match(validateBinding('ArenaDialog', 'angular', b, patterns)[0], /delegatedTo/);
+  assert.match(validateBinding('ArenaDialog', 'angular', b, patterns)[0] ?? '', /delegatedTo/);
 });
 
 test('an angular binding must name its React counterpart', () => {
   const b = { pattern: 'dialog-modal' };
-  assert.match(validateBinding('stat-card', 'angular', b, patterns)[0], /must declare "component"/);
+  assert.match(validateBinding('stat-card', 'angular', b, patterns)[0] ?? '', /must declare "component"/);
 });
 
 test('an angular binding that names its counterpart is valid', () => {

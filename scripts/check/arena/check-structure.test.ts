@@ -17,16 +17,16 @@ test('a component in the wrong category is named, with both categories', () => {
   const layers = { tailwind: { forms: ['arena-badge'] } };
   const problems = validateStructure({ categories, layers });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaBadge/);
-  assert.match(problems[0], /forms/);
-  assert.match(problems[0], /display/);
+  assert.match(problems[0] ?? '', /ArenaBadge/);
+  assert.match(problems[0] ?? '', /forms/);
+  assert.match(problems[0] ?? '', /display/);
 });
 
 test('a directory no category declares is a problem', () => {
   const layers = { tailwind: { display: ['arena-badge', 'sparkline'] } };
   const problems = validateStructure({ categories, layers });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /sparkline/);
+  assert.match(problems[0] ?? '', /sparkline/);
 });
 
 test('a layer carrying only some categories is fine -- Angular has no forms/', () => {
@@ -38,7 +38,7 @@ test('a declared component missing from every layer is a problem once every laye
   const layers = { tailwind: { display: ['arena-badge', 'arena-tag'] } };
   const problems = validateStructure({ categories, layers, complete: true });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaButton/);
+  assert.match(problems[0] ?? '', /ArenaButton/);
 });
 
 test('the same tree is clean when the caller passed only SOME of the layers', () => {
@@ -58,9 +58,9 @@ test('a component name declared in two categories is a problem, naming both -- a
   const dupCategories = { display: ['ArenaBadge', 'ArenaTag'], forms: ['ArenaButton', 'ArenaTag'] };
   const problems = validateStructure({ categories: dupCategories, layers: {} });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaTag/);
-  assert.match(problems[0], /display/);
-  assert.match(problems[0], /forms/);
+  assert.match(problems[0] ?? '', /ArenaTag/);
+  assert.match(problems[0] ?? '', /display/);
+  assert.match(problems[0] ?? '', /forms/);
 });
 
 test('LAYERS names every framework layer, all of them migrated', () => {
@@ -102,14 +102,14 @@ test('a layer with zero component directories is a failure, not a clean pass', (
 
   const problems = zeroLayerProblems({ tailwind: {} });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 component director/);
-  assert.match(problems[0], /tailwind/);
+  assert.match(problems[0] ?? '', /0 component director/);
+  assert.match(problems[0] ?? '', /tailwind/);
 });
 
 test('a category with no component directories still counts as zero for its layer', () => {
   const problems = zeroLayerProblems({ tailwind: { display: [] } });
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 component director/);
+  assert.match(problems[0] ?? '', /0 component director/);
 });
 
 test('a non-empty layer has no zero-directory problem', () => {

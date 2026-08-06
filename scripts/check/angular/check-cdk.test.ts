@@ -44,21 +44,21 @@ test('a cdk-* class the installed CDK does not define is reported, because a ren
   const css = CSS.replace('.cdk-overlay-container {', '.cdk-overlay-kontainer {');
   const errs = checkBridge(css, PREBUILT, TOKENS, RESOLVES);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /\.cdk-overlay-kontainer/);
-  assert.match(errs[0], /matches nothing/);
+  assert.match(errs[0] ?? '', /\.cdk-overlay-kontainer/);
+  assert.match(errs[0] ?? '', /matches nothing/);
 });
 
 test('a var() naming no Arena token is reported', () => {
   const errs = checkBridge(CSS, PREBUILT, new Set(), RESOLVES);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /var\(--z-dropdown\)/);
-  assert.match(errs[0], /resolves to nothing/);
+  assert.match(errs[0] ?? '', /var\(--z-dropdown\)/);
+  assert.match(errs[0] ?? '', /resolves to nothing/);
 });
 
 test('an @import resolving to no file is reported, because the import is dropped in silence', () => {
   const errs = checkBridge(CSS, PREBUILT, TOKENS, () => false);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /renders unpositioned/);
+  assert.match(errs[0] ?? '', /renders unpositioned/);
 });
 
 test('a bridge with no rule at all fails rather than passing with nothing to check', () => {
@@ -71,7 +71,7 @@ test('a bridge with no rule at all fails rather than passing with nothing to che
 test('a bridge that stops importing the prebuilt sheet fails', () => {
   const errs = checkBridge(CSS.replace(/@import[^\n]*\n/, ''), PREBUILT, TOKENS, RESOLVES);
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /imports no stylesheet/);
+  assert.match(errs[0] ?? '', /imports no stylesheet/);
 });
 
 test('the oracle sees the container class the bridge exists to override', () => {

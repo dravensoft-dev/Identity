@@ -31,7 +31,7 @@ test('two bodies that differ and are not declared fail, naming the pair and the 
   const angular = fns('export function f() {\n  return 2;\n}');
   const { problems } = pairProblems('X.ts', react, angular, new Map());
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /X\.ts:f: the two layers' copies of this function have drifted apart/);
+  assert.match(problems[0] ?? '', /X\.ts:f: the two layers' copies of this function have drifted apart/);
 });
 
 test('a declared difference is clean, and is what the map buys', () => {
@@ -47,17 +47,17 @@ test('a declared difference that has been reconciled FAILS, so an exception cann
   const same = 'export function f() {\n  return 1;\n}';
   const { problems } = pairProblems('X.ts', fns(same), fns(same), new Map([['X.ts:f', 'a reason']]));
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /the two bodies are identical now — delete the entry/);
+  assert.match(problems[0] ?? '', /the two bodies are identical now — delete the entry/);
 });
 
 test('a pair that shares no function name compares nothing, and says so rather than passing', () => {
   const { problems } = pairProblems('X.ts', fns('export function a() {\n  return 1;\n}'),
     fns('export function b() {\n  return 1;\n}'), new Map());
-  assert.match(problems[0], /export no function under the same name/);
+  assert.match(problems[0] ?? '', /export no function under the same name/);
 });
 
 test('an entry naming a function no pair exports is stale', () => {
-  assert.match(staleEntries([], new Map([['X.ts:gone', 'r']]))[0],
+  assert.match(staleEntries([], new Map([['X.ts:gone', 'r']]))[0] ?? '',
     /DIVERGENT names X\.ts:gone, and no pair exports a function under that name/);
 });
 

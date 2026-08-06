@@ -49,6 +49,6 @@ test('a mismatch names the case and the properties that differ', () => {
     'under reduced motion',
   );
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaSwitch\|icon\|size=md/);
-  assert.match(problems[0], /line-height: 16\.5px vs 11px/);
+  assert.match(problems[0] ?? '', /ArenaSwitch\|icon\|size=md/);
+  assert.match(problems[0] ?? '', /line-height: 16\.5px vs 11px/);
 });

@@ -37,7 +37,7 @@ test('passes when every token is exposed or excluded', () => {
 test('fails a token that is neither exposed nor excluded', () => {
   const errs = checkCoverage(new Set(['fs-h1']), new Set(), new Map());
   assert.equal(errs.length, 1);
-  assert.match(errs[0], /--fs-h1 reaches no Tailwind utility/);
+  assert.match(errs[0] ?? '', /--fs-h1 reaches no Tailwind utility/);
 });
 
 test('fails an exclusion for a token that is also exposed', () => {

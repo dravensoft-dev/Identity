@@ -45,22 +45,22 @@ test('a declared level nobody wrote is a problem, not a level that needs no docu
   const base = tree({ 'AGENTS.md': 'x' });
   const problems = missingProblems(base);
   assert.equal(problems.length, DOMAINS.length);
-  assert.match(problems[0], /contracts\/AGENTS\.md is declared and is not there/);
+  assert.match(problems[0] ?? '', /contracts\/AGENTS\.md is declared and is not there/);
 });
 
 test('a level the router does not link is reachable only by guessing at it', () => {
   const base = tree({ 'AGENTS.md': 'see contracts/AGENTS.md and frameworks/AGENTS.md and intro/AGENTS.md' });
   const problems = routerProblems(base);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /links no scripts\/AGENTS\.md/);
+  assert.match(problems[0] ?? '', /links no scripts\/AGENTS\.md/);
 });
 
 test('a README.md back on the branch is a problem, and the message says both remedies', () => {
   const base = tree({ 'scripts/lib/README.md': '# notes' });
   const problems = survivorProblems(base, [...markdownFiles(base)], NONE);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /scripts\/lib\/README\.md is a README\.md on the contributor branch/);
-  assert.match(problems[0], /or name it in SURVIVORS/);
+  assert.match(problems[0] ?? '', /scripts\/lib\/README\.md is a README\.md on the contributor branch/);
+  assert.match(problems[0] ?? '', /or name it in SURVIVORS/);
 });
 
 test('a SURVIVORS entry whose file has gone fails as a stale allowance', () => {
@@ -68,7 +68,7 @@ test('a SURVIVORS entry whose file has gone fails as a stale allowance', () => {
   const survivors = new Map([['README.md', 'Getting started, the page GitHub and npm both show a reader']]);
   const problems = survivorProblems(base, [...markdownFiles(base)], survivors);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /SURVIVORS names README\.md, and no README\.md is there/);
+  assert.match(problems[0] ?? '', /SURVIVORS names README\.md, and no README\.md is there/);
 });
 
 test('a survivor that is there passes, and an assembled dist copy is read by nobody', () => {
@@ -87,6 +87,6 @@ test('a vendor or dist directory under frameworks is skipped, and one anywhere e
 
 test('an empty walk is a failure, because it reports every level present and every survivor stale', () => {
   assert.equal(zeroScanProblems([]).length, 1);
-  assert.match(zeroScanProblems([])[0], /clean-looking pass over a tree it never opened/);
+  assert.match(zeroScanProblems([])[0] ?? '', /clean-looking pass over a tree it never opened/);
   assert.deepEqual(zeroScanProblems(['AGENTS.md']), []);
 });

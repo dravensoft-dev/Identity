@@ -19,7 +19,7 @@ test('a prompt with no region is a problem, because a contracted member would go
     { component: 'ArenaBadge', layer: 'react', path: 'frameworks/react/components/display/arena-badge/ArenaBadge.tsx' },
   ]);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /carries no @api region/);
+  assert.match(problems[0] ?? '', /carries no @api region/);
 });
 
 test('regionOf reads the whole region, markers included', () => {

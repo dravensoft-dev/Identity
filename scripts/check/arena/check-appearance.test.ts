@@ -78,8 +78,8 @@ test('styleObjectBodies finds each region once, and nothing outside one', () => 
   const src = "const A = { x: 1 };\n<i style={{ top: 0 }} />\nconst B: React.CSSProperties = { left: 0 };";
   const bodies = styleObjectBodies(src);
   assert.equal(bodies.length, 2);
-  assert.match(bodies[0].text, /top: 0/);
-  assert.match(bodies[1].text, /left: 0/);
+  assert.match(bodies[0].text ?? '', /top: 0/);
+  assert.match(bodies[1].text ?? '', /left: 0/);
 });
 
 test('a comment is not a style object, whatever it quotes', () => {
@@ -108,8 +108,8 @@ test('a source that renders no manifest is what the adoption half reads for', ()
 test('a component that draws by hand has no manifest to render, and is named for that instead', () => {
   const problems = adoptionProblems('ArenaBarChart');
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /ArenaBarChart/);
-  assert.match(problems[0], /HAND_DRAWN/);
+  assert.match(problems[0] ?? '', /ArenaBarChart/);
+  assert.match(problems[0] ?? '', /HAND_DRAWN/);
 });
 
 test('every component in scope renders its manifest and writes no appearance by hand', () => {

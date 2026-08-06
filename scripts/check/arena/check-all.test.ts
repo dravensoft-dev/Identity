@@ -124,7 +124,7 @@ test('a suite is TypeScript, so a .test.mjs is not one and would run in neither 
 
 test('the node step names how many suites it found, because a narrowed run and a full one read alike', () => {
   const step = testStep({ isBun: false, testFiles: ['/repo/scripts/a.test.mjs'] });
-  assert.match(step[0].name, /1 found/);
+  assert.match(step[0].name ?? '', /1 found/);
 });
 
 test('the four Angular-layer gates run last -- the compile gate, the demo pages, the assertion shape, then the one dependency bridge left', () => {

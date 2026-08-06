@@ -70,103 +70,103 @@ test('a well-formed fixture has no problems', () => {
 test('an empty contract set and an empty fixture set are failures, not clean passes', () => {
   const problems = coverageProblems(new Map(), new Map());
   assert.equal(problems.length, 2);
-  assert.match(problems[0], /an empty result set is a failure/);
+  assert.match(problems[0] ?? '', /an empty result set is a failure/);
 });
 
 test('coverage is bidirectional: a contract with no fixture and a fixture with no contract both fail', () => {
   const problems = coverageProblems(new Map([['A', {}]]) as any, new Map([['B', {}]]) as any);
-  assert.match(problems[0], /A: contracted but frameworks\/demos\/A\.demo\.json does not exist/);
-  assert.match(problems[1], /B\.demo\.json: no contract named B/);
+  assert.match(problems[0] ?? '', /A: contracted but frameworks\/demos\/A\.demo\.json does not exist/);
+  assert.match(problems[1] ?? '', /B\.demo\.json: no contract named B/);
 });
 
 test('a fixture whose component disagrees with its filename fails', () => {
-  assert.match(shapeProblems('Widget', { component: 'Gadget' })[0], /declares component "Gadget"/);
+  assert.match(shapeProblems('Widget', { component: 'Gadget' })[0] ?? '', /declares component "Gadget"/);
 });
 
 test('a fixture carrying a key the schema does not know fails', () => {
-  assert.match(shapeProblems('Widget', { component: 'Widget', extras: {} })[0], /carries extras/);
+  assert.match(shapeProblems('Widget', { component: 'Widget', extras: {} })[0] ?? '', /carries extras/);
 });
 
 test('a seed naming a member the contract does not declare fails', () => {
   const problems = seedProblems('Widget', widget, { seed: { label: 'x', nope: 1 } }, types);
-  assert.match(problems[0], /seed\.nope: the contract declares no such member/);
+  assert.match(problems[0] ?? '', /seed\.nope: the contract declares no such member/);
 });
 
 test('a required member with no default and no seed fails, naming the fixture', () => {
-  assert.match(seedProblems('Widget', widget, { seed: {} }, types)[0], /label is required and carries no default/);
+  assert.match(seedProblems('Widget', widget, { seed: {} }, types)[0] ?? '', /label is required and carries no default/);
 });
 
 test('a seed of the wrong primitive type fails, and this is what stops a page that renders and lies', () => {
-  assert.match(seedProblems('Widget', widget, { seed: { label: 42 } }, types)[0], /declares string and the fixture holds number/);
+  assert.match(seedProblems('Widget', widget, { seed: { label: 42 } }, types)[0] ?? '', /declares string and the fixture holds number/);
 });
 
 test('a seed outside an enum\'s declared values fails, naming the values', () => {
   assert.match(
-    seedProblems('Widget', widget, { seed: { label: 'x', tone: 'gold' } }, types)[0],
+    seedProblems('Widget', widget, { seed: { label: 'x', tone: 'gold' } }, types)[0] ?? '',
     /"gold" is not one of ArenaTone's \["neutral","accent","danger"\]/,
   );
 });
 
 test('an array seed is checked item by item', () => {
   assert.match(
-    valueProblems('w.columns', memberOf('columns'), [{ header: 'Service' }, { header: 7 }], types)[0],
+    valueProblems('w.columns', memberOf('columns'), [{ header: 'Service' }, { header: 7 }], types)[0] ?? '',
     /columns\[1\]\.header: declares string and the fixture holds number/,
   );
 });
 
 test('an object seed is checked field by field, including a field the type does not declare', () => {
-  assert.match(objectProblems('w.sort', 'ArenaTableSort', { column: 0, direction: 'asc', nope: 1 }, types)[0], /ArenaTableSort declares no such field/);
+  assert.match(objectProblems('w.sort', 'ArenaTableSort', { column: 0, direction: 'asc', nope: 1 }, types)[0] ?? '', /ArenaTableSort declares no such field/);
 });
 
 test('an object seed omitting a required field fails', () => {
-  assert.match(objectProblems('w.sort', 'ArenaTableSort', { column: 0 }, types)[0], /ArenaTableSort.direction is required and the fixture omits it/);
+  assert.match(objectProblems('w.sort', 'ArenaTableSort', { column: 0 }, types)[0] ?? '', /ArenaTableSort.direction is required and the fixture omits it/);
 });
 
 test('a slot the contract does not declare fails', () => {
-  assert.match(slotProblems('Widget', widget, { slots: { footer: [] } }, contracts, types)[0], /declares no such slot/);
+  assert.match(slotProblems('Widget', widget, { slots: { footer: [] } }, contracts, types)[0] ?? '', /declares no such slot/);
 });
 
 test('a required slot the fixture leaves empty fails', () => {
-  assert.match(slotProblems('Widget', widget, { slots: {} }, contracts, types)[0], /mark is a required slot/);
+  assert.match(slotProblems('Widget', widget, { slots: {} }, contracts, types)[0] ?? '', /mark is a required slot/);
 });
 
 test('a slot node naming an uncontracted component fails', () => {
   const problems = slotProblems('Widget', widget, { slots: { mark: [{ component: 'Nope' }] } }, contracts, types);
-  assert.match(problems[0], /no component named Nope is contracted/);
+  assert.match(problems[0] ?? '', /no component named Nope is contracted/);
 });
 
 test('a slot node setting a member the named component does not declare fails', () => {
   const problems = slotProblems('Widget', widget, { slots: { mark: [{ component: 'ArenaBadge', members: { size: 'lg' } }] } }, contracts, types);
-  assert.match(problems[0], /ArenaBadge declares no such member/);
+  assert.match(problems[0] ?? '', /ArenaBadge declares no such member/);
 });
 
 test('the subject placeholder is refused outside a host, where it would mark nothing', () => {
   assert.match(
-    nodeProblems('w.slots.mark[0]', '$subject', contracts, types, { allowSubject: false })[0],
+    nodeProblems('w.slots.mark[0]', '$subject', contracts, types, { allowSubject: false })[0] ?? '',
     /belongs in a host, nowhere else/,
   );
 });
 
 test('a host holding no placeholder fails, and one holding two fails', () => {
   const none = fixtureProblems('Widget', widget, { ...ok, host: { component: 'ArenaBadge', slots: { content: [] } } }, contracts, types);
-  assert.match(none[0], /holding 0 "\$subject" placeholders/);
+  assert.match(none[0] ?? '', /holding 0 "\$subject" placeholders/);
   const two = fixtureProblems('Widget', widget, { ...ok, host: { component: 'ArenaBadge', slots: { content: ['$subject', '$subject'] } } }, contracts, types);
-  assert.match(two[0], /holding 2 "\$subject" placeholders/);
+  assert.match(two[0] ?? '', /holding 2 "\$subject" placeholders/);
 });
 
 test('a host node is checked like any other node', () => {
   assert.match(
-    hostProblems('Widget', { host: { component: 'ArenaBadge', members: { tone: 'gold' }, slots: { content: ['$subject'] } } }, contracts, types)[0],
+    hostProblems('Widget', { host: { component: 'ArenaBadge', members: { tone: 'gold' }, slots: { content: ['$subject'] } } }, contracts, types)[0] ?? '',
     /is not one of ArenaTone's/,
   );
 });
 
 test('a bind naming something that is not an event fails', () => {
-  assert.match(bindProblems('Widget', widget, { bind: { label: 'tone' } }, types)[0], /declares no event called label/);
+  assert.match(bindProblems('Widget', widget, { bind: { label: 'tone' } }, types)[0] ?? '', /declares no event called label/);
 });
 
 test('a bind writing a payload into a member of another type fails', () => {
-  assert.match(bindProblems('Widget', widget, { bind: { sortChange: 'index' } }, types)[0], /carries ArenaTableSort and index holds number/);
+  assert.match(bindProblems('Widget', widget, { bind: { sortChange: 'index' } }, types)[0] ?? '', /carries ArenaTableSort and index holds number/);
 });
 
 test('a bind writing into a field of an object member is resolved through the type', () => {
@@ -174,16 +174,16 @@ test('a bind writing into a field of an object member is resolved through the ty
 });
 
 test('a void event cannot write a payload anywhere, and says so', () => {
-  assert.match(bindProblems('Widget', widget, { bind: { close: 'tone' } }, types)[0], /carries no payload/);
+  assert.match(bindProblems('Widget', widget, { bind: { close: 'tone' } }, types)[0] ?? '', /carries no payload/);
 });
 
 test('a patch is type-checked against the member it writes', () => {
-  assert.match(bindProblems('Widget', widget, { bind: { close: { tone: 'gold' } } }, types)[0], /is not one of ArenaTone's/);
+  assert.match(bindProblems('Widget', widget, { bind: { close: { tone: 'gold' } } }, types)[0] ?? '', /is not one of ArenaTone's/);
 });
 
 test('$delta steps a number and is refused on anything else', () => {
   assert.deepEqual(bindProblems('Widget', widget, { bind: { close: { index: { $delta: 1 } } } }, types), []);
-  assert.match(bindProblems('Widget', widget, { bind: { close: { tone: { $delta: 1 } } } }, types)[0], /\$delta steps a number/);
+  assert.match(bindProblems('Widget', widget, { bind: { close: { tone: { $delta: 1 } } } }, types)[0] ?? '', /\$delta steps a number/);
 });
 
 test('the citation check fires on a page name no file carries, which a bare filename is how prose rots', () => {
@@ -213,12 +213,12 @@ test('every real fixture in the tree holds against its real contract', () => {
 test('the codec emission is compared against the source, so a hand-edited copy fails', () => {
   assert.deepEqual(emissionProblems(root), []);
   const files = new Map([['frameworks/react/playground/PlaygroundCodec.generated.ts', 'not what is on disk']]);
-  assert.match(emissionProblems(root, files)[0], /stale — run bun run generate:playgrounds/);
+  assert.match(emissionProblems(root, files)[0] ?? '', /stale — run bun run generate:playgrounds/);
 });
 
 test('a missing copy is named with the command that writes it', () => {
   const files = new Map([['frameworks/react/playground/Nothing.generated.ts', 'x']]);
-  assert.match(emissionProblems(root, files)[0], /missing — run bun run generate:playgrounds/);
+  assert.match(emissionProblems(root, files)[0] ?? '', /missing — run bun run generate:playgrounds/);
 });
 
 test('copies that are not byte-identical fail, which is the claim the whole emission exists to make', () => {
@@ -230,7 +230,7 @@ test('copies that are not byte-identical fail, which is the claim the whole emis
 });
 
 test('an emission of nothing is a failure rather than a clean pass', () => {
-  assert.match(emissionProblems(root, new Map())[0], /an empty emit is a failure/);
+  assert.match(emissionProblems(root, new Map())[0] ?? '', /an empty emit is a failure/);
 });
 
 test('the smoke phase walks every emitted page, in both layers', () => {
@@ -243,13 +243,13 @@ test('the smoke phase walks every emitted page, in both layers', () => {
 test('a page that mounts nothing is named with the command that builds what it loads', () => {
   const problems = smokeProblems('X.html', { mounted: false, knobs: 0, staged: false, errors: [] });
   assert.equal(problems.length, 1, 'nothing mounted, so nothing else is worth saying');
-  assert.match(problems[0], /mounted nothing — run bun run build first/);
+  assert.match(problems[0] ?? '', /mounted nothing — run bun run build first/);
 });
 
 test('a page that mounts but draws no panel or no component fails, since compiling is not rendering', () => {
   const problems = smokeProblems('X.html', { mounted: true, knobs: 0, staged: false, errors: [] });
-  assert.match(problems[0], /drew no knob row/);
-  assert.match(problems[1], /drew an empty stage/);
+  assert.match(problems[0] ?? '', /drew no knob row/);
+  assert.match(problems[1] ?? '', /drew an empty stage/);
 });
 
 test('anything the console reports is a problem, because a component can render and still throw', () => {

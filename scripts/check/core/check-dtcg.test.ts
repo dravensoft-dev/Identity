@@ -63,8 +63,8 @@ test('rejects a token name containing a dot', () => {
 test('zero source files is a named failure', () => {
   const problems = zeroSourceProblems(0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 /);
-  assert.match(problems[0], /design/);
+  assert.match(problems[0] ?? '', /0 /);
+  assert.match(problems[0] ?? '', /design/);
 });
 
 test('a populated source directory has no zero problem', () => {

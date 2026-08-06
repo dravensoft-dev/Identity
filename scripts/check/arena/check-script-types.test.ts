@@ -90,7 +90,7 @@ test('a file the globs do not reach is reported, which is how a narrowed include
   assert.deepEqual(unreachedProblems(onDisk, onDisk), []);
   const missed = unreachedProblems(onDisk, [onDisk[0]]);
   assert.equal(missed.length, 1);
-  assert.match(missed[0], /scripts\/b\.ts is on disk and the project's globs do not reach it/);
+  assert.match(missed[0] ?? '', /scripts\/b\.ts is on disk and the project's globs do not reach it/);
 });
 
 test('the real tree is fully reached, so this gate is never passing over files it never opened', () => {

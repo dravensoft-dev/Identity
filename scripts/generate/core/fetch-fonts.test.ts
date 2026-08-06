@@ -71,9 +71,9 @@ test('facesFromDisk throws naming a family with no binary at all', () => {
 test('recordProblems catches a swapped binary, a missing one, an unrecorded one and a bad range', () => {
   const record = { 'a.woff2': { family: 'A', weights: [400, 900], sha256: 'aa' } };
   assert.deepEqual(recordProblems(record, ['a.woff2'], () => 'aa'), []);
-  assert.match(recordProblems(record, ['a.woff2'], () => 'bb')[0], /is not the one this repository shipped/);
-  assert.match(recordProblems(record, [], () => 'aa')[0], new RegExp(`recorded in ${FONTS}`));
-  assert.match(recordProblems(record, ['a.woff2', 'b.woff2'], () => 'aa')[0], /not recorded in/);
+  assert.match(recordProblems(record, ['a.woff2'], () => 'bb')[0] ?? '', /is not the one this repository shipped/);
+  assert.match(recordProblems(record, [], () => 'aa')[0] ?? '', new RegExp(`recorded in ${FONTS}`));
+  assert.match(recordProblems(record, ['a.woff2', 'b.woff2'], () => 'aa')[0] ?? '', /not recorded in/);
   const flat = { 'a.woff2': { family: 'A', weights: [400, 400], sha256: 'aa' } };
-  assert.match(recordProblems(flat, ['a.woff2'], () => 'aa')[0], /needs a real min and max/);
+  assert.match(recordProblems(flat, ['a.woff2'], () => 'aa')[0] ?? '', /needs a real min and max/);
 });

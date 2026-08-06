@@ -68,7 +68,7 @@ test('catSlotEnumProblems accepts 1..N in order', () => {
 
 test('catSlotEnumProblems rejects a set the ramp has outgrown', () => {
   const [problem] = catSlotEnumProblems(9, [1, 2, 3, 4, 5, 6, 7, 8]);
-  assert.match(problem, /has 9 slot\(s\)/);
+  assert.match(problem ?? '', /has 9 slot\(s\)/);
 });
 
 test('catSlotEnumProblems rejects a set longer than the ramp', () => {
@@ -94,8 +94,8 @@ test('the committed ArenaCatSlot matches the ramp the tokens are built from', as
 test('zero generated CSS files is one named failure, not a 21-line cascade', () => {
   const problems = zeroGeneratedCssProblems(0);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /0 /);
-  assert.match(problems[0], /design-generated/);
+  assert.match(problems[0] ?? '', /0 /);
+  assert.match(problems[0] ?? '', /design-generated/);
 });
 
 test('a populated design-generated directory has no zero problem', () => {
@@ -122,7 +122,7 @@ test('cssDiscoveryProblems: a prior drift problem AND an empty directory -- both
   const result = cssDiscoveryProblems([drift], 0);
   assert.equal(result.length, 2);
   assert.equal(result[0], drift);
-  assert.match(result[1], /found 0 .css files/);
+  assert.match(result[1] ?? '', /found 0 .css files/);
 });
 
 const sp2 = { jsName: 'sp2', value: '8' };
@@ -139,8 +139,8 @@ test('a layer that does NOT import the token and declares its value is the hole 
   const layers = [layerWith('react', [], [{ name: 'GAP', value: '8', path: 'a.jsx' }])];
   const problems = shadowedTokenProblems([sp2], layers);
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /GAP is 8, which is the value of the script-readable token sp2/);
-  assert.match(problems[0], /the react layer does not import it/);
+  assert.match(problems[0] ?? '', /GAP is 8, which is the value of the script-readable token sp2/);
+  assert.match(problems[0] ?? '', /the react layer does not import it/);
 });
 
 test('one layer importing the token does not excuse the other, which is the whole point of per-layer collection', () => {
