@@ -9,7 +9,7 @@ import {
 } from './build-react-barrel.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
-function layer(components) {
+function layer(components: Record<string, string>) {
   const root = mkdtempSync(join(tmpdir(), 'arena-barrel-'));
   for (const [path, body] of Object.entries(components) as [string, string][]) {
     const full = join(root, 'frameworks', 'react', path);

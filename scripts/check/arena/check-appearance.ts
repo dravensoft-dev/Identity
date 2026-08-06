@@ -170,7 +170,7 @@ export function directoryOf(path: string) {
   return path.slice(0, path.lastIndexOf('/'));
 }
 
-export function reactRendersManifest(text: string, manifest) {
+export function reactRendersManifest(text: string, manifest: string) {
   const throughRecipe = /from '[^']*Tv\.generated/.test(text) && text.includes(`${manifest}.manifest.generated`);
   const throughClasses = /from '[^']*ArenaStyles\.generated/.test(text) && text.includes(`${manifest}.classes.generated`);
   return throughRecipe || throughClasses;

@@ -3,9 +3,9 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, relative } from 'node:path';
 import { repoRoot } from '../arena/repo-root.ts';
-import type { ComponentManifest } from './manifest-shapes.ts';
+import type { ManifestClassSource } from './manifest-shapes.ts';
 
-export function manifestClasses(manifest: ComponentManifest): string[] {
+export function manifestClasses(manifest: ManifestClassSource): string[] {
   const out = new Set<string>();
   const eat = (v) => {
     if (typeof v === 'string') for (const c of v.split(/\s+/)) { if (c) out.add(c); }
@@ -36,7 +36,7 @@ export function manifestFiles(componentsDir) {
   return out.sort();
 }
 
-export function entryStylesheet(preset, components, extra?) {
+export function entryStylesheet(preset: string, components: string, extra?: string) {
   return `@import '${preset}' source(none);\n@source '${components}/**/*.manifest.json';\n`
     + (extra ? `@source '${extra}';\n` : '');
 }

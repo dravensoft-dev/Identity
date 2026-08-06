@@ -42,7 +42,7 @@ const VOCABULARY = {
     'disabled:cursor-not-allowed', 'border-dashed', 'tabular-nums', 'sr-only'],
 };
 
-function compileWith(classes) {
+function compileWith(classes: string[]) {
   const dir = mkdtempSync(join(tmpdir(), 'arena-vocab-'));
   try {
     writeFileSync(join(dir, 'Vocabulary.manifest.json'),

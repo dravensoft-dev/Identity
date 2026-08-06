@@ -17,7 +17,7 @@ export const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'build', '.g
 
 export const ICON_TOKEN = /\bph(?:-[a-z0-9]+)+\b/g;
 
-export const EXEMPT = new Map();
+export const EXEMPT = new Map<string, string>();
 
 export function weightsFrom(root = ROOT) {
   const base = join(root, PHOSPHOR);
@@ -36,7 +36,7 @@ export function weightsFrom(root = ROOT) {
   return weights;
 }
 
-export function zeroWeightProblems(weights) {
+export function zeroWeightProblems(weights: Map<string, Set<string>>) {
   if (weights.size > 0) return [];
   return [
     `no weight stylesheet under ${PHOSPHOR}: a gate iterating nothing reports every name valid, `
@@ -44,13 +44,13 @@ export function zeroWeightProblems(weights) {
   ];
 }
 
-export function everyGlyph(weights) {
+export function everyGlyph(weights: Map<string, Set<string>>) {
   const all = new Set();
   for (const glyphs of weights.values()) for (const glyph of glyphs) all.add(glyph);
   return all;
 }
 
-export function tokenProblems(text: string, where: string, weights) {
+export function tokenProblems(text: string, where: string, weights: Map<string, Set<string>>) {
   const glyphs = everyGlyph(weights);
   const problems = [];
   for (const line of text.split('\n').entries()) {

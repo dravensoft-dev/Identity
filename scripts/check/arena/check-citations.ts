@@ -17,7 +17,7 @@ export const SKIPPED_ANYWHERE = new Set(['node_modules', '.git']);
 
 export const SKIPPED_UNDER_FRAMEWORKS = new Set(['dist', 'build', 'vendor']);
 
-export function skips(name: string, relativeDirectory) {
+export function skips(name: string, relativeDirectory: string) {
   if (SKIPPED_ANYWHERE.has(name)) return true;
   return SKIPPED_UNDER_FRAMEWORKS.has(name) && relativeDirectory.startsWith('frameworks');
 }

@@ -12,7 +12,7 @@ import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 
-export function hasRoundedFull(classString) {
+export function hasRoundedFull(classString: string) {
   return /(?<![\w-])rounded-full(?![\w-])/.test(classString);
 }
 

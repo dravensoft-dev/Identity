@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
+import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
 
 export function themeKeys(css: string) {
   const out = new Map();
@@ -16,7 +17,7 @@ export function themeKeys(css: string) {
   return out;
 }
 
-export function checkCompiled(css: string, manifests, tokens) {
+export function checkCompiled(css: string, manifests: Map<string, ManifestClassSource>, tokens) {
   const errs = [];
 
   if (manifests.size === 0)

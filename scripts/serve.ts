@@ -11,7 +11,7 @@ const PAGES = [
   ['Guidelines', '/intro/guidelines/'],
 ];
 
-function resolve(pathname) {
+function resolve(pathname: string) {
   const rel = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, '');
   const path = join(root, rel);
   return path.startsWith(root) ? path : null;
@@ -19,7 +19,7 @@ function resolve(pathname) {
 
 const isDir = (path: string) => { try { return statSync(path).isDirectory(); } catch { return false; } };
 
-function listing(path: string, pathname) {
+function listing(path: string, pathname: string) {
   const entries = readdirSync(path).sort();
   const items = entries
     .map((name) => {

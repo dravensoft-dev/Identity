@@ -126,7 +126,7 @@ export function memberList(contract: ContractCandidate | null, layer?: string) {
   });
 }
 
-export function patternsFor(category: string, component: string, layers, base = root) {
+export function patternsFor(category: string, component: string, layers: string[], base = root) {
   const found = new Map();
   for (const layer of layers) {
     const path = join(base, componentDir(layer, category, component), `${component}.behaviour.json`);
@@ -140,10 +140,10 @@ export function patternsFor(category: string, component: string, layers, base = 
   return found;
 }
 
-export function renderPatterns(found, layers) {
+export function renderPatterns(found, layers: string[]) {
   const names = [...found.keys()].sort();
   if (names.length === 0) return '';
-  const everywhere = (pattern) => layers.every((layer: string) => found.get(pattern).has(layer));
+  const everywhere = (pattern: string) => layers.every((layer: string) => found.get(pattern).has(layer));
   return names
     .map((pattern) => (everywhere(pattern) ? pattern : `${pattern} (${[...found.get(pattern)].sort().join(', ')})`))
     .join(', ');
@@ -153,7 +153,7 @@ export function escapeCell(text: string) {
   return String(text).split('|').join('\\|').split('\n').join(' ');
 }
 
-export function rowsFor(category: string, components, base = root) {
+export function rowsFor(category: string, components: string[], base = root) {
   return components.map((component: string) => {
     const layers = layersFor(category, component, base);
     const contract = loadContract(component, base);

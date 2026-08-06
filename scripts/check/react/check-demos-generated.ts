@@ -5,7 +5,7 @@ import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 
-function skip(reason) {
+function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-demos-generated: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   if (code === 2) console.error('  check-all reports the run INCOMPLETE; the repository declares ARENA_CHECK_STRICT=1, so this environment overrides it.');

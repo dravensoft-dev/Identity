@@ -21,7 +21,7 @@ function tree(files: Record<string, string>) {
   return root;
 }
 
-const runner = ({ tracked = [], ignored = [] }) => (args) => {
+const runner = ({ tracked = [], ignored = [] }) => (args: string[]) => {
   if (args[0] === 'ls-files') return tracked;
   if (args[0] === 'check-ignore') return ignored.includes(args[2]) ? [args[2]] : [];
   return [];

@@ -18,6 +18,19 @@ import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { themeCss } from '../../generate/core/arena-to-prod/theme-css.ts';
 import { MAP_FILE } from '../../lib/arena/component-map.ts';
 
+export type PackageManifest = {
+  name?: string;
+  version?: string;
+  private?: boolean;
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  exports?: unknown;
+  types?: string;
+  typings?: string;
+  bin?: Record<string, string>;
+};
+
 export const PACKAGES = [
   { layer: 'react', name: '@dravensoft/arena-react' },
   { layer: 'angular', name: '@dravensoft/arena-angular' },
@@ -63,7 +76,7 @@ export function paletteEquivalenceProblems(generatedCss, cliCss) {
   return { problems, compared };
 }
 
-export function manifestProblems(pkg, manifest, version) {
+export function manifestProblems(pkg, manifest: PackageManifest, version) {
   const problems = [];
   const at = pkg.name;
 
@@ -91,7 +104,7 @@ export function manifestProblems(pkg, manifest, version) {
 
 function exportTargets(exports) {
   const out: string[] = [];
-  const walk = (value) => {
+  const walk = (value: unknown) => {
     if (typeof value === 'string') { out.push(value); return; }
     if (value && typeof value === 'object') for (const v of Object.values(value)) walk(v);
   };
@@ -115,7 +128,7 @@ export function globMatches(target, dir: string) {
   return found;
 }
 
-export function exportProblems(pkg, manifest, dir: string) {
+export function exportProblems(pkg, manifest: PackageManifest, dir: string) {
   const problems = [];
   const targets = exportTargets(manifest.exports ?? {});
   if (targets.length === 0) problems.push(`${pkg.name}: no exports target resolves to a file, so the package exposes nothing`);

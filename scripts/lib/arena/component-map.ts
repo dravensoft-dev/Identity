@@ -75,7 +75,7 @@ export function close(needs) {
   return closed;
 }
 
-function mapFrom(entries, edges) {
+function mapFrom(entries: { symbol: string; keys: string[]; sheet: string | null; uses: string[] }[], edges: string) {
   const draws = {};
   const needs = {};
   for (const { keys, sheet } of entries) {

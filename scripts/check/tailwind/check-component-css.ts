@@ -18,6 +18,7 @@ import { arenaTokenNames } from '../../lib/core/arena-tokens.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import { applyRules } from '../../lib/tailwind/component-css.ts';
 import { PRELUDE, sheetPath } from '../../build/tailwind/build-tailwind.ts';
+import type { Manifests } from '../../lib/tailwind/manifest-shapes.ts';
 
 export const THEME_NAMESPACES = [
   'spacing', 'radius', 'text', 'z-index', 'leading', 'tracking', 'container',
@@ -45,7 +46,7 @@ export function themeLeaks(css: string) {
   return [...leaked].sort();
 }
 
-export function sheetProblems(manifests, base = root) {
+export function sheetProblems(manifests: Manifests, base = root) {
   const problems = [];
   const tokens = arenaTokenNames(base);
   for (const decls of parseDecls(readFileSync(join(base, 'contracts/design/environment.css'), 'utf8')).values())
@@ -103,7 +104,7 @@ export function preludeProblems(base = root) {
 
 export const MANIFEST_FETCH = /fetch\(\s*['"]([^'"]*?([A-Za-z]+)\.manifest\.json)['"]/g;
 
-export function specimenProblems(manifests, base = root) {
+export function specimenProblems(manifests: Manifests, base = root) {
   const problems = [];
   for (const file of manifests.keys()) {
     const specimen = file.replace(/\.manifest\.json$/, '.card.html');

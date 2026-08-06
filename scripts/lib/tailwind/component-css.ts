@@ -12,6 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.ts';
+import type { Manifests } from './manifest-shapes.ts';
 import {
   classBase, classesManifest, compoundClass, slotClass, variantClass,
 } from '../../../frameworks/tailwind/ManifestClasses.js';
@@ -24,7 +25,7 @@ export const isThemeKey = (name: string) => !name.startsWith('tw-');
 
 export function applyRules(manifest: ComponentManifest) {
   const rules: { selector: string; classes: string }[] = [];
-  const push = (selector: string, classes) => {
+  const push = (selector: string, classes: string) => {
     const trimmed = String(classes ?? '').trim();
     if (trimmed) rules.push({ selector, classes: trimmed });
   };
@@ -50,7 +51,7 @@ export function classNames(manifest: ComponentManifest) {
   return applyRules(manifest).map((rule) => rule.selector);
 }
 
-export function entryStylesheet(presetPath, manifests) {
+export function entryStylesheet(presetPath: string, manifests: Manifests) {
   const body = [...manifests.values()]
     .flatMap((manifest) => applyRules(manifest))
     .map(({ selector, classes }) => `  .${selector} { @apply ${classes}; }`)

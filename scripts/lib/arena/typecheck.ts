@@ -24,7 +24,7 @@ export function tscBin(root = repoRoot) {
   return bin;
 }
 
-function runTsc(args, root: string) {
+function runTsc(args: string[], root: string) {
   const r = spawnSync(process.execPath, [tscBin(root), ...args], { encoding: 'utf8', maxBuffer: MAX_BUFFER });
   if (r.error) throw new Error(`tsc failed to spawn: ${r.error.message || r.error}`);
   return { status: r.status ?? 1, output: `${r.stdout || ''}${r.stderr || ''}` };

@@ -20,7 +20,7 @@ export const SHAPE = new Map([
   ['design', { dirs: [], files: ['AGENTS.md', 'Scales.md', 'TokenTypes.md', 'colors.css', 'environment.css', 'reset.css'], ext: '.json' }],
 ]);
 
-export function rootProblems(entries) {
+export function rootProblems(entries: string[]) {
   const problems = [];
   const expected = new Set([...LEVELS, GENERATED, 'AGENTS.md']);
   for (const name of entries) {
@@ -37,7 +37,7 @@ export function rootProblems(entries) {
   return problems;
 }
 
-export function levelProblems(level, entries, isDir) {
+export function levelProblems(level: string, entries: string[], isDir) {
   const problems = [];
   const shape = SHAPE.get(level);
   if (!shape) return [`contracts/${level}: no declared shape`];
@@ -66,7 +66,7 @@ export function levelProblems(level, entries, isDir) {
   return problems;
 }
 
-export function generatedProblems(entries) {
+export function generatedProblems(entries: string[]) {
   const problems = [];
   for (const name of entries) {
     if (!name.endsWith('.generated.css')) {

@@ -73,7 +73,7 @@ export function isGenerated(path: string) {
   return /\.generated\./.test(path);
 }
 
-export function allowsHeader(repoRelativePath) {
+export function allowsHeader(repoRelativePath: string) {
   const parts = repoRelativePath.split(sep);
   return parts[0] === 'scripts'
     || parts.includes('test')
@@ -97,7 +97,7 @@ export const BRANCH_SWITCH = {
 
 export const CONSUMER_PACKAGE_PAGE = 'PACKAGE.md';
 
-export function isConsumerDocument(repoRelativePath) {
+export function isConsumerDocument(repoRelativePath: string) {
   if (Object.hasOwn(BRANCH_SWITCH, repoRelativePath)) return false;
   if (repoRelativePath.endsWith(CONSUMER_LAST_STOP)) return true;
   if (basename(repoRelativePath) === CONSUMER_PACKAGE_PAGE && repoRelativePath.startsWith(CONSUMER_TREE)) return true;
@@ -206,7 +206,7 @@ export function ruleOwnerProblems(root = ROOT, owners = RULE_OWNERS) {
 
 export const MEMBER_DOC_TREE = /^frameworks\/[^/]+\/components\//;
 
-function isMemberDoc(text: string, repoRelativePath) {
+function isMemberDoc(text: string, repoRelativePath: string) {
   return MEMBER_DOC_TREE.test(repoRelativePath)
     && !repoRelativePath.includes('.test.')
     && text.startsWith('/**');

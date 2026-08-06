@@ -5,7 +5,7 @@ import { arenaTv, ARENA_SPACING_SUFFIXES, arenaSpacingConsumingGroups } from '..
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { deriveNamespaces } from '../../lib/tailwind/theme-namespaces.ts';
 
-const merge = (classString) => arenaTv({ slots: { root: classString } })().root();
+const merge = (classString: string) => arenaTv({ slots: { root: classString } })().root();
 const classes = (s: string) => s.split(/\s+/);
 
 test('every registered Arena font-size key survives alongside a text color', () => {

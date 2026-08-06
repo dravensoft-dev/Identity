@@ -451,13 +451,13 @@ export function* sourceFiles(dir: string): Generator<string> {
   }
 }
 
-export function staleExemptions(matchedKeys) {
+export function staleExemptions(matchedKeys: Set<string>) {
   return [...EXEMPT.keys()].filter((k) => !matchedKeys.has(k));
 }
 
 function collect() {
   const found = [];
-  const matchedKeys = new Set();
+  const matchedKeys = new Set<string>();
   const seenComponents = new Set();
   let paramLists = 0;
   for (const file of sourceFiles(join(repoRoot, 'frameworks'))) {

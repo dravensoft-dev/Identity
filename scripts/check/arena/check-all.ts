@@ -130,7 +130,7 @@ export function summarize(results) {
   return [...lines, '', tail].join('\n');
 }
 
-function runStep(name: string, args) {
+function runStep(name: string, args: string[]) {
   console.log(`\n> ${name}\n`);
   const r = spawnSync(process.execPath, args, { stdio: 'inherit', cwd: repoRoot });
   if (r.error) console.error(`  failed to spawn: ${r.error.message || r.error}`);

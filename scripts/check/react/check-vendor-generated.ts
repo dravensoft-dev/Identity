@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 
-function skip(reason) {
+function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-vendor-generated: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   if (code === 2) console.error('  check-all reports the run INCOMPLETE; the repository declares ARENA_CHECK_STRICT=1, so this environment overrides it.');

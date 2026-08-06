@@ -54,7 +54,7 @@ export function zeroComponentProblems(count: number) {
   return ['found 0 component directories under frameworks/react/components; an empty barrel is a failure, not a clean pass'];
 }
 
-export function missingSourceProblems(modules, root = repoRoot) {
+export function missingSourceProblems(modules: ReturnType<typeof componentModules>, root = repoRoot) {
   const problems = [];
   for (const { component, path, ext } of modules) {
     const base = join(root, 'frameworks', 'react', path.slice(2));
@@ -68,7 +68,7 @@ export function missingSourceProblems(modules, root = repoRoot) {
   return problems;
 }
 
-export function duplicateExportProblems(modules, root = repoRoot) {
+export function duplicateExportProblems(modules: ReturnType<typeof componentModules>, root = repoRoot) {
   const seen = new Map();
   const problems = [];
   for (const { component, path, ext } of modules) {
@@ -87,7 +87,7 @@ export function duplicateExportProblems(modules, root = repoRoot) {
 
 const reExport = (specifier: string) => `export * from '${specifier}';`;
 
-export function barrel(modules, root = repoRoot) {
+export function barrel(modules: ReturnType<typeof componentModules>, root = repoRoot) {
   const lines = [
     BANNER,
     ...TYPE_ONLY.map((t) => `export type * from './${t}.ts';`),

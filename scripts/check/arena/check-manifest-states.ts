@@ -17,7 +17,7 @@ import {
 } from '../../lib/tailwind/manifest-surfaces.ts';
 import { kebab } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
+import type { ComponentManifest, ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 
 export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };
@@ -26,7 +26,7 @@ const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 const CONTRACTS_DIR = join(repoRoot, 'contracts/api/components');
 const REACT_COMPONENTS_DIR = join(repoRoot, 'frameworks/react/components');
 
-export const EXEMPT = new Map([]);
+export const EXEMPT = new Map<string, string>([]);
 
 const FAMILY_PATTERNS = {
   hover: /(?:^|:)hover:/,
@@ -40,7 +40,7 @@ const IMPLEMENTS_PATTERNS = {
 
 export const FAMILIES = Object.keys(FAMILY_PATTERNS);
 
-export function stateFamilies(classString) {
+export function stateFamilies(classString: string) {
   const families = new Set();
   for (const token of classString.split(/\s+/).filter(Boolean))
     for (const [family, re] of Object.entries(FAMILY_PATTERNS))
@@ -55,9 +55,9 @@ export function sourceImplements(sourceText) {
   };
 }
 
-export function classStringsBySlot(manifest: Pick<ComponentManifest, 'slots' | 'variants'>) {
+export function classStringsBySlot(manifest: ManifestClassSource) {
   const bySlot = new Map();
-  const add = (slot, cls: string) => {
+  const add = (slot: string, cls: string) => {
     if (typeof cls !== 'string') return;
     if (!bySlot.has(slot)) bySlot.set(slot, []);
     bySlot.get(slot).push(cls);
@@ -217,7 +217,7 @@ export function collect() {
   };
 }
 
-export function staleExemptions(matchedKeys) {
+export function staleExemptions(matchedKeys: string[]) {
   const matched = new Set(matchedKeys);
   return [...EXEMPT.keys()].filter((k) => !matched.has(k));
 }

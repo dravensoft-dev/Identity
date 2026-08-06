@@ -177,14 +177,14 @@ export function trackingProblems(root = ROOT, run = gitRun) {
   return problems;
 }
 
-export function matches(pattern, path: string) {
+export function matches(pattern: string, path: string) {
   const rx = pattern
     .split('**/').map((part) => part.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*'))
     .join('(?:.*/)?');
   return new RegExp(`^${rx}$`).test(path);
 }
 
-function gitRun(args, cwd) {
+function gitRun(args: string[], cwd) {
   const { stdout } = spawnSync('git', args, { cwd, encoding: 'utf8' });
   return (stdout ?? '').split('\n').filter(Boolean);
 }

@@ -43,7 +43,7 @@ export function fieldType(field) {
   throw new Error(`fieldType: form "${field.form}" is not allowed inside a predefined object — R1, an object is pure data`);
 }
 
-export function enumLiteral(value) {
+export function enumLiteral(value: string | number) {
   return typeof value === 'number' ? String(value) : `'${value}'`;
 }
 

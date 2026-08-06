@@ -138,7 +138,7 @@ export function collect() {
   return { findings, matchedKeys, allowedHits, scanned };
 }
 
-export function staleExemptions(matchedKeys) {
+export function staleExemptions(matchedKeys: string[]) {
   const matched = new Set(matchedKeys);
   return [...EXEMPT.keys()].filter((k) => !matched.has(k));
 }

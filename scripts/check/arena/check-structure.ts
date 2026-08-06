@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.ts';
+import type { ComponentTree } from '../../lib/arena/layers.ts';
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 export const PREFIX = 'Arena';
@@ -54,7 +55,7 @@ export function validateStructure({ categories, layers, complete = false }) {
   return problems;
 }
 
-export function zeroLayerProblems(layers) {
+export function zeroLayerProblems(layers: Record<string, ComponentTree>) {
   const problems = [];
   for (const [layer, tree] of Object.entries(layers)) {
     const count = Object.values(tree).reduce((n, dirs) => n + dirs.length, 0);
