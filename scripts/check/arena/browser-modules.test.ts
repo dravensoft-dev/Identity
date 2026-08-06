@@ -21,7 +21,7 @@ export function browserReachableScripts(files = MODULES, base = root): string[] 
   const found = new Set<string>();
   for (const file of files) {
     const source = readFileSync(join(base, file), 'utf8');
-    for (const m of source.matchAll(REACHES_SCRIPTS)) found.add(m[1].slice(m[1].indexOf('scripts/')));
+    for (const m of source.matchAll(REACHES_SCRIPTS)) found.add(m[1]?.slice(m[1]?.indexOf('scripts/')));
   }
   return [...found].sort();
 }

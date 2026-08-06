@@ -4,6 +4,8 @@
  * and braceBody count brackets without string awareness, and classify's index-signature
  * carve-out tests only a literal's FIRST member. A quote-aware scanner is a larger change. */
 
+import { captured } from './captures.ts';
+
 export class UnrecognisedShape extends Error {
   constructor(message: string) { super(message); this.name = 'UnrecognisedShape'; }
 }
@@ -13,7 +15,7 @@ const PRIMITIVES = new Set(['string', 'number', 'boolean']);
 export function bindingName(name: string, form: string, layer: string) {
   if (layer !== 'react') return name;
   if (form === 'slot') return name === 'content' ? 'children' : name;
-  if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
+  if (form === 'event') return `on${name.slice(0, 1).toUpperCase()}${name.slice(1)}`;
   return name;
 }
 
@@ -70,11 +72,12 @@ export function classify(raw: string): { form: string; [detail: string]: any } {
   const arrow = /^\(([\s\S]*)\)\s*=>\s*([\s\S]+)$/.exec(ts);
   if (arrow) {
 
-    const returns = arrow[2].trim();
+    const returns = captured(arrow, 2).trim();
     if (returns !== 'void') {
 
-      const nonNull = returns.split('|').map((s) => s.trim()).filter((s) => s !== 'null' && s !== 'undefined');
-      const retType = nonNull.length === 1 ? classify(nonNull[0]) : { form: 'union' };
+      const nonNull = returns.split('|').map((s: string) => s.trim())
+        .filter((s: string) => s !== 'null' && s !== 'undefined');
+      const retType = nonNull.length === 1 ? classify(nonNull[0] ?? '') : { form: 'union' };
       if (retType.form === 'platform') return retType;
       if (retType.form === 'slot') {
         throw new UnrecognisedShape(
@@ -88,7 +91,7 @@ export function classify(raw: string): { form: string; [detail: string]: any } {
         throw new UnrecognisedShape(`a functionInput return must be a primitive, enum or named type: ${ts}`);
       }
       const params: Record<string, string> = {};
-      for (const part of splitTopLevel(arrow[1], ',').map((s) => s.trim()).filter(Boolean)) {
+      for (const part of splitTopLevel(captured(arrow), ',').map((s) => s.trim()).filter(Boolean)) {
         const colon = part.indexOf(':');
         if (colon === -1) throw new UnrecognisedShape(`functionInput parameter has no type: ${ts}`);
         const pType = classify(part.slice(colon + 1));
@@ -100,9 +103,9 @@ export function classify(raw: string): { form: string; [detail: string]: any } {
         params[part.slice(0, colon).trim()] = pType.type
           ?? (pType.form === 'consumerData' ? 'consumerData' : part.slice(colon + 1).trim());
       }
-      return { form: 'functionInput', params, returns: retType.type ?? nonNull[0].trim() };
+      return { form: 'functionInput', params, returns: retType.type ?? (nonNull[0] ?? '').trim() };
     }
-    const params = arrow[1].trim();
+    const params = captured(arrow).trim();
     if (!params) return { form: 'event', payload: null };
 
     if (splitTopLevel(params, ',').length > 1) {
@@ -122,7 +125,7 @@ export function classify(raw: string): { form: string; [detail: string]: any } {
 
   const array =/^([\s\S]+)\[\]$/.exec(ts) ?? /^Array<([\s\S]+)>$/.exec(ts);
   if (array) {
-    const inner = classify(array[1].trim());
+    const inner = classify(captured(array).trim());
 
     if (inner.form === 'union') return inner;
 
@@ -205,17 +208,17 @@ export function normaliseDoc(text: string) {
 export function memberDocs(body: string) {
   const docs = new Map();
   const re = /\/\*\*([\s\S]*?)\*\/\s*(?:readonly\s+|protected\s+|public\s+)*([A-Za-z_$][\w$]*)/g;
-  for (const match of body.matchAll(re)) docs.set(match[2], normaliseDoc(match[1]));
+  for (const match of body.matchAll(re)) docs.set(captured(match, 2), normaliseDoc(captured(match)));
   return docs;
 }
 
 export function reactSurface(source: string, interfaceName: string) {
   const decl = new RegExp(`export\\s+interface\\s+${interfaceName}\\b([^{]*)\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export interface ${interfaceName}" in this source`);
-  const heritage = /extends\s+([^{]+)/.exec(decl[1]);
+  const heritage = /extends\s+([^{]+)/.exec(captured(decl));
   const body = braceBody(source, decl.index + decl[0].length - 1);
   return {
-    heritage: heritage ? splitTopLevel(heritage[1], ',').map((h) => h.trim()).filter(Boolean) : [],
+    heritage: heritage ? splitTopLevel(captured(heritage), ',').map((h) => h.trim()).filter(Boolean) : [],
     members: interfaceMembers(body),
     docs: memberDocs(body),
   };
@@ -237,7 +240,7 @@ export function reactImplementation(source: string, componentName: string) {
     if (!entry) continue;
     if (entry.startsWith('...')) { rest = entry.slice(3).trim(); continue; }
     const named = /^([A-Za-z_$][\w$]*)\s*=\s*([\s\S]+)$/.exec(entry);
-    if (named) { defaults.set(named[1], named[2].trim()); continue; }
+    if (named) { defaults.set(captured(named), captured(named, 2).trim()); continue; }
     if (/^[A-Za-z_$][\w$]*$/.test(entry)) { defaults.set(entry, null); continue; }
     throw new UnrecognisedShape(`unreadable destructuring entry in ${componentName}: ${entry}`);
   }
@@ -279,7 +282,7 @@ function interfaceMembers(body: string) {
     if (!text) continue;
     const m = /^([A-Za-z_$][\w$]*)(\?)?\s*:\s*([\s\S]+)$/.exec(text);
     if (!m) throw new UnrecognisedShape(`unreadable interface member: ${text}`);
-    members.push({ name: m[1], required: !m[2], ...classify(m[3]) });
+    members.push({ name: captured(m), required: !m[2], ...classify(captured(m, 3)) });
   }
   return members;
 }
@@ -322,7 +325,7 @@ export function angularSurface(source: string, className: string) {
     if (method && IMPERATIVE_HANDLES.has(`${className}.${method[1]}`)) continue;
     const m = /^readonly\s+([A-Za-z_$][\w$]*)\s*=\s*([\s\S]+)$/.exec(text);
     if (!m) throw new UnrecognisedShape(`unreadable class member: ${text}`);
-    members.push(classMember(m[1], m[2]));
+    members.push(classMember(captured(m), captured(m, 2)));
   }
   return { members: [...members, ...templateSlots(componentTemplate(source))], docs: memberDocs(body) };
 }
@@ -350,23 +353,23 @@ function classMember(name: string, initialiser: string): SurfaceMember {
     const [, kind, required, type] = generic;
     if (kind === 'output') {
       const inner: { form?: string; type?: string; payload?: null } =
-        type.trim() === 'void' ? { payload: null } : classify(type);
+        (type ?? '').trim() === 'void' ? { payload: null } : classify(type ?? '');
       if (inner.form === 'platform') return { name, form: 'event', required: false, payload: inner.type, platformPayload: true };
 
       if (inner.form === 'consumerData') return { name, form: 'event', required: false, payload: 'consumerData' };
       return { name, form: 'event', required: false, payload: inner.type ?? null };
     }
 
-    const generics = splitTopLevel(type, ',');
+    const generics = splitTopLevel(type ?? '', ',');
     if (generics.length > 2) {
       throw new UnrecognisedShape(`input${required ? '.required' : ''}<${type}>(...) declares ${generics.length} generics -- Angular's input()/input.required() accept at most two (T, TransformT): ${init}`);
     }
-    return { name, required: Boolean(required), ...classify(generics[0]) };
+    return { name, required: Boolean(required), ...classify(generics[0] ?? '') };
   }
   const bare = /^input\s*\(([\s\S]*)\)$/.exec(init);
   if (bare) {
 
-    const firstArg = splitTopLevel(bare[1], ',')[0].trim();
+    const firstArg = (splitTopLevel(captured(bare), ',')[0] ?? '').trim();
     return { name, required: false, ...classify(literalType(firstArg, name)) };
   }
   throw new UnrecognisedShape(`unreadable member initialiser for "${name}": ${init}`);
@@ -389,20 +392,20 @@ function componentTemplate(source: string) {
     return '';
   }
   const template = /template\s*:\s*`([\s\S]*?)`/.exec(args);
-  return template ? template[1] : '';
+  return template ? captured(template) : '';
 }
 
 export function templateSlots(source: string) {
   const out: SurfaceMember[] = [];
   for (const m of source.matchAll(/<ng-content\b([^>]*)>/g)) {
-    const attrs = m[1];
+    const attrs = captured(m);
     const select = /select\s*=\s*"([^"]*)"/.exec(attrs);
     if (!select) { out.push({ name: 'content', form: 'slot', required: false }); continue; }
-    const attribute = /^\[([\w-]+)\]$/.exec(select[1].trim());
+    const attribute = /^\[([\w-]+)\]$/.exec(captured(select).trim());
     if (!attribute) {
       throw new UnrecognisedShape(`ng-content select="${select[1]}" is not an attribute selector — see the binding table in contracts/api/AGENTS.md`);
     }
-    out.push({ name: attribute[1], form: 'slot', required: false });
+    out.push({ name: captured(attribute), form: 'slot', required: false });
   }
   return out;
 }

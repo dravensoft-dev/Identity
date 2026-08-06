@@ -37,8 +37,8 @@ test('braces are matched past a string and a comment, so a selector holding one 
 test('a top-level child is found per rule and per at-rule block', () => {
   const children = topLevelChildren('.a { x: 1 }\n@media print {\n.b { y: 2 }\n}\n');
   assert.equal(children.length, 2);
-  assert.equal(children[0].head, '.a');
-  assert.equal(children[1].head, '@media print');
+  assert.equal(children[0]?.head, '.a');
+  assert.equal(children[1]?.head, '@media print');
 });
 
 test('an owner is the class base, and a longer name is not a prefix of a shorter one', () => {

@@ -78,8 +78,8 @@ test('styleObjectBodies finds each region once, and nothing outside one', () => 
   const src = "const A = { x: 1 };\n<i style={{ top: 0 }} />\nconst B: React.CSSProperties = { left: 0 };";
   const bodies = styleObjectBodies(src);
   assert.equal(bodies.length, 2);
-  assert.match(bodies[0].text ?? '', /top: 0/);
-  assert.match(bodies[1].text ?? '', /left: 0/);
+  assert.match(bodies[0]?.text ?? '', /top: 0/);
+  assert.match(bodies[1]?.text ?? '', /left: 0/);
 });
 
 test('a comment is not a style object, whatever it quotes', () => {

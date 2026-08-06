@@ -157,13 +157,13 @@ test('a bare literal at a LOGICAL padding or margin side is a violation, like it
 test('a bare literal in a logical border side is a violation', () => {
   const hits = scanText("const s = { borderInlineStart: '2px solid var(--border)' };");
   assert.equal(hits.length, 1);
-  assert.equal(hits[0].prop, 'borderInlineStart');
+  assert.equal(hits[0]?.prop, 'borderInlineStart');
 });
 
 test('a bare literal in a logical inset side is a violation', () => {
   const hits = scanText("const s = { insetBlockStart: '12px' };");
   assert.equal(hits.length, 1);
-  assert.equal(hits[0].prop, 'insetBlockStart');
+  assert.equal(hits[0]?.prop, 'insetBlockStart');
 });
 
 test('a token in a logical side is not a violation', () => {
@@ -509,7 +509,7 @@ test('blanking comments preserves line numbers exactly', () => {
     "const s = { fontSize: 13 };",
   ].join('\n');
   const found = scanText(src);
-  assert.deepEqual(found[0].line, 3);
+  assert.deepEqual(found[0]?.line, 3);
 });
 
 test('a focus ring written by hand is a dimension literal', () => {
@@ -535,9 +535,9 @@ test('a dimension inside injected CSS is judged like any other', () => {
   ].join('\n');
   const hits = scanInjectedCss(source);
   assert.equal(hits.length, 1);
-  assert.equal(hits[0].prop, 'transform');
-  assert.match(hits[0].reason ?? '', /raw px/);
-  assert.equal(hits[0].line, 2);
+  assert.equal(hits[0]?.prop, 'transform');
+  assert.match(hits[0]?.reason ?? '', /raw px/);
+  assert.equal(hits[0]?.line, 2);
 });
 
 test('injected CSS built from tokens is clean', () => {
@@ -563,7 +563,7 @@ test('CSS split across `+`-concatenated string literals is read as one rule', ()
   assert.equal(scanInjectedCss("s.textContent = '.a{margin-top:8px}';").length, 1);
   const hits = scanInjectedCss("s.textContent = '.a{' + 'margin-top:8px}';");
   assert.equal(hits.length, 1);
-  assert.equal(hits[0].prop, 'marginTop');
+  assert.equal(hits[0]?.prop, 'marginTop');
 });
 
 test('an interpolation does not hide the unit that follows it', () => {

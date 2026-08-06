@@ -89,7 +89,7 @@ test('copyTree carries a nested tree and drops what is excluded', () => {
 });
 
 test('the CSS chain leads with the reset and ends with the derivations', () => {
-  assert.equal(CSS_CHAIN[0].to, 'css/reset.css');
+  assert.equal(CSS_CHAIN[0]?.to, 'css/reset.css');
   assert.deepEqual(CSS_CHAIN.slice(-2).map((c) => c.to), ['css/colors.css', 'css/environment.css'],
     'both hand-authored derivation sheets read tokens the generated ones declare, so both come '
     + 'after them: colors.css derives from --color-base-content and environment.css from --sp-*');

@@ -15,16 +15,16 @@ test('the invocation comes from testStep and gains the two junit flags, nothing 
   const steps = stepsWithJunit('out');
   assert.equal(steps.length, AUTHORITY.length);
 
-  assert.deepEqual(steps[0].args, AUTHORITY[0].args, 'the Angular emit step is not a test run and is untouched');
-  assert.equal(steps[0].outfile, undefined);
+  assert.deepEqual(steps[0]?.args, AUTHORITY[0]?.args, 'the Angular emit step is not a test run and is untouched');
+  assert.equal(steps[0]?.outfile, undefined);
 
   for (const i of [1, 2]) {
     assert.deepEqual(
-      steps[i].args,
-      [...AUTHORITY[i].args, '--reporter=junit', `--reporter-outfile=out/suite-${i}.xml`],
+      steps[i]?.args,
+      [...AUTHORITY[i]?.args, '--reporter=junit', `--reporter-outfile=out/suite-${i}.xml`],
       `step ${i} was rebuilt rather than extended`,
     );
-    assert.equal(steps[i].outfile, `out/suite-${i}.xml`);
+    assert.equal(steps[i]?.outfile, `out/suite-${i}.xml`);
   }
 });
 

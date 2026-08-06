@@ -16,7 +16,7 @@ test('flattens a nested group into dash-joined custom-property names', () => {
 
 test('inherits $type from the nearest ancestor group', () => {
   const out = flattenTokens({ fw: { $type: 'fontWeight', bold: { $value: 700 } } });
-  assert.equal(out[0].$type, 'fontWeight');
+  assert.equal(out[0]?.$type, 'fontWeight');
 });
 
 test('handles a top-level leaf token, whose group is its own name', () => {

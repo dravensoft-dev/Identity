@@ -15,7 +15,7 @@ const REFERENCE = /"\$value"\s*:\s*"\{([^}]+)\}"/g;
 
 function referencedGroups(source: string) {
   const text = readFileSync(join(DESIGN, source), 'utf8');
-  return [...text.matchAll(REFERENCE)].map((m) => m[1].split('.')[0]);
+  return [...text.matchAll(REFERENCE)].map((m) => m[1]?.split('.')[0]);
 }
 
 function topLevelGroups(source: string) {

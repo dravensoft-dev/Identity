@@ -127,9 +127,9 @@ test('collectSuites tags each suite with the layer of the directory it came from
   writeFileSync(join(a, 'One.test.tsx'), 'x');
   writeFileSync(join(b, 'Two.test.ts'), 'y');
   const out = collectSuites([{ layer: 'react', dir: a }, { layer: 'angular', dir: b }]);
-  assert.equal(out['One.test.tsx'].layer, 'react');
-  assert.equal(out['Two.test.ts'].layer, 'angular');
-  assert.equal(out['One.test.tsx'].source, 'x');
+  assert.equal(out['One.test.tsx']?.layer, 'react');
+  assert.equal(out['Two.test.ts']?.layer, 'angular');
+  assert.equal(out['One.test.tsx']?.source, 'x');
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -166,7 +166,7 @@ test('a cased binding contributes exactly one inventory row', () => {
     },
   });
   assert.equal(rows.length, 1);
-  assert.deepEqual(rows[0].patterns, ['alert', 'status']);
+  assert.deepEqual(rows[0]?.patterns, ['alert', 'status']);
 });
 
 test('inventoryFrom throws on a binding with no tail', () => {
@@ -193,7 +193,7 @@ test('every COVERED entry names a real suite file and a real binding', () => {
   const suites = collectSuites();
   for (const [key, suiteFile] of Object.entries(COVERED)) {
     assert.ok(suiteFile in suites, `COVERED["${key}"] names ${suiteFile}, which is in no suite directory`);
-    assert.ok(suites[suiteFile].source.includes('.behaviour.json'), `${suiteFile} reads no binding`);
+    assert.ok(suites[suiteFile]?.source.includes('.behaviour.json'), `${suiteFile} reads no binding`);
   }
   assert.ok(existsSync(join(repoRoot, 'frameworks')), 'the suite directories are resolved from the repository root');
 });

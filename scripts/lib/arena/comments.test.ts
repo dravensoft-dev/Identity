@@ -8,15 +8,15 @@ import { findComments, literalRanges, insideLiteral } from './comments.ts';
 test('a line comment is found, with its line number', () => {
   const found = findComments('const a = 1;\n// gone\nconst b = 2;');
   assert.equal(found.length, 1);
-  assert.equal(found[0].line, 2);
-  assert.equal(found[0].text, '// gone');
+  assert.equal(found[0]?.line, 2);
+  assert.equal(found[0]?.text, '// gone');
 });
 
 test('a block comment reports how many lines it spans', () => {
   const found = findComments('/* one\n * two\n * three */\nconst a = 1;');
   assert.equal(found.length, 1);
-  assert.equal(found[0].line, 1);
-  assert.equal(found[0].lines, 3);
+  assert.equal(found[0]?.line, 1);
+  assert.equal(found[0]?.lines, 3);
 });
 
 test('a `//` inside a string literal is not a comment', () => {
@@ -37,7 +37,7 @@ test('a regex literal containing slashes is not a comment', () => {
 test('division is not mistaken for a regex, so the comment after it is still found', () => {
   const found = findComments('const a = 1 / 2; // gone');
   assert.equal(found.length, 1);
-  assert.equal(found[0].text, '// gone');
+  assert.equal(found[0]?.text, '// gone');
 });
 
 test('a `//` inside a template literal is not a comment', () => {
@@ -47,8 +47,8 @@ test('a `//` inside a template literal is not a comment', () => {
 test('a comment inside a template interpolation IS found, at the right line', () => {
   const found = findComments('const t = `a\nb ${x /* here */} c`;');
   assert.equal(found.length, 1);
-  assert.equal(found[0].text, '/* here */');
-  assert.equal(found[0].line, 2);
+  assert.equal(found[0]?.text, '/* here */');
+  assert.equal(found[0]?.line, 2);
 });
 
 test('several comments come back in line order', () => {
@@ -59,7 +59,7 @@ test('several comments come back in line order', () => {
 test('an unterminated block comment is still reported rather than swallowing the file', () => {
   const found = findComments('const a = 1;\n/* never closed');
   assert.equal(found.length, 1);
-  assert.equal(found[0].line, 2);
+  assert.equal(found[0]?.line, 2);
 });
 
 const at = (source: string, needle: string) => source.indexOf(needle);

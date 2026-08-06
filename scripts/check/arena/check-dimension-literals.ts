@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
+import { captured } from '../../lib/arena/captures.ts';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
@@ -92,9 +93,10 @@ export function scanValue(prop: string, rawValue: string) {
 
   const withoutTokens = raw.replace(/var\(\s*--[a-z0-9-]+\s*\)/g, '');
 
-  for (const m of withoutTokens.matchAll(UNIT_LITERAL))
-    if (!FREE_UNITS.includes(m[1]))
-      return { reason: `a raw ${m[1]}, not a token` };
+  for (const m of withoutTokens.matchAll(UNIT_LITERAL)) {
+    const unit = captured(m);
+    if (!FREE_UNITS.includes(unit)) return { reason: `a raw ${unit}, not a token` };
+  }
 
   if (!raw.includes('var(') && BARE_NUMBER.test(raw))
     return { reason: 'a bare number, not a token' };
@@ -143,6 +145,7 @@ export function readValue(text: string, start: number, stopChars: Set<string>) {
   let i = start, depth = 0;
   for (; i < text.length; i++) {
     const c = text[i];
+    if (c === undefined) break;
     if (c === "'" || c === '"' || c === '`') { i = skipString(text, i, c); continue; }
     if (c === '(' || c === '[' || c === '{') { depth++; continue; }
     if (c === ')' || c === ']') { depth--; continue; }
@@ -238,7 +241,7 @@ function scanLeaf(prop: string, leaf: string) {
   const callMatch = CALL_SHAPE.exec(trimmed);
   if (callMatch) {
     const hits = [];
-    for (const arg of splitArgs(callMatch[2])) {
+    for (const arg of splitArgs(captured(callMatch, 2))) {
       const hit = scanValue(prop, arg);
       if (hit) hits.push({ raw: arg, reason: hit.reason });
     }
@@ -262,7 +265,7 @@ const PROP_COLON = /(?<![\w.-])([a-zA-Z]+)\s*:\s*/g;
 function scanColonValues(text: string) {
   const out = [];
   for (const m of text.matchAll(PROP_COLON)) {
-    const prop = m[1];
+    const prop = captured(m);
     if (!PROPS.has(prop)) continue;
     const valueStart = m.index + m[0].length;
     const { text: rawValue } = readValue(text, valueStart, COLON_STOP);
@@ -298,7 +301,7 @@ function localDeclarations(text: string) {
 function scanDataflow(text: string) {
   const bareUsages = new Map();
   for (const m of text.matchAll(PROP_COLON)) {
-    const prop = m[1];
+    const prop = captured(m);
     if (!PROPS.has(prop)) continue;
     const valueStart = m.index + m[0].length;
     const { text: rawValue } = readValue(text, valueStart, COLON_STOP);
@@ -336,14 +339,14 @@ function stringLiteralRuns(text: string) {
     let body = '';
     let j = i;
     for (;;) {
-      const end = skipString(text, j, text[j]);
+      const end = skipString(text, j, text[j] ?? "'");
       body += text.slice(j + 1, end);
       j = end + 1;
       let k = j;
-      while (k < text.length && /\s/.test(text[k])) k++;
+      while (k < text.length && /\s/.test(text[k] ?? '')) k++;
       if (text[k] !== '+') break;
       let m = k + 1;
-      while (m < text.length && /\s/.test(text[m])) m++;
+      while (m < text.length && /\s/.test(text[m] ?? '')) m++;
       if (text[m] !== "'" && text[m] !== '"' && text[m] !== '`') break;
       j = m;
     }
@@ -360,10 +363,11 @@ export function scanInjectedCss(rawText: string) {
     if (!(body.includes('{') && body.includes(':') && /[;}]/.test(body))) continue;
     const line = lineOf(text, index);
     for (const decl of body.matchAll(/(?:^|[{;])\s*([a-z-]+)\s*:\s*([^;}]+)/g)) {
-      const prop = camel(decl[1]);
+      const prop = camel(captured(decl));
       if (!PROPS.has(prop)) continue;
-      const found = scanValue(prop, decl[2].trim());
-      if (found) out.push({ prop, raw: decl[2].trim(), reason: found.reason, line });
+      const raw = captured(decl, 2).trim();
+      const found = scanValue(prop, raw);
+      if (found) out.push({ prop, raw, reason: found.reason, line });
     }
   }
   return out;
@@ -375,7 +379,8 @@ export function scanAttributes(rawText: string) {
   const text = blankComments(rawText);
   const out = [];
   for (const m of text.matchAll(/(?<![\w.-])([a-zA-Z]+)\s*=\s*"([^"]*)"/g)) {
-    const [, prop, value] = m;
+    const prop = captured(m);
+    const value = captured(m, 2);
     if (!SVG_ATTRS.has(prop)) continue;
     const found = scanValue(prop, `'${value}'`);
     if (found) out.push({ prop, raw: value, reason: found.reason, line: lineOf(text, m.index) });
@@ -404,11 +409,13 @@ export function scanDefaultsAndCallSites(rawText: string) {
   const text = blankComments(rawText);
   const out = [];
   for (const fn of text.matchAll(COMPONENT_PARAMS)) {
-    const [, name, params] = fn;
+    const name = captured(fn);
+    const params = captured(fn, 2);
     const paramsStart = fn.index + fn[0].indexOf('{');
     const via = PASSTHROUGH.get(name);
     for (const m of params.matchAll(PARAM_DEFAULT)) {
-      const [, prop, raw] = m;
+      const prop = captured(m);
+      const raw = captured(m, 2);
       const governs = PROPS.has(prop) ? prop : (via && via.prop === prop ? via.governs : null);
       if (!governs) continue;
       const hit = scanValue(governs, raw);
@@ -418,7 +425,7 @@ export function scanDefaultsAndCallSites(rawText: string) {
   for (const [name, via] of PASSTHROUGH) {
     const re = new RegExp(`<${name}\\b[^>]*?\\b${via.prop}\\s*=\\s*\\{([^}]+)\\}`, 'g');
     for (const m of text.matchAll(re)) {
-      const raw = m[1].trim();
+      const raw = captured(m).trim();
       const hit = scanValue(via.governs, raw);
       if (hit) out.push({ prop: via.governs, raw, reason: hit.reason, line: lineOf(text, m.index) });
     }
@@ -429,7 +436,7 @@ export function scanDefaultsAndCallSites(rawText: string) {
 function passthroughSightings(rawText: string) {
   const text = blankComments(rawText);
   const seen = new Set<string>();
-  for (const fn of text.matchAll(COMPONENT_PARAMS)) if (PASSTHROUGH.has(fn[1])) seen.add(fn[1]);
+  for (const fn of text.matchAll(COMPONENT_PARAMS)) if (PASSTHROUGH.has(captured(fn))) seen.add(captured(fn));
   for (const name of PASSTHROUGH.keys())
     if (new RegExp(`<${name}\\b`).test(text)) seen.add(name);
   return seen;

@@ -11,7 +11,7 @@ import {
 const bindingName = (name: string, form: string, layer: string) => {
   if (layer !== 'react') return name;
   if (form === 'slot') return name === 'content' ? 'children' : name;
-  if (form === 'event') return `on${name[0].toUpperCase()}${name.slice(1)}`;
+  if (form === 'event') return `on${name[0]?.toUpperCase()}${name.slice(1)}`;
   return name;
 };
 

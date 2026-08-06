@@ -96,9 +96,9 @@ test('a neutral object carries every field that is required or defaulted, and no
 test('objectFields carries each field\'s options and initial, so one control can draw them all', () => {
   const fields = objectFields(types.ArenaTableSort, types);
   assert.deepEqual(fields.map((f) => f.name), ['column', 'direction']);
-  assert.deepEqual(fields[1].options, ['asc', 'desc']);
-  assert.equal(fields[1].initial, 'asc');
-  assert.equal(fields[0].required, true);
+  assert.deepEqual(fields[1]?.options, ['asc', 'desc']);
+  assert.equal(fields[1]?.initial, 'asc');
+  assert.equal(fields[0]?.required, true);
 });
 
 test('a control and its codec are decided by form and type together', () => {
@@ -194,10 +194,10 @@ test('events are not knobs, and each carries its payload and its write-back targ
   assert.deepEqual(model().knobs.map((k) => k.member).filter((m) => m === 'close'), []);
   const events = model().events;
   assert.deepEqual(events.map((e) => e.name), ['close', 'sortChange']);
-  assert.equal(events[0].payload, null);
-  assert.deepEqual(events[0].bind, { open: false });
-  assert.equal(events[1].payload, 'ArenaTableSort');
-  assert.equal(events[1].bind, 'sort');
+  assert.equal(events[0]?.payload, null);
+  assert.deepEqual(events[0]?.bind, { open: false });
+  assert.equal(events[1]?.payload, 'ArenaTableSort');
+  assert.equal(events[1]?.bind, 'sort');
 });
 
 test('knobs keep contract order, which is the order every reader already sees', () => {

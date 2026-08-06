@@ -293,14 +293,14 @@ test('the real ArenaCalendar binding needs no divergesFrom to agree with React',
 test('a flat binding is one anonymous case', () => {
   const cases = bindingCases({ pattern: 'status', exceptions: [{ requirement: 'roles.label' }] });
   assert.equal(cases.length, 1);
-  assert.equal(cases[0].name, null);
-  assert.equal(cases[0].pattern, 'status');
-  assert.equal(cases[0].exceptions.length, 1);
+  assert.equal(cases[0]?.name, null);
+  assert.equal(cases[0]?.pattern, 'status');
+  assert.equal(cases[0]?.exceptions.length, 1);
 });
 
 test('a flat binding with no exceptions still yields an exceptions array', () => {
 
-  assert.deepEqual(bindingCases({ pattern: 'none' })[0].exceptions, []);
+  assert.deepEqual(bindingCases({ pattern: 'none' })[0]?.exceptions, []);
 });
 
 test('a cased binding yields one entry per case, in order', () => {
@@ -321,7 +321,7 @@ test('a case inherits the binding reason and may override it', () => {
   const [own] = bindingCases({ reason: 'from the binding',
     cases: [{ name: 'a', when: 'x', pattern: 'none', reason: 'its own', exceptions: [] }] });
   assert.equal(own.reason, 'its own');
-  assert.equal(bindingCases({ pattern: 'status' })[0].reason, null);
+  assert.equal(bindingCases({ pattern: 'status' })[0]?.reason, null);
 });
 
 test('a binding declaring both pattern and cases is rejected by validateBinding', () => {

@@ -33,9 +33,9 @@ test('every font the example config names is asked for over the same Google endp
   assert.ok(roles.length > 0, 'the example config names no font at all');
 
   for (const role of roles) {
-    assert.ok(fonts[role].family, `fonts.${role} has no family`);
-    assert.ok(fonts[role].src.startsWith(`${GOOGLE_FONTS}?family=`), `fonts.${role}.src is not a Google Fonts URL`);
-    assert.ok(fonts[role].src.includes(fonts[role].family.replace(/ /g, '+')),
+    assert.ok(fonts[role]?.family, `fonts.${role} has no family`);
+    assert.ok(fonts[role]?.src.startsWith(`${GOOGLE_FONTS}?family=`), `fonts.${role}.src is not a Google Fonts URL`);
+    assert.ok(fonts[role]?.src.includes(fonts[role]?.family.replace(/ /g, '+')),
       `fonts.${role}.src asks for a different family than fonts.${role}.family names`);
   }
 });

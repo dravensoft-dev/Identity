@@ -119,7 +119,7 @@ test('a void event takes no $event and a payload event forwards one', () => {
 });
 
 test('a named slot is wrapped in @if, because a marked element counts as filled even when empty', () => {
-  const out = renderSubject(model, places, [{ node: model.knobs[3].nodes[0], member: 'tone', name: 'f0' }], markerNames(MARKERS), 0, new Set());
+  const out = renderSubject(model, places, [{ node: model.knobs[3]?.nodes[0], member: 'tone', name: 'f0' }], markerNames(MARKERS), 0, new Set());
   assert.match(out, /@if \(k\(\)\.action\) \{/);
   assert.match(out, /<arena-badge action/);
 });

@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { PROJECTS, CHECKED_EXTENSIONS, sourcesUnder, unreachedProblems } from './check-script-types.ts';
 
-const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0].project), 'utf8'));
+const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0]?.project), 'utf8'));
 
 test('the gate names a project that exists', () => {
   for (const { project: path } of PROJECTS)
