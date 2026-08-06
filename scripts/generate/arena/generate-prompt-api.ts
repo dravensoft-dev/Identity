@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { bindingName, normaliseDoc } from '../../lib/arena/api-surface.ts';
+import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 import {
   CONSUMER_LAYERS, componentDir, loadCategories, loadContract, escapeCell,
 } from './generate-skills.ts';
@@ -53,7 +54,7 @@ export function memberRow(name: string, spec, layer: string) {
     defaultCell(spec)} | ${escapeCell(normaliseDoc(spec.description ?? ''))} |`;
 }
 
-export function renderRegion(contract, layer: string) {
+export function renderRegion(contract: ContractCandidate, layer: string) {
   const members = Object.entries(contract.api ?? {});
   const lines = [
     openLine(contract.component),

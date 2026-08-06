@@ -18,6 +18,7 @@ import {
 import { kebab } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
+import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 
 export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };
 
@@ -74,7 +75,7 @@ export function readContract(name: string) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function declaredAffordances(contract, where: string) {
+export function declaredAffordances(contract: ContractCandidate, where: string) {
   if (!Array.isArray(contract.affordances)) {
     throw new Error(
       `check-manifest-states: ${where} declares no \`affordances\` array. Every contract states one, `

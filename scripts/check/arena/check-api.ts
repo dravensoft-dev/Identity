@@ -15,6 +15,7 @@ import {
 import { pascal, readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
+import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 
 const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
@@ -30,7 +31,7 @@ export function zeroContractProblems({ contracts, types }) {
 
 export { bindingName };
 
-export function docProblems(contract, docs, layer: string) {
+export function docProblems(contract: ContractCandidate, docs, layer: string) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
   const wanted = new Map();
@@ -114,7 +115,7 @@ export function validateTypes(types) {
   return problems;
 }
 
-export function validateContract(contract, typeNames) {
+export function validateContract(contract: ContractCandidate, typeNames) {
   const problems = [];
   const where = contract.component ?? '(unnamed)';
   const declared = (name: string, kind) => {
@@ -183,7 +184,7 @@ export function validateContract(contract, typeNames) {
   return problems;
 }
 
-export function compareSurface(contract, members, layer: string, types = new Map()) {
+export function compareSurface(contract: ContractCandidate, members, layer: string, types = new Map()) {
   const problems = [];
   const where = `${layer}/${contract.component}`;
 
@@ -356,7 +357,7 @@ export function reactSourceFor(declarationPath, readFile = readFileSync) {
   return null;
 }
 
-export function reactImplementationProblems(contract, declarationPath, readFile = readFileSync) {
+export function reactImplementationProblems(contract: ContractCandidate, declarationPath, readFile = readFileSync) {
   const where = `react/${contract.component}`;
   const found = reactSourceFor(declarationPath, readFile);
   if (!found) {

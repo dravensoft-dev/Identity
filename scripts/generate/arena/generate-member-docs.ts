@@ -10,6 +10,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { docComment } from './generate-api-types.ts';
 import { normaliseDoc } from '../../lib/arena/api-surface.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
+import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 
 export const MEMBER_START = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
@@ -58,7 +59,7 @@ export function applyDocs(source: string, docs, layer: string) {
   return out.join('\n');
 }
 
-export function docsFor(contract, layer: string, bindingName) {
+export function docsFor(contract: ContractCandidate, layer: string, bindingName) {
   const docs = new Map();
   for (const [name, spec] of memberEntries(contract.api)) {
     if (!spec.description) continue;
