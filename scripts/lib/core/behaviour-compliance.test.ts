@@ -21,8 +21,8 @@ const PATTERNS = new Map(
 function el(tagName: string, attrs: Record<string, unknown> = {}, text = '') {
   return {
     tagName: tagName.toUpperCase(),
-    getAttribute: (n) => (n in attrs ? String(attrs[n]) : null),
-    hasAttribute: (n) => n in attrs,
+    getAttribute: (n: string) => (n in attrs ? String(attrs[n]) : null),
+    hasAttribute: (n: string) => n in attrs,
     textContent: text,
   };
 }

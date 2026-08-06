@@ -315,7 +315,7 @@ const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 
 export const REACT_SURFACE_EXTENSIONS = ['.tsx', '.d.ts'];
 
-export function resolveReactImplementations(tree: Record<string, string[]>, exists) {
+export function resolveReactImplementations(tree: Record<string, string[]>, exists: (path: string) => boolean) {
   const implementations = new Map();
   const problems = [];
   for (const [category, dirs] of Object.entries(tree))
@@ -399,7 +399,7 @@ function reactImplementations() {
   };
 }
 
-export function resolveAngularImplementations(tree: Record<string, string[]>, exists) {
+export function resolveAngularImplementations(tree: Record<string, string[]>, exists: (path: string) => boolean) {
   const implementations = new Map();
   const problems = [];
   for (const [category, dirs] of Object.entries(tree))

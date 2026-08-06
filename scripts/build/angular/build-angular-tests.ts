@@ -85,7 +85,7 @@ function collectEmittedTests(dir: string) {
 }
 
 export function missingEmitProblems(sourceTests, emittedTests, emitDir = relative(repoRoot, EMIT_DIR)) {
-  const emittedStems = new Set(emittedTests.map((f) => f.slice(0, -'.js'.length)));
+  const emittedStems = new Set(emittedTests.map((f: string) => f.slice(0, -'.js'.length)));
   const problems = [];
   for (const src of sourceTests) {
     const stem = src.slice(0, -'.ts'.length);
@@ -132,10 +132,10 @@ export function stalenessReason(inputs, stamped) {
   if (stamped === null) return 'no emit stamp is present, so nothing is known about what was compiled';
   if (inputs.length === 0) return 'no input was found to compare the emit against';
   const compiled = new Set(stamped.paths ?? []);
-  const added = inputs.find((one) => !compiled.has(one.path));
+  const added = inputs.find((one: { path: string }) => !compiled.has(one.path));
   if (added) return `${added.path} was not compiled into the last emit`;
   if (compiled.size !== inputs.length) {
-    const present = new Set(inputs.map((one) => one.path));
+    const present = new Set(inputs.map((one: { path: string }) => one.path));
     return `${[...compiled].find((path) => !present.has(path))} is gone since the last emit`;
   }
   const newestInput = inputs.reduce((a, b) => (b.mtimeMs > a.mtimeMs ? b : a));

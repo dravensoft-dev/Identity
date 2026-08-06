@@ -32,7 +32,7 @@ export function isSource(path: string) {
   return (path.endsWith('.ts') || path.endsWith('.tsx')) && !path.endsWith('.d.ts');
 }
 
-export function distFiles(dir: string, keep, found = []) {
+export function distFiles(dir: string, keep: (path: string) => boolean, found = []) {
   if (!existsSync(dir)) return found;
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);

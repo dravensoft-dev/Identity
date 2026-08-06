@@ -68,7 +68,7 @@ export function splitUtilities(css: string, bases) {
   const shared = (css.slice(0, at) + css.slice(close + 1)).replace(/\n{3,}/g, '\n\n').trim();
 
   const components = new Map();
-  const add = (owner, text: string) => {
+  const add = (owner: string, text: string) => {
     if (!components.has(owner)) components.set(owner, []);
     components.get(owner).push(text);
   };
@@ -105,7 +105,7 @@ export function dedent(text: string) {
     .map((line, i) => (i === 0 ? line : line.slice(shortest))).join('\n');
 }
 
-export function componentSheet(rules, preludeSpecifier) {
+export function componentSheet(rules, preludeSpecifier: string) {
   const body = rules.map((rule) => dedent(rule).replace(/^(?=.)/gm, '  ')).join('\n');
   return `@import '${preludeSpecifier}';\n\n@layer utilities {\n${body}\n}\n`;
 }

@@ -17,7 +17,7 @@ export function themeKeys(css: string) {
   return out;
 }
 
-export function checkCompiled(css: string, manifests: Map<string, ManifestClassSource>, tokens) {
+export function checkCompiled(css: string, manifests: Map<string, ManifestClassSource>, tokens: Set<string>) {
   const errs = [];
 
   if (manifests.size === 0)

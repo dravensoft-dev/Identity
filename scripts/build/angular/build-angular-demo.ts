@@ -65,7 +65,7 @@ export function collectEntries(dir: string) {
 }
 
 export function missingEntryProblems(sourceEntries, emittedEntries, emitDir = relative(repoRoot, EMIT_DIR)) {
-  const emitted = new Set(emittedEntries.map((f) => f.slice(0, -'.js'.length)));
+  const emitted = new Set(emittedEntries.map((f: string) => f.slice(0, -'.js'.length)));
   const problems = [];
   for (const src of sourceEntries) {
     const stem = src.slice(0, -'.ts'.length);

@@ -35,13 +35,13 @@ test('a missing level is reported, not silently skipped', () => {
 });
 
 test('api keeps two vocabulary directories and behaviour keeps none', () => {
-  const isDir = (n) => !n.includes('.');
+  const isDir = (n: string) => !n.includes('.');
   assert.deepEqual(levelProblems('api', ['AGENTS.md', 'MemberForms.md', 'components', 'types'], isDir), []);
   assert.deepEqual(levelProblems('behaviour', ['AGENTS.md', 'button.json', 'none.json'], isDir), []);
 });
 
 test('an unearned inner directory is a problem, and the message says why', () => {
-  const isDir = (n) => n === 'patterns';
+  const isDir = (n: string) => n === 'patterns';
   const problems = levelProblems('behaviour', ['AGENTS.md', 'patterns'], isDir);
   assert.equal(problems.length, 1);
   assert.match(problems[0], /is an inner directory contracts\/AGENTS\.md does not declare/);

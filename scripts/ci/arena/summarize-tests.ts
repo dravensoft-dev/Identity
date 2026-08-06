@@ -86,7 +86,7 @@ export function coverageProblems(counted, expectedDomains, roots = EXPECTED_ROOT
     }
   }
   for (const root of roots) {
-    if (!counted.files.some((f) => String(f).includes(root))) {
+    if (!counted.files.some((f: string) => String(f).includes(root))) {
       problems.push(`no case came from ${root}, so that tree was never opened by this run`);
     }
   }

@@ -41,7 +41,7 @@ function resolvePercent(name: string, seen = new Set()) {
 const hex2rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const rgb2hex = (rgb) => '#' + rgb.map((c) => Math.round(c).toString(16).padStart(2, '0')).join('');
 
-const composite = (fg, bg, percent) => {
+const composite = (fg: string, bg: string, percent: number) => {
   const [f, b, a] = [hex2rgb(fg), hex2rgb(bg), percent / 100];
   return rgb2hex(f.map((c, i) => c * a + b[i] * (1 - a)));
 };
@@ -68,7 +68,7 @@ function oklabToHex([L, a, b]: number[]) {
   ].map((c) => lin2s(c) * 255);
   return rgb2hex(rgb);
 }
-const darkenOklab = (hex: string, keep) => oklabToHex(toOklab(hex).map((v) => v * keep));
+const darkenOklab = (hex: string, keep: number) => oklabToHex(toOklab(hex).map((v) => v * keep));
 
 const LEVELS = [
   { token: 'text-strong', gate: 4.5, note: 'body text' },

@@ -27,7 +27,7 @@ test('the two surfaces agree today, and padding differing is not a problem', () 
 
 test('a radius changed on one side is caught, which is the scenario the record predicted', () => {
   const drifted = { ...CARD, slots: { root: CARD.slots.root.replace('rounded-lg', 'rounded-md') } };
-  const problems = parityProblems(PAIRS, (f) => (f.includes('card/ArenaCard') ? drifted : UNAUTH));
+  const problems = parityProblems(PAIRS, (f: string) => (f.includes('card/ArenaCard') ? drifted : UNAUTH));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /rounded-lg/);
   assert.match(problems[0], /rounded-md/);
@@ -35,7 +35,7 @@ test('a radius changed on one side is caught, which is the scenario the record p
 
 test('a side with no surface class at all fails rather than comparing nothing', () => {
   const empty = { slots: { root: 'block overflow-hidden' }, variants: {} };
-  const problems = parityProblems(PAIRS, (f) => (f.includes('card/ArenaCard') ? empty : UNAUTH));
+  const problems = parityProblems(PAIRS, (f: string) => (f.includes('card/ArenaCard') ? empty : UNAUTH));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /compared nothing/);
 });

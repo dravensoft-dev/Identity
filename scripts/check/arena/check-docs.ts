@@ -48,7 +48,7 @@ export const READ_DESPITE_THE_DOT = new Set(['.gitkeep', '.github']);
 
 export { emittedTree };
 
-function walk(dir: string, keep, emitted): string[] {
+function walk(dir: string, keep: (path: string) => boolean, emitted: string): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.') && !READ_DESPITE_THE_DOT.has(entry.name)) continue;
@@ -65,7 +65,7 @@ function walk(dir: string, keep, emitted): string[] {
 
 export const SHEBANG = /^#![^\n]*\n/;
 
-function startsFile(source: string, comment) {
+function startsFile(source: string, comment: { text: string }) {
   return source.slice(0, source.indexOf(comment.text)).replace(SHEBANG, '').trim() === '';
 }
 

@@ -48,7 +48,7 @@ export function excluded(name: string) {
   return EXCLUDED_NAMES.has(name) || EXCLUDED_PATTERNS.some((p) => p.test(name));
 }
 
-export function collectFiles(dir: string, keep = (_file) => true) {
+export function collectFiles(dir: string, keep: (path: string) => boolean = () => true) {
   const found: string[] = [];
   const walk = (current: string) => {
     for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
@@ -81,7 +81,7 @@ export function copy(from: string, dir: string, rel: string) {
   return full;
 }
 
-export function copyTree(from: string, dir: string, rel: string, keep?) {
+export function copyTree(from: string, dir: string, rel: string, keep?: (path: string) => boolean) {
   const written = [];
   for (const file of collectFiles(from, keep)) {
     written.push(copy(file, dir, join(rel, relative(from, file))));

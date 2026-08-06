@@ -11,7 +11,7 @@ import { repoRoot } from '../arena/repo-root.ts';
 const GENERATED = ['palette.generated.css', 'typography.generated.css', 'spacing.generated.css', 'effects.generated.css'];
 
 export function arenaTokens(root = repoRoot) {
-  const names = new Set();
+  const names = new Set<string>();
   for (const f of GENERATED)
     for (const decls of parseDecls(readFileSync(join(root, 'contracts', 'design-generated', f), 'utf8')).values())
       for (const name of decls.keys()) names.add(name);
@@ -19,7 +19,7 @@ export function arenaTokens(root = repoRoot) {
 }
 
 export function referencedTokens(css: string) {
-  const out = new Set();
+  const out = new Set<string>();
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   for (const m of stripped.matchAll(/var\(\s*--([a-z0-9-]+)\s*[,)]/g)) out.add(m[1]);
   return out;

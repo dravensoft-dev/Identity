@@ -129,7 +129,7 @@ function walk(dir: string, root: string): string[] {
   return found;
 }
 
-function startsFile(source: string, comment) {
+function startsFile(source: string, comment: { text: string }) {
   return source.slice(0, source.indexOf(comment.text)).trim() === '';
 }
 

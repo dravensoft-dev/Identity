@@ -96,7 +96,7 @@ export function writeMemberDocs({
   return written;
 }
 
-export function componentSources(resolveReact, resolveAngular, readLayer, exists) {
+export function componentSources(resolveReact, resolveAngular, readLayer, exists: (path: string) => boolean) {
   const react = resolveReact(readLayer('react'), exists).implementations;
   const angular = resolveAngular(readLayer('angular'), exists).implementations;
   const sources = new Map();

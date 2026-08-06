@@ -98,7 +98,7 @@ function main() {
       continue;
     }
     counted += names.length;
-    problems.push(...levelProblems(level, names, (n) => statSync(join(base, level, n)).isDirectory()));
+    problems.push(...levelProblems(level, names, (n: string) => statSync(join(base, level, n)).isDirectory()));
   }
   let generated: string[] = [];
   try {

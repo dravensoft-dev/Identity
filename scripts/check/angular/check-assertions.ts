@@ -72,7 +72,7 @@ export function suiteFiles(
   return found.sort();
 }
 
-export function assertionProblems(files: string[], read) {
+export function assertionProblems(files: string[], read: (path: string) => string) {
   const problems = [];
   for (const file of files) {
     const source = read(file);

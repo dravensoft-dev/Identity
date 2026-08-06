@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { buildBarrel, ROOT_PRIVATE } from '../../build/react/build-react-barrel.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-export function driftProblems(files: Map<string, string>, read) {
+export function driftProblems(files: Map<string, string>, read: (path: string) => string) {
   const problems = [];
   for (const [rel, expected] of files) {
     let actual;

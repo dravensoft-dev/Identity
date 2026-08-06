@@ -76,7 +76,7 @@ export function paletteEquivalenceProblems(generatedCss, cliCss) {
   return { problems, compared };
 }
 
-export function manifestProblems(pkg, manifest: PackageManifest, version) {
+export function manifestProblems(pkg: { layer: string; name: string }, manifest: PackageManifest, version) {
   const problems = [];
   const at = pkg.name;
 
@@ -128,7 +128,7 @@ export function globMatches(target: string, dir: string) {
   return found;
 }
 
-export function exportProblems(pkg, manifest: PackageManifest, dir: string) {
+export function exportProblems(pkg: { layer: string; name: string }, manifest: PackageManifest, dir: string) {
   const problems = [];
   const targets = exportTargets(manifest.exports ?? {});
   if (targets.length === 0) problems.push(`${pkg.name}: no exports target resolves to a file, so the package exposes nothing`);
@@ -154,7 +154,7 @@ export function exportProblems(pkg, manifest: PackageManifest, dir: string) {
   return problems;
 }
 
-export function componentMapProblems(pkg, dir: string) {
+export function componentMapProblems(pkg: { layer: string; name: string }, dir: string) {
   const at = join(dir, MAP_FILE);
   if (!existsSync(at)) {
     return [`${pkg.name}: no ${MAP_FILE}, so "components": "auto" has nothing to resolve a template against`];
@@ -188,7 +188,7 @@ export function importsIn(css: string) {
   return [...css.matchAll(RELATIVE_IMPORT)].map((match) => match[1]);
 }
 
-export function styleProblems(pkg, dir: string) {
+export function styleProblems(pkg: { layer: string; name: string }, dir: string) {
   const problems = [];
   const seen = new Set();
   const queue = ['arena.css'];

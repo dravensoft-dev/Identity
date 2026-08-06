@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { TRAPS, FOCUSABLE, walkProblems } from './check-focus-trap.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
-const inside = (n) => Array.from({ length: n }, (_, i) => ({ press: i + 1, inside: true }));
+const inside = (n: number) => Array.from({ length: n }, (_, i) => ({ press: i + 1, inside: true }));
 
 test('every natively-focusable clause carries its own :not([tabindex="-1"])', () => {
   for (const clause of FOCUSABLE.split(', ')) {

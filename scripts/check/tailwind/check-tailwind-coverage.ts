@@ -59,7 +59,7 @@ export const EXCLUDED = new Map([
 ]);
 
 export function presetTokens(css: string) {
-  const out = new Set();
+  const out = new Set<string>();
   const m = css.match(/@theme\s*\{([\s\S]*)\}/);
   if (!m) return out;
 
@@ -76,7 +76,7 @@ export function presetTokens(css: string) {
   return out;
 }
 
-export function checkCoverage(tokens, exposed, excluded) {
+export function checkCoverage(tokens: Set<string>, exposed: Set<string>, excluded) {
   const errs = [];
   for (const t of [...tokens].sort()) {
     const isExposed = exposed.has(t);

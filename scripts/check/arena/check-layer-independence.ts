@@ -74,7 +74,7 @@ export function foreignTokens(layer: string) {
   return FORBIDDEN[layer].flatMap((other) => LAYER_TOKENS[other].map(([token, re]) => ({ other, token, re })));
 }
 
-export function textualHits(text: string, tokens) {
+export function textualHits(text: string, tokens: ReturnType<typeof foreignTokens>) {
   const hits = [];
   const lines = text.split('\n');
   for (const [index, line] of lines.entries())

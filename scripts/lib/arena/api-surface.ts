@@ -5,7 +5,7 @@
  * carve-out tests only a literal's FIRST member. A quote-aware scanner is a larger change. */
 
 export class UnrecognisedShape extends Error {
-  constructor(message) { super(message); this.name = 'UnrecognisedShape'; }
+  constructor(message: string) { super(message); this.name = 'UnrecognisedShape'; }
 }
 
 const PRIMITIVES = new Set(['string', 'number', 'boolean']);
@@ -17,7 +17,7 @@ export function bindingName(name: string, form: string, layer: string) {
   return name;
 }
 
-const isConsumerData = (ts) => ts.trim().replace(/\s+/g, ' ') === 'Record<string, unknown>';
+const isConsumerData = (ts: string) => ts.trim().replace(/\s+/g, ' ') === 'Record<string, unknown>';
 
 export const PLATFORM_TYPES = [
   'React.CSSProperties', 'CSSProperties',
@@ -25,7 +25,7 @@ export const PLATFORM_TYPES = [
   'DOMRect', 'MouseEvent', 'Event', 'HTMLElement', 'unknown', 'any', 'object',
 ];
 
-function wrapsWhole(ts) {
+function wrapsWhole(ts: string) {
   let depth = 0;
   for (let i = 0; i < ts.length; i += 1) {
     if (ts[i] === '(') depth += 1;
@@ -145,7 +145,7 @@ export function classify(raw: string): { form: string; [detail: string]: any } {
   throw new UnrecognisedShape(`unreadable type annotation: ${ts}`);
 }
 
-export function braceBody(source: string, openIndex, open = '{', close = '}') {
+export function braceBody(source: string, openIndex: number, open = '{', close = '}') {
   let depth = 0;
   for (let i = openIndex; i < source.length; i += 1) {
     if (source[i] === open) depth += 1;
@@ -161,7 +161,7 @@ function stripComments(text: string) {
   return text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
 
-function splitTopLevel(text: string, sep, { brackets = '(){}[]<>', closeBrace = false } = {}) {
+function splitTopLevel(text: string, sep: string, { brackets = '(){}[]<>', closeBrace = false } = {}) {
   const parts = [];
   const stack = [];
   let current = '';
@@ -209,7 +209,7 @@ export function memberDocs(body: string) {
   return docs;
 }
 
-export function reactSurface(source: string, interfaceName) {
+export function reactSurface(source: string, interfaceName: string) {
   const decl = new RegExp(`export\\s+interface\\s+${interfaceName}\\b([^{]*)\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export interface ${interfaceName}" in this source`);
   const heritage = /extends\s+([^{]+)/.exec(decl[1]);
@@ -221,7 +221,7 @@ export function reactSurface(source: string, interfaceName) {
   };
 }
 
-export function reactImplementation(source: string, componentName) {
+export function reactImplementation(source: string, componentName: string) {
   const decl = new RegExp(`(?:export\\s+)?function\\s+${componentName}\\s*\\(`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "function ${componentName}(" in this source -- neither a bare export nor a forwardRef wrapper`);
   const afterParen = source.slice(decl.index + decl[0].length);
@@ -291,7 +291,7 @@ export const IMPERATIVE_HANDLES = new Map([
     + 'the caller expects to be replaced is one keystroke short of useful without it.'],
 ]);
 
-export function angularSurface(source: string, className) {
+export function angularSurface(source: string, className: string) {
   const decl = new RegExp(`export\\s+class\\s+${className}\\b[^{]*\\{`).exec(source);
   if (!decl) throw new UnrecognisedShape(`no "export class ${className}" in this source`);
   const body = braceBody(source, decl.index + decl[0].length - 1);
@@ -325,7 +325,7 @@ export function angularSurface(source: string, className) {
   return { members: [...members, ...templateSlots(componentTemplate(source))], docs: memberDocs(body) };
 }
 
-function classMember(name: string, initialiser) {
+function classMember(name: string, initialiser: string) {
   const init = initialiser.trim();
   const generic = /^(input|output|model)(\.required)?\s*<([\s\S]*)>\s*\(([\s\S]*)\)$/.exec(init);
   if (generic) {
@@ -354,7 +354,7 @@ function classMember(name: string, initialiser) {
   throw new UnrecognisedShape(`unreadable member initialiser for "${name}": ${init}`);
 }
 
-function literalType(arg, name: string) {
+function literalType(arg: string, name: string) {
   if (/^'[^']*'$/.test(arg) || /^"[^"]*"$/.test(arg)) return 'string';
   if (/^-?\d+(\.\d+)?$/.test(arg)) return 'number';
   if (arg === 'true' || arg === 'false') return 'boolean';
