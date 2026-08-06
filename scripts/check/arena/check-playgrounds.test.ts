@@ -7,8 +7,9 @@ import {
   pagePaths, smokeProblems, READY, SMOKE_READY_MS, SMOKE_GRACE_MS,
 } from './check-playgrounds.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+import type { ComponentContract, TypeContract } from '../../lib/arena/contract-shapes.ts';
 
-const types = new Map([
+const types = new Map<string, TypeContract>([
   ['ArenaTone', { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] }],
   ['ArenaSortDirection', { name: 'ArenaSortDirection', kind: 'enum', values: ['asc', 'desc'] }],
   ['ArenaTableSort', {
@@ -26,7 +27,7 @@ const types = new Map([
   }],
 ]);
 
-const widget = {
+const widget: ComponentContract = {
   component: 'Widget',
   description: 'A widget.',
   affordances: [],
@@ -43,12 +44,12 @@ const widget = {
   },
 };
 
-const badge = {
+const badge: ComponentContract = {
   component: 'ArenaBadge',
   api: { content: { form: 'slot', description: 'The label.' }, tone: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The tone.' } },
 };
 
-const contracts = new Map([['Widget', widget], ['ArenaBadge', badge]]);
+const contracts = new Map<string, ComponentContract>([['Widget', widget], ['ArenaBadge', badge]]);
 
 const ok = {
   component: 'Widget',
@@ -67,7 +68,7 @@ test('an empty contract set and an empty fixture set are failures, not clean pas
 });
 
 test('coverage is bidirectional: a contract with no fixture and a fixture with no contract both fail', () => {
-  const problems = coverageProblems(new Map([['A', {}]]), new Map([['B', {}]]));
+  const problems = coverageProblems(new Map([['A', {}]]) as any, new Map([['B', {}]]) as any);
   assert.match(problems[0], /A: contracted but frameworks\/demos\/A\.demo\.json does not exist/);
   assert.match(problems[1], /B\.demo\.json: no contract named B/);
 });

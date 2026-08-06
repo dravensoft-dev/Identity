@@ -21,6 +21,11 @@ import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.ts';
 import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.ts';
 import { memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
+import type { ComponentContract, MemberSpec, TypeContract } from '../../lib/arena/contract-shapes.ts';
+import type { Fixture, FixtureChild } from '../../lib/arena/playground-model.ts';
+
+type Contracts = Map<string, ComponentContract>;
+type Types = Map<string, TypeContract>;
 
 export const FIXTURE_DIR = 'frameworks/demos';
 export const FIXTURE_SUFFIX = '.demo.json';
@@ -31,9 +36,9 @@ export function loadJson(path: string) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function loadTypes(base = root) {
+export function loadTypes(base = root): Types {
   const dir = join(base, 'contracts/api/types');
-  const out = new Map();
+  const out: Types = new Map();
   for (const file of readdirSync(dir).sort()) {
     if (!file.endsWith('.json')) continue;
     const type = loadJson(join(dir, file));
@@ -42,9 +47,9 @@ export function loadTypes(base = root) {
   return out;
 }
 
-export function loadContracts(base = root) {
+export function loadContracts(base = root): Contracts {
   const dir = join(base, 'contracts/api/components');
-  const out = new Map();
+  const out: Contracts = new Map();
   for (const file of readdirSync(dir).sort()) {
     if (!file.endsWith('.json')) continue;
     out.set(file.replace(/\.json$/, ''), loadJson(join(dir, file)));
@@ -63,8 +68,8 @@ export function loadFixtures(base = root) {
   return out;
 }
 
-export function coverageProblems(contracts, fixtures) {
-  const problems = [];
+export function coverageProblems(contracts: Contracts, fixtures: Map<string, Fixture>) {
+  const problems: string[] = [];
   if (contracts.size === 0)
     problems.push('found 0 contracts in contracts/api/components — an empty result set is a failure, not a clean pass; check the discovery path');
   if (fixtures.size === 0)
@@ -76,14 +81,14 @@ export function coverageProblems(contracts, fixtures) {
   return problems;
 }
 
-export function valueProblems(where, spec, value, types) {
+export function valueProblems(where: string, spec: MemberSpec, value: unknown, types: Types): string[] {
   const kind = spec.form;
   if (kind === 'primitive') {
     return typeof value === spec.type ? [] : [`${where}: declares ${spec.type} and the fixture holds ${typeof value}`];
   }
   if (kind === 'enum') {
-    const values = types.get(spec.type)?.values ?? [];
-    return values.includes(value) ? [] : [`${where}: ${JSON.stringify(value)} is not one of ${spec.type}'s ${JSON.stringify(values)}`];
+    const values: string[] = types.get(spec.type)?.values ?? [];
+    return values.includes(value as string) ? [] : [`${where}: ${JSON.stringify(value)} is not one of ${spec.type}'s ${JSON.stringify(values)}`];
   }
   if (kind === 'array') {
     if (!Array.isArray(value)) return [`${where}: declares an array and the fixture holds ${typeof value}`];
@@ -99,7 +104,7 @@ export function valueProblems(where, spec, value, types) {
   return [`${where}: form ${kind} takes no seed`];
 }
 
-export function objectProblems(where, typeName, value, types) {
+export function objectProblems(where: string, typeName: string, value: unknown, types: Types): string[] {
   const type = types.get(typeName);
   if (!type) return [`${where}: no type named ${typeName} is declared in contracts/api/types`];
   if (value === null || typeof value !== 'object' || Array.isArray(value))
@@ -115,7 +120,8 @@ export function objectProblems(where, typeName, value, types) {
   return problems;
 }
 
-export function seedProblems(name: string, contract, fixture, types) {
+export function seedProblems(name: string, contract: ComponentContract,
+  fixture: Pick<Fixture, 'seed'>, types: Types) {
   const api = contract.api ?? {};
   const seed = fixture.seed ?? {};
   const problems = [];
@@ -133,7 +139,8 @@ export function seedProblems(name: string, contract, fixture, types) {
   return problems;
 }
 
-export function nodeProblems(where, node, contracts, types, { allowSubject }) {
+export function nodeProblems(where: string, node: FixtureChild, contracts: Contracts, types: Types,
+  { allowSubject }: { allowSubject?: boolean }): string[] {
   if (node === SUBJECT) {
     return allowSubject ? [] : [`${where}: "${SUBJECT}" marks where the component under test goes and belongs in a host, nowhere else`];
   }
@@ -172,12 +179,14 @@ export function nodeProblems(where, node, contracts, types, { allowSubject }) {
   return problems;
 }
 
-export function listProblems(where, list, contracts, types, options) {
+export function listProblems(where: string, list: FixtureChild[], contracts: Contracts, types: Types,
+  options: { allowSubject?: boolean }): string[] {
   if (!Array.isArray(list)) return [`${where}: a slot holds a list of nodes and this is ${typeof list}`];
   return list.flatMap((node, i) => nodeProblems(`${where}[${i}]`, node, contracts, types, options));
 }
 
-export function slotProblems(name: string, contract, fixture, contracts, types) {
+export function slotProblems(name: string, contract: ComponentContract,
+  fixture: Pick<Fixture, 'slots'>, contracts: Contracts, types: Types) {
   const api = contract.api ?? {};
   const problems = [];
   for (const [slot, list] of Object.entries(fixture.slots ?? {})) {
@@ -190,7 +199,9 @@ export function slotProblems(name: string, contract, fixture, contracts, types) 
   return problems;
 }
 
-export function knobTarget(contract, target) {
+export function knobTarget(contract: Pick<ComponentContract, 'api'>, target: string): {
+  spec?: MemberSpec | null; problem?: string; member?: string; field?: string; objectType?: string;
+} {
   const [member, field] = String(target).split('.');
   const spec = contract.api?.[member];
   if (!spec) return { problem: `names ${member}, which the contract does not declare` };
@@ -199,7 +210,8 @@ export function knobTarget(contract, target) {
   return { spec: null, member, field, objectType: spec.type };
 }
 
-export function bindProblems(name: string, contract, fixture, types) {
+export function bindProblems(name: string, contract: Pick<ComponentContract, 'api'>,
+  fixture: Pick<Fixture, 'bind'>, types: Types) {
   const api = contract.api ?? {};
   const problems = [];
   for (const [event, target] of Object.entries(fixture.bind ?? {})) {
@@ -238,13 +250,14 @@ export function bindProblems(name: string, contract, fixture, types) {
   return problems;
 }
 
-export function hostProblems(name: string, fixture, contracts, types) {
+export function hostProblems(name: string, fixture: Pick<Fixture, 'host'> & { component?: string },
+  contracts: Contracts, types: Types) {
   if (!('host' in fixture) || fixture.host === null) return [];
   return nodeProblems(`${name}.host`, fixture.host, contracts, types, { allowSubject: true });
 }
 
-export function shapeProblems(name: string, fixture) {
-  const problems = [];
+export function shapeProblems(name: string, fixture: Fixture & Record<string, unknown>) {
+  const problems: string[] = [];
   if (fixture.component !== name)
     problems.push(`${name}${FIXTURE_SUFFIX}: declares component "${fixture.component}", and the file name says ${name}`);
   const known = ['component', 'seed', 'slots', 'bind', 'host', 'note'];
@@ -253,7 +266,8 @@ export function shapeProblems(name: string, fixture) {
   return problems;
 }
 
-export function fixtureProblems(name: string, contract, fixture, contracts, types) {
+export function fixtureProblems(name: string, contract: ComponentContract, fixture: Fixture,
+  contracts: Contracts, types: Types) {
   const problems = [
     ...shapeProblems(name, fixture),
     ...seedProblems(name, contract, fixture, types),
@@ -302,8 +316,8 @@ export function modelLiteral(source: string) {
   return source.slice(start, source.lastIndexOf('\n};', start === -1 ? 0 : source.length) + 2);
 }
 
-export function modelParityProblems(files) {
-  const byComponent = new Map();
+export function modelParityProblems(files: Map<string, string>) {
+  const byComponent = new Map<string, [string, string | null][]>();
   for (const [rel, body] of files) {
     const match = /\/(\w+)\.demo\.entry\.generated\.tsx?$/.exec(rel);
     if (!match) continue;
@@ -344,7 +358,7 @@ export function basenameIndex(base = root) {
 }
 
 export function* citingFiles(base = root) {
-  const walk = function* (dir: string) {
+  const walk = function* (dir: string): Generator<string> {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir).sort()) {
       if (entry === 'node_modules' || entry === 'dist' || entry === 'build' || entry === 'vendor') continue;
@@ -397,8 +411,11 @@ export function pagePaths(base = root, files = buildPlaygrounds(base).files) {
   return [...files.keys()].filter((rel) => rel.endsWith('.demo.generated.html')).sort();
 }
 
-export function smokeProblems(page: string, seen) {
-  const problems = [];
+export function smokeProblems(page: string, seen: {
+  mounted?: boolean; knobs?: number; staged?: boolean;
+  undefinedClasses?: string[]; errors: string[];
+}) {
+  const problems: string[] = [];
   if (!seen.mounted) {
     problems.push(`${page}: mounted nothing — run bun run build first, since a page loads a generated sibling`);
     return problems;
@@ -455,7 +472,7 @@ const WATCH = "window.__arenaErrors=[];"
   + "const ce=console.error;console.error=(...a)=>{"
   + "window.__arenaErrors.push('console.error: '+a.map(String).join(' ').slice(0,200));ce(...a);};";
 
-async function visit(cdp, url, page: string) {
+async function visit(cdp: any, url: string, page: string) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   try {
     const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
@@ -463,7 +480,7 @@ async function visit(cdp, url, page: string) {
     await cdp.send('Runtime.enable', {}, sessionId);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: WATCH }, sessionId);
     await cdp.send('Page.navigate', { url }, sessionId);
-    const ev = (expression) => cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
+    const ev = (expression: string) => cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
     await ev(READY);
     return smokeProblems(page, (await ev(PROBE)).result.value);
   } finally {
@@ -471,11 +488,11 @@ async function visit(cdp, url, page: string) {
   }
 }
 
-async function smoke(pages) {
+async function smoke(pages: string[]) {
   const server = await startStaticServer(root);
   const chrome = await launchChromium(findChromium().path);
   const cdp = await connect(chrome.wsUrl);
-  const problems = [];
+  const problems: string[] = [];
   try {
     const queue = [...pages];
     const workers = Array.from({ length: Math.min(SMOKE_CONCURRENCY, queue.length) }, async () => {
@@ -491,7 +508,7 @@ async function smoke(pages) {
   return problems.sort();
 }
 
-function skip(reason) {
+function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-playgrounds: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   process.exit(code);
@@ -510,7 +527,7 @@ async function main() {
   problems.push(...emissionProblems());
   problems.push(...citationProblems());
 
-  const report = (found) => {
+  const report = (found: string[]) => {
     console.error(`check-playgrounds: ${found.length} problem(s)\n`);
     for (const one of found) console.error(`  ${one}`);
     process.exit(1);

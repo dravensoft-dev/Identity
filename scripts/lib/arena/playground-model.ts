@@ -1,13 +1,13 @@
-/* Derives a component's playground from its API contract and its fixture, and names what
- * it derives, so the two layer renderers read a shape rather than infer one. Pure and
- * layer-neutral: it is the ONLY place a member's knob, initial state and URL codec are
- * decided. A form it cannot model THROWS rather than dropping the member, since a member
- * missing by accident and one missing by design look identical on a page. The bind classes
- * are not cosmetic: an Angular input() bound to undefined holds undefined rather than
- * falling back, so a member carrying a default may never unbind. A seed is what the fixture
- * CHOSE, so it binds and outranks a contract default. A Control's fields vary by form, so
- * it is spread into a Knob and stays open; a slot list holds nodes, and a HOST's may also
- * hold $subject, which wrap() answers before any renderer recurses. */
+/* Derives a component's playground from its API contract and its Fixture -- one
+ * frameworks/demos/<Name>.demo.json, which check:playgrounds validates -- and names what it
+ * derives, so the two renderers read a shape rather than infer one. It is the ONLY place a
+ * member's knob, initial state and URL codec are decided. A form it cannot model THROWS
+ * rather than dropping the member, since one missing by accident and one missing by design
+ * look identical on a page. The bind classes are not cosmetic: an Angular input() bound to
+ * undefined holds undefined rather than falling back, so a member carrying a default may
+ * never unbind, and a seed outranks a contract default. A Control's fields vary by form, so
+ * it spreads into a Knob; a slot list holds nodes and a HOST's may also hold $subject,
+ * which wrap() answers before any renderer recurses. */
 import { memberEntries, fieldEntries } from './contract-shapes.ts';
 
 
@@ -58,6 +58,15 @@ export type FixtureNode = {
 };
 
 export type FixtureChild = FixtureNode | typeof SUBJECT | null;
+
+export type Fixture = {
+  component: string;
+  note?: string;
+  seed?: Record<string, any>;
+  slots?: Record<string, FixtureChild[]>;
+  bind?: Record<string, any>;
+  host?: FixtureChild;
+};
 
 export type Place = { name: string; category: string; dir: string; self?: boolean };
 
