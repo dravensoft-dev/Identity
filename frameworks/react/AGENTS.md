@@ -198,7 +198,7 @@ what covers it: real Chromium over each declared page, one real Tab press per st
   that page is `index.html`, which is the name an HTTP directory index is answered by. Renaming
   the pair would stop serving the app at `/frameworks/react/ui-kits/console/`.
 - `vendor/`: a generated CommonJS→ESM bundle of React for the demo pages'
-  importmap (`build-vendor.mjs`, guarded by `check:vendor`).
+  importmap (`build-vendor.ts`, guarded by `check:vendor`).
 - `test/`: the harness (`Harness.tsx`, `Preload.js`, `AssertPattern.tsx`) and the suites
   that belong to no one component.
 

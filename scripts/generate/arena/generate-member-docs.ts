@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import { docComment } from './generate-api-types.mjs';
 import { normaliseDoc } from '../../lib/arena/api-surface.mjs';
+import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 
 export const MEMBER_START = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
@@ -59,17 +60,22 @@ export function applyDocs(source, docs, layer) {
 
 export function docsFor(contract, layer, bindingName) {
   const docs = new Map();
-  for (const [name, spec] of Object.entries(contract.api ?? {})) {
+  for (const [name, spec] of memberEntries(contract.api)) {
     if (!spec.description) continue;
     docs.set(bindingName(name, spec.form, layer), normaliseDoc(spec.description));
   }
   return docs;
 }
 
-export function writeMemberDocs({ contracts, sources, bindingName, read = readFileSync, write = writeFileSync }) {
+export function writeMemberDocs({
+  contracts, sources, bindingName,
+  read = readFileSync as (path: string, encoding: string) => string,
+  write = writeFileSync as (path: string, text: string) => void,
+}) {
   const written = [];
   for (const contract of contracts) {
-    for (const [layer, path] of Object.entries(sources.get(contract.component) ?? {})) {
+    const perLayer = Object.entries(sources.get(contract.component) ?? {}) as [string, string][];
+    for (const [layer, path] of perLayer) {
       if (!path) continue;
       const before = read(path, 'utf8');
       const after = applyDocs(before, docsFor(contract, layer, bindingName), layer);

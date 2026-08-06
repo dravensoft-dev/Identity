@@ -89,7 +89,7 @@ jobs:
             exit 0
           fi
 
-          mapfile -t SPECS < <(bun scripts/ci/arena/package-inputs.mjs "$LAYER")
+          mapfile -t SPECS < <(bun scripts/ci/arena/package-inputs.ts "$LAYER")
           CHANGED=$(git diff --name-only "v$PUBLISHED..HEAD" -- "${SPECS[@]}")
 
           if [ -z "$CHANGED" ]; then

@@ -33,7 +33,7 @@ jobs:
       - id: layers
         run: |
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
-            | bun scripts/ci/arena/changed-layers.mjs >> "$GITHUB_OUTPUT"
+            | bun scripts/ci/arena/changed-layers.ts >> "$GITHUB_OUTPUT"
 
   build:
     name: build

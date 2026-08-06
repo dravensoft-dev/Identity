@@ -187,7 +187,7 @@ because it was not always true: a `.variants.ts` used to import a Tailwind manif
 directories up, which ng-packagr refuses, since it infers `rootDir` from the entry file's
 directory. A component composes its own class names now, from a table emitted beside it, so
 nothing reaches out and the staging tree is a compiler's requirement rather than the shape of a
-coupling. `build-angular-package.mjs` fails on a staging run that copies zero files, so a layer
+coupling. `build-angular-package.ts` fails on a staging run that copies zero files, so a layer
 that moved is loud rather than silently empty.
 
 ### What never ships
@@ -264,7 +264,7 @@ published quietly.
 
 **A package is published only when something it carries has moved.** The workflow asks
 whether `plugin.json`'s version is already on the registry, and if it is not, whether
-anything in `scripts/ci/arena/package-inputs.mjs` has changed since the tag of the version
+anything in `scripts/ci/arena/package-inputs.ts` has changed since the tag of the version
 that is. So a release touching only React publishes only React, and the Angular package
 keeps its number rather than shipping an identical tree under a new one. That is why the two
 packages can sit at different versions, and both `PACKAGE.md` files point a reader at

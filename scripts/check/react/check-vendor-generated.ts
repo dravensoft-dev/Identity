@@ -14,7 +14,7 @@ function skip(reason) {
 async function main() {
   if (!process.versions.bun) skip('Bun.build is Bun-only, and this is not running under Bun');
 
-  const { buildVendor } = await import('../../build/react/build-vendor.mjs');
+  const { buildVendor } = await import('../../build/react/build-vendor.ts');
   const built = await buildVendor({ root });
   const drift = [];
 

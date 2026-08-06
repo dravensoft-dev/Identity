@@ -50,7 +50,7 @@ export function renderOutputs(changed) {
     .join('\n');
 }
 
-export function unroutedLayers(inputs = LAYER_INPUTS, layers = LAYERS) {
+export function unroutedLayers(inputs: Record<string, unknown> = LAYER_INPUTS, layers = LAYERS) {
   return layers.filter((layer) => !(layer in inputs));
 }
 

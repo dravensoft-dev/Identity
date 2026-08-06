@@ -336,7 +336,7 @@ collects by that infix and a shared module must not be collected as a suite.
 `testStep()` all run `bun test` over that emitted output, never over the `.ts` sources. A type
 error anywhere in the test surface, a template diagnostic in an inline `template:` string
 included, fails the *build* step, and no test in that run executes at all. Staleness is prevented
-by the build always running ahead of the tests that read it, and `build-angular-tests.mjs` prunes
+by the build always running ahead of the tests that read it, and `build-angular-tests.ts` prunes
 output whose source is gone, because `ngc` does not. **The compile itself is skipped when no input
 has moved since the last one**, which is what keeps a step that costs around seventeen seconds
 ahead of suites that cost around twelve; `--force` compiles anyway, and the rule it decides by is

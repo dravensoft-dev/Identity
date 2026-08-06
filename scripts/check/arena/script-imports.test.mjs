@@ -1,7 +1,7 @@
-/* A script nothing imports has its specifiers proven by nothing. scripts/serve.mjs kept
+/* A script nothing imports has its specifiers proven by nothing. scripts/serve.ts kept
  * importing ./lib/repo-root.mjs for three commits after that module moved into lib/arena/,
  * because `bun test scripts` loads *.test.mjs and whatever those reach, and no suite reaches
- * serve.mjs -- it calls Bun.serve() at module top level, so importing it starts a server.
+ * serve.ts -- it calls Bun.serve() at module top level, so importing it starts a server.
  * A *.test.mjs is excluded on the opposite reasoning: running it proves its imports, and its
  * fixtures are import statements inside STRING literals, which a text scan cannot tell apart.
  * A generator writing an import into its OUTPUT is that same class, and a static one there is
@@ -74,9 +74,9 @@ test('a specifier a generator is writing into its output is not one this script 
   assert.equal(isInterpolated('./lib/arena/repo-root.mjs'), false);
 });
 
-test('serve.mjs is in scope, and it is the reason this suite exists', () => {
+test('serve.ts is in scope, and it is the reason this suite exists', () => {
   const scripts = scriptsUnder(join(repoRoot, 'scripts')).map((p) => relative(repoRoot, p));
-  assert.ok(scripts.includes('scripts/serve.mjs'));
+  assert.ok(scripts.includes('scripts/serve.ts'));
 });
 
 test('a suite is out of scope, because its fixtures are imports inside strings', () => {

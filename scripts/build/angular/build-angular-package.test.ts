@@ -5,7 +5,7 @@ import { join, posix } from 'node:path';
 import {
   manifest, ngPackageConfig, libTsconfig, withAssets, ngPackagrBin, annotatePure,
   NAME, RUNTIME_DEPENDENCIES, STAGING, LAYER, VARIANTS,
-} from './build-angular-package.mjs';
+} from './build-angular-package.ts';
 import { version, collectFiles, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 

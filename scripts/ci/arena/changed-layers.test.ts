@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LAYER_INPUTS, SHARED, layersChanged, renderOutputs, unroutedLayers } from './changed-layers.mjs';
+import { LAYER_INPUTS, SHARED, layersChanged, renderOutputs, unroutedLayers } from './changed-layers.ts';
 import { LAYERS } from '../../lib/arena/layers.mjs';
 
 test('a change confined to one layer routes to that layer alone', () => {

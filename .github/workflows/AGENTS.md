@@ -47,7 +47,7 @@ them reads more than one layer, so none of them is a React question or an Angula
 And `scripts/lib/arena/behaviour-contracts.test.mjs` asserts the React component count by
 literal value: a change confined to `frameworks/react/` breaks a suite under `scripts/`.
 
-**Which layers a diff reaches is decided by `scripts/ci/arena/changed-layers.mjs`**, not by
+**Which layers a diff reaches is decided by `scripts/ci/arena/changed-layers.ts`**, not by
 a path filter written here, because that module has a suite and a YAML filter does not. Its
 least obvious rule is the one worth reading: a Tailwind edit routes to both other layers,
 because each compiles something that layer emits.
@@ -111,7 +111,7 @@ package keeps its version while Arena moves on.
 The baseline is that tag rather than the previous commit, and that matters: a layer can
 change in one commit and the version bump land in another, so asking only about this push
 would mean the change is never published at all. What each package carries is
-`scripts/ci/arena/package-inputs.mjs`, whose suite holds the list to what the assemblers
+`scripts/ci/arena/package-inputs.ts`, whose suite holds the list to what the assemblers
 actually read.
 
 **Whatever it answers, the guard writes that answer to the run summary**: the version on the

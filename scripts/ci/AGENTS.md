@@ -15,9 +15,9 @@ rule written in YAML.
 
 | file | why it exists |
 | --- | --- |
-| [`arena/changed-layers.mjs`](./arena/changed-layers.mjs) | which framework layers a diff reaches |
-| [`arena/summarize-tests.mjs`](./arena/summarize-tests.mjs) | runs the suite the way `check-all` runs it, and reports per domain |
-| [`arena/package-inputs.mjs`](./arena/package-inputs.mjs) | what each published package is assembled from |
+| [`arena/changed-layers.ts`](./arena/changed-layers.ts) | which framework layers a diff reaches |
+| [`arena/summarize-tests.ts`](./arena/summarize-tests.ts) | runs the suite the way `check-all` runs it, and reports per domain |
+| [`arena/package-inputs.ts`](./arena/package-inputs.ts) | what each published package is assembled from |
 
 All three are `arena`: each reads two or more layers, or the repository root. The other four
 domains exist and are empty, the way they are under every phase.

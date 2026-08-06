@@ -48,7 +48,7 @@ export function excluded(name) {
   return EXCLUDED_NAMES.has(name) || EXCLUDED_PATTERNS.some((p) => p.test(name));
 }
 
-export function collectFiles(dir, keep = () => true) {
+export function collectFiles(dir, keep = (_file) => true) {
   const found = [];
   const walk = (current) => {
     for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {

@@ -11,7 +11,7 @@
     "verbatimModuleSyntax": true,
     "esModuleInterop": true,
 
-    "types": ["node"],
+    "types": ["node", "bun"],
 
     "allowJs": true,
     "checkJs": false,

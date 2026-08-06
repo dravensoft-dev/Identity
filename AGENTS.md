@@ -85,8 +85,8 @@ under `css/`, a class a consumer writes. That home is the layer's `PACKAGE.md`, 
 npm shows; the layer's `SKILL.md` beside it is generated and indexes components alone. **A
 layer's `AGENTS.md` is neither**, because the router forbids reading it, so a shipped thing
 documented only there is a thing nobody can find. Derive what ships rather than trusting a list:
-`ROOT_TS` in `scripts/build/react/build-react-package.mjs`, and every `copy(` in
-`scripts/build/angular/build-angular-package.mjs`.
+`ROOT_TS` in `scripts/build/react/build-react-package.ts`, and every `copy(` in
+`scripts/build/angular/build-angular-package.ts`.
 
 **A rule binding more than one component is the router's, stated once**; a rule binding one
 component is that component's `.prompt.md`, in each layer's own idiom. **A consumer document

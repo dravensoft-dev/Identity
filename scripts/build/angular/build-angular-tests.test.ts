@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { missingEmitProblems, stalenessReason } from './build-angular-tests.mjs';
+import { missingEmitProblems, stalenessReason } from './build-angular-tests.ts';
 
 const stamped = (mtimeMs, paths) => ({ mtimeMs, paths });
 

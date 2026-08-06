@@ -26,7 +26,7 @@ test('a script suite is classified by the domain directory it sits in, whatever 
   assert.equal(domainOfTestPath('scripts/check/tailwind/check-radius-tokens.test.ts'), 'tailwind');
   assert.equal(domainOfTestPath('scripts/build/react/build-demos.test.mjs'), 'react');
   assert.equal(domainOfTestPath('scripts/generate/core/fetch-fonts.test.mjs'), 'core');
-  assert.equal(domainOfTestPath('scripts/ci/arena/summarize-tests.test.mjs'), 'arena');
+  assert.equal(domainOfTestPath('scripts/ci/arena/summarize-tests.test.ts'), 'arena');
 });
 
 test('a framework suite is classified by its layer, DOM split and category depth included', () => {
@@ -55,7 +55,7 @@ test('a checkout under a directory of an anchor name does not decide every path 
 test('a path belonging to no domain is null rather than guessed', () => {
   assert.equal(domainOfTestPath('README.md'), null);
   assert.equal(domainOfTestPath('contracts/api/components/ArenaButton.json'), null);
-  assert.equal(domainOfTestPath('scripts/serve.mjs'), null);
+  assert.equal(domainOfTestPath('scripts/serve.ts'), null);
   assert.equal(domainOfTestPath('frameworks/Components.json'), null);
 });
 
@@ -71,10 +71,10 @@ test('every suite under scripts/ classifies, so the summary can never silently d
 test('a suite is one in either extension, and a script is what is left over', () => {
   for (const name of ['a.test.mjs', 'a.test.ts', 'check-docs.test.ts'])
     assert.equal(isSuite(name), true, `${name} is a suite`);
-  for (const name of ['a.mjs', 'a.ts', 'serve.mjs', 'ArenaButton.test.tsx', 'notes.md'])
+  for (const name of ['a.mjs', 'a.ts', 'serve.ts', 'ArenaButton.test.tsx', 'notes.md'])
     assert.equal(isSuite(name), false, `${name} is not a suite this tree runs`);
 
-  for (const name of ['a.mjs', 'a.ts', 'serve.mjs'])
+  for (const name of ['a.mjs', 'a.ts', 'serve.ts'])
     assert.equal(isScript(name), true, `${name} is a script`);
   for (const name of ['a.test.mjs', 'a.test.ts', 'notes.md', 'Components.json'])
     assert.equal(isScript(name), false, `${name} is not a script`);

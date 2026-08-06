@@ -26,14 +26,14 @@ export const PACKAGE_INPUTS = {
     'frameworks/tailwind/': 'the manifest modules and the recipe runtime emitted into the layer, '
       + 'which are gitignored, so a manifest edit moves what the package ships and no tracked '
       + 'file under frameworks/react/ moves with it',
-    'scripts/build/react/build-react-package.mjs': 'the assembler',
+    'scripts/build/react/build-react-package.ts': 'the assembler',
     'scripts/build/react/build-react-barrel.mjs': 'the entry point it compiles',
   },
   angular: {
     ...SHARED_INPUTS,
     'frameworks/angular/': 'the layer itself',
     'frameworks/tailwind/': 'the recipes the layer imports, staged into the package beside it',
-    'scripts/build/angular/build-angular-package.mjs': 'the assembler',
+    'scripts/build/angular/build-angular-package.ts': 'the assembler',
   },
 };
 
@@ -43,7 +43,7 @@ export function pathspecs(layer) {
   return Object.keys(inputs).sort();
 }
 
-export function uncoveredChainEntries(inputs = SHARED_INPUTS, chain = CSS_CHAIN) {
+export function uncoveredChainEntries(inputs: Record<string, string> = SHARED_INPUTS, chain = CSS_CHAIN) {
   const prefixes = Object.keys(inputs);
   return chain
     .map((c) => c.from)

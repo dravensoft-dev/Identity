@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   applyDocs, docsFor, unpackMembers, stripDocAbove, writeMemberDocs, PACKED_MEMBERS,
-} from './generate-member-docs.mjs';
+} from './generate-member-docs.ts';
 
 const bindingName = (name, form, layer) => {
   if (layer !== 'react') return name;

@@ -5,7 +5,7 @@ phase** the script belongs to, and **what it is allowed to know about**.
 
 ```
 scripts/
-  serve.mjs   the dev server; neither a phase nor a library
+  serve.ts   the dev server; neither a phase nor a library
   lib/        shared modules, and every test that covers one, beside it
   build/      compiles: JSX to JS, TypeScript to ESM, a CSS layer, a vendor bundle
   generate/   emits source from data: DTCG JSON to CSS, contracts to types, fonts

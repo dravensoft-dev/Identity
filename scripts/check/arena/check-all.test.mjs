@@ -102,7 +102,7 @@ test('testFilesUnder finds a suite nested several directories deep, which a flat
     mkdirSync(join(root, 'check', 'angular'), { recursive: true });
     writeFileSync(join(root, 'check', 'angular', 'a.test.mjs'), '// suite');
     writeFileSync(join(root, 'check', 'angular', 'a.mjs'), '// not a suite');
-    writeFileSync(join(root, 'serve.mjs'), '// not a suite');
+    writeFileSync(join(root, 'serve.ts'), '// not a suite');
     assert.deepEqual(testFilesUnder(root), [join(root, 'check', 'angular', 'a.test.mjs')]);
   } finally {
     rmSync(root, { recursive: true, force: true });

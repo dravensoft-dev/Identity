@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import {
   rewriteSourceSpecifiers, untypedProblems, unresolvedProblems, relativeSpecifiers,
   isSource, manifest, NAME, ROOT_JS, ROOT_TS, LAYER,
-} from './build-react-package.mjs';
+} from './build-react-package.ts';
 import { version, CLI_BINS } from '../../lib/arena/package-assembly.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
@@ -65,7 +65,7 @@ test('react, react-dom and Phosphor are the peers, and nothing at all is a depen
   assert.deepEqual(Object.keys(m.peerDependencies).sort(), ['@phosphor-icons/web', 'react', 'react-dom']);
   assert.equal(m.peerDependencies.react, '^18 || ^19',
     'the range is the two majors a real tarball install was rendered under; an open >=18 would promise React 20');
-  assert.equal(m.dependencies, undefined,
+  assert.ok(!('dependencies' in m),
     'a component composes its own class names, so no recipe library ships with it; the two that '
     + 'used to were 15,834 bytes gzipped and are the reason the package is lighter than the CSS grew');
 });

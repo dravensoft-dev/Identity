@@ -197,7 +197,7 @@ framework is added without touching the language.
   `check-text-contrast.ts` measures every text level against the real surfaces in both
   themes; `validate-palette.mjs` is the vendored data-viz palette validator;
   `check-release.ts` asserts the version, the marketplace `ref` and the tag agree; and
-  `serve.mjs` backs `bun run demos`.
+  `serve.ts` backs `bun run demos`.
 
 **The framework layers**
 

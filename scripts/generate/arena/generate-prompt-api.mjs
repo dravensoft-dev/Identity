@@ -1,7 +1,7 @@
 /* Writes every contracted member into the component's own prompt as a table, under the names
  * the layer binds them to, between markers this script owns. A prompt's prose stays
  * hand-written: this region is the one part of it a contract can hold to, the way
- * generate-member-docs.mjs holds a member's doc comment. check:prompts then holds every region
+ * generate-member-docs.ts holds a member's doc comment. check:prompts then holds every region
  * equal to a fresh emit, so the table a consumer reads cannot drift from the API it describes,
  * and a wrong cell is fixed in the contract rather than here. */
 

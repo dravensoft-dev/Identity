@@ -25,7 +25,7 @@ case fails until it is argued for.
 | `react/`, `angular/`, `tailwind/` | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 
 **Count them rather than reading a figure here**, and note the count answers a different
-question than the npm scripts do: `generate-api-types.mjs` and `generate-member-docs.mjs` are
+question than the npm scripts do: `generate-api-types.mjs` and `generate-member-docs.ts` are
 both reached by `generate:api`, so the file count exceeds the command count and neither is
 wrong. That domain's own table says which file each command runs.
 
