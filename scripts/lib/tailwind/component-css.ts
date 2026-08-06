@@ -15,13 +15,14 @@ import { parseDecls } from '../arena/css-decls.ts';
 import {
   classBase, classesManifest, compoundClass, slotClass, variantClass,
 } from '../../../frameworks/tailwind/ManifestClasses.js';
+import type { ComponentManifest } from './manifest-shapes.ts';
 
 export { classBase, classesManifest, compoundClass, slotClass, variantClass };
 
 export const INDIRECTION = /var\(\s*--([a-z0-9-]+)\s*,\s*var\(\s*--([a-z0-9-]+)\s*\)\s*\)/g;
 export const isThemeKey = (name: string) => !name.startsWith('tw-');
 
-export function applyRules(manifest) {
+export function applyRules(manifest: ComponentManifest) {
   const rules: { selector: string; classes: string }[] = [];
   const push = (selector: string, classes) => {
     const trimmed = String(classes ?? '').trim();
@@ -45,7 +46,7 @@ export function applyRules(manifest) {
   return rules;
 }
 
-export function classNames(manifest) {
+export function classNames(manifest: ComponentManifest) {
   return applyRules(manifest).map((rule) => rule.selector);
 }
 

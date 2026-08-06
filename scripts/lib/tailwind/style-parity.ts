@@ -3,21 +3,25 @@
  * and every inherited value are identical and the only difference left is the thing under
  * test. The selection is the whole resolved one rather than a single variant, because the
  * components concatenate sibling slots by hand and a page mounting one slot per element
- * could not see which of two equal-specificity classes wins. */
+ * could not see which of two equal-specificity classes wins. The one cast in the file is the
+ * only place a manifest crosses into `tailwind-variants`' own types: a manifest selects a
+ * compound variant on a boolean and defaults axes to one, which the library reconciles at
+ * runtime and types as `string | string[]`. */
 
 import { arenaTv } from '../../../frameworks/tailwind/Tv.ts';
 import { arenaStyles } from '../../../frameworks/tailwind/ArenaStyles.ts';
 import { classesManifest } from './component-css.ts';
+import type { ComponentManifest } from './manifest-shapes.ts';
 
-export function selections(manifest) {
+export function selections(manifest: ComponentManifest) {
   const out = [{ name: 'defaults', chosen: {} }];
   for (const [group, values] of Object.entries(manifest.variants ?? {}))
     for (const value of Object.keys(values)) out.push({ name: `${group}=${value}`, chosen: { [group]: value } });
   return out;
 }
 
-export function cases(manifest) {
-  const recipe = arenaTv(manifest);
+export function cases(manifest: ComponentManifest) {
+  const recipe = arenaTv(manifest as Parameters<typeof arenaTv>[0]);
   const styles = arenaStyles(classesManifest(manifest));
   const out = [];
   for (const { name, chosen } of selections(manifest)) {

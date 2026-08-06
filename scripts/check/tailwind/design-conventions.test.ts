@@ -9,10 +9,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
+import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
 
 const manifests = layerManifests();
 
-function everyClassString(manifest) {
+function everyClassString(manifest: ComponentManifest) {
   const out: { where: string; classes: string[] }[] = [];
   const eat = (value, where: string) => {
     if (typeof value === 'string') out.push({ where, classes: value.split(/\s+/).filter(Boolean) });
@@ -33,7 +34,7 @@ const STATUS_RAMP = new Map([
     + 'same four-value ramp rather than a danger affordance; the convention governs what a user can act on'],
 ]);
 
-const fillsAtFullStrength = (manifest) => everyClassString(manifest)
+const fillsAtFullStrength = (manifest: ComponentManifest) => everyClassString(manifest)
   .flatMap(({ where, classes }) => classes.filter((cls: string) => /^bg-(error|danger)$/.test(cls)).map((cls: string) => `${where}: ${cls}`));
 
 test('danger is outline: no manifest paints a full-strength error background', () => {

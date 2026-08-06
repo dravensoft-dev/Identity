@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { classStringsBySlot } from '../arena/check-manifest-states.ts';
+import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 
@@ -15,7 +16,7 @@ export function hasRoundedFull(classString) {
   return /(?<![\w-])rounded-full(?![\w-])/.test(classString);
 }
 
-export function evaluateManifest(manifest) {
+export function evaluateManifest(manifest: ComponentManifest) {
   const findings = [];
   for (const [slot, classList] of classStringsBySlot(manifest))
     if (classList.some(hasRoundedFull))

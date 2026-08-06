@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
 
 const MANIFESTS = join(root, 'frameworks/tailwind/components');
 
@@ -32,7 +33,7 @@ export function surfaceClasses(classes) {
     .sort();
 }
 
-export function slotClasses(manifest, slot, variant?) {
+export function slotClasses(manifest: Pick<ComponentManifest, 'slots' | 'variants'>, slot, variant?) {
   const base = manifest.slots?.[slot] ?? '';
   if (!variant) return base;
   const [axis, value] = variant;

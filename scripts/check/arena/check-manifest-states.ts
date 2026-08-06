@@ -17,6 +17,7 @@ import {
 } from '../../lib/tailwind/manifest-surfaces.ts';
 import { kebab } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
 
 export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };
 
@@ -53,7 +54,7 @@ export function sourceImplements(sourceText) {
   };
 }
 
-export function classStringsBySlot(manifest) {
+export function classStringsBySlot(manifest: Pick<ComponentManifest, 'slots' | 'variants'>) {
   const bySlot = new Map();
   const add = (slot, cls: string) => {
     if (typeof cls !== 'string') return;
@@ -97,7 +98,7 @@ export function affordancesFor(names: string[]) {
   return union;
 }
 
-export function manifestProblems(manifest, declared) {
+export function manifestProblems(manifest: ComponentManifest, declared) {
   const findings = [];
   const matchedKeys = [];
   let sites = 0;

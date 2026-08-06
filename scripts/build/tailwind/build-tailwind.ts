@@ -10,6 +10,7 @@ import {
 } from '../../lib/tailwind/component-sheets.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
 
 type BuildOptions = { root?: string; manifests?: Map<string, any> };
 
@@ -28,7 +29,7 @@ export function buildTailwind(opts: BuildOptions = {}) {
   return BANNER + css;
 }
 
-export function manifestModule(manifest, jsonFile) {
+export function manifestModule(manifest: ComponentManifest, jsonFile) {
   const { compoundVariants, ...rest } = manifest;
   if (!compoundVariants) {
     return `${manifestBanner(jsonFile)}export default ${JSON.stringify(manifest, null, 2)} as const;\n`;
