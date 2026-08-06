@@ -150,7 +150,7 @@ export function componentMapProblems(pkg, dir) {
   try {
     map = JSON.parse(readFileSync(at, 'utf8'));
   } catch (error) {
-    return [`${pkg.name}: ${MAP_FILE} does not parse: ${error.message}`];
+    return [`${pkg.name}: ${MAP_FILE} does not parse: ${(error as Error).message}`];
   }
   const sheets = existsSync(join(dir, 'css', 'components'))
     ? readdirSync(join(dir, 'css', 'components')).filter((n) => n.endsWith('.css')).map((n) => basename(n, '.css'))

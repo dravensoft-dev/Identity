@@ -265,7 +265,7 @@ export function fixtureProblems(name, contract, fixture, contracts, types) {
   try {
     playgroundModel(contract, fixture, types);
   } catch (err) {
-    return [`${name}: ${err.message}`];
+    return [`${name}: ${(err as Error).message}`];
   }
   return [];
 }

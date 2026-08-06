@@ -3,21 +3,34 @@
     "target": "ES2022",
     "module": "Preserve",
     "moduleResolution": "bundler",
-    "lib": ["ES2023"],
-
-    "strict": false,
+    "lib": [
+      "ES2023"
+    ],
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "esModuleInterop": true,
-
-    "types": ["node", "bun"],
-
+    "types": [
+      "node",
+      "bun"
+    ],
     "allowJs": true,
     "checkJs": false,
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["./**/*.ts", "./**/*.mjs"],
-  "exclude": ["./node_modules"]
+  "include": [
+    "./**/*.ts",
+    "./**/*.mjs"
+  ],
+  "exclude": [
+    "./node_modules"
+  ]
 }

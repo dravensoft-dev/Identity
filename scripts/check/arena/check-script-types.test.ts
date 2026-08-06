@@ -32,13 +32,30 @@ test('the project never emits, because a checking project writing output would s
     'scripts import each other with the extension written out, which is what both runtimes resolve');
 });
 
-test('the project is loose ON PURPOSE while the tree is mixed, and this is where that is stated', () => {
+test('the strict family is enumerated, so every flag is a decision somebody made', () => {
   const options = project().compilerOptions;
-  assert.equal(options.allowJs, true, 'the tree still holds .mjs, and the project must resolve it');
+  assert.equal(options.strict, undefined,
+    'strict is not set as a bundle: it turns on seven things at once, and two of them cost '
+    + 'four figures here, so each is named below at the value it actually holds');
+
+  for (const on of ['strictFunctionTypes', 'strictBindCallApply', 'noImplicitThis',
+    'alwaysStrict', 'useUnknownInCatchVariables'])
+    assert.equal(options[on], true, `${on} is on and must stay on`);
+
+  assert.equal(options.noImplicitAny, false,
+    'the last one to arrive: 1,642 parameters and locals have no annotation yet');
+  assert.equal(options.strictNullChecks, false,
+    'next after this: 999 sites read something that may be null or undefined');
+});
+
+test('a .mjs is resolved and never checked, which is what the two vendored copies need', () => {
+  const options = project().compilerOptions;
+  assert.equal(options.allowJs, true,
+    'validate-palette.mjs is imported by three .ts files, and turning this off would make '
+    + 'those imports unresolvable rather than unchecked');
   assert.equal(options.checkJs, false,
-    'a .mjs carries no annotations, so checking one reports noise rather than defects');
-  assert.equal(options.strict, false,
-    'strict arrives once the last .mjs is gone; turning it on now would fail on every file at once');
+    'it is vendored verbatim and can carry no annotation, so checking it reports noise it '
+    + 'is forbidden to fix');
 });
 
 test('the project reaches both extensions, since dropping either stops covering half the tree', () => {

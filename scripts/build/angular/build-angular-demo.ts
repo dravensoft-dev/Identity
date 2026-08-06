@@ -108,7 +108,7 @@ async function main() {
   try {
     bin = ngcBin(repoRoot);
   } catch (err) {
-    console.error(`build-angular-demo: ${err.message}`);
+    console.error(`build-angular-demo: ${(err as Error).message}`);
     process.exit(1);
   }
 

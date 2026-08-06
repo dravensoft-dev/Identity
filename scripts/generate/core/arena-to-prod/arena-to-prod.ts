@@ -197,7 +197,7 @@ export function themeStep(
   try {
     config = JSON.parse(readFileSync(options.config, 'utf8'));
   } catch (error) {
-    return { code: 2, reports: [], fatal: [`cannot read ${options.config}: ${error.message}`] };
+    return { code: 2, reports: [], fatal: [`cannot read ${options.config}: ${(error as Error).message}`] };
   }
 
   const auto = { reports: [], notes: [] };

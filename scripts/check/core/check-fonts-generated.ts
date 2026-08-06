@@ -39,7 +39,7 @@ export async function askGoogle(
     try {
       answers.push({ role, family, src, status: (await get(src, { headers: { 'User-Agent': UA } })).status });
     } catch (cause) {
-      answers.push({ role, family, src, unreachable: String(cause?.message ?? cause) });
+      answers.push({ role, family, src, unreachable: String((cause as Error)?.message ?? cause) });
     }
   }
   return answers;

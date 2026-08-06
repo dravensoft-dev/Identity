@@ -1,8 +1,9 @@
 /* The tooling answers to a compiler, which nothing under scripts/ did before. The project
- * is deliberately loose while the tree is mixed: a .mjs is resolved and never checked, so
- * what this holds today is that every .ts under scripts/ typechecks and that none of them
- * reaches for syntax bare node cannot strip, which is what keeps a script runnable by both
- * runtimes check-all targets. It tightens to strict once the last .mjs is gone. A tsconfig
+ * names the strict family flag by flag rather than setting strict, because two of the seven
+ * cost four figures here and arrive on their own: what is on is on because it was free or
+ * nearly so. A .mjs is resolved and never checked, which is what the two vendored copies
+ * need. It also holds that no script reaches for syntax bare node cannot strip, which is
+ * what keeps one runnable by both runtimes check-all targets. A tsconfig
  * whose globs match nothing compiles nothing and reports clean, so this counts what the
  * project actually reached against what is on disk rather than trusting the globs. */
 
@@ -46,7 +47,7 @@ function main() {
     try {
       unreached = unreachedProblems(sourcesUnder(join(repoRoot, 'scripts')), projectFiles({ project }));
     } catch (err) {
-      console.error(`check-script-types: ${err.message}`);
+      console.error(`check-script-types: ${(err as Error).message}`);
       process.exit(1);
     }
     if (unreached.length) {
@@ -59,7 +60,7 @@ function main() {
     try {
       result = typecheck({ project });
     } catch (err) {
-      console.error(`check-script-types: ${err.message}`);
+      console.error(`check-script-types: ${(err as Error).message}`);
       process.exit(1);
     }
     if (result.status !== 0) {

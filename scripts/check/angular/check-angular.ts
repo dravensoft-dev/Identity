@@ -39,7 +39,7 @@ function main() {
     try {
       result = typecheck({ project });
     } catch (err) {
-      console.error(`check-angular: ${err.message}`);
+      console.error(`check-angular: ${(err as Error).message}`);
       process.exit(1);
     }
     const { status, output } = result;

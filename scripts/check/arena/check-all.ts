@@ -152,7 +152,7 @@ function main() {
   try {
     selection = parseCheckArgs(process.argv.slice(2));
   } catch (err) {
-    console.error(err.message);
+    console.error((err as Error).message);
     process.exit(1);
   }
 
@@ -160,7 +160,7 @@ function main() {
   try {
     gates = gatesFor(selection.domains);
   } catch (err) {
-    console.error(err.message);
+    console.error((err as Error).message);
     process.exit(1);
   }
 

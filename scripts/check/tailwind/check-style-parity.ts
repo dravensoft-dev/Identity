@@ -92,7 +92,7 @@ async function main() {
   } catch (err) {
     await server.close();
     chrome?.kill();
-    skip(`${browser.path} could not be driven: ${err.message}`);
+    skip(`${browser.path} could not be driven: ${(err as Error).message}`);
   }
 
   const problems = [];

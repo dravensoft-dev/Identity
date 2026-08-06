@@ -167,7 +167,7 @@ async function main() {
       const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/arena-cat-slot.json'), 'utf8'));
       problems.push(...catSlotEnumProblems(catSlots, catSlot.values));
     } catch (err) {
-      problems.push(`contracts/api/types/arena-cat-slot.json: unreadable (${err.message}) — ArenaCatSlot restates the --color-cat-* ramp and must exist`);
+      problems.push(`contracts/api/types/arena-cat-slot.json: unreadable (${(err as Error).message}) — ArenaCatSlot restates the --color-cat-* ramp and must exist`);
     }
   }
 

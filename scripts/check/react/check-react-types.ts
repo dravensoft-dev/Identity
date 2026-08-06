@@ -19,7 +19,7 @@ function main() {
     try {
       result = typecheck({ project });
     } catch (err) {
-      console.error(`check-react-types: ${err.message}`);
+      console.error(`check-react-types: ${(err as Error).message}`);
       process.exit(1);
     }
     const { status, output } = result;

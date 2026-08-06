@@ -55,7 +55,7 @@ function main() {
   try {
     console.log(pathspecs(layer).join('\n'));
   } catch (err) {
-    console.error(err.message);
+    console.error((err as Error).message);
     process.exit(1);
   }
 }

@@ -161,7 +161,7 @@ function main() {
   try {
     bin = ngcBin(repoRoot);
   } catch (err) {
-    console.error(`build-angular-tests: ${err.message}`);
+    console.error(`build-angular-tests: ${(err as Error).message}`);
     process.exit(1);
   }
   const r = spawnSync(process.execPath, [bin, '-p', join(repoRoot, PROJECT)], { stdio: 'inherit', cwd: repoRoot });
