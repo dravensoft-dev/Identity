@@ -76,7 +76,7 @@ test('an empty file set fails rather than passing vacuously', () => {
 });
 
 test('suiteFiles collects only .test.ts, and walks the whole layer', () => {
-  const tree = {
+  const tree: Record<string, { name: string; isDirectory: () => boolean }[]> = {
     '/root': [
       { name: 'A.test.ts', isDirectory: () => false },
       { name: 'NodeAssert.ts', isDirectory: () => false },

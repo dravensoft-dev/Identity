@@ -21,7 +21,7 @@ import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/aren
 export const CLI = 'bin/arena-to-prod.ts';
 export const GLYPH = 'ph-bell';
 
-export const SOURCES = {
+export const SOURCES: Record<string, Record<string, string>> = {
   react: {
     'src/App.tsx': "import { ArenaButton, ArenaTable } from '@dravensoft/arena-react';\n"
       + "export const App = () => <ArenaButton icon=\"ph-bold ph-bell\">Go</ArenaButton>;\n",
@@ -32,7 +32,7 @@ export const SOURCES = {
   },
 };
 
-export const STALE = {
+export const STALE: Record<string, Record<string, string>> = {
   react: { 'src/App.tsx': "import { Button } from '@dravensoft/arena-react';\nexport const App = () => <Button>Go</Button>;\n" },
   angular: { 'src/app.html': '<arena-nothing-at-all></arena-nothing-at-all>\n' },
 };

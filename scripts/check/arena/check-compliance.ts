@@ -223,7 +223,7 @@ export function inventoryFrom(bindings) {
 
 function collectBindings() {
 
-  const byKey = {};
+  const byKey: Record<string, { tail: string }> = {};
 
   for (const name of reactComponents(repoRoot)) {
     const found = reactBindingPath(repoRoot, kebab(name));
@@ -257,7 +257,7 @@ export function walkSuites(dir: string) {
 }
 
 export function collectSuites(dirs = SUITE_DIRS) {
-  const out = {};
+  const out: Record<string, { source: string; layer: string }> = {};
   const seen = new Map();
   for (const { layer, dir } of dirs) {
     if (!existsSync(dir)) continue;

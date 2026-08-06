@@ -237,7 +237,7 @@ test('findCardPages finds every page that declares, and nothing that does not', 
 
 test('mapWithConcurrency keeps results in filename order even when a later file answers first', async () => {
   const files = ['a.html', 'b.html', 'c.html', 'd.html'];
-  const delayMs = { 'a.html': 120, 'b.html': 5, 'c.html': 80, 'd.html': 35 };
+  const delayMs: Record<string, number> = { 'a.html': 120, 'b.html': 5, 'c.html': 80, 'd.html': 35 };
   const completions: string[] = [];
 
   const results = await mapWithConcurrency(files, 4, async (file: string) => {

@@ -48,7 +48,7 @@ export function stateFamilies(classString: string) {
   return families;
 }
 
-export function sourceImplements(sourceText) {
+export function sourceImplements(sourceText: string): Record<string, boolean> {
   return {
     hover: IMPLEMENTS_PATTERNS.hover.test(sourceText),
     focus: IMPLEMENTS_PATTERNS.focus.test(sourceText),

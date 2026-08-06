@@ -18,7 +18,7 @@ const HEADER =
   + ' * tokens.generated.* already carries. scripts/check/arena/check-api.ts asserts the\n'
   + ' * emitted files match contracts/api/types/. See contracts/api/AGENTS.md for the vocabulary. */';
 
-const PRIMITIVE_TS = { string: 'string', number: 'number', boolean: 'boolean' };
+const PRIMITIVE_TS: Record<string, string> = { string: 'string', number: 'number', boolean: 'boolean' };
 
 export function loadTypes(dir = join(root, 'contracts/api/types')) {
   return readdirSync(dir)

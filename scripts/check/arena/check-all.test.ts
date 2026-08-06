@@ -24,7 +24,7 @@ test('GATES lists every check gate', () => {
 
 test('the domain table in scripts/check/AGENTS.md counts what GATES holds, or it goes quietly stale', () => {
   const readme = readFileSync(join(repoRoot, 'scripts', 'check', 'AGENTS.md'), 'utf8');
-  const counted = {};
+  const counted: Record<string, number> = {};
   for (const { file } of GATES) {
     const domain = file.split('/')[0];
     counted[domain] = (counted[domain] ?? 0) + 1;

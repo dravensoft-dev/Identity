@@ -18,7 +18,7 @@ const PATTERNS = new Map(
     .map((f) => [basename(f, '.json'), JSON.parse(readFileSync(join(PATTERN_DIR, f), 'utf8'))]),
 );
 
-function el(tagName, attrs = {}, text = '') {
+function el(tagName: string, attrs: Record<string, unknown> = {}, text = '') {
   return {
     tagName: tagName.toUpperCase(),
     getAttribute: (n) => (n in attrs ? String(attrs[n]) : null),

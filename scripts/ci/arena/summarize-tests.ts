@@ -51,7 +51,7 @@ export function parseJunit(xml) {
 }
 
 export function tally(cases) {
-  const byDomain = new Map(DOMAINS.map((d) => [d, { pass: 0, fail: 0, skip: 0 }]));
+  const byDomain = new Map<string, Record<string, number>>(DOMAINS.map((d: string) => [d, { pass: 0, fail: 0, skip: 0 }]));
   const unclassified = [];
   for (const c of cases) {
     const domain = domainOfTestPath(c.file ?? '');

@@ -87,7 +87,7 @@ export function classify(raw: string): { form: string; [detail: string]: any } {
       if (retType.form !== 'primitive' && retType.form !== 'named' && retType.form !== 'enum') {
         throw new UnrecognisedShape(`a functionInput return must be a primitive, enum or named type: ${ts}`);
       }
-      const params = {};
+      const params: Record<string, string> = {};
       for (const part of splitTopLevel(arrow[1], ',').map((s) => s.trim()).filter(Boolean)) {
         const colon = part.indexOf(':');
         if (colon === -1) throw new UnrecognisedShape(`functionInput parameter has no type: ${ts}`);

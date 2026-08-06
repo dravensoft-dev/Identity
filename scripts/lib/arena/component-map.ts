@@ -59,10 +59,10 @@ export function sheetOf(file: string, source: string) {
   return null;
 }
 
-export function close(needs) {
-  const closed = {};
+export function close(needs: ComponentSheetMap['needs']): ComponentSheetMap['needs'] {
+  const closed: ComponentSheetMap['needs'] = {};
   for (const sheet of Object.keys(needs)) {
-    const reached = new Set();
+    const reached = new Set<string>();
     const pending = [...needs[sheet]];
     while (pending.length) {
       const one = pending.pop();
@@ -76,8 +76,8 @@ export function close(needs) {
 }
 
 function mapFrom(entries: { symbol: string; keys: string[]; sheet: string | null; uses: string[] }[], edges: string) {
-  const draws = {};
-  const needs = {};
+  const draws: ComponentSheetMap['draws'] = {};
+  const needs: ComponentSheetMap['needs'] = {};
   for (const { keys, sheet } of entries) {
     for (const key of keys) draws[key] = sheet;
   }

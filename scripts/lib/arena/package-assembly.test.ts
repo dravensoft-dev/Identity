@@ -169,7 +169,7 @@ test('write creates the directories leading to a file nobody made yet', () => {
 });
 
 function tailwindTree(names: string[]) {
-  const files = {
+  const files: Record<string, string> = {
     'frameworks/tailwind/Numerals.css': '.arena-num{}',
     'frameworks/tailwind/consume/Prelude.generated.css': ':root{}',
   };

@@ -16,7 +16,7 @@ export const SHARED = {
   'bun.lock': 'the resolved dependency tree each layer compiles against',
 };
 
-export const LAYER_INPUTS = {
+export const LAYER_INPUTS: Record<string, Record<string, string>> = {
   react: {
     'frameworks/react/': 'its own layer',
     'frameworks/tailwind/': 'the manifest modules and the recipe runtime are emitted into this '
@@ -34,7 +34,7 @@ function reaches(prefix: string, path: string) {
 }
 
 export function layersChanged(paths: string[]) {
-  const changed = {};
+  const changed: Record<string, boolean> = {};
   const shared = paths.some((p) => Object.keys(SHARED).some((prefix) => reaches(prefix, p)));
   for (const layer of Object.keys(LAYER_INPUTS)) {
     changed[layer] = shared
@@ -43,7 +43,7 @@ export function layersChanged(paths: string[]) {
   return changed;
 }
 
-export function renderOutputs(changed) {
+export function renderOutputs(changed: Record<string, boolean>) {
   return Object.keys(LAYER_INPUTS)
     .sort()
     .map((layer) => `${layer}=${changed[layer] ? 'true' : 'false'}`)

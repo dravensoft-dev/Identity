@@ -54,7 +54,12 @@ export function isNodeExpression(argument) {
   return NODE_MARKERS.test(argument) && !SCALAR_TAIL.test(argument.trim());
 }
 
-export function suiteFiles(root: string, list = readdirSync) {
+type DirEntry = { name: string; isDirectory(): boolean };
+
+export function suiteFiles(
+  root: string,
+  list: (dir: string, options: { withFileTypes: true }) => DirEntry[] = readdirSync,
+) {
   const found: string[] = [];
   const walk = (dir: string) => {
     for (const entry of list(dir, { withFileTypes: true })) {

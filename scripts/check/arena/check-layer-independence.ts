@@ -15,7 +15,7 @@ import { join, relative, extname, dirname, resolve } from 'node:path';
 import { LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-export const LAYER_TOKENS = {
+export const LAYER_TOKENS: Record<string, [string, RegExp][]> = {
   react: [
     ['React', /\bReact\b/],
     ['.tsx', /\.tsx\b/],
@@ -36,7 +36,7 @@ export const LAYER_TOKENS = {
   ],
 };
 
-export const FORBIDDEN = {
+export const FORBIDDEN: Record<string, string[]> = {
   react: ['angular', 'tailwind'],
   angular: ['react'],
   tailwind: ['react', 'angular'],

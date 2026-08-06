@@ -19,7 +19,7 @@ export const SHARED_INPUTS = {
   'LICENSE': 'shipped verbatim in both packages',
 };
 
-export const PACKAGE_INPUTS = {
+export const PACKAGE_INPUTS: Record<string, Record<string, string>> = {
   react: {
     ...SHARED_INPUTS,
     'frameworks/react/': 'the layer itself',

@@ -94,7 +94,7 @@ test('every registered Arena tracking name dedupes against a sibling, in both di
 const themeCssPath = new URL('../../../frameworks/tailwind/Theme.css', import.meta.url);
 const [themeDecls] = [...parseDecls(readFileSync(themeCssPath, 'utf8')).values()];
 
-const PREFIX = {
+const PREFIX: Record<string, string> = {
   font: 'font',
   text: 'text',
   'font-weight': 'font',
@@ -193,7 +193,7 @@ test('the exact cases the coordinator\'s review found broken now behave correctl
 test('ArenaButton.manifest.json\'s three ctl-h heights now dedupe against each other through arenaTv()', async () => {
   const { default: manifest } = await import('../../../frameworks/tailwind/components/forms/arena-button/ArenaButton.manifest.json', { with: { type: 'json' } });
   const arenaButtonStyles = (arenaTv as any)(manifest);
-  const heights = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
+  const heights: Record<string, string> = { sm: 'h-ctl-h-sm', md: 'h-ctl-h', lg: 'h-ctl-h-lg' };
   for (const size of ['sm', 'md', 'lg']) {
     const root = classes(arenaButtonStyles({ variant: 'primary', size }).root());
     const heightClasses = root.filter((c) => c.startsWith('h-ctl-h'));

@@ -117,7 +117,7 @@ export function stepStatus(code: number) {
 }
 
 export function summarize(results) {
-  const label = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' };
+  const label: Record<string, string> = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' };
   const lines = results.map((r) => `  ${label[r.status]}  ${r.name}`);
   const failed = results.filter((r) => r.status === 'fail');
   const skipped = results.filter((r) => r.status === 'skip');

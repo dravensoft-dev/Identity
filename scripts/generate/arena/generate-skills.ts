@@ -27,12 +27,12 @@ export const SKILL_TARGETS = [INDEX_TARGET, ...CONSUMER_LAYERS.map(layerTarget)]
 const GENERATED = '<!-- GENERATED from the contracts by bun run generate:skills.'
   + ' Edit the contracts, not this file. -->';
 
-export const PACKAGES = {
+export const PACKAGES: Record<string, string> = {
   react: '@dravensoft/arena-react',
   angular: '@dravensoft/arena-angular',
 };
 
-export const LAYER_TITLE = {
+export const LAYER_TITLE: Record<string, string> = {
   react: 'React',
   angular: 'Angular',
 };
