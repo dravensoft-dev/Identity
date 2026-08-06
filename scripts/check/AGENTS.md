@@ -95,7 +95,7 @@ this table when the two disagree. That is why they may be read, and why nobody s
 them with a `find`, which would trade a held claim for an unheld one.
 
 Counts are of **registered gates**; `arena/` alone holds two files that are not one:
-`check-release.mjs`, run by path rather than registered, and `check-all.mjs`, the runner
+`check-release.ts`, run by path rather than registered, and `check-all.mjs`, the runner
 rather than a gate. The distinction is the section above: a gate on disk that is registered
 nowhere runs in no job and is worth nothing, so the directory is not the authority here.
 

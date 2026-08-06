@@ -185,7 +185,7 @@ alternative is *one* layer quietly doing something else.
 ### The binding table
 
 The gate needs the mapping to be mechanical rather than a matter of taste, so it is
-written down here and implemented in `bindingName()` in `scripts/check/arena/check-api.mjs`.
+written down here and implemented in `bindingName()` in `scripts/check/arena/check-api.ts`.
 
 | Contract member | React binds it as | Angular binds it as |
 |---|---|---|
@@ -412,7 +412,7 @@ this layer exists to remove.
 
 **So it may be an enum only while something machine-checks the restatement.**
 `contracts/api/types/arena-cat-slot.json` declares `ArenaCatSlot = 1 | … | 8`, and `check:script-tokens`
-(`catSlotEnumProblems()` in `scripts/check/arena/check-script-tokens.mjs`) asserts that set is exactly
+(`catSlotEnumProblems()` in `scripts/check/arena/check-script-tokens.ts`) asserts that set is exactly
 1..`catSlots` **in order**: add a ninth colour to the ramp and the gate fails until the
 contract type follows. `enumLiteral()` in `build-api-types.mjs` renders a numeric set unquoted,
 which is what lets the type render at all.

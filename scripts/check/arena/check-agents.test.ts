@@ -11,11 +11,11 @@ import {
   ROUTER, DOMAINS, SURVIVORS, SKIPPED_ANYWHERE, SKIPPED_UNDER_FRAMEWORKS, skips,
   markdownFiles, declaredTargets, missingProblems, routerProblems, survivorProblems,
   zeroScanProblems,
-} from './check-agents.mjs';
+} from './check-agents.ts';
 
 function tree(files) {
   const base = mkdtempSync(join(tmpdir(), 'arena-agents-'));
-  for (const [rel, text] of Object.entries(files)) {
+  for (const [rel, text] of Object.entries(files) as [string, string][]) {
     const path = join(base, rel);
     mkdirSync(join(path, '..'), { recursive: true });
     writeFileSync(path, text);

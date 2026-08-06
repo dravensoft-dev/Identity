@@ -15,7 +15,7 @@ import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind
 import { kebab } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
-export const EXEMPT = new Map([]);
+export const EXEMPT = new Map<string, string>([]);
 
 const REACT_COMPONENTS = join(repoRoot, 'frameworks/react/components');
 const ANGULAR_COMPONENTS = join(repoRoot, 'frameworks/angular/components');

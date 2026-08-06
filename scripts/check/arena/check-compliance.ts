@@ -137,7 +137,10 @@ export function suiteMentions(source, tail) {
   return new RegExp(escaped.join(`(?:/|['"]\\s*,\\s*['"])`)).test(source);
 }
 
-export function validateCoverage({ bindings, covered, suites }) {
+export function validateCoverage(
+  { bindings, covered, suites }:
+    { bindings; covered; suites: Record<string, { source: string; layer: string }> },
+) {
   const problems = [];
 
   const byKey = new Map();
@@ -153,7 +156,7 @@ export function validateCoverage({ bindings, covered, suites }) {
     byKey.set(`${b.name}:${b.layer}`, b.tail);
   }
 
-  for (const [key, suiteFile] of Object.entries(covered)) {
+  for (const [key, suiteFile] of Object.entries(covered) as [string, string][]) {
     const sep = key.lastIndexOf(':');
     if (sep === -1) {
       problems.push(
@@ -195,7 +198,8 @@ export function validateCoverage({ bindings, covered, suites }) {
 
 export function inventoryFrom(bindings) {
   const out = [];
-  for (const [key, binding] of Object.entries(bindings)) {
+  const declared = Object.entries(bindings) as [string, { tail?: string }][];
+  for (const [key, binding] of declared) {
     const sep = key.lastIndexOf(':');
     const name = sep === -1 ? key : key.slice(0, sep);
     const layer = sep === -1 ? '' : key.slice(sep + 1);

@@ -20,6 +20,7 @@ import { connect } from '../../lib/arena/cdp.mjs';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.mjs';
 import { playgroundModel, SUBJECT } from '../../lib/arena/playground-model.mjs';
 import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.mjs';
+import { memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 
 export const FIXTURE_DIR = 'frameworks/demos';
 export const FIXTURE_SUFFIX = '.demo.json';
@@ -109,7 +110,7 @@ export function objectProblems(where, typeName, value, types) {
     if (!(key in fields)) { problems.push(`${where}.${key}: ${typeName} declares no such field`); continue; }
     problems.push(...valueProblems(`${where}.${key}`, fields[key], held, types));
   }
-  for (const [key, field] of Object.entries(fields))
+  for (const [key, field] of fieldEntries(fields))
     if (field.required && !(key in value)) problems.push(`${where}: ${typeName}.${key} is required and the fixture omits it`);
   return problems;
 }
@@ -124,7 +125,7 @@ export function seedProblems(name, contract, fixture, types) {
     if (!SEEDABLE.has(spec.form)) { problems.push(`${name}.seed.${member}: form ${spec.form} is not seeded here`); continue; }
     problems.push(...valueProblems(`${name}.seed.${member}`, spec, value, types));
   }
-  for (const [member, spec] of Object.entries(api)) {
+  for (const [member, spec] of memberEntries(api)) {
     if (spec.form === 'slot' || spec.form === 'event') continue;
     if (spec.required && !('default' in spec) && !(member in seed))
       problems.push(`${name}.seed: ${member} is required and carries no default, so the fixture has to seed it`);
@@ -160,7 +161,7 @@ export function nodeProblems(where, node, contracts, types, { allowSubject }) {
     if (!SEEDABLE.has(spec.form)) { problems.push(`${where}.${member}: form ${spec.form} takes no literal here`); continue; }
     problems.push(...valueProblems(`${where}.${member}`, spec, value, types));
   }
-  for (const [member, spec] of Object.entries(api)) {
+  for (const [member, spec] of memberEntries(api)) {
     if (spec.required && spec.form !== 'slot' && !('default' in spec) && !(member in (node.members ?? {})))
       problems.push(`${where}: ${node.component}.${member} is required and this node omits it`);
   }
@@ -183,7 +184,7 @@ export function slotProblems(name, contract, fixture, contracts, types) {
     if (api[slot]?.form !== 'slot') { problems.push(`${name}.slots.${slot}: the contract declares no such slot`); continue; }
     problems.push(...listProblems(`${name}.slots.${slot}`, list, contracts, types, { allowSubject: false }));
   }
-  for (const [member, spec] of Object.entries(api))
+  for (const [member, spec] of memberEntries(api))
     if (spec.form === 'slot' && spec.required && !(member in (fixture.slots ?? {})))
       problems.push(`${name}.slots: ${member} is a required slot, so the fixture has to fill it`);
   return problems;
@@ -355,7 +356,12 @@ export function* citingFiles(base = root) {
   for (const tree of CITING_TREES) yield* walk(join(base, tree));
 }
 
-export function citationProblems(base = root, files = citingFiles(base), names = basenameIndex(base), emitted = pagePaths(base)) {
+export function citationProblems(
+  base = root,
+  files: Iterable<any> = citingFiles(base),
+  names = basenameIndex(base),
+  emitted = pagePaths(base),
+) {
   const problems = [];
   const pages = new Set(emitted);
   const pageNames = new Set(emitted.map((rel) => rel.slice(rel.lastIndexOf('/') + 1)));

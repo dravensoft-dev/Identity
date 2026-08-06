@@ -42,7 +42,7 @@ export const FORBIDDEN = {
   tailwind: ['react', 'angular'],
 };
 
-export const ALLOWED = new Map([]);
+export const ALLOWED = new Map<string, string>([]);
 
 export const ALLOWED_SPECIFIERS = new Map([
   [/^frameworks\/tailwind\/consume\//,
@@ -52,7 +52,7 @@ export const ALLOWED_SPECIFIERS = new Map([
     + 'make one layer normative for another.'],
 ]);
 
-export const EXEMPT = new Map([]);
+export const EXEMPT = new Map<string, string>([]);
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.json', '.css', '.html', '.md']);
 export const MODULE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs']);
@@ -151,7 +151,8 @@ export function staleSpecifierAllowances(allowedHits) {
 
 export function staleLayerTokens(base = root) {
   const stale = [];
-  for (const [layer, tokens] of Object.entries(LAYER_TOKENS)) {
+  const byLayer = Object.entries(LAYER_TOKENS) as [string, [string, RegExp][]][];
+  for (const [layer, tokens] of byLayer) {
     const unseen = new Map(tokens);
     for (const path of layerFiles(join(base, 'frameworks', layer))) {
       if (!unseen.size) break;

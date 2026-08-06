@@ -1,4 +1,4 @@
-/* Covers check-generated.mjs. The git-backed halves take an injected runner, so a
+/* Covers check-generated.ts. The git-backed halves take an injected runner, so a
  * case can state a tracked/ignored pair without a repository behind it. */
 
 import test from 'node:test';
@@ -9,11 +9,11 @@ import { join, dirname } from 'node:path';
 import {
   UNMARKED, UNTRACKED, matches, claimsGeneration,
   unmarkedProblems, trackingProblems, unmarkedCoverageProblems,
-} from './check-generated.mjs';
+} from './check-generated.ts';
 
 function tree(files) {
   const root = mkdtempSync(join(tmpdir(), 'arena-generated-'));
-  for (const [rel, body] of Object.entries(files)) {
+  for (const [rel, body] of Object.entries(files) as [string, string][]) {
     const path = join(root, rel);
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, body);

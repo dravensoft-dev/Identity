@@ -32,7 +32,7 @@ export const PROSE_EXEMPT = {
     'a spec or a plan is deleted once executed, so its prose never becomes documentation',
 };
 
-export const SIZE_ALLOWANCE = new Map([]);
+export const SIZE_ALLOWANCE = new Map<string, { limit: number; reason: string }>([]);
 
 export function limitFor(rel) {
   return SIZE_ALLOWANCE.get(rel)?.limit ?? MAX_DOCUMENT_CHARS;

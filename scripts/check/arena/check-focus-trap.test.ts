@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { TRAPS, FOCUSABLE, walkProblems } from './check-focus-trap.mjs';
+import { TRAPS, FOCUSABLE, walkProblems } from './check-focus-trap.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const inside = (n) => Array.from({ length: n }, (_, i) => ({ press: i + 1, inside: true }));
@@ -33,7 +33,7 @@ test('every declared page is there, since a walk of a page that 404s reports no 
 
 test('a trap opens from its own fixture, so no walk depends on finding a button by its copy', () => {
   for (const trap of TRAPS) {
-    assert.equal(trap.open, undefined,
+    assert.ok(!('open' in trap),
       `${trap.name} still clicks something open: a page whose copy moved would walk with nothing open `
       + 'and report a trap that holds');
     const fixture = JSON.parse(readFileSync(join(repoRoot, 'frameworks/demos', `${trap.name.split(':')[0]}.demo.json`), 'utf8'));

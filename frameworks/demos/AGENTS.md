@@ -10,7 +10,7 @@ this directory is where the one fact the contract cannot supply lives.
 It sits at the `frameworks/` root rather than inside a layer for the same reason
 `Components.json` does: it is a fact about the layers that belongs to none of them, and a copy
 per layer is a copy that can disagree. It is not under `contracts/` because a fixture is not
-normative: a seed is an example, and `check-contracts.mjs` holds `contracts/api` to exactly
+normative: a seed is an example, and `check-contracts.ts` holds `contracts/api` to exactly
 `components/` and `types/`.
 
 **`PlaygroundCodec.ts` beside the fixtures is the second thing here, and it is code rather than

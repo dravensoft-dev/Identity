@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {
   LEVELS, GENERATED, SHAPE, rootProblems, levelProblems, generatedProblems,
   zeroContractLevelProblems,
-} from './check-contracts.mjs';
+} from './check-contracts.ts';
 
 const ROOT_OK = ['AGENTS.md', 'api', 'behaviour', 'design', 'design-generated'];
 

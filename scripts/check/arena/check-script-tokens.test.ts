@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import {
   cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems,
   shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT, sourceFiles,
-} from './check-script-tokens.mjs';
+} from './check-script-tokens.ts';
 import { buildScriptModules } from '../../generate/arena/generate-tokens.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 

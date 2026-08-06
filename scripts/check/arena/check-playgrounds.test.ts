@@ -5,7 +5,7 @@ import {
   valueProblems, objectProblems, nodeProblems, fixtureProblems, citationProblems,
   loadContracts, loadFixtures, loadTypes, citingFiles, basenameIndex, emissionProblems,
   pagePaths, smokeProblems, READY, SMOKE_READY_MS, SMOKE_GRACE_MS,
-} from './check-playgrounds.mjs';
+} from './check-playgrounds.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 
 const types = new Map([

@@ -56,7 +56,7 @@ export function fixture(layer, files, stylesheet, base = root) {
   const dir = mkdtempSync(join(tmpdir(), `arena-consumer-${layer}-`));
   const example = JSON.parse(readFileSync(join(distDir(layer, base), 'arena.config.example.json'), 'utf8'));
   writeFileSync(join(dir, 'arena.config.json'), JSON.stringify({ ...example, stylesheet }, null, 2));
-  for (const [rel, body] of Object.entries(files)) {
+  for (const [rel, body] of Object.entries(files) as [string, string][]) {
     mkdirSync(join(dir, rel, '..'), { recursive: true });
     writeFileSync(join(dir, rel), body);
   }

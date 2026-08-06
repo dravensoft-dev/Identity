@@ -8,14 +8,14 @@ Steps to release a new version x.x.x of Arena
 README.md:8
 
 verify with: 
-bun scripts/check/arena/check-release.mjs 
+bun scripts/check/arena/check-release.ts 
 (expected a failure with "tag exists")
 
 2. Generate git tag:
 
 git tag -a vx.x.x -m "Arena vx.x.x"
 
-bun scripts/check/arena/check-release.mjs 
+bun scripts/check/arena/check-release.ts 
 (all PASS)
 
 git push --follow-tags origin current-branch-name

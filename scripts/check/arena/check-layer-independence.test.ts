@@ -19,7 +19,7 @@ import {
   staleExemptions,
   staleSpecifierAllowances,
   textualHits,
-} from './check-layer-independence.mjs';
+} from './check-layer-independence.ts';
 import { LAYERS } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 

@@ -11,7 +11,7 @@ import { repoRoot } from '../../lib/arena/repo-root.mjs';
 import {
   parseDsCard, classify, summarizeCards, findCardPages, UNDER_RUN_SLACK,
   measurePage, measureCardPage, mapWithConcurrency, interleaveForDispatch, MEASURE_SCRIPT,
-} from './check-card-viewports.mjs';
+} from './check-card-viewports.ts';
 
 const browser = findChromium();
 

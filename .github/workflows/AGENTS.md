@@ -100,7 +100,7 @@ gap nothing in this repository can close: `workflow_run` reaches only a workflow
 registered on the default branch, so the push that first puts one there cannot dispatch it,
 and re-running that push replays the original event rather than asking the question again.
 A release whose event is missed that way has no other way through. A manual run is safe for
-the same reason an automatic one is: the guard and `check-release.mjs` both run, so the
+the same reason an automatic one is: the guard and `check-release.ts` both run, so the
 answer to "is there anything to publish" is reached identically whoever asked.
 
 The guard asks two questions in order. Is `plugin.json`'s version already on the registry?
@@ -121,7 +121,7 @@ reads. These runs are not jobs of `Arena main` and never appear in its panel, be
 `workflow_run` workflow is a separate run; each publish job is on its own workflow's page, and
 the summary is what that page says without being unfolded.
 
-When the guard says yes, the publish job runs `check-release.mjs` first, so a version bump
+When the guard says yes, the publish job runs `check-release.ts` first, so a version bump
 pushed without its tag is refused loudly rather than published quietly. Then it builds,
 assembles, holds the manifests, and packs. The tarball and a small record of what was
 published go up as an artifact, because a packed tarball is byte-identical to what leaves

@@ -11,11 +11,11 @@ import {
   EXEMPT, SKIPPED_ANYWHERE, SKIPPED_UNDER_FRAMEWORKS, skips, repoRoots, pathPattern,
   documents, namesAFile, citationProblems, zeroDocumentProblems, zeroRootProblems,
   BARE_DOCUMENT, basenames, bareDocumentProblems,
-} from './check-citations.mjs';
+} from './check-citations.ts';
 
 function tree(files) {
   const base = mkdtempSync(join(tmpdir(), 'arena-citations-'));
-  for (const [rel, text] of Object.entries(files)) {
+  for (const [rel, text] of Object.entries(files) as [string, string][]) {
     const path = join(base, rel);
     mkdirSync(join(path, '..'), { recursive: true });
     writeFileSync(path, text);

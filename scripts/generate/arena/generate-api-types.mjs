@@ -14,7 +14,7 @@ const HEADER =
   + ' * Every declaration here is a predefined object or an enum some Arena API\n'
   + ' * contract names. The same body is emitted into both layers so a component\'s\n'
   + ' * import never crosses the contracts/api/ <-> frameworks/ boundary — the rule\n'
-  + ' * tokens.generated.* already carries. scripts/check/arena/check-api.mjs asserts the\n'
+  + ' * tokens.generated.* already carries. scripts/check/arena/check-api.ts asserts the\n'
   + ' * emitted files match contracts/api/types/. See contracts/api/AGENTS.md for the vocabulary. */';
 
 const PRIMITIVE_TS = { string: 'string', number: 'number', boolean: 'boolean' };

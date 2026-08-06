@@ -24,7 +24,7 @@ what a reader **consults** while doing the work:
 - `behaviour/` is one file, because it has no second audience to separate: nobody reads a
   pattern without intending to implement it.
 
-**Every one of those files is named in `SHAPE`**, in `scripts/check/arena/check-contracts.mjs`,
+**Every one of those files is named in `SHAPE`**, in `scripts/check/arena/check-contracts.ts`,
 so a sibling nobody declared fails rather than sitting invisible to every gate that reads a
 level by extension. **Splitting a level is therefore a two-file change**, the document and the
 declaration, and the gate is what makes it one.
@@ -151,8 +151,8 @@ vocabularies a gate reads as two sets.
 
 ## The zero-result guards, by name
 
-`zeroContractProblems` in `check-api.mjs`, `zeroPatternProblems` in `check-behaviour.mjs` and
-`zeroGeneratedCssProblems` in `check-script-tokens.mjs`. `design/` carries the same guard under
+`zeroContractProblems` in `check-api.ts`, `zeroPatternProblems` in `check-behaviour.ts` and
+`zeroGeneratedCssProblems` in `check-script-tokens.ts`. `design/` carries the same guard under
 a different name: `check:dtcg` walks `contracts/design/` itself and fails the same way on zero
 token files.
 
@@ -196,7 +196,7 @@ framework is added without touching the language.
   `check-ramp.ts` asserts the shipped ramp clears every gate in both themes;
   `check-text-contrast.ts` measures every text level against the real surfaces in both
   themes; `validate-palette.mjs` is the vendored data-viz palette validator;
-  `check-release.mjs` asserts the version, the marketplace `ref` and the tag agree; and
+  `check-release.ts` asserts the version, the marketplace `ref` and the tag agree; and
   `serve.mjs` backs `bun run demos`.
 
 **The framework layers**

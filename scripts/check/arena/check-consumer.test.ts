@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   importedSheets, staleNameProblems, listProblems, assembled, documented, SOURCES, STALE,
-} from './check-consumer.mjs';
+} from './check-consumer.ts';
 
 const ok = { status: 0, stderr: '', theme: null, icons: null };
 

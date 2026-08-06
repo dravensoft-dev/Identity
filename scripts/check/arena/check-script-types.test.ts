@@ -11,7 +11,7 @@ import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
-import { PROJECTS, CHECKED_EXTENSIONS, sourcesUnder, unreachedProblems } from './check-script-types.mjs';
+import { PROJECTS, CHECKED_EXTENSIONS, sourcesUnder, unreachedProblems } from './check-script-types.ts';
 
 const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0].project), 'utf8'));
 

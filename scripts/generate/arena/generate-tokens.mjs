@@ -67,7 +67,7 @@ const SCRIPT_HEADER =
   + ' *\n'
   + ' * Every export here is a token flagged script-readable in contracts/design/ and\n'
   + ' * emitted as a bare number because JS arithmetic consumes it. Each one also\n'
-  + ' * ships as a CSS custom property; scripts/check/arena/check-script-tokens.mjs asserts the\n'
+  + ' * ships as a CSS custom property; scripts/check/arena/check-script-tokens.ts asserts the\n'
   + ' * two carry the same value. A value bound at import time cannot re-theme or\n'
   + ' * re-densify — that is the accepted price of reading it in JS at all. */';
 

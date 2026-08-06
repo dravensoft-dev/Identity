@@ -1,4 +1,4 @@
-/* Covers check-icons.mjs. The weight map is a fixture rather than the installed package, so a
+/* Covers check-icons.ts. The weight map is a fixture rather than the installed package, so a
  * case states a name and a weight without 1500 real ones behind it, and the vacuous-pass guard
  * is asserted directly: a gate that finds no stylesheet must fail rather than report clean. */
 
@@ -10,7 +10,7 @@ import { join, dirname } from 'node:path';
 import {
   EXEMPT, ICON_TOKEN, SCANNED_ROOTS, everyGlyph, scannedFiles, staleExemptions, tokenProblems,
   weightsFrom, zeroWeightProblems,
-} from './check-icons.mjs';
+} from './check-icons.ts';
 
 const ARENA_WEIGHTS = new Map([
   ['ph', new Set(['ph-house', 'ph-gear', 'ph-acorn'])],
@@ -20,7 +20,7 @@ const ARENA_WEIGHTS = new Map([
 
 function tree(files) {
   const root = mkdtempSync(join(tmpdir(), 'arena-icons-'));
-  for (const [rel, body] of Object.entries(files)) {
+  for (const [rel, body] of Object.entries(files) as [string, string][]) {
     const path = join(root, rel);
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, body);

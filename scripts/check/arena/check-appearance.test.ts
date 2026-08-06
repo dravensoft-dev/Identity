@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import {
   EXEMPT, adoptionProblems, angularRendersManifest, collect, literalStyleProblems,
   reactRendersManifest, styleObjectBodies, valueIsLiteral,
-} from './check-appearance.mjs';
+} from './check-appearance.ts';
 
 const at = (path, text) => literalStyleProblems(text, path).map((p) => `${p.key}=${p.value}`);
 

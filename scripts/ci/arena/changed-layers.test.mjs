@@ -18,7 +18,7 @@ test('a Tailwind change routes to both other layers, because both compile what i
 });
 
 test('a change to anything shared routes to every layer', () => {
-  for (const shared of ['contracts/api/components/ArenaButton.json', 'scripts/check/arena/check-api.mjs',
+  for (const shared of ['contracts/api/components/ArenaButton.json', 'scripts/check/arena/check-api.ts',
     'package.json', 'bun.lock', '.github/workflows/pr.yml']) {
     assert.deepEqual(
       layersChanged([shared]),

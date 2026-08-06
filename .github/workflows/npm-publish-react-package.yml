@@ -130,7 +130,7 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - name: the tag exists and the plugin.json it serves hands out this version
-        run: bun scripts/check/arena/check-release.mjs
+        run: bun scripts/check/arena/check-release.ts
 
       - name: build the sources the package is assembled from
         run: bun run build

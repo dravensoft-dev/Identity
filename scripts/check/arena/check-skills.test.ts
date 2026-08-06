@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   skillProblems, firstDifference, zeroDeclarationProblems, trackingProblems,
-} from './check-skills.mjs';
+} from './check-skills.ts';
 import { SKILL_TARGETS } from '../../generate/arena/generate-skills.mjs';
 
 test('every committed index matches a fresh emit', () => {

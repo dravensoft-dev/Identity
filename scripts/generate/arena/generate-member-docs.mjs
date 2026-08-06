@@ -1,7 +1,7 @@
 /* Writes each contracted member's `description` into both layers' own TypeScript, above the
  * member it describes, so tsc and ng-packagr carry it into what a consumer's editor reads.
  * Nothing here transforms an emitted declaration: the fix is source, and the compiler does the
- * rest. check-api.mjs then holds every block equal to its contract, so the copy cannot rot. */
+ * rest. check-api.ts then holds every block equal to its contract, so the copy cannot rot. */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -93,7 +93,7 @@ export function componentSources(resolveReact, resolveAngular, readLayer, exists
 async function main() {
   const { existsSync, readdirSync } = await import('node:fs');
   const { bindingName, resolveReactImplementations, resolveAngularImplementations } =
-    await import('../../check/arena/check-api.mjs');
+    await import('../../check/arena/check-api.ts');
   const { readLayer } = await import('../../lib/arena/layers.mjs');
 
   const dir = join(root, 'contracts/api/components');

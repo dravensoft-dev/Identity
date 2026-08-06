@@ -5,7 +5,7 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
 import { PREFIX } from './check-structure.mjs';
 import {
@@ -14,8 +14,9 @@ import {
 } from '../../lib/arena/api-surface.mjs';
 import { pascal, readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
+import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 
-const FORMS = new Set(['primitive', 'enum', 'object', 'array', 'slot', 'event', 'consumerData', 'functionInput']);
+const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
 export function zeroContractProblems({ contracts, types }) {
@@ -34,7 +35,7 @@ export function docProblems(contract, docs, layer) {
   const where = `${layer}/${contract.component}`;
   const wanted = new Map();
 
-  for (const [name, spec] of Object.entries(contract.api ?? {})) {
+  for (const [name, spec] of memberEntries(contract.api)) {
     if (!spec.description) continue;
 
     if (layer === 'angular' && spec.form === 'slot') continue;
@@ -92,7 +93,7 @@ export function validateTypes(types) {
       continue;
     }
     if (type.kind !== 'object') { problems.push(`${type.name}: unknown kind "${type.kind}"`); continue; }
-    for (const [field, spec] of Object.entries(type.fields ?? {})) {
+    for (const [field, spec] of fieldEntries(type.fields)) {
       if (spec.form === 'primitive') {
         if (!PRIMITIVE_TYPES.has(spec.type)) problems.push(`${type.name}.${field}: "${spec.type}" is not a primitive`);
       } else if (spec.form === 'enum') {
@@ -125,7 +126,7 @@ export function validateContract(contract, typeNames) {
   const CONSUMER_DATA = 'consumerData';
   const held = [];
   const routes = [];
-  for (const [member, spec] of Object.entries(contract.api ?? {})) {
+  for (const [member, spec] of memberEntries(contract.api)) {
     if (!FORMS.has(spec.form)) {
       problems.push(`${where}.${member}: form "${spec.form}" is none of the nine — see contracts/api/AGENTS.md`);
       continue;
@@ -188,7 +189,7 @@ export function compareSurface(contract, members, layer, types = new Map()) {
 
   const expected = new Map();
   const collided = new Set();
-  for (const [name, spec] of Object.entries(contract.api ?? {})) {
+  for (const [name, spec] of memberEntries(contract.api)) {
     const bound = bindingName(name, spec.form, layer);
     if (expected.has(bound)) {
 
@@ -313,7 +314,7 @@ const read = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
 export const REACT_SURFACE_EXTENSIONS = ['.tsx', '.d.ts'];
 
-export function resolveReactImplementations(tree, exists) {
+export function resolveReactImplementations(tree: Record<string, string[]>, exists) {
   const implementations = new Map();
   const problems = [];
   for (const [category, dirs] of Object.entries(tree))
@@ -378,7 +379,7 @@ export function reactImplementationProblems(contract, declarationPath, readFile 
     );
   }
   if (!impl.destructures) return problems;
-  for (const [member, spec] of Object.entries(contract.api ?? {})) {
+  for (const [member, spec] of memberEntries(contract.api)) {
     if (!COMPARABLE_DEFAULT.has(spec.form)) continue;
     if (!impl.defaults.has(member)) continue;
     problems.push(...defaultProblems(where, member, spec.default, impl.defaults.get(member)));
@@ -397,7 +398,7 @@ function reactImplementations() {
   };
 }
 
-export function resolveAngularImplementations(tree, exists) {
+export function resolveAngularImplementations(tree: Record<string, string[]>, exists) {
   const implementations = new Map();
   const problems = [];
   for (const [category, dirs] of Object.entries(tree))

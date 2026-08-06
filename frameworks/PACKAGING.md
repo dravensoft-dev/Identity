@@ -257,7 +257,7 @@ git tag -a vX.Y.Z -m "Arena vX.Y.Z"
 git push origin main --follow-tags
 ```
 
-`--follow-tags` matters here for a second reason now: the workflow runs `check-release.mjs`
+`--follow-tags` matters here for a second reason now: the workflow runs `check-release.ts`
 before it publishes anything, and that gate refuses a version whose tag does not exist and
 does not serve it. A version bump pushed without its tag is rejected loudly rather than
 published quietly.
@@ -283,7 +283,7 @@ Three things about the publish itself, each of which has a way of going wrong:
 Still possible, and the fallback when the workflow cannot run:
 
 ```bash
-bun scripts/check/arena/check-release.mjs
+bun scripts/check/arena/check-release.ts
 bun run build                   # the generated sources build:packages reads
 bun run build:packages          # the manifests take the version from plugin.json here
 bun run check:packages          # and this fails if they did not
@@ -333,6 +333,6 @@ nothing in this repository would notice.
 
 The mechanism inherits the release rule it always had: the version moves in `plugin.json`,
 `marketplace.json` and the README's artifact list together, `source.ref`
-names the tag, and `check-release.mjs` refuses the combination that fails silently. The two
+names the tag, and `check-release.ts` refuses the combination that fails silently. The two
 manifests take that same version from `plugin.json` at assembly, so a published package can
 never disagree with the tag it was cut from.

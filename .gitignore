@@ -30,7 +30,7 @@ node_modules/
 # network, the same reason UNMARKED already gives the .woff2 binaries themselves.
 # Everything a script writes under frameworks/ is read by Arena's own tooling or assembled
 # into a package, and is ignored. Each reason lives beside its pattern in UNTRACKED, in
-# scripts/check/arena/check-generated.mjs.
+# scripts/check/arena/check-generated.ts.
 #
 # The pattern reaches a .generated. name and nothing else, which is why the consumer branch's
 # generated indexes, frameworks/SKILL.md and one per layer, need no exception here: they are

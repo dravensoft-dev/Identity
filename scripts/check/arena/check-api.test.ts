@@ -6,7 +6,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.mjs';
 import {
   bindingName, validateTypes, validateContract, compareSurface, docProblems,
   resolveAngularImplementations, resolveReactImplementations, zeroContractProblems,
-} from './check-api.mjs';
+} from './check-api.ts';
 import { pascal } from '../../lib/arena/layers.mjs';
 import { buildApiModules } from '../../generate/arena/generate-api-types.mjs';
 import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.mjs';
@@ -27,7 +27,7 @@ const TREE = { charts: ['arena-bar-chart'], display: ['arena-tag', 'arena-unauth
 const layerExists = (layer, ext) => (tree, missing = []) => {
   const gone = new Set(missing);
   const present = new Set();
-  for (const [category, dirs] of Object.entries(tree))
+  for (const [category, dirs] of Object.entries(tree) as [string, string[]][])
     for (const dir of dirs)
       if (!gone.has(dir)) present.add(`frameworks/${layer}/components/${category}/${dir}/${pascal(dir)}.${ext}`);
   return (path) => present.has(path);

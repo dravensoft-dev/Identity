@@ -73,7 +73,7 @@ function withTimeout(promise, ms, message) {
   return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
 }
 
-function boundedSend(cdp, method, params, sessionId) {
+function boundedSend(cdp, method, params, sessionId?) {
   return withTimeout(
     cdp.send(method, params, sessionId),
     NAVIGATE_TIMEOUT_MS,

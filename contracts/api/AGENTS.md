@@ -166,7 +166,7 @@ re-export rather than resolving the collision.
 ## What the gate asserts, and what it cannot
 
 `bun run check:api` makes six assertions: coverage, form, agreement, the derived rules,
-generated drift, and that every member's description reached both layers' own source. See `scripts/check/arena/check-api.mjs`.
+generated drift, and that every member's description reached both layers' own source. See `scripts/check/arena/check-api.ts`.
 
 **Three of the six derived rules are authoring rules the audit applies, and no gate asserts
 them.** R2, "who draws it", is a fact about intent and markup ownership rather than about

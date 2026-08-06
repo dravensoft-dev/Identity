@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { promptProblems, regionOf, zeroScanProblems } from './check-prompts.mjs';
+import { promptProblems, regionOf, zeroScanProblems } from './check-prompts.ts';
 import { openLine, CLOSE_LINE } from '../../generate/arena/generate-prompt-api.mjs';
 
 test('every committed prompt carries the region its contract emits', () => {

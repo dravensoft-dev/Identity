@@ -59,7 +59,7 @@ lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the
 artifact list; because the plugin is served from the tag, `source.ref` must name it and the tag
 must exist on the release commit. **Forgetting the `ref` fails silently**: the marketplace
 advertises a new version while Claude Code keeps fetching the old tag and resolves the old
-version, so nothing errors and the update is never offered. `bun scripts/check/arena/check-release.mjs`
+version, so nothing errors and the update is never offered. `bun scripts/check/arena/check-release.ts`
 is what refuses that combination. **Because a published tag is a promise about the tree it
 resolves to, history is never rewritten**, and `git filter-repo` and every equivalent are
 refused outright whatever a repository-size argument says.
@@ -104,7 +104,7 @@ two copies and never reads either for meaning. Verify with
 
 ## Documentation rules
 
-- **Every `.md` file stays under 60,000 characters.** `SIZE_EXEMPT` in `check-docs.mjs` names
+- **Every `.md` file stays under 60,000 characters.** `SIZE_EXEMPT` in `check-docs.ts` names
   what is exempt by charter, and `SIZE_ALLOWANCE` beside it names what holds to a **higher**
   limit instead, with its reason. **An allowance is not an exemption**: the document is still
   measured, and one that falls back inside the shared limit **fails as a stale allowance**, so

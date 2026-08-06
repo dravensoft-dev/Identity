@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { describeBinding, zeroPatternProblems } from './check-behaviour.mjs';
+import { describeBinding, zeroPatternProblems } from './check-behaviour.ts';
 
 const flatAlert = { pattern: 'alert', exceptions: [] };
 const flatStatus = { pattern: 'status', exceptions: [] };
