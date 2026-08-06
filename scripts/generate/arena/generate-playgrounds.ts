@@ -10,6 +10,7 @@ import { join, dirname } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { kebab } from '../../lib/arena/layers.ts';
 import { playgroundModel } from '../../lib/arena/playground-model.ts';
+import type { Place, Places, PlaygroundModel } from '../../lib/arena/playground-model.ts';
 import { reactEntry, reactPage } from '../../lib/react/playground-react.ts';
 import { angularEntry, angularPage, MARKERS_SOURCE } from '../../lib/angular/playground-angular.ts';
 
@@ -74,7 +75,8 @@ export function loadPlaces(base = root) {
   return out;
 }
 
-export function placesFor(model, all) {
+export function placesFor(model: Pick<PlaygroundModel, 'component' | 'uses'>,
+  all: Map<string, Place>): Places {
   const out = new Map();
   for (const name of [model.component, ...model.uses]) {
     const place = all.get(name);

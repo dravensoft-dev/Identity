@@ -9,12 +9,14 @@ import { HAND_DRAWN, categoryOf, manifestFor } from '../tailwind/manifest-surfac
 import { PREFLIGHT, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 import { composedBy, composedGraph } from './composed-surfaces.ts';
 import { kebab } from './layers.ts';
+import type { PlaygroundModel } from './playground-model.ts';
 
 export const UP = '../../../../../';
 
 export const PHOSPHOR_WEIGHTS = ['bold', 'fill', 'duotone'];
 
-export function surfacesDrawn(model, graph = composedGraph(), root?) {
+export function surfacesDrawn(model: Pick<PlaygroundModel, 'component' | 'uses'>,
+  graph = composedGraph(), root?: string) {
   const instantiated = [model.component, ...model.uses];
   const surfaces = new Set<string>();
   for (const name of [...instantiated, ...composedBy(instantiated, graph)]) {
@@ -28,7 +30,8 @@ export function surfacesDrawn(model, graph = composedGraph(), root?) {
   return [...surfaces].sort();
 }
 
-export function sheetLinks(model, graph = composedGraph(), root?) {
+export function sheetLinks(model: Pick<PlaygroundModel, 'component' | 'uses'>,
+  graph = composedGraph(), root?: string) {
   const link = (rel: string) => `<link rel="stylesheet" href="${UP}${rel}">`;
   return [
     link(PREFLIGHT),
@@ -49,7 +52,9 @@ export function toggleDock() {
   ].join('\n');
 }
 
-export function playgroundPage({ component, banner, mount, head = '', script }) {
+export function playgroundPage({ component, banner, mount, head = '', script }: {
+  component: string; banner: string; mount: string; head?: string; script: string;
+}) {
   const styles = [
     `<link rel="stylesheet" href="${UP}intro/styles.css">`,
     `<link rel="stylesheet" href="${UP}intro/toggle.css">`,

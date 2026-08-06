@@ -42,6 +42,9 @@ export type TypeContract = {
   fields?: Record<string, MemberSpec>;
 };
 
+export type Contracts = Map<string, ComponentContract>;
+export type Types = Map<string, TypeContract> | Record<string, TypeContract>;
+
 export const memberEntries = (api): [string, MemberSpec][] => Object.entries(api ?? {});
 
 export const fieldEntries = (fields): [string, MemberSpec][] => Object.entries(fields ?? {});

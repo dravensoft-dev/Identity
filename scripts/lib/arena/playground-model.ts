@@ -9,6 +9,7 @@
  * it spreads into a Knob; a slot list holds nodes and a HOST's may also hold $subject,
  * which wrap() answers before any renderer recurses. */
 import { memberEntries, fieldEntries } from './contract-shapes.ts';
+import type { ComponentContract, MemberSpec, TypeContract, Types } from './contract-shapes.ts';
 
 
 export const PINNED = 'pinned';
@@ -84,22 +85,22 @@ export type PlaygroundModel = {
 };
 
 export class UnmodelledForm extends Error {
-  constructor(message) { super(message); this.name = 'UnmodelledForm'; }
+  constructor(message: string) { super(message); this.name = 'UnmodelledForm'; }
 }
 
-export function typeOf(types, name: string) {
+export function typeOf(types: Types, name: string) {
   const found = types instanceof Map ? types.get(name) : types?.[name];
   if (!found) throw new UnmodelledForm(`no type named ${name} is declared in contracts/api/types`);
   return found;
 }
 
-export function bindClass(spec) {
+export function bindClass(spec: Pick<MemberSpec, 'required' | 'default'>) {
   if (spec.required) return PINNED;
   if ('default' in spec) return DEFAULTED;
   return OPTIONAL;
 }
 
-export function neutralValue(spec, types) {
+export function neutralValue(spec: MemberSpec, types: Types): unknown {
   if (spec.form === 'primitive') {
     if (spec.type === 'boolean') return false;
     if (spec.type === 'number') return 0;
@@ -113,8 +114,8 @@ export function neutralValue(spec, types) {
   throw new UnmodelledForm(`no neutral value for form ${spec.form}`);
 }
 
-export function neutralObject(type, types) {
-  const out = {};
+export function neutralObject(type: TypeContract, types: Types) {
+  const out: Record<string, unknown> = {};
   for (const [name, field] of fieldEntries(type.fields)) {
     if ('default' in field) out[name] = field.default;
     else if (field.required) out[name] = neutralValue(field, types);
@@ -122,7 +123,7 @@ export function neutralObject(type, types) {
   return out;
 }
 
-export function objectFields(type, types) {
+export function objectFields(type: TypeContract, types: Types) {
   return fieldEntries(type.fields).map(([name, field]) => ({
     name,
     form: field.form,
@@ -133,7 +134,7 @@ export function objectFields(type, types) {
   }));
 }
 
-export function controlFor(spec, types, nodes?): Control {
+export function controlFor(spec: MemberSpec, types: Types, nodes?: FixtureChild[] | null): Control {
   if (spec.form === 'primitive') {
     if (spec.type === 'boolean') return { control: 'check', codec: 'flag' };
     if (spec.type === 'number') return { control: 'number', codec: 'number' };
@@ -159,11 +160,13 @@ export function controlFor(spec, types, nodes?): Control {
   );
 }
 
-export function isTextNodes(nodes) {
-  return Array.isArray(nodes) && nodes.length === 1 && typeof nodes[0] === 'object' && typeof nodes[0].text === 'string';
+export function isTextNodes(nodes: FixtureChild[] | null): nodes is [{ text: string }] {
+  return Array.isArray(nodes) && nodes.length === 1
+    && typeof nodes[0] === 'object' && nodes[0] !== null && typeof nodes[0].text === 'string';
 }
 
-export function knobFor(component: string, name: string, spec, fixture, types): Knob {
+export function knobFor(component: string, name: string, spec: MemberSpec,
+  fixture: Pick<Fixture, 'seed' | 'slots'>, types: Types): Knob {
   if (spec.form === 'slot' && spec.params) {
     throw new UnmodelledForm(
       `${component}.${name} is a parameterised slot, which is a per-item renderer no layer may declare`,
@@ -201,7 +204,7 @@ export function knobFor(component: string, name: string, spec, fixture, types): 
   };
 }
 
-export function eventFor(name: string, spec, fixture): PlaygroundEvent {
+export function eventFor(name: string, spec: MemberSpec, fixture: Pick<Fixture, 'bind'>): PlaygroundEvent {
   return {
     name,
     payload: spec.payload ?? null,
@@ -210,7 +213,7 @@ export function eventFor(name: string, spec, fixture): PlaygroundEvent {
   };
 }
 
-export function collectUses(node, into = []) {
+export function collectUses(node: FixtureChild, into: string[] = []): string[] {
   if (node === SUBJECT || node === null || node === undefined) return into;
   if (Array.isArray(node)) { for (const one of node) collectUses(one, into); return into; }
   if (typeof node !== 'object') return into;
@@ -219,14 +222,15 @@ export function collectUses(node, into = []) {
   return into;
 }
 
-export function countSubjects(node) {
+export function countSubjects(node: FixtureChild): number {
   if (node === SUBJECT) return 1;
   if (Array.isArray(node)) return node.reduce((n, one) => n + countSubjects(one), 0);
   if (node === null || typeof node !== 'object') return 0;
   return Object.values(node.slots ?? {}).reduce((n, list) => n + countSubjects(list), 0);
 }
 
-export function playgroundModel(contract, fixture, types): PlaygroundModel {
+export function playgroundModel(contract: ComponentContract,
+  fixture: Omit<Fixture, 'component'>, types: Types): PlaygroundModel {
   const knobs: Knob[] = [];
   const events: PlaygroundEvent[] = [];
   for (const [name, spec] of memberEntries(contract.api)) {

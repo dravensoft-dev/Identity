@@ -15,7 +15,7 @@ const SOURCE = /\.(tsx?|jsx?|mjs)$/;
 
 export function componentSources(layer: string, root = repoRoot) {
   const base = join(root, 'frameworks', layer, 'components');
-  const found = [];
+  const found: { name: string; path: string }[] = [];
   if (!existsSync(base)) return found;
   for (const category of readdirSync(base, { withFileTypes: true })) {
     if (!category.isDirectory()) continue;
@@ -33,7 +33,7 @@ export function componentSources(layer: string, root = repoRoot) {
 
 export function importedComponents(text: string, path: string, layer: string, root = repoRoot) {
   const prefix = `frameworks/${layer}/components/`;
-  const names = [];
+  const names: string[] = [];
   for (const [, specifier] of text.matchAll(SPECIFIER)) {
     const target = relative(root, resolve(dirname(path), specifier)).split('\\').join('/');
     if (!target.startsWith(prefix)) continue;
@@ -65,7 +65,7 @@ export function composedGraph(root = repoRoot) {
   return graph;
 }
 
-export function composedBy(names, graph) {
+export function composedBy(names: string[], graph: Map<string, Set<string>>): string[] {
   const seen = new Set(names);
   const queue = [...names];
   while (queue.length > 0) {

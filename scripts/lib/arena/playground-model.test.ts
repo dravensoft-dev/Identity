@@ -5,8 +5,9 @@ import {
   isTextNodes, collectUses, countSubjects, typeOf, UnmodelledForm,
   PINNED, DEFAULTED, OPTIONAL, SUBJECT,
 } from './playground-model.ts';
+import type { ComponentContract, TypeContract } from './contract-shapes.ts';
 
-const types = {
+const types: Record<string, TypeContract> = {
   ArenaTone: { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] },
   ArenaSortDirection: { name: 'ArenaSortDirection', kind: 'enum', values: ['asc', 'desc'] },
   ArenaTableSort: {
@@ -27,7 +28,7 @@ const types = {
   },
 };
 
-const contract = {
+const contract: ComponentContract = {
   component: 'Widget',
   description: 'A widget.',
   affordances: ['hover'],

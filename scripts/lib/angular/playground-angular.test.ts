@@ -7,6 +7,7 @@ import {
   knobsInterface, angularEntry, angularPage, renderNode, slotBlock, attributeText, MARKERS_SOURCE,
 } from './playground-angular.ts';
 import { repoRoot as root } from '../arena/repo-root.ts';
+import type { Knob, PlaygroundModel } from '../arena/playground-model.ts';
 
 const places = new Map([
   ['ArenaCard', { name: 'ArenaCard', category: 'display', dir: 'arena-card', self: true }],
@@ -22,12 +23,12 @@ const contracts = new Map([
 const MARKERS = "@Directive({ selector: '[action]', standalone: true }) export class ArenaAction {}\n"
   + "@Directive({ selector: '[footer]', standalone: true }) export class ArenaFooter {}\n";
 
-const knob = (over) => ({
+const knob = (over: Partial<Knob>): Knob => ({
   member: 'x', form: 'primitive', type: 'string', bind: 'optional', bound: false,
   control: 'text', codec: 'raw', initial: '', nodes: null, doc: 'A member.', ...over,
 });
 
-const model = {
+const model: PlaygroundModel = {
   component: 'ArenaCard',
   description: 'A surface.',
   note: 'A note.',
