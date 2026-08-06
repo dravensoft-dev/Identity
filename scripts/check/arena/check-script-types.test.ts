@@ -43,9 +43,12 @@ test('the strict family is enumerated, so every flag is a decision somebody made
     assert.equal(options[on], true, `${on} is on and must stay on`);
 
   assert.equal(options.noImplicitAny, false,
-    'the last one to arrive: 1,642 parameters and locals have no annotation yet');
+    'off by decision rather than oversight: 563 parameters and locals carry no annotation '
+    + 'yet, down from 1,643. Turning it on is the remaining work, not a switch.');
   assert.equal(options.strictNullChecks, false,
-    'next after this: 999 sites read something that may be null or undefined');
+    'off for the same reason and second in line: 970 alone, and 812 with noImplicitAny on. '
+    + 'The two overlap, so the order matters -- noImplicitAny first, or evolving-array '
+    + 'inference is unavailable and hundreds of never[] errors appear that it would erase.');
 });
 
 test('a .mjs is resolved and never checked, which is what the two vendored copies need', () => {
