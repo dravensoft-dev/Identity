@@ -4,13 +4,23 @@
  * the descendant scan sees an absolutely-positioned overlay but never a trailing collapsed
  * margin, and body's border-box bottom sees that margin -- it lands inside body's box only
  * because the harness gives body bottom padding -- but never the out-of-flow overlay.
- * Removing either term reopens one case silently, since the gate only fails on clip. */
+ * Removing either term reopens one case silently, since the gate only fails on clip. * A DsCard is what a page's first line declares, and a Measured is what the browser
+ * answered about it. */
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
+import type { CdpSend } from '../../lib/arena/cdp.ts';
+
+type DsCard = { group: string; name: string; width: number; height: number };
+
+type Measured = {
+  rendered: boolean;
+  timedOut?: boolean;
+  [metric: string]: any;
+};
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -67,13 +77,13 @@ const NAVIGATE_TIMEOUT_MS = 10_000;
 
 const EVALUATE_TIMEOUT_MS = 30_000;
 
-function withTimeout(promise, ms, message) {
-  let timer;
-  const bound = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
+  let timer: ReturnType<typeof setTimeout>;
+  const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
   return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
 }
 
-function boundedSend(cdp, method, params, sessionId?) {
+function boundedSend(cdp: CdpSend, method: string, params: unknown, sessionId?: string): Promise<any> {
   return withTimeout(
     cdp.send(method, params, sessionId),
     NAVIGATE_TIMEOUT_MS,
@@ -81,12 +91,12 @@ function boundedSend(cdp, method, params, sessionId?) {
   );
 }
 
-async function freezeAnimations(cdp, sessionId) {
+async function freezeAnimations(cdp: CdpSend, sessionId: string) {
   await boundedSend(cdp, 'Animation.enable', {}, sessionId);
   await boundedSend(cdp, 'Animation.setPlaybackRate', { playbackRate: 0 }, sessionId);
 }
 
-export async function measurePage(cdp, url, viewport) {
+export async function measurePage(cdp: CdpSend, url: string, viewport: { width: number; height: number }) {
   const { targetId } = await boundedSend(cdp, 'Target.createTarget', { url: 'about:blank' });
   try {
     const { sessionId } = await boundedSend(cdp, 'Target.attachToTarget', { targetId, flatten: true });
@@ -126,7 +136,7 @@ export const UNDER_RUN_SLACK = 120;
 
 const SKIP_DIRS = new Set(['node_modules', '.git', '.claude-plugin', 'assets']);
 
-export function parseDsCard(html) {
+export function parseDsCard(html: string): DsCard | null {
   const first = html.split('\n', 1)[0];
   if (!first.includes('@dsCard')) return null;
   const attr = (name: string) => new RegExp(`${name}="([^"]*)"`).exec(first)?.[1];
@@ -136,8 +146,8 @@ export function parseDsCard(html) {
   return { group: attr('group') ?? '', name: attr('name') ?? '', width: Number(size[1]), height: Number(size[2]) };
 }
 
-export function findCardPages(root) {
-  const found = [];
+export function findCardPages(root: string) {
+  const found: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
@@ -152,7 +162,9 @@ export function findCardPages(root) {
   return found.sort();
 }
 
-export function classify({ file, declared, measured }) {
+export function classify({ file, declared, measured }: {
+  file: string; declared: Pick<DsCard, 'width' | 'height'>; measured: Measured;
+}) {
   if (!measured.rendered) {
     return {
       file,
@@ -195,8 +207,8 @@ export function classify({ file, declared, measured }) {
   return { file, status: 'ok', message: '' };
 }
 
-export function summarizeCards(results) {
-  const of = (status) => results.filter((r) => r.status === status);
+export function summarizeCards(results: { file: string; status: string; message?: string }[]) {
+  const of = (status: string) => results.filter((r) => r.status === status);
   const clips = of('clip');
   const unders = of('under');
   const unrendered = of('unrendered');
@@ -224,7 +236,7 @@ export function summarizeCards(results) {
   return { text: lines.join('\n'), failed: clips.length, warned: unders.length, unrendered: unrendered.length };
 }
 
-export async function measureCardPage(cdp, file: string, pageRoot, port) {
+export async function measureCardPage(cdp: CdpSend, file: string, pageRoot: string, port: number) {
   const declared = parseDsCard(readFileSync(join(pageRoot, file), 'utf8'));
   const url = `http://127.0.0.1:${port}/${file.split('/').map(encodeURIComponent).join('/')}`;
   try {
@@ -239,7 +251,7 @@ export async function measureCardPage(cdp, file: string, pageRoot, port) {
   }
 }
 
-function skip(reason) {
+function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-card-viewports: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   if (code === 2) console.error('  check-all reports the run INCOMPLETE; the repository declares ARENA_CHECK_STRICT=1, so this environment overrides it.');
@@ -248,7 +260,8 @@ function skip(reason) {
 
 const PAGE_CONCURRENCY = 1;
 
-export async function mapWithConcurrency(items, limit, fn) {
+export async function mapWithConcurrency<T, R>(items: T[], limit: number,
+  fn: (item: T) => Promise<R>): Promise<R[]> {
   const results = new Array(items.length);
   let next = 0;
   async function worker() {
@@ -262,9 +275,9 @@ export async function mapWithConcurrency(items, limit, fn) {
   return results;
 }
 
-export function interleaveForDispatch(items, groups) {
+export function interleaveForDispatch<T>(items: T[], groups: number): T[] {
   const width = Math.max(1, Math.min(groups, items.length || 1));
-  const rows = Array.from({ length: width }, () => []);
+  const rows: T[][] = Array.from({ length: width }, (): T[] => []);
   items.forEach((item, i) => rows[i % width].push(item));
   return rows.flat();
 }
@@ -275,10 +288,10 @@ async function main() {
 
   const pages = findCardPages(root);
   const server = await startStaticServer(root);
-  let chrome;
-  let cdp;
+  let chrome: Awaited<ReturnType<typeof launchChromium>> | undefined;
+  let cdp: Awaited<ReturnType<typeof connect>> | undefined;
   try {
-    chrome = await launchChromium(browser.path);
+    chrome = await launchChromium(browser.path as string);
     cdp = await connect(chrome.wsUrl);
   } catch (err) {
     await server.close();

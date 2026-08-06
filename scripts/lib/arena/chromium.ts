@@ -1,3 +1,8 @@
+/* Finds and launches a headless browser for the three gates that need one. findChromium
+ * answers the executable, or nothing and the reason, because each of those gates decides
+ * for itself what the absence costs. CHROME_PATH is terminal rather than a preference:
+ * set and pointing at nothing, it says so instead of falling back to the candidates. */
+
 import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,7 +19,9 @@ export const CANDIDATES = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 ];
 
-export function findChromium(env = arenaEnv(), exists = existsSync) {
+export type Chromium = { path: string; reason?: undefined } | { path: null; reason: string };
+
+export function findChromium(env = arenaEnv(), exists = existsSync): Chromium {
   const named = env.CHROME_PATH;
   if (named) {
     return exists(named)
@@ -29,7 +36,7 @@ export function findChromium(env = arenaEnv(), exists = existsSync) {
   };
 }
 
-export async function launchChromium(exePath) {
+export async function launchChromium(exePath: string): Promise<{ wsUrl: string; kill: () => void }> {
   const profile = mkdtempSync(join(tmpdir(), 'arena-chromium-'));
 
   const child = spawn(exePath, [
@@ -62,5 +69,5 @@ export async function launchChromium(exePath) {
     child.on('error', (err) => { clearTimeout(timer); reject(err); });
   }).catch((err) => { kill(); throw err; });
 
-  return { wsUrl, kill };
+  return { wsUrl: wsUrl as string, kill };
 }

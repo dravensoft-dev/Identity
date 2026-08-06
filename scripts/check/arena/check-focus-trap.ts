@@ -1,18 +1,19 @@
-/* The boundary wrap of a trap is Arena's own .focus() call and happy-dom honours it. The INTERIOR
- * is native sequential focus navigation, which happy-dom does not have -- a suite asserting it
- * there passes identically against a perfect trap and against none, which is why the record said
- * a person had to check it. check:cards already drives real Chromium over CDP, and the same
- * connection presses a real Tab. TRAPS names a page per layer that binds dialog-modal, because
- * the contract is the authority and each layer answers it separately. Each page opens its panel
- * from its own fixture, so no button has to be found by its text: a demo page whose copy moved
- * used to walk a page with nothing open and report a trap that holds. FOCUSABLE repeats :not([tabindex="-1"]) on every clause because a selector list
- * is OR'd -- writing it loose once made this gate call a correct combobox a broken trap, which
- * is the same hazard the trap's own selector carries a note about. */
+/* The boundary wrap of a trap is Arena's own .focus() call and happy-dom honours it. The
+ * INTERIOR is native sequential focus navigation, which happy-dom does not have: a suite
+ * asserting it there passes identically against a perfect trap and against none, which is
+ * why the record said a person had to check it. check:cards already drives real Chromium
+ * over CDP, and the same connection presses a real Tab. TRAPS names a page per layer that
+ * binds dialog-modal, since the contract is the authority and each layer answers it
+ * separately. Each page opens its panel from its own fixture, so no button is found by its
+ * text: a page whose copy moved used to be walked with nothing open. FOCUSABLE repeats
+ * :not([tabindex="-1"]) on every clause because a selector list is OR'd, and writing it
+ * loose once made this gate call a correct combobox a broken trap. */
 
 import { fileURLToPath } from 'node:url';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
+import type { Cdp } from '../../lib/arena/cdp.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -41,8 +42,18 @@ export const TRAPS = [
   { name: 'ArenaCommandPalette:angular', page: 'frameworks/angular/components/navigation/arena-command-palette/ArenaCommandPalette.demo.generated.html' },
 ];
 
-export function walkProblems(name: string, walk) {
-  const problems = [];
+export type TrapWalk = {
+  panel: boolean;
+  focusables?: number;
+  startsInside?: boolean;
+  visited?: number;
+  forward?: { press: number; inside: boolean }[];
+  backward?: { press: number; inside: boolean }[];
+  [other: string]: any;
+};
+
+export function walkProblems(name: string, walk: TrapWalk) {
+  const problems: string[] = [];
   if (!walk.panel) return [`${name}: no ${PANEL} rendered, so nothing was walked`];
   if (walk.focusables === 0) {
     return [`${name}: the panel holds no Tab stop at all, so a keyboard user who reaches it cannot act`];
@@ -65,21 +76,21 @@ export function walkProblems(name: string, walk) {
   return problems;
 }
 
-function withTimeout(promise, ms, message) {
-  let timer;
-  const bound = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
+  let timer: ReturnType<typeof setTimeout>;
+  const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
   return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
 }
 
-async function walkTrap(cdp, url) {
+async function walkTrap(cdp: Cdp, url: string) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   try {
     const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1000, height: 760, deviceScaleFactor: 1, mobile: false }, sessionId);
     await withTimeout(cdp.send('Page.navigate', { url }, sessionId), NAVIGATE_TIMEOUT_MS, `${url}: navigate timed out`);
 
-    const ev = (expression) => cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
-    const tab = async (shift) => {
+    const ev = (expression: string) => cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sessionId);
+    const tab = async (shift: boolean) => {
       const modifiers = shift ? 8 : 0;
       for (const type of ['rawKeyDown', 'keyUp']) {
         await cdp.send('Input.dispatchKeyEvent', { type, windowsVirtualKeyCode: 9, key: 'Tab', code: 'Tab', modifiers }, sessionId);
@@ -132,7 +143,7 @@ async function walkTrap(cdp, url) {
   }
 }
 
-function skip(reason) {
+function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-focus-trap: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   process.exit(code);

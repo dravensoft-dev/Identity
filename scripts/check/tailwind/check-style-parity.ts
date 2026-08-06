@@ -4,7 +4,8 @@
  * the thing under test differs, and reduced motion is measured as a second pass because a
  * `motion-reduce:` variant is hoisted to a sibling `@media` block rather than interleaved
  * the way `@layer utilities` orders it, which is the axis most likely to regress and the one
- * a default `getComputedStyle` cannot reach. */
+ * a default `getComputedStyle` cannot reach. * A ParityPass is one run of the page: how many cases it compared, and the ones whose
+ * two layers disagreed. */
 
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,7 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
+import type { Cdp } from '../../lib/arena/cdp.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.ts';
 import { sheetPath } from '../../build/tailwind/build-tailwind.ts';
@@ -20,7 +22,7 @@ import { sheetPath } from '../../build/tailwind/build-tailwind.ts';
 export const PAGE = 'frameworks/tailwind/StyleParity.generated.html';
 const TIMEOUT_MS = 60_000;
 
-export function sheetsFor(manifests) {
+export function sheetsFor(manifests: Map<string, any>) {
   return [
     '/intro/styles.css',
     '/frameworks/tailwind/Utilities.generated.css',
@@ -28,23 +30,23 @@ export function sheetsFor(manifests) {
   ];
 }
 
-export function allCases(manifests) {
+export function allCases(manifests: Map<string, any>) {
   return [...manifests.values()].flatMap((manifest) => cases(manifest));
 }
 
-export function writePage(manifests, base = root) {
+export function writePage(manifests: Map<string, any>, base = root) {
   const html = parityPage(sheetsFor(manifests), allCases(manifests));
   writeFileSync(join(base, PAGE), html);
   return html;
 }
 
-function withTimeout(promise, ms, message) {
-  return Promise.race([promise, new Promise((_, reject) => {
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
+  return Promise.race([promise, new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error(message)), ms).unref?.();
   })]);
 }
 
-export async function measure(cdp, url, reducedMotion) {
+export async function measure(cdp: Cdp, url: string, reducedMotion: boolean) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
   try {
     const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
@@ -63,7 +65,12 @@ export async function measure(cdp, url, reducedMotion) {
   }
 }
 
-export function problemsFrom(pass, label) {
+type ParityPass = {
+  compared: number;
+  mismatches: { id: string; differing: string[] }[];
+};
+
+export function problemsFrom(pass: ParityPass, label: string) {
   if (pass.compared === 0) {
     return [`${label}: the page mounted no case at all, so this run proves nothing`];
   }
@@ -71,7 +78,7 @@ export function problemsFrom(pass, label) {
     `${label}: ${id} does not match its manifest's own class string: ${differing.join('; ')}`);
 }
 
-function skip(reason) {
+function skip(reason: string) {
   console.log(`check-style-parity: SKIP, ${reason}`);
   process.exit(2);
 }
@@ -99,7 +106,8 @@ async function main() {
   let compared = 0;
   try {
     const url = `http://127.0.0.1:${server.port}/${PAGE}`;
-    for (const [label, reduced] of [['at rest', false], ['under reduced motion', true]]) {
+    const passes: [string, boolean][] = [['at rest', false], ['under reduced motion', true]];
+    for (const [label, reduced] of passes) {
       const pass = await measure(cdp, url, reduced);
       compared += pass.compared;
       problems.push(...problemsFrom(pass, label));

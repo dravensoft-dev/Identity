@@ -17,10 +17,10 @@ const TYPES = {
 };
 
 export function contentType(path: string) {
-  return TYPES[extname(path).toLowerCase()] ?? 'application/octet-stream';
+  return (TYPES as Record<string, string>)[extname(path).toLowerCase()] ?? 'application/octet-stream';
 }
 
-export function resolveInRoot(root, pathname) {
+export function resolveInRoot(root: string, pathname: string) {
   let rel;
   try {
     rel = decodeURIComponent(pathname);
@@ -35,7 +35,7 @@ export function resolveInRoot(root, pathname) {
   return path.startsWith(base + '/') || path === base ? path : null;
 }
 
-export function startStaticServer(root): Promise<{ port: number; close: () => Promise<void> }> {
+export function startStaticServer(root: string): Promise<{ port: number; close: () => Promise<void> }> {
   const server = createServer(async (req, res) => {
     const pathname = new URL(req.url, 'http://127.0.0.1').pathname;
     const path = resolveInRoot(root, pathname);
