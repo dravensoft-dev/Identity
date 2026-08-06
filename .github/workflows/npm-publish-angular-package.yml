@@ -174,7 +174,7 @@ jobs:
       # flag, and needs an npm newer than the one the image ships.
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26
           registry-url: https://registry.npmjs.org
       - name: npm new enough for trusted publishing
         run: |

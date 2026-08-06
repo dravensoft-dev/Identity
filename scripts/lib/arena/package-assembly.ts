@@ -191,7 +191,7 @@ export function baseManifest(root = repoRoot) {
     author: plugin.author,
     publishConfig: { access: 'public' },
     bin: { ...CLI_BINS },
-    engines: { node: '>=22.18' },
+    engines: { node: '>=26' },
   };
 }
 
