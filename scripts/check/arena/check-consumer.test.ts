@@ -9,7 +9,8 @@ import {
   importedSheets, staleNameProblems, listProblems, assembled, documented, SOURCES, STALE,
 } from './check-consumer.ts';
 
-const ok = { status: 0, stderr: '', theme: null, icons: null };
+const ok: { status: number; stderr: string; theme: string | null; icons: string | null } =
+  { status: 0, stderr: '', theme: null, icons: null };
 
 const sheetImports = (...names) => ({
   ...ok,

@@ -54,7 +54,7 @@ export function ngPackageConfig() {
     dest: fromStaging(`${LAYER}/dist`),
     lib: { entryFile: 'index.ts' },
     allowedNonPeerDependencies: Object.keys(RUNTIME_DEPENDENCIES),
-    assets: [],
+    assets: [] as string[],
   };
 }
 

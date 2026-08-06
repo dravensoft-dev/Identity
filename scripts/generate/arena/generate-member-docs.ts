@@ -59,7 +59,11 @@ export function applyDocs(source: string, docs, layer: string) {
   return out.join('\n');
 }
 
-export function docsFor(contract: ContractCandidate, layer: string, bindingName) {
+export function docsFor(
+  contract: ContractCandidate,
+  layer: string,
+  bindingName: (name: string, form: string, layer: string) => string,
+) {
   const docs = new Map();
   for (const [name, spec] of memberEntries(contract.api)) {
     if (!spec.description) continue;
@@ -72,6 +76,12 @@ export function writeMemberDocs({
   contracts, sources, bindingName,
   read = readFileSync as (path: string, encoding: string) => string,
   write = writeFileSync as (path: string, text: string) => void,
+}: {
+  contracts: ContractCandidate[];
+  sources: Map<string, Record<string, string>>;
+  bindingName: (name: string, form: string, layer: string) => string;
+  read?: (path: string, encoding: string) => string;
+  write?: (path: string, text: string) => void;
 }) {
   const written = [];
   for (const contract of contracts) {

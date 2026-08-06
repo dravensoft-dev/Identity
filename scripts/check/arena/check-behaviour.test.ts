@@ -1,16 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { describeBinding, zeroPatternProblems } from './check-behaviour.ts';
+import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 
-const flatAlert = { pattern: 'alert', exceptions: [] };
-const flatStatus = { pattern: 'status', exceptions: [] };
-const casedAlert = {
+const flatAlert: BehaviourBinding = { pattern: 'alert', exceptions: [] };
+const flatStatus: BehaviourBinding = { pattern: 'status', exceptions: [] };
+const casedAlert: BehaviourBinding = {
   cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ],
 };
-const casedOther = {
+const casedOther: BehaviourBinding = {
   cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'alert', exceptions: [] },

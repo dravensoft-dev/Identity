@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import { arenaStyles } from '../../../frameworks/tailwind/ArenaStyles.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import { classesManifest, slotClass, variantClass } from '../../lib/tailwind/component-css.ts';
+import type { CompoundVariant } from '../../lib/tailwind/manifest-shapes.ts';
 
 const manifests = [...layerManifests().values()];
 const named = new Map(manifests.map((m) => [m.component, classesManifest(m)]));
@@ -97,7 +98,7 @@ test('a compound variant applies only when every condition it names holds', () =
   assert.ok(cased.length > 0, 'no manifest carries a compoundVariant, so this proves nothing');
   for (const manifest of cased) {
     const styles = arenaStyles(named.get(manifest.component));
-    manifest.compoundVariants.forEach(({ class: applied, ...conditions }, index: number) => {
+    manifest.compoundVariants.forEach(({ class: applied, ...conditions }: CompoundVariant, index: number) => {
       const holding = styles({ ...manifest.defaultVariants, ...conditions });
       for (const slot of Object.keys(applied ?? {})) {
         assert.ok(holding[slot]().split(/\s+/).includes(`${slotClass(manifest.component, slot)}--cv${index + 1}`),

@@ -43,15 +43,33 @@ export function loadBinding(absPath: string) {
   return JSON.parse(readFileSync(absPath, 'utf8'));
 }
 
+export type BindingException = { requirement: string; reason?: string };
+
 export type BindingCase = {
   name: string | null;
   when: string | null;
-  pattern: string;
+  pattern: string | undefined;
   reason: string | null;
-  exceptions: { requirement: string; reason: string }[];
+  exceptions: BindingException[];
 };
 
-export function bindingCases(binding: any): BindingCase[] {
+export type BehaviourBinding = {
+  component?: string;
+  pattern?: string;
+  reason?: string;
+  divergesFrom?: string;
+  delegatedTo?: string;
+  exceptions?: BindingException[];
+  cases?: {
+    name?: string;
+    when?: string;
+    pattern?: string;
+    reason?: string;
+    exceptions?: BindingException[];
+  }[];
+};
+
+export function bindingCases(binding: BehaviourBinding): BindingCase[] {
   if (!Array.isArray(binding.cases)) {
     return [{
       name: null,
@@ -70,7 +88,7 @@ export function bindingCases(binding: any): BindingCase[] {
   }));
 }
 
-export function validateBinding(component: string, layer: string, binding: any, patterns: any) {
+export function validateBinding(component: string, layer: string, binding: BehaviourBinding, patterns: any) {
   const problems = [];
   const where = `${layer}/${component}`;
 
@@ -101,7 +119,7 @@ export function validateBinding(component: string, layer: string, binding: any, 
       problems.push(`${label}: unknown pattern "${c.pattern}" — no such file in ${PATTERN_DIR}`);
       continue;
     }
-    if (REQUIRES_OPTIONAL.has(c.pattern) && !c.reason) {
+    if (c.pattern && REQUIRES_OPTIONAL.has(c.pattern) && !c.reason) {
       problems.push(`${label}: binding ${c.pattern} requires a reason — "nothing recorded", "verified presentational" and "does not exist here" must not look alike`);
     }
     for (const e of c.exceptions) {
@@ -123,7 +141,7 @@ export function validateBinding(component: string, layer: string, binding: any, 
   return problems;
 }
 
-export function crossLayerAgrees(a: any, b: any) {
+export function crossLayerAgrees(a: BehaviourBinding, b: BehaviourBinding) {
   if (a.pattern === ABSENT || b.pattern === ABSENT) return true;
 
   const mine = bindingCases(a);

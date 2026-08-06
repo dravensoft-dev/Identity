@@ -7,6 +7,7 @@ import {
   angularBindingPath, reactBindingPath, crossLayerAgrees, loadBinding, bindingCases,
 } from './behaviour-contracts.ts';
 import { pascal } from './layers.ts';
+import type { BehaviourBinding } from './behaviour-contracts.ts';
 
 const ok = {
   name: 'dialog-modal',
@@ -256,7 +257,7 @@ test('a real mismatch with no divergesFrom on either side disagrees', () => {
 });
 
 test('divergesFrom can name a pattern the other side binds in ONE of its cases', () => {
-  const cased = { cases: [
+  const cased: BehaviourBinding = { cases: [
     { name: 'row', when: 'wide', pattern: 'none', exceptions: [] },
     { name: 'card', when: 'narrow', pattern: 'button', exceptions: [] },
   ] };
@@ -331,11 +332,11 @@ test('a binding declaring both pattern and cases is rejected by validateBinding'
 });
 
 test('two cased bindings whose case names match but a case pattern disagrees do not agree', () => {
-  const react = { cases: [
+  const react: BehaviourBinding = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };
-  const angular = { cases: [
+  const angular: BehaviourBinding = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };
@@ -343,11 +344,11 @@ test('two cased bindings whose case names match but a case pattern disagrees do 
 });
 
 test('two cased bindings whose case names and per-case patterns all match agree', () => {
-  const react = { cases: [
+  const react: BehaviourBinding = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };
-  const angular = { cases: [
+  const angular: BehaviourBinding = { cases: [
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
   ] };
@@ -355,7 +356,7 @@ test('two cased bindings whose case names and per-case patterns all match agree'
 });
 
 test('a cased binding against an absent binding agrees, both directions', () => {
-  const cased = { cases: [
+  const cased: BehaviourBinding = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };
@@ -365,7 +366,7 @@ test('a cased binding against an absent binding agrees, both directions', () => 
 });
 
 test('a cased binding whose divergesFrom names the other, flat side agrees', () => {
-  const cased = { divergesFrom: 'alert', cases: [
+  const cased: BehaviourBinding = { divergesFrom: 'alert', cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };
@@ -375,11 +376,11 @@ test('a cased binding whose divergesFrom names the other, flat side agrees', () 
 });
 
 test('two cased bindings with mismatched case patterns and no divergesFrom still disagree', () => {
-  const react = { cases: [
+  const react: BehaviourBinding = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'alert', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };
-  const angular = { cases: [
+  const angular: BehaviourBinding = { cases: [
     { name: 'danger', when: 'tone is "danger"', pattern: 'status', exceptions: [] },
     { name: 'advisory', when: 'any other tone', pattern: 'status', exceptions: [] },
   ] };

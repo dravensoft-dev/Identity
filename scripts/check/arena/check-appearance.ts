@@ -234,7 +234,7 @@ export function collect() {
   };
 }
 
-export function zeroProblems({ scope, walked, scanned }) {
+export function zeroProblems({ scope, walked, scanned }: { scope: number; walked: number; scanned: number }) {
   const problems = [];
   if (scope === 0) problems.push('the scope is empty, so the adoption half asked nothing of anybody');
   if (walked === 0) problems.push('the literal half walked 0 files, which is a failure rather than a clean pass');

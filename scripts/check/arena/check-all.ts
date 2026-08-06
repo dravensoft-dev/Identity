@@ -97,7 +97,7 @@ export function parseCheckArgs(argv) {
   return { domains, tests };
 }
 
-export function testStep({ isBun, testFiles }) {
+export function testStep({ isBun, testFiles }: { isBun: boolean; testFiles: string[] }) {
   if (isBun) return [
     { name: 'build (ngc emit of the Angular test surface)', args: ['run', 'build:angular-tests'] },
     { name: 'test (bun test scripts/ + framework suites)',

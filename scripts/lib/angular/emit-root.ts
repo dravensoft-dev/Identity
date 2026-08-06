@@ -25,7 +25,7 @@ export function declaredOption(configPath: string, option) {
   throw new Error(`emit-root: no "${option}" is declared by ${configPath} or anything it extends`);
 }
 
-export function emitRoot({ rootDir, outDir, layerRoot }) {
+export function emitRoot({ rootDir, outDir, layerRoot }: { rootDir: string; outDir: string; layerRoot: string }) {
   const inside = relative(rootDir, layerRoot);
   if (inside.startsWith('..') || isAbsolute(inside)) {
     throw new Error(

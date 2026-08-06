@@ -10,6 +10,7 @@ import {
 import { pascal } from '../../lib/arena/layers.ts';
 import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
 import { reactSurface, UnrecognisedShape } from '../../lib/arena/api-surface.ts';
+import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 
 const TYPES = new Map([['ArenaTone', 'enum'], ['ArenaCrumb', 'object']]);
 
@@ -437,7 +438,7 @@ test('a collided bound name still reports the member\'s own R5 violation (union)
 });
 
 test('an event member colliding with a literally-named onX member is reported, naming both', () => {
-  const contract = {
+  const contract: ContractCandidate = {
     component: 'X',
     api: {
       x: { form: 'event', payload: null },

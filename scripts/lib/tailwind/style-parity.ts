@@ -38,7 +38,7 @@ export function cases(manifest: ComponentManifest) {
   return out;
 }
 
-export function parityPage(sheets, allCases) {
+export function parityPage(sheets: string[], allCases: ReturnType<typeof cases>) {
   const links = sheets.map((href: string) => `<link rel="stylesheet" href="${href}">`).join('\n');
   const rows = allCases.map(({ id, raw, arena }) =>
     `<div data-case="${id}"><span class="${raw}"></span><span class="${arena}"></span></div>`).join('\n');

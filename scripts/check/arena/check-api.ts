@@ -20,7 +20,7 @@ import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
-export function zeroContractProblems({ contracts, types }) {
+export function zeroContractProblems({ contracts, types }: { contracts: number; types: number }) {
   const problems = [];
   if (contracts === 0)
     problems.push('found 0 contracts in contracts/api/components — an empty result set is a failure, not a clean pass; check the discovery path');

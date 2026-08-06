@@ -6,6 +6,7 @@ import {
   PINNED, DEFAULTED, OPTIONAL, SUBJECT,
 } from './playground-model.ts';
 import type { ComponentContract, TypeContract } from './contract-shapes.ts';
+import type { Fixture } from './playground-model.ts';
 
 const types: Record<string, TypeContract> = {
   ArenaTone: { name: 'ArenaTone', kind: 'enum', values: ['neutral', 'accent', 'danger'] },
@@ -48,7 +49,7 @@ const contract: ComponentContract = {
   },
 };
 
-const fixture = {
+const fixture: Fixture = {
   component: 'Widget',
   seed: { label: 'Client Portal', hint: 'Seeded and bound', columns: [{ header: 'Service' }] },
   slots: {

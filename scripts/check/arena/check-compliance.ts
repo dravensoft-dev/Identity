@@ -9,6 +9,7 @@ import { join, basename } from 'node:path';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
 } from '../../lib/arena/behaviour-contracts.ts';
+import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 import { kebab } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
@@ -198,7 +199,7 @@ export function validateCoverage(
 
 export function inventoryFrom(bindings) {
   const out = [];
-  const declared = Object.entries(bindings) as [string, { tail?: string }][];
+  const declared = Object.entries(bindings) as [string, BehaviourBinding & { tail?: string }][];
   for (const [key, binding] of declared) {
     const sep = key.lastIndexOf(':');
     const name = sep === -1 ? key : key.slice(0, sep);
@@ -223,7 +224,7 @@ export function inventoryFrom(bindings) {
 
 function collectBindings() {
 
-  const byKey: Record<string, { tail: string }> = {};
+  const byKey: Record<string, BehaviourBinding & { tail: string }> = {};
 
   for (const name of reactComponents(repoRoot)) {
     const found = reactBindingPath(repoRoot, kebab(name));

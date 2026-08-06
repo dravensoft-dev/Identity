@@ -130,7 +130,7 @@ test('a text slot is guarded on undefined rather than on truthiness, so an empty
 
 test('a marker directive joins imports only when a slot it covers is projected', () => {
   assert.match(entry(), /imports: \[Playground, ArenaAction, ArenaBadge, ArenaCard\]/);
-  const noSlot = { ...model, knobs: model.knobs.slice(0, 2), uses: [] };
+  const noSlot: PlaygroundModel = { ...model, knobs: model.knobs.slice(0, 2), uses: [] };
   assert.doesNotMatch(angularEntry(noSlot, places, contracts, MARKERS, ''), /ArenaAction/);
 });
 
@@ -174,7 +174,7 @@ test('a void element is self-closing, because this layer refuses an end tag on o
 });
 
 test('each projected node gets its own @if, because a block with two roots projects neither', () => {
-  const knob = {
+  const knob: Knob = {
     member: 'footer', form: 'slot', type: null, bind: 'optional', bound: true,
     control: 'slotPresence', codec: 'flag', initial: true, doc: '',
     nodes: [{ component: 'ArenaBadge', slots: {} }, { component: 'ArenaBadge', slots: {} }],
@@ -184,7 +184,7 @@ test('each projected node gets its own @if, because a block with two roots proje
 });
 
 test('an unfilled named slot pulls in no marker directive, which the compiler would call unused', () => {
-  const empty = {
+  const empty: PlaygroundModel = {
     ...model,
     knobs: [{
       member: 'action', form: 'slot', type: null, bind: 'optional', bound: false,

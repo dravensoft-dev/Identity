@@ -99,7 +99,7 @@ test('a text slot renders its knob and a presence slot renders its fixed tree be
 });
 
 test('an unfilled slot resolves to undefined rather than to empty content', () => {
-  const textSlot = { ...model, knobs: [knob({ member: 'empty', form: 'slot', type: null, control: 'slotText', initial: '' })], events: [], uses: [] };
+  const textSlot: PlaygroundModel = { ...model, knobs: [knob({ member: 'empty', form: 'slot', type: null, control: 'slotText', initial: '' })], events: [], uses: [] };
   assert.match(renderSubject(textSlot, places, 0), /empty=\{k\.empty === undefined \? undefined :/);
 });
 
@@ -136,7 +136,7 @@ test('the page mounts into the root the entry looks for and declares no card', (
 });
 
 test('a slot with several nodes becomes a keyed array, never a fragment', () => {
-  const many = {
+  const many: PlaygroundModel = {
     ...model,
     knobs: [{
       member: 'content', form: 'slot', type: null, bind: 'optional', bound: true,

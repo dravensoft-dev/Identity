@@ -8,7 +8,10 @@ import type { ComponentTree } from '../../lib/arena/layers.ts';
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 export const PREFIX = 'Arena';
 
-export function validateStructure({ categories, layers, complete = false }) {
+export function validateStructure(
+  { categories, layers, complete = false }:
+  { categories: Record<string, string[]>; layers: Record<string, ComponentTree>; complete?: boolean },
+) {
   const problems = [];
 
   const firstCategoryOf = new Map();

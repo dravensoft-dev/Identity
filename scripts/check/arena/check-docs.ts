@@ -346,7 +346,9 @@ export function consumerBranchProblems(root = ROOT) {
   return { problems, scanned: scanned.length };
 }
 
-export function zeroScanProblems({ documents, sources, prompts }) {
+export function zeroScanProblems(
+  { documents, sources, prompts }: { documents: number; sources: number; prompts: number },
+) {
   const problems = [];
   if (documents === 0) problems.push('found no .md files at all -- the document walk reached nothing');
   if (sources === 0) problems.push('found no source files at all -- the comment walk reached nothing');

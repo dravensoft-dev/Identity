@@ -56,7 +56,7 @@ function skipRegex(source: string, at: number) {
   return i;
 }
 
-export function insideLiteral(ranges, index: number) {
+export function insideLiteral(ranges: [number, number][], index: number) {
   return ranges.some(([from, to]) => index >= from && index < to);
 }
 
