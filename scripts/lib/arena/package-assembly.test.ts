@@ -94,6 +94,7 @@ test('the CSS chain leads with the reset and ends with the derivations', () => {
     'both hand-authored derivation sheets read tokens the generated ones declare, so both come '
     + 'after them: colors.css derives from --color-base-content and environment.css from --sp-*');
   for (const { from } of CSS_CHAIN) {
+    assert.ok(from, 'every entry of the shipped chain is copied from somewhere');
     assert.equal(existsSync(join(repoRoot, from)), true, `${from} is in the chain and not in the tree`);
   }
 });

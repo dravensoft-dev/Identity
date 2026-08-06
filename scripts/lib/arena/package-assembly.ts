@@ -95,7 +95,7 @@ export function writeCssChain(dir: string, name: string, extra: CssChainEntry[] 
   const chain = [...CSS_CHAIN, ...extra];
   for (const entry of chain) {
     if (entry.content !== undefined) write(dir, entry.to, entry.content);
-    else copy(join(root, entry.from), dir, entry.to);
+    else if (entry.from !== undefined) copy(join(root, entry.from), dir, entry.to);
   }
   const imports = chain
     .filter(({ linked }) => linked !== false)

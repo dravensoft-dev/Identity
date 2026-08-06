@@ -147,7 +147,9 @@ test('testStep runs every suite under bun, with the DOM harness isolated in its 
 
 test('bun is pointed at the tree ngc actually emits, so a rootDir edit cannot run zero Angular suites', () => {
   const emitted = relative(repoRoot, angularEmitRoot(join(repoRoot, 'frameworks', 'angular', 'tsconfig.test.json')));
-  const suites = testStep({ isBun: true, testFiles: [] }).find((s) => s.args[0] === 'test').args;
+  const bun = testStep({ isBun: true, testFiles: [] }).find((s) => s.args[0] === 'test');
+  assert.ok(bun, 'the bun branch runs no `test` step at all');
+  const suites = bun.args;
   assert.ok(suites.includes(emitted.split(sep).join('/')), `testStep runs ${suites}, but ngc emits into ${emitted}`);
 });
 

@@ -244,7 +244,7 @@ export function reactImplementation(source: string, componentName: string) {
   return { destructures: true, defaults, rest };
 }
 
-export function literalValue(raw: string) {
+export function literalValue(raw: string | null) {
   if (raw === null || raw === undefined) return undefined;
   const t = raw.trim();
   if (t === 'true') return true;
@@ -256,7 +256,7 @@ export function literalValue(raw: string) {
 }
 
 export function defaultProblems(
-  where: string, member: string, contractDefault: unknown, rawImplementationDefault: string,
+  where: string, member: string, contractDefault: unknown, rawImplementationDefault: string | null,
 ) {
   const declared = contractDefault !== undefined;
   const implemented = literalValue(rawImplementationDefault);

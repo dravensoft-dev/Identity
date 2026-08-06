@@ -163,7 +163,7 @@ export type NgPackage = {
   [key: string]: unknown;
 };
 
-export function withAssets(emitted: NgPackage): NgPackage {
+export function withAssets(emitted: NgPackage): NgPackage & { exports: Record<string, unknown> } {
   return {
     ...emitted,
     exports: {

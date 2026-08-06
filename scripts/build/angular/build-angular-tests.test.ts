@@ -12,6 +12,7 @@ test('stalenessReason returns null only when the stamp is strictly newer than ev
 test('stalenessReason names the newest input, which is the one that decides', () => {
   const inputs = [{ path: 'old.ts', mtimeMs: 1 }, { path: 'touched.ts', mtimeMs: 99 }];
   const reason = stalenessReason(inputs, stamped(50, ['old.ts', 'touched.ts']));
+  assert.ok(reason, 'a newer input than the stamp must be a reason to rebuild');
   assert.match(reason, /touched\.ts/);
   assert.doesNotMatch(reason, /old\.ts/);
 });
@@ -25,17 +26,17 @@ test('a source added since the last emit rebuilds, however old it is', () => {
     [{ path: 'a.ts', mtimeMs: 1 }, { path: 'new.ts', mtimeMs: 1 }],
     stamped(500, ['a.ts']),
   );
-  assert.match(reason, /new\.ts was not compiled/);
+  assert.match(reason ?? '', /new\.ts was not compiled/);
 });
 
 test('a source deleted since the last emit rebuilds, which no timestamp can see', () => {
   const reason = stalenessReason([{ path: 'a.ts', mtimeMs: 1 }], stamped(500, ['a.ts', 'gone.ts']));
-  assert.match(reason, /gone\.ts is gone/);
+  assert.match(reason ?? '', /gone\.ts is gone/);
 });
 
 test('no stamp rebuilds, and no input found rebuilds rather than skipping on a walk that saw nothing', () => {
-  assert.match(stalenessReason([{ path: 'a.ts', mtimeMs: 1 }], null), /no emit stamp/);
-  assert.match(stalenessReason([], stamped(100, [])), /no input was found/);
+  assert.match(stalenessReason([{ path: 'a.ts', mtimeMs: 1 }], null) ?? '', /no emit stamp/);
+  assert.match(stalenessReason([], stamped(100, [])) ?? '', /no input was found/);
 });
 
 test('missingEmitProblems reports nothing when every source test has a matching emit', () => {

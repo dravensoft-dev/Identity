@@ -123,7 +123,7 @@ test('angularSurface reads input, input.required, output and a defaulted bare in
     ['separator', 'primitive', false],
     ['navigate', 'event', false],
   ]);
-  assert.equal(members.find((m) => m.name === 'navigate').payload, 'ArenaCrumb');
+  assert.equal(members.find((m) => m.name === 'navigate')?.payload, 'ArenaCrumb');
 });
 
 test('angularSurface ignores protected and private members -- they are not the public API', () => {

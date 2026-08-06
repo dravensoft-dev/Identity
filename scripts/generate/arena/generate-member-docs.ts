@@ -86,7 +86,9 @@ export function writeMemberDocs({
 }) {
   const written = [];
   for (const contract of contracts) {
-    const perLayer = Object.entries(sources.get(contract.component) ?? {}) as [string, string][];
+    const perLayer = Object.entries(
+      (contract.component === undefined ? undefined : sources.get(contract.component)) ?? {},
+    ) as [string, string][];
     for (const [layer, path] of perLayer) {
       if (!path) continue;
       const before = read(path, 'utf8');

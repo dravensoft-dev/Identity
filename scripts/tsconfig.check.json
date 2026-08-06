@@ -6,13 +6,7 @@
     "lib": [
       "ES2023"
     ],
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "useUnknownInCatchVariables": true,
-    "noImplicitAny": true,
-    "strictNullChecks": false,
+    "strict": true,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,

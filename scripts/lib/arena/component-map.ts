@@ -66,7 +66,7 @@ export function close(needs: ComponentSheetMap['needs']): ComponentSheetMap['nee
     const pending = [...needs[sheet]];
     while (pending.length) {
       const one = pending.pop();
-      if (one === sheet || reached.has(one)) continue;
+      if (one === undefined || one === sheet || reached.has(one)) continue;
       reached.add(one);
       pending.push(...(needs[one] ?? []));
     }
@@ -84,7 +84,9 @@ function mapFrom(entries: { symbol: string; keys: string[]; sheet: string | null
   for (const { symbol, sheet, uses } of entries) {
     if (!sheet) continue;
     const bySymbol = new Map(entries.map((e) => [e.symbol, e.sheet]));
-    const pulled = uses.map((name: string) => bySymbol.get(name)).filter((s: string) => s && s !== sheet);
+    const pulled = uses
+      .map((name: string) => bySymbol.get(name))
+      .filter((s): s is string => Boolean(s) && s !== sheet);
     if (pulled.length) needs[sheet] = [...new Set([...(needs[sheet] ?? []), ...pulled])].sort();
   }
   return { match: edges, draws, needs: close(needs) };

@@ -90,7 +90,8 @@ test('an EXEMPT entry no document cites any more fails as a stale allowance', ()
 test('the roots come from the tree, so a new top-level directory is covered the day it lands', () => {
   const base = tree({ 'newthing/a.md': 'x', 'a.md': 'see `newthing/gone.md`' });
   assert.ok(repoRoots(base).includes('newthing'));
-  assert.match(citationProblems(base, undefined, NONE).find((p) => p.includes('gone')), /cites newthing\/gone\.md/);
+  assert.match(citationProblems(base, undefined, NONE).find((p) => p.includes('gone')) ?? '',
+    /cites newthing\/gone\.md/);
 });
 
 test('the pattern refuses a path glued to a longer word', () => {

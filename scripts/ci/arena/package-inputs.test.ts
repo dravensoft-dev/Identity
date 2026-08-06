@@ -11,7 +11,7 @@ test('every file the CSS chain copies is covered, so a chain that grows fails he
   assert.deepEqual(uncoveredChainEntries(), []);
   assert.deepEqual(
     uncoveredChainEntries({ 'contracts/design/': 'half of it' }, CSS_CHAIN),
-    CSS_CHAIN.map((c) => c.from).filter((f) => !f.startsWith('contracts/design/')),
+    CSS_CHAIN.map((c) => c.from).filter((f) => f !== undefined && !f.startsWith('contracts/design/')),
   );
 });
 

@@ -47,6 +47,7 @@ export function uncoveredChainEntries(inputs: Record<string, string> = SHARED_IN
   const prefixes = Object.keys(inputs);
   return chain
     .map((c) => c.from)
+    .filter((from): from is string => from !== undefined)
     .filter((from) => !prefixes.some((p) => (p.endsWith('/') ? from.startsWith(p) : from === p)));
 }
 

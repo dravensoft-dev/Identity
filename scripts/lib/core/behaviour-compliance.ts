@@ -11,7 +11,8 @@ export type GenericElement = {
   textContent?: string | null;
 };
 
-type ResolveId = (id: string) => GenericElement | null;
+type IdResolver = (id: string) => GenericElement | null;
+type ResolveId = IdResolver | null;
 type ResolveLabel = (el: GenericElement) => GenericElement | null;
 
 export const IMPLICIT_ROLE: Record<string, string> = {
@@ -74,7 +75,7 @@ export const ELEMENT_ROLE: Record<string, string> = {
 
 export const LABEL_ACCEPTS_TEXT = new Set(['button', 'checkbox', 'disclosure', 'switch']);
 
-export function roleOf(el: GenericElement, resolveId?: ResolveId) {
+export function roleOf(el: GenericElement, resolveId?: IdResolver) {
   const explicit = el.getAttribute('role');
   if (explicit) return explicit.trim().split(/\s+/)[0];
   const tag = el.tagName.toUpperCase();
@@ -106,7 +107,7 @@ function namedByLabelElement(el: GenericElement, resolveLabel?: ResolveLabel) {
 }
 
 export function hasAccessibleName(
-  el: GenericElement, acceptsText = false, resolveId?: ResolveId, resolveLabel?: ResolveLabel,
+  el: GenericElement, acceptsText = false, resolveId?: IdResolver, resolveLabel?: ResolveLabel,
 ) {
   if (el.getAttribute('aria-label')) return true;
   if (acceptsText && (el.textContent ?? '').trim()) return true;
@@ -160,7 +161,7 @@ export const IDREF_ATTRIBUTES = new Map([
   }],
 ]);
 
-function referenceResolves(attr: string, raw: string, resolveId: ResolveId) {
+function referenceResolves(attr: string, raw: string, resolveId: IdResolver) {
   const ids = raw.split(/\s+/).filter(Boolean);
 
   if (!ids.length) return false;
@@ -222,8 +223,9 @@ export const BEHAVIOURAL = new Set([
 
 export function evaluate(
   el: GenericElement, key: string, value: unknown, patternName: string,
-  resolveId?: ResolveId, resolveLabel?: ResolveLabel,
+  given?: ResolveId, resolveLabel?: ResolveLabel,
 ) {
+  const resolveId = given ?? undefined;
   if (key === 'roles.element') {
     const wanted = ELEMENT_ROLE[patternName];
     if (!wanted) {

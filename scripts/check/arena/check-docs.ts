@@ -275,9 +275,10 @@ export function staleAllowanceProblems(sizes: Map<string, number>, allowance = S
       );
       continue;
     }
-    if (sizes.get(rel) <= MAX_DOCUMENT_CHARS) {
+    const size = sizes.get(rel) ?? 0;
+    if (size <= MAX_DOCUMENT_CHARS) {
       problems.push(
-        `SIZE_ALLOWANCE raises ${rel} to ${limit}, and it is ${sizes.get(rel)} characters, inside `
+        `SIZE_ALLOWANCE raises ${rel} to ${limit}, and it is ${size} characters, inside `
         + `the ${MAX_DOCUMENT_CHARS} everything else holds to. The allowance has outlived what it `
         + `was written for, so delete it and let the shared limit apply: ${reason}`,
       );

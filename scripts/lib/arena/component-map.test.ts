@@ -24,7 +24,9 @@ for (const [layer, match] of [['angular', 'selector'], ['react', 'symbol']]) {
 
   test(`${layer} names no sheet this package does not ship`, () => {
     const map = componentMap(layer, repoRoot);
-    const invented = [...new Set(Object.values(map.draws).filter(Boolean))].filter((s) => !shipped.includes(s));
+    const invented = [...new Set(Object.values(map.draws))]
+      .filter((s): s is string => Boolean(s))
+      .filter((s) => !shipped.includes(s));
     assert.deepEqual(invented, [], 'a name here fails the command it is written for, which is worse than no map');
   });
 

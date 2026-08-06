@@ -67,7 +67,7 @@ export function tokenProblems(text: string, where: string, weights: Map<string, 
         );
         continue;
       }
-      if (weight && !weights.get(weight).has(token)) {
+      if (weight && !weights.get(weight)?.has(token)) {
         problems.push(
           `${where}:${index + 1}: "${token}" is a Phosphor glyph but not in the "${weight}" weight, `
           + 'so this pairing renders as an empty box.',

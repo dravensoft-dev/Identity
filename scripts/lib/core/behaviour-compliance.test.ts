@@ -644,7 +644,7 @@ test('aria-describedby keeps the one-resolving-id rule, and keeps its reason', (
   const trigger = el('button', { 'aria-describedby': 'consumer-hint tooltip-1' });
   const resolve = (id: string) => (id === 'tooltip-1' ? el('span') : null);
   assert.equal(evaluate(trigger, 'roles.describedby', 'x', 'tooltip', resolve), true);
-  assert.equal(IDREF_ATTRIBUTES.get('aria-describedby').match, 'some');
+  assert.equal(IDREF_ATTRIBUTES.get('aria-describedby')?.match, 'some');
 });
 
 test('a reference attribute holding only whitespace names nothing', () => {

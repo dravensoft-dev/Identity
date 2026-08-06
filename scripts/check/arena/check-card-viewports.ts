@@ -238,6 +238,9 @@ export function summarizeCards(results: { file: string; status: string; message?
 
 export async function measureCardPage(cdp: CdpSend, file: string, pageRoot: string, port: number) {
   const declared = parseDsCard(readFileSync(join(pageRoot, file), 'utf8'));
+  if (!declared) {
+    return { file, status: 'undeclared', message: `${file} carries no @dsCard, so nothing states what it should measure` };
+  }
   const url = `http://127.0.0.1:${port}/${file.split('/').map(encodeURIComponent).join('/')}`;
   try {
     const measured = await measurePage(cdp, url, { width: declared.width, height: declared.height });
@@ -251,7 +254,7 @@ export async function measureCardPage(cdp: CdpSend, file: string, pageRoot: stri
   }
 }
 
-function skip(reason: string) {
+function skip(reason: string): never {
   const code = skipExitCode();
   console.error(`check-card-viewports: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   if (code === 2) console.error('  check-all reports the run INCOMPLETE; the repository declares ARENA_CHECK_STRICT=1, so this environment overrides it.');
@@ -284,14 +287,14 @@ export function interleaveForDispatch<T>(items: T[], groups: number): T[] {
 
 async function main() {
   const browser = findChromium();
-  if (!browser.path) skip(browser.reason);
+  if (browser.path === null) skip(browser.reason);
 
   const pages = findCardPages(root);
   const server = await startStaticServer(root);
   let chrome: Awaited<ReturnType<typeof launchChromium>> | undefined;
   let cdp: Awaited<ReturnType<typeof connect>> | undefined;
   try {
-    chrome = await launchChromium(browser.path as string);
+    chrome = await launchChromium(browser.path);
     cdp = await connect(chrome.wsUrl);
   } catch (err) {
     await server.close();

@@ -78,14 +78,14 @@ export function problemsFrom(pass: ParityPass, label: string) {
     `${label}: ${id} does not match its manifest's own class string: ${differing.join('; ')}`);
 }
 
-function skip(reason: string) {
+function skip(reason: string): never {
   console.log(`check-style-parity: SKIP, ${reason}`);
   process.exit(2);
 }
 
 async function main() {
   const browser = findChromium();
-  if (!browser.path) skip(browser.reason);
+  if (browser.path === null) skip(browser.reason);
 
   const manifests = layerManifests(root);
   writePage(manifests);

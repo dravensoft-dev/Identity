@@ -120,10 +120,10 @@ test('writeMemberDocs writes only what changed, so a clean tree is a no-op', () 
     contracts,
     sources,
     bindingName,
-    read: (p) => files.get(p),
+    read: (p: string) => files.get(p) ?? '',
     write: (p, text) => files.set(p, text),
   });
 
   assert.deepEqual(written, ['/x/A.tsx'], 'the already-current Angular source was rewritten anyway');
-  assert.match(files.get('/x/A.tsx'), /\/\*\* The shadow\. \*\//);
+  assert.match(files.get('/x/A.tsx') ?? '', /\/\*\* The shadow\. \*\//);
 });

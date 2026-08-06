@@ -37,8 +37,8 @@ test('bases come before variants, which is what makes source order decide betwee
 test('the classes manifest keeps every slot, so a slot whose base is empty still answers', () => {
   const named = classesManifest({ ...manifest, slots: { ...manifest.slots, bare: '' } });
   assert.equal(named.slots.bare, 'arena-side-nav-item__bare');
-  assert.deepEqual(named.variants.disabled.false, {}, 'an empty branch stays a branch and names no class');
-  assert.equal(named.variants.tone.danger.root, 'arena-side-nav-item__root--tone-danger');
+  assert.deepEqual(named.variants?.disabled?.false, {}, 'an empty branch stays a branch and names no class');
+  assert.equal(named.variants?.tone?.danger?.root, 'arena-side-nav-item__root--tone-danger');
 });
 
 test('the entry wraps every rule in @layer utilities, which is where every Arena rule already lives', () => {

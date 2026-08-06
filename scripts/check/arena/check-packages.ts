@@ -196,7 +196,7 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
 
   while (queue.length) {
     const from = queue.shift();
-    if (seen.has(from)) continue;
+    if (from === undefined || seen.has(from)) continue;
     seen.add(from);
     if (from.startsWith('css/components/')) components += 1;
 

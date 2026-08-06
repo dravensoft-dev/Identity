@@ -69,7 +69,8 @@ export function composedBy(names: string[], graph: Map<string, Set<string>>): st
   const seen = new Set(names);
   const queue = [...names];
   while (queue.length > 0) {
-    for (const other of graph.get(queue.shift()) ?? []) {
+    const next = queue.shift();
+    for (const other of (next === undefined ? [] : graph.get(next) ?? [])) {
       if (seen.has(other)) continue;
       seen.add(other);
       queue.push(other);

@@ -1,9 +1,9 @@
 /* The flags asserted here are load-bearing rather than stylistic, and each is asserted with
- * the failure it prevents. erasableSyntaxOnly is the one that keeps this migration honest:
+ * the failure it prevents. erasableSyntaxOnly is the one that keeps the migration honest:
  * without it a script could take an enum and stop running under bare node, which check-all
- * needs it to do. checkJs and strict are asserted at their CURRENT values with the reason
- * they are still loose, so lifting either is a deliberate edit to this file rather than a
- * silent drift, and the unreached-file rule is what stops a narrowed glob from passing. */
+ * needs it to do. strict is asserted as a bundle now that every one of its seven is on, the
+ * way both framework layers already declare it; checkJs stays named at false with the reason
+ * it is loose, and the unreached-file rule is what stops a narrowed glob from passing. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,22 +32,25 @@ test('the project never emits, because a checking project writing output would s
     'scripts import each other with the extension written out, which is what both runtimes resolve');
 });
 
-test('the strict family is enumerated, so every flag is a decision somebody made', () => {
+test('strict is on as a bundle, which is what both framework layers already declare', () => {
   const options = project().compilerOptions;
-  assert.equal(options.strict, undefined,
-    'strict is not set as a bundle: it turns on seven things at once and one of them is still '
-    + 'off, so each is named below at the value it actually holds');
+  assert.equal(options.strict, true,
+    'all seven are on, so the enumeration this file used to carry is gone. What it cost, for '
+    + 'the record: four of them nothing at all, useUnknownInCatchVariables seventeen catch '
+    + 'clauses, noImplicitAny 1,643 annotations and strictNullChecks 970. The order between '
+    + 'the last two was not free -- noImplicitAny first, or evolving-array inference is '
+    + 'unavailable and hundreds of never[] errors appear that it erases.');
 
-  for (const on of ['strictFunctionTypes', 'strictBindCallApply', 'noImplicitThis',
-    'alwaysStrict', 'useUnknownInCatchVariables', 'noImplicitAny'])
-    assert.equal(options[on], true, `${on} is on and must stay on`);
+  for (const off of ['strictFunctionTypes', 'strictBindCallApply', 'noImplicitThis',
+    'alwaysStrict', 'useUnknownInCatchVariables', 'noImplicitAny', 'strictNullChecks',
+    'strictPropertyInitialization'])
+    assert.equal(options[off], undefined,
+      `${off} is named individually, which can only weaken what strict already turns on`);
 
-  assert.equal(options.strictNullChecks, false,
-    'the last of the seven still off, and the only one left: 120 errors, down from 328 when '
-    + 'noImplicitAny landed and 970 before it. The order was the thing -- noImplicitAny first, '
-    + 'or evolving-array inference is unavailable and hundreds of never[] errors appear that it '
-    + 'erases. strictPropertyInitialization is absent rather than false because TypeScript '
-    + 'refuses to name it while this one is off.');
+  assert.equal(options.noUncheckedIndexedAccess, undefined,
+    'the one tightening beyond strict that this project does not take: 716 errors, because '
+    + 'every scripts/ read of arr[i] and m[k] becomes possibly-undefined. The React layer takes '
+    + 'it and this one does not, so lifting it is a deliberate edit here rather than a drift.');
 });
 
 test('a .mjs is resolved and never checked, which is what the two vendored copies need', () => {

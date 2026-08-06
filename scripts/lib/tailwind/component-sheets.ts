@@ -99,7 +99,7 @@ export function splitUtilities(css: string, bases: Set<string>) {
 
 export function dedent(text: string) {
   const indents = text.split('\n').slice(1).filter((line) => line.trim())
-    .map((line) => line.match(/^ */)[0].length);
+    .map((line) => (line.match(/^ */)?.[0] ?? '').length);
   const shortest = indents.length === 0 ? 0 : Math.min(...indents);
   return shortest === 0 ? text : text.split('\n')
     .map((line, i) => (i === 0 ? line : line.slice(shortest))).join('\n');

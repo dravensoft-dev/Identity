@@ -26,8 +26,8 @@ export const openLine = (component: string) => `<!-- @api GENERATED from contrac
 const OPENS_FENCE = /^ {0,3}(`{3,}|~{3,})/;
 const CLOSES_FENCE = /^ {0,3}(`+|~+)[ \t]*$/;
 
-export function typeOf(name: string) {
-  return name === 'consumerData' ? CONSUMER_DATA : name;
+export function typeOf(name: string | undefined) {
+  return name === 'consumerData' ? CONSUMER_DATA : name ?? '';
 }
 
 export function signature(params = {}) {
@@ -49,7 +49,7 @@ export function defaultCell(spec: MemberCandidate) {
 }
 
 export function memberRow(name: string, spec: MemberCandidate, layer: string) {
-  const bound = bindingName(name, spec.form, layer);
+  const bound = bindingName(name, spec.form ?? '', layer);
   return `| \`${bound}${spec.required ? '*' : ''}\` | ${spec.form} | ${typeCell(spec)} | ${
     defaultCell(spec)} | ${escapeCell(normaliseDoc(spec.description ?? ''))} |`;
 }
@@ -57,7 +57,7 @@ export function memberRow(name: string, spec: MemberCandidate, layer: string) {
 export function renderRegion(contract: ContractCandidate, layer: string) {
   const members = Object.entries(contract.api ?? {});
   const lines = [
-    openLine(contract.component),
+    openLine(contract.component ?? ''),
     '',
     members.length === 0
       ? '**Members.** This component declares none: everything it draws, it decides.'

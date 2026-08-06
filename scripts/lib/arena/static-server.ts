@@ -37,7 +37,7 @@ export function resolveInRoot(root: string, pathname: string) {
 
 export function startStaticServer(root: string): Promise<{ port: number; close: () => Promise<void> }> {
   const server = createServer(async (req, res) => {
-    const pathname = new URL(req.url, 'http://127.0.0.1').pathname;
+    const pathname = new URL(req.url ?? '/', 'http://127.0.0.1').pathname;
     const path = resolveInRoot(root, pathname);
     if (!path) {
       res.writeHead(403).end('Forbidden');

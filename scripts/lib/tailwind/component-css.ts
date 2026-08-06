@@ -32,7 +32,7 @@ export const isThemeKey = (name: string) => !name.startsWith('tw-');
 
 export function applyRules(manifest: ComponentManifest) {
   const rules: { selector: string; classes: string }[] = [];
-  const push = (selector: string, classes: string) => {
+  const push = (selector: string, classes: string | undefined) => {
     const trimmed = String(classes ?? '').trim();
     if (trimmed) rules.push({ selector, classes: trimmed });
   };

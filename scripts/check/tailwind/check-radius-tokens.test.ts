@@ -44,7 +44,7 @@ test('the real manifest tree carries no rounded-full -- the six known offenders 
 
 test('zeroManifestProblem fails when zero manifests were found -- a gate that finds nothing must not report a clean pass', () => {
   const problem = zeroManifestProblem([]);
-  assert.match(problem, /0 manifest/i);
+  assert.match(problem ?? '', /0 manifest/i);
 });
 
 test('zeroManifestProblem is null for a non-empty file list', () => {

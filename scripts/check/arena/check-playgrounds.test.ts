@@ -44,6 +44,12 @@ const widget: ComponentContract = {
   },
 };
 
+const memberOf = (name: string) => {
+  const spec = widget.api?.[name];
+  if (!spec) throw new Error(`the widget contract declares no member called ${name}`);
+  return spec;
+};
+
 const badge: ComponentContract = {
   component: 'ArenaBadge',
   api: { content: { form: 'slot', description: 'The label.' }, tone: { form: 'enum', type: 'ArenaTone', default: 'neutral', description: 'The tone.' } },
@@ -103,7 +109,7 @@ test('a seed outside an enum\'s declared values fails, naming the values', () =>
 
 test('an array seed is checked item by item', () => {
   assert.match(
-    valueProblems('w.columns', widget.api.columns, [{ header: 'Service' }, { header: 7 }], types)[0],
+    valueProblems('w.columns', memberOf('columns'), [{ header: 'Service' }, { header: 7 }], types)[0],
     /columns\[1\]\.header: declares string and the fixture holds number/,
   );
 });

@@ -25,6 +25,7 @@ test('a selection is the whole resolved one, not a single variant on its own', (
   const built = cases(manifest);
   assert.equal(built.length, selections(manifest).length * 2, 'every slot is mounted for every selection');
   const danger = built.find((c) => c.id === 'ArenaBadge|root|tone=danger');
+  assert.ok(danger, 'the danger tone produced no case at all');
   assert.equal(danger.arena, 'arena-badge__root arena-badge__root--tone-danger',
     'the base and the variant are both on the element, which is what makes source order the thing under test');
 });

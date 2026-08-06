@@ -102,8 +102,10 @@ test('parseDsCard reads the group, name and viewport off the first line', () => 
 
 test('parseDsCard reads attributes in any order', () => {
   const html = '<!-- @dsCard group="Console" viewport="1280x820" subtitle="s" name="Delivery Console" -->';
-  assert.equal(parseDsCard(html).name, 'Delivery Console');
-  assert.equal(parseDsCard(html).width, 1280);
+  const card = parseDsCard(html);
+  assert.ok(card, 'the comment declares a @dsCard and it read as none');
+  assert.equal(card.name, 'Delivery Console');
+  assert.equal(card.width, 1280);
 });
 
 test('parseDsCard returns null for a page that declares nothing', () => {
@@ -281,7 +283,7 @@ test('interleaveForDispatch spreads originally-adjacent items out of the first w
   const positionOf = new Map(out.map((item, pos) => [item, pos]));
 
   for (const item of [0, 1, 2, 3]) assert.ok(positionOf.has(item));
-  const positions = [0, 1, 2, 3].map((item) => positionOf.get(item));
+  const positions = [0, 1, 2, 3].map((item) => positionOf.get(item) ?? -1);
 
   for (let a = 0; a < positions.length; a += 1) {
     for (let b = a + 1; b < positions.length; b += 1) {

@@ -91,8 +91,10 @@ export function assembleModules(root: string, dir: string) {
   const sources = collectFiles(join(layer, 'components'), isSource);
   if (sources.length === 0) throw new Error('build-react-package: found 0 component sources; the layer moved');
 
+  const tsx = transpilers.get('tsx');
+  if (!tsx) throw new Error('build-react-package: the tsx transpiler was never constructed');
   const emit = (from: string, rel: string) => {
-    written.push(write(dir, rel, rewriteSourceSpecifiers(transpilers.get('tsx').transformSync(readFileSync(from, 'utf8')))));
+    written.push(write(dir, rel, rewriteSourceSpecifiers(tsx.transformSync(readFileSync(from, 'utf8')))));
     compiled.push(rel);
   };
 

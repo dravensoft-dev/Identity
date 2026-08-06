@@ -57,8 +57,9 @@ test('assert.ok and assert.match carry no diff of their operands and stay untouc
 
 test('splitArguments balances nested calls, brackets and quoted commas', () => {
   const source = `assert.equal(read().tabs[1], f(a, b), 'one, two');`;
-  const { args } = splitArguments(source, source.indexOf('('));
-  assert.deepEqual(args.map((a) => a.trim()), ['read().tabs[1]', 'f(a, b)', `'one, two'`]);
+  const split = splitArguments(source, source.indexOf('('));
+  assert.ok(split, 'the call never closed, so nothing was split');
+  assert.deepEqual(split.args.map((a: string) => a.trim()), ['read().tabs[1]', 'f(a, b)', `'one, two'`]);
 });
 
 test('isNodeExpression judges the tail of the expression, not merely that a node appears in it', () => {

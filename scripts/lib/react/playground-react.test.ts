@@ -4,6 +4,7 @@ import {
   typeExpr, contractTypes, importPath, renderNode, renderSubject, renderTree, knobsInterface,
   validatorTable, reactEntry, reactPage,
 } from './playground-react.ts';
+import { placeOf } from '../arena/playground-model.ts';
 import type { Knob, Places, PlaygroundModel } from '../arena/playground-model.ts';
 
 const places: Places = new Map([
@@ -53,7 +54,7 @@ test('only a declared type is imported, never a primitive', () => {
 });
 
 test('a component is reached through its category, and itself through the directory it sits in', () => {
-  assert.equal(importPath(places.get('ArenaBadge')), '../../display/arena-badge/ArenaBadge.tsx');
+  assert.equal(importPath(placeOf(places, 'ArenaBadge')), '../../display/arena-badge/ArenaBadge.tsx');
   assert.match(reactEntry(model, places, ''), /import \{ ArenaCard \} from '\.\/ArenaCard\.tsx';/);
   assert.match(reactEntry(model, places, ''), /import \{ ArenaBadge \} from '\.\.\/\.\.\/display\/arena-badge\/ArenaBadge\.tsx';/);
 });

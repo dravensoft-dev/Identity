@@ -143,9 +143,9 @@ export function patternsFor(category: string, component: string, layers: string[
 export function renderPatterns(found: Map<string, Set<string>>, layers: string[]) {
   const names = [...found.keys()].sort();
   if (names.length === 0) return '';
-  const everywhere = (pattern: string) => layers.every((layer: string) => found.get(pattern).has(layer));
+  const everywhere = (pattern: string) => layers.every((layer: string) => found.get(pattern)?.has(layer));
   return names
-    .map((pattern) => (everywhere(pattern) ? pattern : `${pattern} (${[...found.get(pattern)].sort().join(', ')})`))
+    .map((pattern) => (everywhere(pattern) ? pattern : `${pattern} (${[...(found.get(pattern) ?? [])].sort().join(', ')})`))
     .join(', ');
 }
 
@@ -184,15 +184,15 @@ function taken(members: string[]) {
 }
 
 export function renderRow(row: SkillRow) {
-  return `| \`${row.component}\` | ${escapeCell(row.description)} | ${taken(row.members)} | ${
+  return `| \`${row.component}\` | ${escapeCell(row.description ?? '')} | ${taken(row.members ?? [])} | ${
     row.patterns || '(undeclared)'
   } | ${row.layers.join(', ') || '(no layer)'} |`;
 }
 
 export function renderLayerRow(row: SkillRow, layer: string) {
-  return `| \`${row.component}\` | ${escapeCell(row.description)} | ${
-    taken(memberList(row.contract, layer))
-  } | [\`${row.component}.prompt.md\`](${promptPath(row.category, row.component)}) |`;
+  return `| \`${row.component}\` | ${escapeCell(row.description ?? '')} | ${
+    taken(memberList(row.contract ?? null, layer))
+  } | [\`${row.component}.prompt.md\`](${promptPath(row.category ?? '', row.component)}) |`;
 }
 
 function indexOfNothing(what: string) {

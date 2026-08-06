@@ -30,11 +30,11 @@ test('an empty declaration is a problem, never a clean run', () => {
 
 test('firstDifference names the line, so a stale index says where', () => {
   const at = firstDifference('a\nb\nc', 'a\nX\nc');
-  assert.match(at, /^line 2: committed "X", generated "b"$/);
+  assert.match(at ?? '', /^line 2: committed "X", generated "b"$/);
 });
 
 test('firstDifference reports a truncated file rather than reading past its end', () => {
-  assert.match(firstDifference('a\nb', 'a'), /line 2: committed "\(end of file\)", generated "b"/);
+  assert.match(firstDifference('a\nb', 'a') ?? '', /line 2: committed "\(end of file\)", generated "b"/);
 });
 
 test('two identical documents differ nowhere', () => {

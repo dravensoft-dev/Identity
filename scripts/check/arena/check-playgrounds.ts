@@ -87,7 +87,7 @@ export function valueProblems(where: string, spec: MemberSpec, value: unknown, t
     return typeof value === spec.type ? [] : [`${where}: declares ${spec.type} and the fixture holds ${typeof value}`];
   }
   if (kind === 'enum') {
-    const values: (string | number)[] = types.get(spec.type)?.values ?? [];
+    const values: (string | number)[] = (spec.type === undefined ? undefined : types.get(spec.type)?.values) ?? [];
     return values.includes(value as string | number) ? [] : [`${where}: ${JSON.stringify(value)} is not one of ${spec.type}'s ${JSON.stringify(values)}`];
   }
   if (kind === 'array') {
@@ -104,8 +104,8 @@ export function valueProblems(where: string, spec: MemberSpec, value: unknown, t
   return [`${where}: form ${kind} takes no seed`];
 }
 
-export function objectProblems(where: string, typeName: string, value: unknown, types: Types): string[] {
-  const type = types.get(typeName);
+export function objectProblems(where: string, typeName: string | undefined, value: unknown, types: Types): string[] {
+  const type = typeName === undefined ? undefined : types.get(typeName);
   if (!type) return [`${where}: no type named ${typeName} is declared in contracts/api/types`];
   if (value === null || typeof value !== 'object' || Array.isArray(value))
     return [`${where}: declares ${typeName} and the fixture holds ${Array.isArray(value) ? 'an array' : typeof value}`];
@@ -222,7 +222,10 @@ export function bindProblems(name: string, contract: Pick<ComponentContract, 'ap
       if (!spec.payload) { problems.push(`${name}.bind.${event}: ${event} carries no payload, so it has nothing to write into ${target}`); continue; }
       const found = knobTarget(contract, target);
       if (found.problem) { problems.push(`${name}.bind.${event}: ${found.problem}`); continue; }
-      const wanted = found.spec ?? (types.get(found.objectType)?.fields ?? {})[found.field];
+      const wanted = found.spec
+        ?? (found.objectType && found.field
+          ? (types.get(found.objectType)?.fields ?? {})[found.field]
+          : undefined);
       if (!wanted) { problems.push(`${name}.bind.${event}: ${found.objectType} declares no field called ${found.field}`); continue; }
       const carries = wanted.form === 'primitive' || wanted.form === 'enum' ? wanted.type : wanted.type ?? wanted.of;
       if (carries !== spec.payload)
@@ -252,7 +255,7 @@ export function bindProblems(name: string, contract: Pick<ComponentContract, 'ap
 
 export function hostProblems(name: string, fixture: Pick<Fixture, 'host'> & { component?: string },
   contracts: Contracts, types: Types) {
-  if (!('host' in fixture) || fixture.host === null) return [];
+  if (!('host' in fixture) || fixture.host === null || fixture.host === undefined) return [];
   return nodeProblems(`${name}.host`, fixture.host, contracts, types, { allowSubject: true });
 }
 
@@ -490,7 +493,9 @@ async function visit(cdp: any, url: string, page: string) {
 
 async function smoke(pages: string[]) {
   const server = await startStaticServer(root);
-  const chrome = await launchChromium(findChromium().path);
+  const browser = findChromium();
+  if (browser.path === null) throw new Error(`no browser to smoke the playgrounds with: ${browser.reason}`);
+  const chrome = await launchChromium(browser.path);
   const cdp = await connect(chrome.wsUrl);
   const problems: string[] = [];
   try {

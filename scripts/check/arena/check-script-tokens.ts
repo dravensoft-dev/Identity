@@ -172,7 +172,9 @@ async function main() {
   problems.push(...shadowedTokenProblems(flagged, layers));
   problems.push(...staleShadowExemptions(layers));
 
-  const [, freshModule] = built.entries().next().value;
+  const first = built.entries().next().value;
+  if (!first) throw new Error('check-script-tokens: buildScriptModules emitted no module at all');
+  const [, freshModule] = first;
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(freshModule)?.[1]);
   if (!Number.isInteger(catSlots)) {
     problems.push('catSlots: the generated module no longer exports a numeric catSlots — ArenaCatSlot cannot be checked against the ramp');

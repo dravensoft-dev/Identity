@@ -239,8 +239,8 @@ test('a React binding path resolves the category by looking and the stem as Pasc
 });
 
 test('a component bound in both layers now spells the same tail on both sides', () => {
-  assert.equal(reactBindingPath('.', 'arena-tag').tail, angularBindingPath('.', 'arena-tag').tail);
-  assert.equal(reactBindingPath('.', 'arena-tag').tail, 'display/arena-tag/ArenaTag.behaviour.json');
+  assert.equal(reactBindingPath('.', 'arena-tag')?.tail, angularBindingPath('.', 'arena-tag')?.tail);
+  assert.equal(reactBindingPath('.', 'arena-tag')?.tail, 'display/arena-tag/ArenaTag.behaviour.json');
 });
 
 test('two bindings naming the same pattern agree', () => {

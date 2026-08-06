@@ -60,11 +60,11 @@ export function walkProblems(name: string, walk: TrapWalk) {
   }
   if (!walk.startsInside) problems.push(`${name}: focus did not start inside the panel, so the trap never claimed it`);
 
-  const escaped = walk.forward.filter((s) => !s.inside);
+  const escaped = (walk.forward ?? []).filter((s) => !s.inside);
   if (escaped.length) {
     problems.push(`${name}: focus left the panel on Tab ${escaped.map((s) => s.press).join(', ')} -- the interior is not trapped`);
   }
-  if (walk.visited < walk.focusables) {
+  if ((walk.visited ?? 0) < (walk.focusables ?? 0)) {
     problems.push(
       `${name}: ${walk.focusables} focusable element(s) in the panel and Tab reached ${walk.visited} -- `
       + 'a trap that clamps on one control is not the same as one a user can move through',
@@ -143,7 +143,7 @@ async function walkTrap(cdp: Cdp, url: string) {
   }
 }
 
-function skip(reason: string) {
+function skip(reason: string): never {
   const code = skipExitCode();
   console.error(`check-focus-trap: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);
   process.exit(code);
@@ -152,7 +152,7 @@ function skip(reason: string) {
 async function main() {
   if (TRAPS.length === 0) skip('TRAPS is empty -- a walk with nothing to walk proves nothing');
   const browser = findChromium();
-  if (!browser.path) skip(browser.reason);
+  if (browser.path === null) skip(browser.reason);
 
   const server = await startStaticServer(root);
   const chrome = await launchChromium(browser.path);

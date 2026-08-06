@@ -67,14 +67,15 @@ if (pinned) {
 }
 
 const commit = git('rev-list', '-n1', tag);
-if (check('tag exists', !!commit, commit ? `${tag} -> ${commit.slice(0, 7)}` : `${tag} not found — the release commit is not tagged yet`)) {
+if (commit !== null
+  && check('tag exists', true, `${tag} -> ${commit.slice(0, 7)}`)) {
   const type = git('cat-file', '-t', git('rev-parse', tag) ?? '');
   check('tag is annotated', type === 'tag', `${type ?? 'unknown'}; the convention is annotated: git tag -a ${tag} -m "Arena ${tag}"`, false);
 
   const atTag = git('show', `${tag}:.claude-plugin/plugin.json`);
   if (check('plugin.json at the tag', !!atTag, atTag ? '' : `cannot read .claude-plugin/plugin.json at ${tag}`)) {
     let tagged = null;
-    try { tagged = JSON.parse(atTag).version; } catch {  }
+    try { tagged = JSON.parse(atTag ?? '').version; } catch {  }
     check('THE PIN SERVES THIS VERSION', tagged === version,
       tagged === version
         ? `${tag} hands out ${tagged}`

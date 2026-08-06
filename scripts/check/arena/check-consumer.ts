@@ -52,7 +52,7 @@ export function assemble(base = root) {
   return { built: true, missing };
 }
 
-export type CliRun = { status: number; stderr: string; theme: string | null; icons: string | null };
+export type CliRun = { status: number | null; stderr: string; theme: string | null; icons: string | null };
 
 export function fixture(
   layer: string, files: Record<string, string>, stylesheet: Record<string, unknown>, base = root,
@@ -77,7 +77,7 @@ export function runCli(layer: string, dir: string, base = root) {
   return { status: run.status, stderr: run.stderr ?? '', theme: read(THEME_SHEET), icons: read(ICONS_SHEET) };
 }
 
-export function importedSheets(css: string) {
+export function importedSheets(css: string | null) {
   return [...(css ?? '').matchAll(/@import '[^']*\/css\/components\/([^']+)\.css';/g)].map((m) => m[1]).sort();
 }
 

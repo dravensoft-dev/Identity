@@ -68,7 +68,9 @@ export async function buildDemos(opts: { root?: string } = {}) {
     ];
     for (const absPath of targets) {
       const source = readFileSync(absPath, 'utf8');
-      const compiled = transpilers.get(loaderFor(absPath)).transformSync(source);
+      const transpiler = transpilers.get(loaderFor(absPath));
+      if (!transpiler) throw new Error(`build-demos: no transpiler is configured for ${absPath}`);
+      const compiled = transpiler.transformSync(source);
       const rewritten = rewriteRelativeSourceImports(compiled);
       const outRel = outputPathFor(relative(root, absPath)).split(sep).join('/');
       if (files.has(outRel))

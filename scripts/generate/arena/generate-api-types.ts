@@ -36,7 +36,7 @@ export function docComment(text: string, indent = '') {
 
 export function fieldType(field: MemberCandidate) {
   if (field.form === 'primitive') {
-    const ts = PRIMITIVE_TS[field.type];
+    const ts = field.type === undefined ? undefined : PRIMITIVE_TS[field.type];
     if (!ts) throw new Error(`fieldType: "${field.type}" is not one of string, number, boolean`);
     return ts;
   }
@@ -54,7 +54,7 @@ export function renderApiModule(types: TypeContract[]) {
     out.push('');
     if (type.description) out.push(docComment(type.description));
     if (type.kind === 'enum') {
-      out.push(`export type ${type.name} = ${type.values.map(enumLiteral).join(' | ')};`);
+      out.push(`export type ${type.name} = ${(type.values ?? []).map(enumLiteral).join(' | ')};`);
       continue;
     }
     if (type.kind !== 'object') {
