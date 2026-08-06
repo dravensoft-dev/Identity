@@ -1,28 +1,23 @@
 /* The shape a `*.manifest.json` holds on disk, so the scripts that read one agree about it.
  * Every reader reaches its classes through `Object.entries()` over a `JSON.parse` that hands
  * back `unknown`, so one spelling `manifest.variants` was claiming something about the file it
- * never stated. `component` is the only key every manifest carries; the rest are optional
- * because every reader guards them with `?? {}`. A compound variant is the open shape: its
- * keys are whichever axes it selects on plus `class`. A variant value is a string in
- * `variants`, whose keys are JSON keys, and a boolean in `defaultVariants` and in a compound
- * selector -- twelve default an axis to one, ArenaPageHead selects on `narrow: false`, and
- * `arenaTv()` reconciles that at runtime where `tailwind-variants` does not type it, which is
- * the cast in style-parity.ts. Readers wanting only classes take the partial. */
+ * never stated. The Tailwind layer had already declared this document as `ArenaClassManifest`,
+ * for the sheet `classesManifest()` emits rather than the authored source, and the two differ
+ * in exactly one key: an authored manifest may declare no `slots`. So it is derived from that
+ * one rather than written twice, and the facts that live there hold here -- notably that a
+ * variant value is a string in `variants` and a boolean in `defaultVariants` and in a compound
+ * selector, which `tailwind-variants` does not type and `style-parity.ts` casts around once.
+ * Readers wanting only class strings take the partial. */
 
-export type SlotClasses = Record<string, string>;
+import type {
+  ArenaClassManifest, ArenaCompoundVariant, ArenaSlotClasses,
+} from '../../../frameworks/tailwind/ArenaStyles.ts';
 
-export type CompoundVariant = {
-  class?: SlotClasses;
-  [axis: string]: string | boolean | SlotClasses | undefined;
-};
+export type SlotClasses = ArenaSlotClasses;
 
-export type ComponentManifest = {
-  component: string;
-  slots?: SlotClasses;
-  variants?: Record<string, Record<string, SlotClasses>>;
-  defaultVariants?: Record<string, string | boolean>;
-  compoundVariants?: CompoundVariant[];
-};
+export type CompoundVariant = ArenaCompoundVariant;
+
+export type ComponentManifest = Omit<ArenaClassManifest, 'slots'> & { readonly slots?: SlotClasses };
 
 export type ManifestClassSource = Partial<ComponentManifest>;
 

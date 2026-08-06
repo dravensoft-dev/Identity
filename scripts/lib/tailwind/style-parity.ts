@@ -21,7 +21,7 @@ export function selections(manifest: ComponentManifest) {
 }
 
 export function cases(manifest: ComponentManifest) {
-  const recipe = arenaTv(manifest as Parameters<typeof arenaTv>[0]);
+  const recipe = arenaTv(manifest as unknown as Parameters<typeof arenaTv>[0]);
   const styles = arenaStyles(classesManifest(manifest));
   const out = [];
   for (const { name, chosen } of selections(manifest)) {

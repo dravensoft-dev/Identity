@@ -12,13 +12,20 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.ts';
-import type { Manifests } from './manifest-shapes.ts';
 import {
-  classBase, classesManifest, compoundClass, slotClass, variantClass,
+  classBase, classesManifest as rawClassesManifest, compoundClass, slotClass, variantClass,
+  classesFor as rawClassesFor, arenaClassesFor as rawArenaClassesFor,
 } from '../../../frameworks/tailwind/ManifestClasses.js';
-import type { ComponentManifest } from './manifest-shapes.ts';
+import type { ArenaClassManifest, ArenaSelection } from '../../../frameworks/tailwind/ArenaStyles.ts';
+import type { ComponentManifest, Manifests, SlotClasses } from './manifest-shapes.ts';
 
-export { classBase, classesManifest, compoundClass, slotClass, variantClass };
+export const classesManifest = rawClassesManifest as (manifest: ComponentManifest) => ArenaClassManifest;
+export const classesFor =
+  rawClassesFor as (manifest: ComponentManifest | ArenaClassManifest, chosen?: ArenaSelection) => SlotClasses;
+export const arenaClassesFor =
+  rawArenaClassesFor as (manifest: ComponentManifest, chosen?: ArenaSelection) => SlotClasses;
+
+export { classBase, compoundClass, slotClass, variantClass };
 
 export const INDIRECTION = /var\(\s*--([a-z0-9-]+)\s*,\s*var\(\s*--([a-z0-9-]+)\s*\)\s*\)/g;
 export const isThemeKey = (name: string) => !name.startsWith('tw-');

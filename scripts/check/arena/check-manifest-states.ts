@@ -41,7 +41,7 @@ const IMPLEMENTS_PATTERNS = {
 export const FAMILIES = Object.keys(FAMILY_PATTERNS);
 
 export function stateFamilies(classString: string) {
-  const families = new Set();
+  const families = new Set<string>();
   for (const token of classString.split(/\s+/).filter(Boolean))
     for (const [family, re] of Object.entries(FAMILY_PATTERNS))
       if (re.test(token)) families.add(family);
@@ -75,7 +75,7 @@ export function readContract(name: string) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function declaredAffordances(contract: ContractCandidate, where: string) {
+export function declaredAffordances(contract: ContractCandidate, where: string): Set<string> {
   if (!Array.isArray(contract.affordances)) {
     throw new Error(
       `check-manifest-states: ${where} declares no \`affordances\` array. Every contract states one, `
@@ -90,7 +90,7 @@ export function declaredAffordances(contract: ContractCandidate, where: string) 
 }
 
 export function affordancesFor(names: string[]) {
-  const union = new Set();
+  const union = new Set<string>();
   for (const name of names) {
     const contract = readContract(name);
     if (!contract) continue;
@@ -99,13 +99,17 @@ export function affordancesFor(names: string[]) {
   return union;
 }
 
-export function manifestProblems(manifest: ComponentManifest, declared) {
-  const findings = [];
+export type StateFinding =
+  | { half: 'manifest'; component: string; slot: string; family: string }
+  | { half: 'react'; component: string; family: string };
+
+export function manifestProblems(manifest: ComponentManifest, declared: Set<string>) {
+  const findings: StateFinding[] = [];
   const matchedKeys = [];
   let sites = 0;
   const name = manifest.component;
   for (const [slot, classList] of classStringsBySlot(manifest)) {
-    const families = new Set();
+    const families = new Set<string>();
     for (const cls of classList) for (const f of stateFamilies(cls)) families.add(f);
     for (const family of families) {
       sites += 1;
@@ -163,7 +167,7 @@ export function reactProblems(name: string, category: string) {
   if (!contract) return { findings: [], sites: 0 };
   const declared = declaredAffordances(contract, `contracts/api/components/${name}.json`);
   const capability = sourceImplements(readFileSync(path, 'utf8'));
-  const findings = [];
+  const findings: StateFinding[] = [];
   let sites = 0;
   for (const family of FAMILIES) {
     if (!capability[family]) continue;
@@ -175,7 +179,7 @@ export function reactProblems(name: string, category: string) {
 }
 
 export function collect() {
-  const findings = [];
+  const findings: StateFinding[] = [];
   const matchedKeys = [];
   let sites = 0;
 

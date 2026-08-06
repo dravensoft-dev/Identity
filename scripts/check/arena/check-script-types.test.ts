@@ -43,7 +43,7 @@ test('the strict family is enumerated, so every flag is a decision somebody made
     assert.equal(options[on], true, `${on} is on and must stay on`);
 
   assert.equal(options.noImplicitAny, false,
-    'off by decision rather than oversight: 181 parameters and locals carry no annotation '
+    'off by decision rather than oversight: 168 parameters and locals carry no annotation '
     + 'yet, down from 1,643. Turning it on is the remaining work, not a switch.');
   assert.equal(options.strictNullChecks, false,
     'off for the same reason and second in line: 970 alone, and 812 with noImplicitAny on. '

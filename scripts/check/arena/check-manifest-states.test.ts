@@ -172,7 +172,7 @@ test('running against the real tree today produces no findings and no stale entr
   assert.deepEqual(missingSources, []);
   assert.deepEqual(zeroSources, []);
   if (findings.length) {
-    const detail = findings.map((f) => `${f.half} ${f.component}:${f.slot ?? '-'}:${f.family}`).join('\n  ');
+    const detail = findings.map((f) => `${f.half} ${f.component}:${'slot' in f ? f.slot : '-'}:${f.family}`).join('\n  ');
     assert.fail(`unexpected undeclared affordance(s):\n  ${detail}`);
   }
   assert.ok(sites > 0, 'a gate examining zero sites finds zero violations by construction');
