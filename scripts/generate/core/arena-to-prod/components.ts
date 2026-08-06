@@ -38,7 +38,7 @@ export function symbolKeys(map, sources, packageName) {
     for (const [, name] of source.matchAll(JSX_OPEN)) written.add(name);
   }
   return {
-    drawn: [...written].filter((key) => key in map.draws).sort(),
+    drawn: ([...written] as string[]).filter((key) => key in map.draws).sort(),
     unplaced: [],
   };
 }
@@ -49,7 +49,7 @@ export function resolve(map, sources, packageName) {
       : null;
   if (!read) return null;
 
-  const drawn = [...new Set(read.drawn.map((key) => map.draws[key]).filter(Boolean))].sort();
+  const drawn = [...new Set((read.drawn as string[]).map((key) => map.draws[key]).filter(Boolean))].sort();
   const pulled = [...new Set(drawn.flatMap((sheet) => map.needs[sheet] ?? []))]
     .filter((sheet) => !drawn.includes(sheet))
     .sort();

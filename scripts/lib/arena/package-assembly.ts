@@ -143,7 +143,7 @@ export function componentSheets(css, split, root = repoRoot) {
   ];
 }
 
-export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.mjs' };
+export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.ts' };
 
 export function copyCli(dir, root = repoRoot) {
   const written = [];
@@ -191,7 +191,7 @@ export function baseManifest(root = repoRoot) {
     author: plugin.author,
     publishConfig: { access: 'public' },
     bin: { ...CLI_BINS },
-    engines: { node: '>=20' },
+    engines: { node: '>=22.18' },
   };
 }
 

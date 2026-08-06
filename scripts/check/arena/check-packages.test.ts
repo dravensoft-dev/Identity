@@ -152,9 +152,9 @@ test('a wildcard matches one path segment, the way Node resolves an exports patt
 test('a package exposing nothing is a problem, and so is a bin that was never emitted', () => {
   const dir = assembled({ 'README.md': '#', 'Index.d.ts': '' });
   assert.match(exportProblems(PACKAGES[0], manifest(), dir)[0], /no exports target resolves/);
-  const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-to-prod': './bin/arena-to-prod.mjs' } });
+  const m = manifest({ exports: { '.': './README.md' }, bin: { 'arena-to-prod': './bin/arena-to-prod.ts' } });
   assert.deepEqual(exportProblems(PACKAGES[0], m, dir),
-    ['@dravensoft/arena-react: bin arena-to-prod points at ./bin/arena-to-prod.mjs, which was never emitted']);
+    ['@dravensoft/arena-react: bin arena-to-prod points at ./bin/arena-to-prod.ts, which was never emitted']);
   rmSync(dir, { recursive: true });
 });
 

@@ -15,7 +15,7 @@ import { join, dirname, basename, sep } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { parseDecls } from '../../lib/arena/css-decls.mjs';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
-import { themeCss } from '../../generate/core/arena-to-prod/theme-css.mjs';
+import { themeCss } from '../../generate/core/arena-to-prod/theme-css.ts';
 import { MAP_FILE } from '../../lib/arena/component-map.ts';
 
 export const PACKAGES = [

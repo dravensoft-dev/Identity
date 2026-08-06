@@ -11,7 +11,7 @@ function suitesUnder(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) found.push(...suitesUnder(full));
-    else if (entry.name.endsWith('.test.mjs')) found.push(full);
+    else if (isSuite(entry.name)) found.push(full);
   }
   return found;
 }

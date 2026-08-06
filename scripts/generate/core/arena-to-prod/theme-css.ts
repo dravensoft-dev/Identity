@@ -9,7 +9,7 @@
 import {
   PALETTE_KEYS, POLARITIES, FONT_ROLES, GENERIC_FAMILIES, SOURCE_FORMATS,
   catKeys, requiredKeys,
-} from './palette-keys.mjs';
+} from './palette-keys.ts';
 import { validate, contrast } from './validate-palette.mjs';
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -87,7 +87,7 @@ export const COMPONENTS_SHEET = 'css/components.css';
 export const PREFLIGHT_SHEET = 'css/base.css';
 export const STYLESHEET_KEYS = ['components', 'preflight'];
 
-export function stylesheetProblems(stylesheet, sheets) {
+export function stylesheetProblems(stylesheet: any, sheets: any) {
   if (!isObject(stylesheet)) return ['stylesheet: not an object'];
   const problems = [];
 
@@ -120,7 +120,7 @@ export function stylesheetProblems(stylesheet, sheets) {
   return problems;
 }
 
-export function configProblems(config, sheets = null) {
+export function configProblems(config: any, sheets: any = null) {
   if (!isObject(config)) return ['the configuration is not an object'];
   const problems = [];
 
@@ -140,7 +140,7 @@ export function configProblems(config, sheets = null) {
   return problems;
 }
 
-export function paletteReports(config) {
+export function paletteReports(config: any) {
   const out = [];
   for (const palette of config.palettes) {
     const mode = palette.polarity;
@@ -149,7 +149,8 @@ export function paletteReports(config) {
     const messages = [];
 
     if (ramp.length) {
-      for (const [name, state, detail] of validate(ramp, { mode, surface }).report) {
+      const rampOptions = { mode, surface };
+      for (const [name, state, detail] of validate(ramp, rampOptions).report as [string, any, string][]) {
         if (state === false || state === 'fail') messages.push(`ramp, ${name}: ${detail}`);
       }
     }
@@ -206,7 +207,7 @@ function colourDeclarations(palette) {
     .map((key) => `--color-${key}:${palette.colors[key].toLowerCase()};`);
 }
 
-export function scopedImports(packageName, stylesheet, sheets) {
+export function scopedImports(packageName: string, stylesheet: any, sheets: any) {
   const lines = [];
   for (const layer of sheets.layers) {
     if (layer === PREFLIGHT_SHEET && stylesheet.preflight === false) continue;
@@ -219,7 +220,14 @@ export function scopedImports(packageName, stylesheet, sheets) {
   return lines;
 }
 
-export function themeCss(config, options = {}) {
+export type ThemeOptions = {
+  packageName?: string;
+  importHeader?: boolean;
+  source?: string;
+  sheets?: { layers?: string[]; components?: string[] } | null;
+};
+
+export function themeCss(config: any, options: ThemeOptions = {}) {
   const { packageName = '@dravensoft/arena-react', importHeader = true, source = 'arena.config.json', sheets = null } = options;
   const fallbackFor = (role) => config.fonts[role].fallback ?? FONT_ROLES[role];
 

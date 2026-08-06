@@ -6,8 +6,8 @@ import { join } from 'node:path';
 import {
   parseArgs, reportLines, hostPackage, hostPackageName, packageSheets, sourceFiles, phosphorRoot,
   relativeFrom, themeStep, iconsStep, main, componentMap, USAGE, THEME_SHEET, ICONS_SHEET, COMPONENT_MAP,
-} from './arena-to-prod.mjs';
-import { PALETTE_KEYS } from './palette-keys.mjs';
+} from './arena-to-prod.ts';
+import { PALETTE_KEYS } from './palette-keys.ts';
 
 test('every path has a default, so the bare command is the whole of it', () => {
   const bare = parseArgs([]);
@@ -58,8 +58,8 @@ test('a report line names the palette it came from', () => {
   assert.deepEqual(reportLines([{ palette: 'ember', messages: ['text, x: 2.00:1'] }]), ['ember: text, x: 2.00:1']);
 });
 
-const colors = (overrides = {}) => {
-  const out = {};
+const colors = (overrides: Record<string, string> = {}): Record<string, string> => {
+  const out: Record<string, string> = {};
   for (const key of PALETTE_KEYS) out[key] = '#141010';
   return { ...out, ...overrides };
 };
@@ -89,7 +89,7 @@ ${selector}.ph-moon:before { content: "\\e330"; }
 ${selector}.ph-sun:before { content: "\\e6a2"; }
 `;
 
-function phosphor(weights = { bold: 'Phosphor-Bold', fill: 'Phosphor-Fill' }) {
+function phosphor(weights: Record<string, string> = { bold: 'Phosphor-Bold', fill: 'Phosphor-Fill' }) {
   const root = mkdtempSync(join(tmpdir(), 'arena-phosphor-'));
   const web = join(root, 'node_modules', '@phosphor-icons', 'web');
   mkdirSync(web, { recursive: true });
@@ -104,7 +104,7 @@ function phosphor(weights = { bold: 'Phosphor-Bold', fill: 'Phosphor-Fill' }) {
   return { root, web };
 }
 
-function project(config = readable, files = { 'app.html': '<i class="ph-bold ph-bell"></i>' }) {
+function project(config: any = readable, files: Record<string, string> = { 'app.html': '<i class="ph-bold ph-bell"></i>' }) {
   const root = mkdtempSync(join(tmpdir(), 'arena-to-prod-'));
   mkdirSync(join(root, 'src'), { recursive: true });
   if (config) writeFileSync(join(root, 'arena.config.json'), JSON.stringify(config));
@@ -112,7 +112,7 @@ function project(config = readable, files = { 'app.html': '<i class="ph-bold ph-
   return root;
 }
 
-const options = (root, extra = {}) => parseArgs([
+const options = (root: string, extra: { strict?: boolean; importHeader?: boolean } = {}) => parseArgs([
   '--config', join(root, 'arena.config.json'), '--src', join(root, 'src'), '-o', join(root, 'src'),
   ...(extra.strict ? ['--strict'] : []),
   ...(extra.importHeader === false ? ['--no-import'] : []),

@@ -22,7 +22,7 @@ function tree(files) {
 }
 
 test('a test never ships, whichever extension it takes', () => {
-  for (const name of ['ArenaTag.test.ts', 'ArenaTag.test.tsx', 'ArenaButton.test.jsx', 'ArenaButton.dom.test.jsx', 'theme-css.test.mjs']) {
+  for (const name of ['ArenaTag.test.ts', 'ArenaTag.test.tsx', 'ArenaButton.test.jsx', 'ArenaButton.dom.test.jsx', 'theme-css.test.ts']) {
     assert.equal(excluded(name), true, name);
   }
 });
@@ -108,6 +108,22 @@ test('the manifest takes its version and its identity from plugin.json, never fr
   assert.equal(base.publishConfig.access, 'public');
   assert.match(base.repository.url, /^git\+https:\/\/github\.com\//);
   assert.deepEqual(base.bin, CLI_BINS);
+});
+
+test('a TypeScript command and the node floor are one claim, so neither can move alone', () => {
+  const base = baseManifest(repoRoot);
+  const ships = Object.values(CLI_BINS);
+  assert.ok(ships.length > 0, 'the manifest advertises no command, so this proves nothing');
+
+  const [major, minor] = base.engines.node.replace(/^\D*/, '').split('.').map(Number);
+  const strips = major > 22 || (major === 22 && minor >= 18);
+
+  if (ships.some((target) => target.endsWith('.ts'))) {
+    assert.ok(strips,
+      `a command ships as TypeScript and engines says node ${base.engines.node}. Node strips types `
+      + 'unflagged from 22.18; below that the command is a syntax error on a consumer machine, and '
+      + 'engines is advisory, so npm installs it and the failure lands at first run.');
+  }
 });
 
 test('every command the manifest declares is copied, flat, and no two of them share a filename', () => {

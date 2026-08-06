@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolve, selectorKeys, symbolKeys, namedImports, AUTO } from './components.mjs';
+import { resolve, selectorKeys, symbolKeys, namedImports, AUTO } from './components.ts';
 
 const ANGULAR = {
   match: 'selector',

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanText, scanFile, markerAllowlist } from './check-arbitrary-values.ts';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, relative } from 'node:path';
+import { scanText, scanFile, markerAllowlist, walk, SKIPPED_NAMES } from './check-arbitrary-values.ts';
 
 const found = (s) => scanText(s).map((f) => f.cls);
 
@@ -104,4 +107,27 @@ test('a bare number outside the math function is still a violation, even when th
   assert.deepEqual(scanText('z-[calc(var(--z-modal))_900]').map((h) => h.cls), ['z-[calc(var(--z-modal))_900]']);
   assert.deepEqual(scanText('z-[calc(var(--sp-1)*2)_900]').map((h) => h.cls), ['z-[calc(var(--sp-1)*2)_900]']);
   assert.deepEqual(scanText('shadow-[shadow_calc(var(--bw))_5]').map((h) => h.cls), ['shadow-[shadow_calc(var(--bw))_5]']);
+});
+
+test('a compiled copy is not a second source, and only copies are skipped', () => {
+  const root = mkdtempSync(join(tmpdir(), 'arbitrary-walk-'));
+  try {
+    for (const dir of ['react', 'react/dist', 'react/vendor', 'angular/build', 'angular/components'])
+      mkdirSync(join(root, dir), { recursive: true });
+    for (const rel of ['react/Real.ts', 'react/dist/Copy.ts', 'react/vendor/Dep.ts',
+      'angular/build/Emitted.ts', 'angular/components/Real.html'])
+      writeFileSync(join(root, rel), '// fixture');
+
+    const found = [...walk(root, join(root, 'angular', 'build'))].map((p) => relative(root, p)).sort();
+    assert.deepEqual(found, ['angular/components/Real.html', 'react/Real.ts'],
+      'a walk that reads dist/ reports on the same code twice and on output nobody wrote');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('the emitted tree is skipped by its anchored path, so scripts/build/ would still be read', () => {
+  assert.equal(SKIPPED_NAMES.has('build'), false,
+    'skipping every directory called build would take the phase directory with it, which is '
+    + 'the reason layers.ts anchors emittedTree rather than naming it');
 });

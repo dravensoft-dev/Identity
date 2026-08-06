@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* The one command an Arena consumer runs: their arena.config.json and their sources in, the two
  * stylesheets a production build needs out. It ships inside both npm packages as
- * bin/arena-to-prod.mjs and depends on nothing but node and its own siblings, because inside a
+ * bin/arena-to-prod.ts and depends on nothing but node and its own siblings, because inside a
  * package `scripts/` does not exist. The theme step turns their palettes and fonts into the
  * stylesheet a package cannot carry; the icons step writes the Phosphor subset the project and
  * the package between them draw. Theme first, and its failure stops the run: a project whose
@@ -13,9 +13,9 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, basename, join, relative, resolve, sep } from 'node:path';
-import { configProblems, paletteReports, themeCss } from './theme-css.mjs';
-import { scan, drawn, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.mjs';
-import { AUTO, resolve as resolveComponents } from './components.mjs';
+import { configProblems, paletteReports, themeCss } from './theme-css.ts';
+import { scan, drawn, iconsCss, woff2Source, WEIGHT_CLASSES } from './icon-css.ts';
+import { AUTO, resolve as resolveComponents } from './components.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -41,8 +41,18 @@ export const USAGE = [
   '  --no-import     omit the @import of the package stylesheet from the theme output',
 ].join('\n');
 
-export function parseArgs(argv) {
-  const options = { strict: false, importHeader: true, paths: [] };
+export type CliOptions = {
+  help?: boolean;
+  error?: string;
+  strict?: boolean;
+  importHeader?: boolean;
+  paths?: string[];
+  config?: string;
+  out?: string;
+};
+
+export function parseArgs(argv: string[]): CliOptions {
+  const options: CliOptions = { strict: false, importHeader: true, paths: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') return { help: true };
@@ -179,7 +189,10 @@ export function autoComponents(config, options, map, packageName) {
   };
 }
 
-export function themeStep(options, { packageName, sheets, map }) {
+export function themeStep(
+  options: CliOptions & { out?: string },
+  { packageName, sheets, map }: { packageName: string; sheets?: any; map?: any },
+) {
   let config;
   try {
     config = JSON.parse(readFileSync(options.config, 'utf8'));
@@ -283,7 +296,8 @@ export function main(argv, environment = {}) {
   if (options.error) { console.error(`arena-to-prod: ${options.error}\n\n${USAGE}`); return 2; }
 
   const arena = 'arena' in environment ? environment.arena : hostPackage();
-  const packageName = environment.packageName
+  const env = environment as { packageName?: string; arena?: string };
+  const packageName = env.packageName
     ?? (arena ? hostPackageName(arena) : null)
     ?? '@dravensoft/arena-react';
   const sheets = 'sheets' in environment ? environment.sheets : (arena ? packageSheets(arena) : null);

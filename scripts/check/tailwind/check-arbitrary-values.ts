@@ -1,8 +1,17 @@
+/* A compiled copy is not a second source. dist/ and vendor/ are skipped by name, as three
+ * neighbouring gates already skip them, and the Angular emit is skipped by its ANCHORED
+ * path rather than by the name build, on layers.ts's own reasoning. Until the CLI shipped
+ * as TypeScript nothing under dist/ matched, so this walk read 414 generated copies and
+ * nobody noticed; what it holds is the hand-written tree. */
+
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { UNMODELLED_UNITS } from '../arena/check-dimension-literals.ts';
+import { emittedTree } from '../../lib/arena/layers.ts';
+
+export const SKIPPED_NAMES = new Set(['node_modules', 'dist', 'vendor']);
 
 const EXTENSIONS = ['.json', '.ts', '.tsx', '.jsx', '.html', '.md'];
 const CANDIDATE = /(?<![\w-])(-?[a-z][a-z0-9]*(?:-[a-z0-9]+)*-\[([^\]\s"']+)\])/g;
@@ -96,10 +105,13 @@ export function scanFile(relPath, text) {
   return errs;
 }
 
-function* walk(dir) {
+export function* walk(dir, emitted = emittedTree()) {
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
-    if (statSync(p).isDirectory()) yield* walk(p);
+    if (statSync(p).isDirectory()) {
+      if (SKIPPED_NAMES.has(entry) || p === emitted) continue;
+      yield* walk(p, emitted);
+    }
 
     else if (entry.endsWith('.manifest.generated.ts')) continue;
     else if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;

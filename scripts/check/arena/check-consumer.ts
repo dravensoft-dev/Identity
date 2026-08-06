@@ -16,9 +16,9 @@ import { join } from 'node:path';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { PACKAGES, distDir } from './check-packages.ts';
 import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
-import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.mjs';
+import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.ts';
 
-export const CLI = 'bin/arena-to-prod.mjs';
+export const CLI = 'bin/arena-to-prod.ts';
 export const GLYPH = 'ph-bell';
 
 export const SOURCES = {
@@ -79,7 +79,8 @@ export function importedSheets(css) {
 
 export function mergeProblems(layer, result, base = root) {
   const problems = [];
-  const bins = readdirSync(join(distDir(layer, base), 'bin')).filter((f) => f.endsWith('.mjs'));
+  const bins = readdirSync(join(distDir(layer, base), 'bin'))
+    .filter((f) => f.endsWith('.ts') || f.endsWith('.mjs'));
   if (Object.keys(CLI_BINS).length !== 1) {
     problems.push(`${layer}: the package advertises ${Object.keys(CLI_BINS).length} commands. One command reads `
       + 'one config and writes both sheets; a second one is the split this major removed');
