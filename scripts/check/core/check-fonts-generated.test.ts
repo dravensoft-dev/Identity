@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { facesIn, checkFonts, askGoogle, urlProblems } from './check-fonts-generated.mjs';
+import { facesIn, checkFonts, askGoogle, urlProblems } from './check-fonts-generated.ts';
 
 test('facesIn reads every font-family named inside an @font-face block', () => {
   const css = `@font-face {\n  font-family: 'Archivo';\n  font-weight: 400;\n}\n\n@font-face {\n  font-family: 'Archivo';\n  font-weight: 700;\n}\n`;

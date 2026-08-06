@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BUNDLE_DIR, PAGE_SUFFIX, ENTRY_SUFFIX, pageProblems } from './check-angular-demos.mjs';
+import { BUNDLE_DIR, PAGE_SUFFIX, ENTRY_SUFFIX, pageProblems } from './check-angular-demos.ts';
 import { readLayer } from '../../lib/arena/layers.mjs';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 

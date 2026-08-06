@@ -32,14 +32,16 @@ const THEMES = [
 let ok = true;
 for (const t of THEMES) {
   const { ramp, surface } = theme(t.selector);
-  const result = validate(ramp, { mode: t.mode, surface, pairs: 'adjacent' });
+  const options = { mode: t.mode, surface, pairs: 'adjacent' };
+  const result = validate(ramp, options);
   console.log(`\n${t.name} — ${SLOTS} slots on surface ${surface}`);
-  for (const [name, state, detail] of result.report) {
+  const rows = result.report as [string, boolean | string, string][];
+  for (const [name, state, detail] of rows) {
     const glyph = state === true || state === 'pass' ? 'PASS' : state === 'floor' || state === 'relief' ? 'WARN' : 'FAIL';
     console.log(`  [${glyph.padEnd(4)}] ${name.padEnd(22)} ${detail}`);
   }
 
-  const warned = result.report.filter(([, s]) => s === 'floor' || s === 'relief');
+  const warned = rows.filter(([, s]) => s === 'floor' || s === 'relief');
   if (!result.ok || warned.length) {
     ok = false;
     for (const [name] of warned) console.log(`  → ${name}: WARN is a FAIL for Arena's ramp — no relief rule is allowed.`);

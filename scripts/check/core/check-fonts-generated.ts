@@ -29,9 +29,13 @@ export function checkFonts(declared, faces) {
     .map((fam) => `"${fam}" is declared in contracts/design/typography.json but contracts/design-generated/fonts.generated.css has no @font-face for it — run bun scripts/generate/core/fetch-fonts.mjs`);
 }
 
-export async function askGoogle(fonts, get = fetch) {
+export async function askGoogle(
+  fonts,
+  get: (url: string, init?: { headers: Record<string, string> }) => Promise<{ status: number }> = fetch,
+) {
   const answers = [];
-  for (const [role, { family, src }] of Object.entries(fonts)) {
+  const declared = Object.entries(fonts) as [string, { family: string; src: string }][];
+  for (const [role, { family, src }] of declared) {
     try {
       answers.push({ role, family, src, status: (await get(src, { headers: { 'User-Agent': UA } })).status });
     } catch (cause) {

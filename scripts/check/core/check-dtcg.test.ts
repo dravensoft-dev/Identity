@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateTree, zeroSourceProblems } from './check-dtcg.mjs';
+import { validateTree, zeroSourceProblems } from './check-dtcg.ts';
 
 const ok = (tree) => assert.deepEqual(validateTree(tree, 'f.json'), []);
 const fails = (tree, re) => {

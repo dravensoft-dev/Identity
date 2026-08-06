@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bridgeSelectors, cdkClasses, importedSheets, checkBridge } from './check-cdk.mjs';
+import { bridgeSelectors, cdkClasses, importedSheets, checkBridge } from './check-cdk.ts';
 import { repoRoot } from '../../lib/arena/repo-root.mjs';
 
 const PREBUILT = readFileSync(

@@ -3,7 +3,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertionProblems, isNodeExpression, splitArguments, suiteFiles, SUITE_ROOT } from './check-assertions.mjs';
+import { assertionProblems, isNodeExpression, splitArguments, suiteFiles, SUITE_ROOT } from './check-assertions.ts';
 
 const scan = (source) => assertionProblems(['a.test.ts'], () => source);
 

@@ -10,7 +10,7 @@ what dismisses it.
 It is a level under `contracts/`, beside `contracts/api/`, rather than a corner of the
 design one, and deliberately so. A contract is not a value: DTCG models colours,
 dimensions and durations, and does not model "Escape closes this". Putting a
-pattern under `contracts/design/` would mean relaxing `scripts/check/core/check-dtcg.mjs`, which
+pattern under `contracts/design/` would mean relaxing `scripts/check/core/check-dtcg.ts`, which
 is one of the cleanest gates in the repo.
 
 ## Patterns

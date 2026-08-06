@@ -191,10 +191,10 @@ framework is added without touching the language.
   (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`) and
   the **danger convention** (`components-danger`).
 - `scripts/`: the build steps and the gates. `build-tokens.mjs` generates the four token
-  CSS files from `contracts/design/`; `check-dtcg.mjs` asserts the source conforms to
-  2025.10; `check-tokens-generated.mjs` asserts the committed CSS matches the source;
-  `check-ramp.mjs` asserts the shipped ramp clears every gate in both themes;
-  `check-text-contrast.mjs` measures every text level against the real surfaces in both
+  CSS files from `contracts/design/`; `check-dtcg.ts` asserts the source conforms to
+  2025.10; `check-tokens-generated.ts` asserts the committed CSS matches the source;
+  `check-ramp.ts` asserts the shipped ramp clears every gate in both themes;
+  `check-text-contrast.ts` measures every text level against the real surfaces in both
   themes; `validate-palette.mjs` is the vendored data-viz palette validator;
   `check-release.mjs` asserts the version, the marketplace `ref` and the tag agree; and
   `serve.mjs` backs `bun run demos`.

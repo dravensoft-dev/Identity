@@ -57,7 +57,7 @@ function toOklab(hex) {
           1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
           0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
 }
-function oklabToHex([L, a, b]) {
+function oklabToHex([L, a, b]: number[]) {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
   const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
   const s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
