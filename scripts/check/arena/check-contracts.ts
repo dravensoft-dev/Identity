@@ -100,7 +100,7 @@ function main() {
     counted += names.length;
     problems.push(...levelProblems(level, names, (n) => statSync(join(base, level, n)).isDirectory()));
   }
-  let generated = [];
+  let generated: string[] = [];
   try {
     generated = readdirSync(join(base, GENERATED)).sort();
   } catch {

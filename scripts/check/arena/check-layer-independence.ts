@@ -59,7 +59,7 @@ export const MODULE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs']);
 export const REFERENCE_EXT = new Set([...MODULE_EXT, '.html']);
 const SKIP_DIRS = new Set(['node_modules', 'vendor', 'build', 'dist']);
 
-export function* layerFiles(layerDir) {
+export function* layerFiles(layerDir): Generator<string> {
   for (const entry of readdirSync(layerDir).sort()) {
     if (SKIP_DIRS.has(entry)) continue;
     const path = join(layerDir, entry);

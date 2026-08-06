@@ -20,7 +20,7 @@ export const PROJECTS = [
 
 export const CHECKED_EXTENSIONS = ['.ts', '.mjs'];
 
-export function sourcesUnder(dir: string) {
+export function sourcesUnder(dir: string): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);

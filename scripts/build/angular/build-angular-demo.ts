@@ -23,7 +23,7 @@ export const ENTRY_SUFFIXES = ['.demo.entry.generated.js'];
 export const isEntry = (name: string, ext = '.js') => ENTRY_SUFFIXES.some((s) => name.endsWith(s.replace('.js', ext)));
 
 function pruneOrphans(dir: string) {
-  const pruned = [];
+  const pruned: string[] = [];
   if (!existsSync(dir)) return pruned;
   walk(dir);
   return pruned;
@@ -50,7 +50,7 @@ function pruneOrphans(dir: string) {
 }
 
 export function collectEntries(dir: string) {
-  const out = [];
+  const out: string[] = [];
   if (!existsSync(dir)) return out;
   walk(dir);
   return out.sort();
@@ -80,7 +80,7 @@ export function missingEntryProblems(sourceEntries, emittedEntries, emitDir = re
 }
 
 function collectSourceEntries(dir: string) {
-  const out = [];
+  const out: string[] = [];
   if (!existsSync(dir)) return out;
   walk(dir);
   return out;

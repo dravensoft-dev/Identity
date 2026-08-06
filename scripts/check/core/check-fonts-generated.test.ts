@@ -43,7 +43,7 @@ const FONTS = {
 };
 
 test('a font URL Google answers is asked for exactly once, and 200 is no problem', async () => {
-  const asked = [];
+  const asked: string[] = [];
   const answers = await askGoogle(FONTS, async (url) => {
     asked.push(url);
     return { status: 200 };

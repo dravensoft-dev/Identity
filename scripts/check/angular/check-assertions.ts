@@ -55,7 +55,7 @@ export function isNodeExpression(argument) {
 }
 
 export function suiteFiles(root, list = readdirSync) {
-  const found = [];
+  const found: string[] = [];
   const walk = (dir: string) => {
     for (const entry of list(dir, { withFileTypes: true })) {
       const path = join(dir, entry.name);

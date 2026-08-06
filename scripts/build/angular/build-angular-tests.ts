@@ -29,7 +29,7 @@ const EXTERNAL_INPUTS = [
 ];
 
 function pruneOrphans(dir: string) {
-  const pruned = [];
+  const pruned: string[] = [];
   walk(dir);
   return pruned;
 
@@ -55,7 +55,7 @@ function pruneOrphans(dir: string) {
 }
 
 function collectTestSources(dir: string) {
-  const out = [];
+  const out: string[] = [];
   walk(dir);
   return out;
 
@@ -70,7 +70,7 @@ function collectTestSources(dir: string) {
 }
 
 function collectEmittedTests(dir: string) {
-  const out = [];
+  const out: string[] = [];
   if (!existsSync(dir)) return out;
   walk(dir);
   return out;

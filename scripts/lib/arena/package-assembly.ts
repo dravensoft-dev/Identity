@@ -49,7 +49,7 @@ export function excluded(name: string) {
 }
 
 export function collectFiles(dir: string, keep = (_file) => true) {
-  const found = [];
+  const found: string[] = [];
   const walk = (current) => {
     for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (excluded(entry.name) || entry.name.startsWith('.')) continue;
@@ -146,7 +146,7 @@ export function componentSheets(css: string, split, root = repoRoot) {
 export const CLI_BINS = { 'arena-to-prod': './bin/arena-to-prod.ts' };
 
 export function copyCli(dir: string, root = repoRoot) {
-  const written = [];
+  const written: string[] = [];
   for (const name of Object.keys(CLI_BINS)) {
     const from = join(root, 'scripts', 'generate', 'core', name);
     const copied = copyTree(from, dir, 'bin').map((p) => `./${relative(dir, p).split(sep).join('/')}`);

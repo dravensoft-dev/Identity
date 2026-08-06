@@ -28,7 +28,7 @@ export const LAYER_IMPORT = /from '\.\.\/\.\.\/[a-z-]+\/[a-z-]+\/([A-Z][A-Za-z0-
 
 export function componentFiles(layer: string, extension, root = repoRoot) {
   const base = join(root, 'frameworks', layer, 'components');
-  const found = [];
+  const found: { at: string; file: string; symbol: string }[] = [];
   if (!existsSync(base)) return found;
   const byName = (a, b) => a.name.localeCompare(b.name);
   for (const category of readdirSync(base, { withFileTypes: true }).sort(byName)) {

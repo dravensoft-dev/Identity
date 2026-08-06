@@ -90,7 +90,7 @@ export function manifestProblems(pkg, manifest, version) {
 }
 
 function exportTargets(exports) {
-  const out = [];
+  const out: string[] = [];
   const walk = (value) => {
     if (typeof value === 'string') { out.push(value); return; }
     if (value && typeof value === 'object') for (const v of Object.values(value)) walk(v);
@@ -102,7 +102,7 @@ function exportTargets(exports) {
 export function globMatches(target, dir: string) {
   const rel = target.replace(/^\.\//, '');
   const pattern = new RegExp(`^${rel.split('*').map((p) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
-  const found = [];
+  const found: string[] = [];
   const walk = (at, prefix) => {
     if (!existsSync(at)) return;
     for (const entry of readdirSync(at, { withFileTypes: true })) {

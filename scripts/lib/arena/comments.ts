@@ -60,9 +60,9 @@ export function insideLiteral(ranges, index) {
   return ranges.some(([from, to]) => index >= from && index < to);
 }
 
-export function literalRanges(source: string) {
-  const out = [];
-  const range = (from, to) => { if (to > from) out.push([from, to]); };
+export function literalRanges(source: string): [number, number][] {
+  const out: [number, number][] = [];
+  const range = (from: number, to: number) => { if (to > from) out.push([from, to]); };
   let i = 0;
 
   while (i < source.length) {
@@ -142,8 +142,8 @@ export function literalRanges(source: string) {
   return out;
 }
 
-export function findComments(source: string) {
-  const found = [];
+export function findComments(source: string): { line: number; lines: number; text: string }[] {
+  const found: { line: number; lines: number; text: string }[] = [];
   let line = 1;
   let i = 0;
 

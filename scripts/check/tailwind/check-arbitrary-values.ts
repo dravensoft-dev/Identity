@@ -105,7 +105,7 @@ export function scanFile(relPath, text: string) {
   return errs;
 }
 
-export function* walk(dir: string, emitted = emittedTree()) {
+export function* walk(dir: string, emitted = emittedTree()): Generator<string> {
   for (const entry of readdirSync(dir).sort()) {
     const p = join(dir, entry);
     if (statSync(p).isDirectory()) {

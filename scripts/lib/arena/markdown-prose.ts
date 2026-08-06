@@ -38,7 +38,7 @@ function spanEnd(source: string, at, arenaTicks) {
 }
 
 export function proseSegments(source: string) {
-  const segments = [];
+  const segments: { line: number; column: number; text: string }[] = [];
   let line = 1;
   let column = 1;
   let index = 0;

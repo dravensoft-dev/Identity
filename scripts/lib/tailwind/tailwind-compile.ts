@@ -23,7 +23,7 @@ export function escapeClass(cls: string) {
 }
 
 export function manifestFiles(componentsDir) {
-  const out = [];
+  const out: string[] = [];
   const walk = (dir: string) => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const p = join(dir, e.name);

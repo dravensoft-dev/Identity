@@ -35,7 +35,7 @@ export function guardProblems(paths, root = repoRoot) {
     .map((rel: string) => `${rel} decides whether it is the program by matching its own filename`);
 }
 
-export function scriptsUnder(dir: string) {
+export function scriptsUnder(dir: string): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);

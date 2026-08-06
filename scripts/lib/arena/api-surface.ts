@@ -37,7 +37,7 @@ function wrapsWhole(ts) {
   return false;
 }
 
-export function classify(raw) {
+export function classify(raw: string): { form: string; [detail: string]: any } {
   const ts = raw.trim();
   if (!ts) throw new UnrecognisedShape('empty type annotation');
 
@@ -331,7 +331,8 @@ function classMember(name: string, initialiser) {
   if (generic) {
     const [, kind, required, type] = generic;
     if (kind === 'output') {
-      const inner = type.trim() === 'void' ? { payload: null } : classify(type);
+      const inner: { form?: string; type?: string; payload?: null } =
+        type.trim() === 'void' ? { payload: null } : classify(type);
       if (inner.form === 'platform') return { name, form: 'event', required: false, payload: inner.type, platformPayload: true };
 
       if (inner.form === 'consumerData') return { name, form: 'event', required: false, payload: 'consumerData' };

@@ -84,7 +84,7 @@ export function unresolvedProblems(dir: string) {
 export function assembleModules(root, dir: string) {
   const layer = join(root, LAYER);
   const written = [];
-  const compiled = [];
+  const compiled: string[] = [];
   const tsconfig = JSON.stringify({ compilerOptions: { jsx: 'react' } });
   const transpilers = new Map([['tsx', new Bun.Transpiler({ loader: 'tsx', tsconfig })]]);
 

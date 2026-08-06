@@ -137,7 +137,7 @@ function runStep(name: string, args) {
   return { name, status: r.error ? 'fail' : stepStatus(r.status) };
 }
 
-export function testFilesUnder(dir: string) {
+export function testFilesUnder(dir: string): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);

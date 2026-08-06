@@ -48,7 +48,7 @@ export const READ_DESPITE_THE_DOT = new Set(['.gitkeep', '.github']);
 
 export { emittedTree };
 
-function walk(dir: string, keep, emitted) {
+function walk(dir: string, keep, emitted): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.') && !READ_DESPITE_THE_DOT.has(entry.name)) continue;

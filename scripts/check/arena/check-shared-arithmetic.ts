@@ -67,7 +67,7 @@ export function exportedFunctions(source: string) {
 
 export function pairProblems(rel: string, react, angular, divergent = DIVERGENT) {
   const problems = [];
-  const claimed = [];
+  const claimed: string[] = [];
   const shared = [...react.keys()].filter((name) => angular.has(name)).sort();
   if (shared.length === 0) {
     problems.push(`${rel}: the two copies export no function under the same name, so this pair `

@@ -243,7 +243,7 @@ function collectBindings() {
 }
 
 export function walkSuites(dir: string) {
-  const out = [];
+  const out: string[] = [];
   if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);

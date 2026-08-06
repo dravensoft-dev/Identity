@@ -32,7 +32,7 @@ export function skips(name: string, relativeDirectory) {
   return SKIPPED_UNDER_FRAMEWORKS.has(name) && relativeDirectory.startsWith('frameworks');
 }
 
-export function* markdownFiles(base = root, dir = base, relative = '') {
+export function* markdownFiles(base = root, dir = base, relative = ''): Generator<string> {
   for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     if (skips(entry.name, relative)) continue;
     const next = relative ? `${relative}/${entry.name}` : entry.name;

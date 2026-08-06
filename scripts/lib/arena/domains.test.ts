@@ -7,7 +7,7 @@ import { DOMAINS, SCRIPT_EXTENSIONS, SUITE_EXTENSIONS, STAYS_JAVASCRIPT,
 import { LAYERS } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
 
-function suitesUnder(dir: string) {
+function suitesUnder(dir: string): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -102,7 +102,7 @@ test('a .ts path classifies by its directory, so the domain survives the rename'
   assert.equal(domainOfTestPath('scripts/lib/arena/domains.test.ts'), 'arena');
 });
 
-function mjsUnder(dir: string) {
+function mjsUnder(dir: string): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);

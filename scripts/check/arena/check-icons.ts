@@ -79,7 +79,7 @@ export function tokenProblems(text: string, where, weights) {
 }
 
 export function scannedFiles(root = ROOT) {
-  const found = [];
+  const found: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith('.') || SKIPPED_DIRECTORIES.has(entry.name)) continue;

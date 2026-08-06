@@ -22,7 +22,7 @@ export const INDIRECTION = /var\(\s*--([a-z0-9-]+)\s*,\s*var\(\s*--([a-z0-9-]+)\
 export const isThemeKey = (name: string) => !name.startsWith('tw-');
 
 export function applyRules(manifest) {
-  const rules = [];
+  const rules: { selector: string; classes: string }[] = [];
   const push = (selector: string, classes) => {
     const trimmed = String(classes ?? '').trim();
     if (trimmed) rules.push({ selector, classes: trimmed });

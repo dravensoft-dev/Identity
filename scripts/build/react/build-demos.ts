@@ -32,7 +32,7 @@ export function loaderFor(path: string) {
 }
 
 export function findSourceFiles(dir: string) {
-  const found = [];
+  const found: string[] = [];
   const walk = (d) => {
     for (const entry of readdirSync(d, { withFileTypes: true })) {
       const path = join(d, entry.name);

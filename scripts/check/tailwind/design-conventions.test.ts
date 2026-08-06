@@ -13,7 +13,7 @@ import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 const manifests = layerManifests();
 
 function everyClassString(manifest) {
-  const out = [];
+  const out: { where: string; classes: string[] }[] = [];
   const eat = (value, where) => {
     if (typeof value === 'string') out.push({ where, classes: value.split(/\s+/).filter(Boolean) });
     else if (value && typeof value === 'object') for (const [key, child] of Object.entries(value)) eat(child, `${where}.${key}`);

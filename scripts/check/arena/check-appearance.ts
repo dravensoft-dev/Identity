@@ -65,7 +65,7 @@ function isObjectLiteral(text: string, open) {
 
 export function styleObjectBodies(rawText) {
   const text = blankComments(rawText);
-  const bodies = [];
+  const bodies: { start: number; text: string }[] = [];
   const seen = new Set();
   const push = (open) => {
     if (open < 0 || seen.has(open)) return;

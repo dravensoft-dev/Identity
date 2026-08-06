@@ -49,7 +49,7 @@ export function pathPattern(roots) {
 }
 
 export function documents(base = root) {
-  const found = [];
+  const found: string[] = [];
   const walk = (dir: string, relative) => {
     for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (skips(entry.name, relative)) continue;

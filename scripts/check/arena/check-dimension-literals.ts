@@ -203,7 +203,7 @@ function splitFallback(text: string) {
   return parts;
 }
 
-export function expressionLeaves(text: string) {
+export function expressionLeaves(text: string): string[] {
   const stripped = stripOuterParens(text);
   const ternary = splitTernary(stripped);
   if (ternary) return [...expressionLeaves(ternary.a), ...expressionLeaves(ternary.b)];
@@ -439,7 +439,7 @@ export function stalePassthrough(seenComponents) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
-export function* sourceFiles(dir: string) {
+export function* sourceFiles(dir: string): Generator<string> {
   for (const entry of readdirSync(dir).sort()) {
     if (entry === 'dist') continue;
     const p = join(dir, entry);

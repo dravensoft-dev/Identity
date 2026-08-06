@@ -114,7 +114,7 @@ export const UNTRACKED = {
   'frameworks/react/ArenaStyles.generated.js': 'the compiled sibling of that, which a demo page loads.',
 };
 
-function walk(dir: string, root) {
+function walk(dir: string, root): string[] {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.')) continue;
