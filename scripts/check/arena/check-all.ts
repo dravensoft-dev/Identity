@@ -61,6 +61,7 @@ export const GATES = [
   { name: 'check:react-barrel', file: 'react/check-react-barrel.ts' },
   { name: 'check:react-types', file: 'react/check-react-types.ts' },
   { name: 'check:script-types', file: 'arena/check-script-types.ts' },
+  { name: 'check:script-reach', file: 'arena/check-script-reach.ts' },
   { name: 'check:cards', file: 'arena/check-card-viewports.ts' },
   { name: 'check:focus-trap', file: 'arena/check-focus-trap.ts' },
   { name: 'check:shared-arithmetic', file: 'arena/check-shared-arithmetic.ts' },

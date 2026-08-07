@@ -54,6 +54,7 @@
     "check:react-barrel": "bun scripts/check/react/check-react-barrel.ts",
     "check:react-types": "bun scripts/check/react/check-react-types.ts",
     "check:script-types": "bun scripts/check/arena/check-script-types.ts",
+    "check:script-reach": "bun scripts/check/arena/check-script-reach.ts",
     "check:intro": "bun scripts/check/arena/check-intro-generated.ts",
     "check:vendor": "bun scripts/check/react/check-vendor-generated.ts",
     "check:angular": "bun scripts/check/angular/check-angular.ts",
