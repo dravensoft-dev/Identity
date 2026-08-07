@@ -1,0 +1,27 @@
+{
+  "component": "ArenaConfirmDialog",
+  "description": "Confirmation of a high-consequence action. Never closes on click-outside. `requireText` locks the confirm button until a word is typed.",
+  "affordances": ["focus", "hover"],
+  "api": {
+    "open": { "form": "primitive", "type": "boolean", "required": true,
+              "description": "Whether the dialog is shown. The host owns it, as in the other three modals: defaulting it would let an ArenaConfirmDialog whose open was never wired render nothing forever and look like a working closed dialog." },
+    "title": { "form": "primitive", "type": "string", "required": true,
+               "description": "The dialog heading, and the name the panel's aria-labelledby points at. Required: nothing can derive a name for a confirmation, because its subject is editorial, and a modal announcing only its role is worse than none at all." },
+    "eyebrow": { "form": "primitive", "type": "string", "default": "Confirm",
+                 "description": "Small uppercase label above the title." },
+    "content": { "form": "slot",
+                 "description": "The dialog body: the question and any detail." },
+    "confirmLabel": { "form": "primitive", "type": "string", "default": "Confirm",
+                      "description": "The confirm button's label." },
+    "cancelLabel": { "form": "primitive", "type": "string", "default": "Cancel",
+                     "description": "The cancel button's label." },
+    "destructive": { "form": "primitive", "type": "boolean", "default": false,
+                     "description": "Gives the confirm button Arena's only filled danger surface." },
+    "requireText": { "form": "primitive", "type": "string",
+                     "description": "Locks the confirm button until this exact word is typed." },
+    "cancel": { "form": "event",
+                "description": "The dialog was dismissed -- by the Cancel action or by the Escape key, in both layers. A scrim click is deliberately NOT one of them: this component never closes on click-outside. No payload." },
+    "confirm": { "form": "event",
+                 "description": "The action was confirmed." }
+  }
+}

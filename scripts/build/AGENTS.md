@@ -67,6 +67,7 @@ A script's domain is decided by what it **touches**, never by what it is about.
 | domain | what a build there compiles |
 | --- | --- |
 | [`angular/`](./angular/AGENTS.md) | the AOT emits: demo bundles, the package and the test surface |
+| [`arena/`](./arena/AGENTS.md) | the `intro/` page bundles, which are what let those pages read `scripts/lib/` |
 | [`react/`](./react/AGENTS.md) | JSX to JS, the barrel, the package, and the CommonJS→ESM vendor bundle |
 | [`tailwind/`](./tailwind/AGENTS.md) | the utility layer and the manifest modules |
 | `core/` | empty; `.gitkeep` marks the combination as unoccupied |

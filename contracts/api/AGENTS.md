@@ -36,7 +36,7 @@ component under contract may not weaken, remove, or contradict its behaviour bin
 tokens it renders from. Neither of the other two layers changes to accommodate an API contract.
 
 When an API reshape appears to require dropping or changing something a behaviour binding depends
-on, **the reshape is what is wrong, not the binding.** `ConfirmDialog` is the worked example:
+on, **the reshape is what is wrong, not the binding.** `ArenaConfirmDialog` is the worked example:
 its `cancel` event is how the (accessible, Angular) dialog reports an Escape-key or Cancel-button
 dismissal, which the `dialog-modal` pattern requires. A contract that omitted `cancel` to look
 tidier would leave the Escape handler with nothing to emit and silently void that
@@ -66,11 +66,11 @@ appears in no contract.
 
 It is not free. `check:api` reads a layer's class and refuses any public member it cannot
 recognise, so an imperative handle exists only by being named in `IMPERATIVE_HANDLES`
-(`scripts/lib/arena/api-surface.mjs`), keyed by component and method, with its reason as the
+(`scripts/lib/arena/api-surface.ts`), keyed by component and method, with its reason as the
 value, and asserted by literal value in that file's own suite. Any other public method on any
 component fails the gate as an undeclared surface.
 
-**Ask first whether the answer is a member.** `Input.focus()` earns its place because returning
+**Ask first whether the answer is a member.** `ArenaInput.focus()` earns its place because returning
 focus to a field after the transaction it belongs to is settled is a gesture no declarative
 member expresses: `autoFocus` fires once at mount and the caller needs it again on every
 completion. A handle that could have been a boolean is a boolean.
@@ -94,8 +94,8 @@ comparable because the concept does not apply to either platform: an outbound me
 never "required", since a consumer is always free not to listen, and neither React's optional
 function prop nor Angular's `output()` has a notion of a mandatory listener.
 
-**A required name is refused when it is blank after trimming.** `Table.label`,
-`SegmentedControl.ariaLabel` and the rest of the members only a human can supply are guarded at
+**A required name is refused when it is blank after trimming.** `ArenaTable.label`,
+`ArenaSegmentedControl.ariaLabel` and the rest of the members only a human can supply are guarded at
 runtime, and the value the guard exists to catch is not `undefined`, which the type already
 catches, but a present-and-useless one. A name of nothing but spaces satisfies a
 falsiness test and names nothing, so the guard trims before it decides, in every layer.
@@ -105,7 +105,7 @@ falsiness test and names nothing, so the guard trims before it decides, in every
 contract's `required` also governs **runtime**: the implementing component must enforce it,
 failing hard when a required member is absent rather than rendering with a missing value.
 Angular's `input.required` throws by construction; React throws from its render for the same
-reason (`AppLogo`, `StatCard` and `Breadcrumbs` all do), so an absent required member fails
+reason (`ArenaAppLogo`, `ArenaStatCard` and `ArenaBreadcrumbs` all do), so an absent required member fails
 identically on both layers, and a consumer honouring the declared type reaches neither path.
 Like R2 and R3, the runtime half is an **authoring rule the audit applies, not a gate check**:
 `check:api` reads only the declared surface (React's `.tsx` interface, Angular's `input.required`), never
@@ -132,9 +132,9 @@ else, in two one-way halves: a Tailwind manifest slot carrying a `hover:`/`focus
 no covered contract declares is invented, and a React component implementing a state its
 contract does not declare is invented. Neither half reads the other layer. Neither runs the
 other way, because a declared affordance a layer does not implement itself may be the child it
-composes: `ConfirmDialog` declares `focus` for its own input and renders Arena `Button`s for
+composes: `ArenaConfirmDialog` declares `focus` for its own input and renders Arena `ArenaButton`s for
 the rest, and a manifest, which has no composition and types those buttons out as its own
-slots, is licensed for `hover` by `Button`'s declaration through the gate's `MANIFEST_COVERS`.
+slots, is licensed for `hover` by `ArenaButton`'s declaration through the gate's `MANIFEST_COVERS`.
 
 **Angular is structurally unaskable here**, and that is worth stating so nobody adds a third
 half: an Angular primitive realises an affordance by rendering the class the manifest compiles to, so
@@ -145,12 +145,12 @@ asking the layer would be asking the manifest.
 A React component's `.tsx` imports its enum and object types from
 `../../api.generated`, and **re-exports exactly the names a consumer can already
 import from that component**, no more and no less. A type a component's own file
-names and exports (`StatCard`'s `StatDelta`, `Breadcrumbs`'s `Crumb`) keeps a
-consumer's `import type { StatDelta } from '.../StatCard'` resolving only while the
-file re-exports it, so it does (`export type { StatDelta };`). A type spelled inline
-as a literal union at its use site (`AppLogo`'s `size?: 'sm' | 'md' | 'lg' | 'xl'`,
-`StatCard`'s `tone?: 'neutral' | 'accent' | …'`) offers a consumer no name to import,
-so nothing is re-exported for it, and `LogoSize` and `Tone` stay un-re-exported for
+names and exports (`ArenaStatCard`'s `ArenaStatDelta`, `ArenaBreadcrumbs`'s `ArenaCrumb`) keeps a
+consumer's `import type { ArenaStatDelta } from '.../ArenaStatCard'` resolving only while the
+file re-exports it, so it does (`export type { ArenaStatDelta };`). A type spelled inline
+as a literal union at its use site (`ArenaAppLogo`'s `size?: 'sm' | 'md' | 'lg' | 'xl'`,
+`ArenaStatCard`'s `tone?: 'neutral' | 'accent' | …'`) offers a consumer no name to import,
+so nothing is re-exported for it, and `ArenaLogoSize` and `ArenaTone` stay un-re-exported for
 exactly that reason. This is a compatibility rule rather than a design principle: it
 exists only so a consumer's import keeps resolving, and it is mechanical, since what a
 file re-exports is decided by what it names. Angular has no equivalent question,
@@ -158,15 +158,15 @@ because a component's own file imports straight from `../../api.generated` and
 declares nothing locally to preserve.
 
 **One deliberate exception: the rule drops when the name is not a type at all.**
-`SideNavItem` is a component, not a predefined object type, and a file
-cannot both import a type called `SideNavItem` and export a component called
-`SideNavItem`, since one name cannot mean both. `SideNav.tsx` therefore carries no
+`ArenaSideNavItem` is a component, not a predefined object type, and a file
+cannot both import a type called `ArenaSideNavItem` and export a component called
+`ArenaSideNavItem`, since one name cannot mean both. `ArenaSideNav.tsx` therefore carries no
 re-export rather than resolving the collision.
 
 ## What the gate asserts, and what it cannot
 
 `bun run check:api` makes six assertions: coverage, form, agreement, the derived rules,
-generated drift, and that every member's description reached both layers' own source. See `scripts/check/arena/check-api.mjs`.
+generated drift, and that every member's description reached both layers' own source. See `scripts/check/arena/check-api.ts`.
 
 **Three of the six derived rules are authoring rules the audit applies, and no gate asserts
 them.** R2, "who draws it", is a fact about intent and markup ownership rather than about
@@ -196,7 +196,7 @@ is (1) a primitive type name, `"string"`, `"number"` or `"boolean"`; (2) the for
 **enum** `contracts/api/types/` declares. Anything else is reported: a name `contracts/api/types/` does not
 declare at all, and an object name used where the fourth arm does not apply. The four exist
 because `classify()` produces all four from a real signature. It reduces
-`(v: string) => void`, `(v: Crumb) => void` and `(v: LogoSize) => void` alike, so a contract
+`(v: string) => void`, `(v: ArenaCrumb) => void` and `(v: ArenaLogoSize) => void` alike, so a contract
 stating only some of them would be a gap between what the reader reads and what the
 contract can say, rather than a rule the contract enforces.
 
@@ -259,7 +259,7 @@ single exchange, and the decision is the maintainer's:
 3. two or three concrete reshapes, each with its cost.
 
 This is the explicit remedy for a failure this repository has already paid for:
-`StatCard` became an object in React and three flat inputs in Angular because each layer
+`ArenaStatCard` became an object in React and three flat inputs in Angular because each layer
 answered the question separately and each answer was defensible on its own terms. A
 contract written by whoever migrates the component reproduces exactly that.
 

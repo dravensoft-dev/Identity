@@ -1,0 +1,30 @@
+{
+  "component": "ArenaBottomNavItem",
+  "seed": {
+    "id": "services",
+    "label": "Services",
+    "icon": "ph-bold ph-stack",
+    "badge": 3
+  },
+  "host": {
+    "component": "ArenaBottomNav",
+    "members": {
+      "ariaLabel": "Sections",
+      "active": "services"
+    },
+    "slots": {
+      "content": [
+        {
+          "component": "ArenaBottomNavItem",
+          "members": {
+            "id": "home",
+            "label": "Home",
+            "icon": "ph-bold ph-house"
+          }
+        },
+        "$subject"
+      ]
+    }
+  },
+  "note": "An item is a column of the bar, so the host draws the bar."
+}

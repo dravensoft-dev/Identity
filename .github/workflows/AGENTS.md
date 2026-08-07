@@ -1,9 +1,11 @@
 # .github/workflows/
 
-Four workflows: one guards a pull request, one guards `main`, and two publish a package.
+Five workflows: one guards a pull request, one guards `main`, one guards `develop`, and two
+publish a package.
 
 ```
 pull_request -> main          Arena PR
+push to develop               Arena develop
 push to main                  Arena main
    |
    +-- on success             Publish arena-react
@@ -34,18 +36,18 @@ job per layer would have each of them redoing most of what the others did.
 [`../../scripts/build/AGENTS.md`](../../scripts/build/AGENTS.md) carries the chain.
 
 **The four names are on the test stage, where the layers are genuinely disjoint.** A gate
-belongs to exactly one of the five domains `check-all.mjs` sorts by, and the jobs partition
+belongs to exactly one of the five domains `check-all.ts` sorts by, and the jobs partition
 that set: `core` takes the `core` and `arena` domains, and the other three take their own.
-`check-all.test.mjs` asserts the partition, so a gate cannot join `GATES` and run in no job.
+`check-all.test.ts` asserts the partition, so a gate cannot join `GATES` and run in no job.
 
 **`core` runs on every change, and that is not caution.** The `arena` domain is where the
 cross-layer gates are: `check:api`, `check:behaviour`, `check:compliance`, `check:structure`,
 `check:dimensions`, `check:layer-independence`, `check:cards`, `check:focus-trap`. Each of
 them reads more than one layer, so none of them is a React question or an Angular question.
-And `scripts/lib/arena/behaviour-contracts.test.mjs` asserts the React component count by
+And `scripts/lib/arena/behaviour-contracts.test.ts` asserts the React component count by
 literal value: a change confined to `frameworks/react/` breaks a suite under `scripts/`.
 
-**Which layers a diff reaches is decided by `scripts/ci/arena/changed-layers.mjs`**, not by
+**Which layers a diff reaches is decided by `scripts/ci/arena/changed-layers.ts`**, not by
 a path filter written here, because that module has a suite and a YAML filter does not. Its
 least obvious rule is the one worth reading: a Tailwind edit routes to both other layers,
 because each compiles something that layer emits.
@@ -59,12 +61,35 @@ routing decision can skip.
 
 One job, and deliberately not the fan-out. It runs every gate and then the whole suite
 through `bun run ci:summarize`, which takes the invocation from `testStep()` in
-`check-all.mjs` and appends the two junit flags. `check-all.mjs` stays the one place the
+`check-all.ts` and appends the two junit flags. `check-all.ts` stays the one place the
 test invocation is written down, and the run summary carries a table of passes per domain.
 
 A domain that owns suites and reported no case fails the run, as does a tree that
 contributed nothing and a case belonging to no domain. A reporter that quietly dropped a
 suite would otherwise print a confident table of zeros.
+
+## Arena develop
+
+The same single job as `Arena main`, running the same five steps in the same order, and the
+only workflow that is a copy of another. It exists because work lands on `develop` before it
+lands on `main`, and a merge into `develop` would otherwise be verified by nothing but whichever
+pull request preceded it: `Arena PR` is scoped to pull requests targeting `main`.
+
+It is a separate file rather than a second branch on `Arena main`'s trigger, and the reason is
+the name. Both publish workflows fire on `workflow_run` of the workflow named `Arena main`, so a
+`develop` push carrying that name would raise the publish question about a branch that is not
+`main`. Their `branches: [main]` filter refuses it, but the refusal is one file away from the
+event; a name of its own puts the answer in the workflow that asks.
+
+**It caches nothing**, so `bun install` is cold on every run. `Arena PR` caches because a pull
+request is pushed to repeatedly and its four test jobs each need the one build; `develop` is one
+job that runs once per merge, where the cache saves a fraction of a run it would also have to be
+kept honest across.
+
+**`build:packages` stays.** Dropping it would not skip package work: `check:packages` reads no
+manifest and passes while saying so, which is a quieter green rather than a faster one, and
+`check:consumer` assembles a missing `dist/` itself. Assembling nothing is not publishing
+nothing, and nothing here publishes.
 
 ## Publish arena-react, Publish arena-angular
 
@@ -75,7 +100,7 @@ gap nothing in this repository can close: `workflow_run` reaches only a workflow
 registered on the default branch, so the push that first puts one there cannot dispatch it,
 and re-running that push replays the original event rather than asking the question again.
 A release whose event is missed that way has no other way through. A manual run is safe for
-the same reason an automatic one is: the guard and `check-release.mjs` both run, so the
+the same reason an automatic one is: the guard and `check-release.ts` both run, so the
 answer to "is there anything to publish" is reached identically whoever asked.
 
 The guard asks two questions in order. Is `plugin.json`'s version already on the registry?
@@ -86,7 +111,7 @@ package keeps its version while Arena moves on.
 The baseline is that tag rather than the previous commit, and that matters: a layer can
 change in one commit and the version bump land in another, so asking only about this push
 would mean the change is never published at all. What each package carries is
-`scripts/ci/arena/package-inputs.mjs`, whose suite holds the list to what the assemblers
+`scripts/ci/arena/package-inputs.ts`, whose suite holds the list to what the assemblers
 actually read.
 
 **Whatever it answers, the guard writes that answer to the run summary**: the version on the
@@ -96,7 +121,7 @@ reads. These runs are not jobs of `Arena main` and never appear in its panel, be
 `workflow_run` workflow is a separate run; each publish job is on its own workflow's page, and
 the summary is what that page says without being unfolded.
 
-When the guard says yes, the publish job runs `check-release.mjs` first, so a version bump
+When the guard says yes, the publish job runs `check-release.ts` first, so a version bump
 pushed without its tag is refused loudly rather than published quietly. Then it builds,
 assembles, holds the manifests, and packs. The tarball and a small record of what was
 published go up as an artifact, because a packed tarball is byte-identical to what leaves
@@ -135,6 +160,23 @@ different versions are two packages that last changed at different times. Both a
 built from the same tree.
 
 ## Notes on the runner
+
+**Every action here runs on `node24`.** That is the runtime GitHub executes the action's own code
+in, declared as `runs.using` in its `action.yml`, and the only other value is `node20`. A `node20`
+action is warned about on every run, forced onto `node24` anyway, and will eventually be refused,
+so an action's major is bumped when the new one moves the runtime rather than when it merely
+exists. It is unrelated to `node-version` in the publish workflows, which is the Node those jobs
+install to run `npm`. Versions live in these `.yml` files and nowhere else, and nothing generates
+them, so the whole rule is `grep -n 'uses:' .github/workflows/*.yml` against each major's
+`runs.using`.
+
+Two of those majors carry a guard worth reading before the next bump. `actions/checkout` from v7
+refuses to check out fork pull request code under `pull_request_target` or `workflow_run`, which
+the publish workflows escape only because the run they follow is a push to `main`; a `workflow_run`
+whose upstream event began with `pull_request` would need `allow-unsafe-pr-checkout`, which is a
+question to answer rather than a flag to set. `actions/setup-node` from v6 caches automatically
+only when `packageManager` names npm, and this repository's names bun, so a jump to v5 rather than
+past it would have switched on a cache nobody asked for.
 
 **Chromium.** `check:cards` and `check:focus-trap` drive a real browser, and `CHROME_PATH` is
 terminal: set and pointing at nothing, the gates report that rather than falling back to the

@@ -1,6 +1,0 @@
-{
-  "component": "ToastHost",
-  "pattern": "none",
-  "reason": "ToastHost renders one positioned box and projects whatever was put in it. It carries no role, no aria-live and no focusable element: the announcement belongs to each Toast inside, which binds alert or status by its own tone, and a live region declared on the container as well would announce the same notice twice. It reads nothing about its children either, so there is no state for a user to act on.",
-  "exceptions": []
-}

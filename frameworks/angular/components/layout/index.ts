@@ -1,1 +1,1 @@
-export * from './grid';
+export * from './arena-grid';

@@ -29,7 +29,7 @@ p.lede{color:var(--mute);font-size:var(--fs-lg);line-height:var(--lh-body);max-w
 .spin{animation:spin 8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* The rotor reports motion, not decoration: under reduced motion it slows
-   rather than stopping, the answer README prescribes for Rotor and Spinner --
+   rather than stopping, the answer README prescribes for Rotor and ArenaSpinner --
    a frozen mark reads as a hung process. */
 @media (prefers-reduced-motion: reduce){
   .spin{animation-duration:32s}
@@ -120,7 +120,7 @@ p.lede{color:var(--mute);font-size:var(--fs-lg);line-height:var(--lh-body);max-w
 <script src="./theme.js"></script>
 </helmet>
 <div class="wrap">
-<div class="dtoggle-dock"><button class="dtoggle themebtn" type="button" data-light="0" aria-label="Switch theme"><span class="tlabel">Dark</span><span class="knob"></span></button></div>
+<div class="dtoggle-dock"><button class="dtoggle themebtn" type="button" data-light="0" aria-label="ArenaSwitch theme"><span class="tlabel">Dark</span><span class="knob"></span></button></div>
 
 <section class="hero">
 <div class="hero-grid">

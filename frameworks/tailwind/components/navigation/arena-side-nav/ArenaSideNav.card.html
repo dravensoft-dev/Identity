@@ -1,0 +1,88 @@
+<!-- @dsCard group="Tailwind" viewport="420x715" name="ArenaSideNav" subtitle="The sidebar's navigation list, rendered from ArenaSideNav.manifest.json" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../../intro/styles.css">
+<link rel="stylesheet" href="../../../consume/Preflight.generated.css">
+<link rel="stylesheet" href="../../../consume/components/navigation/arena-side-nav/ArenaSideNav.styles.generated.css">
+<link rel="stylesheet" href="../../../Specimen.css">
+</head><body><div id="root"></div>
+<script type="module">
+import { mountSpecimen, section, el, arenaClassesFor } from '../../../Specimen.js';
+
+const manifest = await (await fetch('./ArenaSideNav.manifest.json')).json();
+const c = arenaClassesFor(manifest);
+
+/* One destination. `href` decides the element, as ArenaSideNavItem.json contracts,
+   and the glyph carries the manifest's `icon` slot alongside the Phosphor class
+   name the consumer supplies -- the single-icon convention: Arena styles the
+   element, the consumer names it. */
+function item({ label, href, icon, current }) {
+  const active = arenaClassesFor(manifest, { active: String(Boolean(current)) });
+  const kids = [];
+  if (icon) kids.push(el('i', { class: `${c.icon} ${icon}`, 'aria-hidden': 'true' }));
+  kids.push(label);
+  const attrs = { class: active.item, 'aria-current': current ? 'page' : undefined };
+  return href
+    ? el('a', { ...attrs, href }, ...kids)
+    : el('button', { ...attrs, type: 'button' }, ...kids);
+}
+
+function nav(children, ariaLabel) {
+  return el('nav', { class: c.root, 'aria-label': ariaLabel }, ...children);
+}
+
+/* The labelled role=group wrapper ArenaSideNavSection binds, and the heading that names it. */
+function group(label, children) {
+  const id = `sn-${label.toLowerCase().replace(/\W+/g, '-')}`;
+  return el('div', { class: c.section, role: 'group', 'aria-labelledby': id },
+    el('div', { class: c.sectionLabel, id, text: label }),
+    ...children);
+}
+
+/* The disclosure ArenaSideNavCollapsible binds: a real <button> carrying aria-expanded
+   and aria-controls, and the region it names. Collapsed is the `hidden`
+   attribute alone -- the preflight's `[hidden] { display: none !important }`
+   outranks the region slot's `flex`, so nothing else has to hide it. */
+function collapsible(label, icon, expanded, children) {
+  const id = `sn-${label.toLowerCase().replace(/\W+/g, '-')}`;
+  const trigger = el('button', {
+    class: c.trigger, type: 'button', id: `${id}-trigger`,
+    'aria-expanded': String(expanded), 'aria-controls': `${id}-region`,
+  },
+    el('i', { class: `${c.icon} ${icon}`, 'aria-hidden': 'true' }),
+    el('span', { class: c.triggerLabel, text: label }),
+    el('i', {
+      class: `${c.caret} ph-bold ${expanded ? 'ph-caret-down' : 'ph-caret-right'}`,
+      'aria-hidden': 'true',
+    }));
+  const region = el('div', {
+    class: c.region, id: `${id}-region`, role: 'group',
+    'aria-labelledby': `${id}-trigger`, hidden: expanded ? undefined : '',
+  }, ...children);
+  return el('div', { class: c.section }, trigger, region);
+}
+
+mountSpecimen({ sections: [
+  section('Links, one current', [nav([
+    item({ label: 'Overview', href: '#overview', icon: 'ph-bold ph-squares-four' }),
+    item({ label: 'Projects', href: '#projects', icon: 'ph-bold ph-folders', current: true }),
+    item({ label: 'Activity', href: '#activity', icon: 'ph-bold ph-pulse' }),
+    item({ label: 'Settings', href: '#settings', icon: 'ph-bold ph-gear' }),
+  ], 'Primary')], { stack: true }),
+  section('Buttons — no href, same figure', [nav([
+    item({ label: 'Overview', current: true }), item({ label: 'Projects' }),
+  ], 'Primary (buttons demo)')], { stack: true }),
+  section('A named group, and a collapsible in both states', [nav([
+    group('Workspace', [
+      item({ label: 'Members', href: '#members', icon: 'ph-bold ph-users' }),
+      item({ label: 'Billing', href: '#billing', icon: 'ph-bold ph-receipt' }),
+    ]),
+    collapsible('Deployments', 'ph-bold ph-rocket-launch', true, [
+      item({ label: 'Staging', href: '#staging' }),
+      item({ label: 'Production', href: '#production', current: true }),
+    ]),
+    collapsible('Archive', 'ph-bold ph-archive', false, [
+      item({ label: 'Retired', href: '#retired' }),
+    ]),
+  ], 'Grouped')], { stack: true }),
+]});
+</script></body></html>

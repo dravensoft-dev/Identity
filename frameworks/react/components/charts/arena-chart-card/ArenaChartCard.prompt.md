@@ -1,0 +1,40 @@
+The card a chart sits on: an uppercase muted microlabel, optional actions on the right, and the chart itself. Arena's charts are hand-written SVG with no dependency, they read the ramp tokens directly, so they re-theme with the page and need no configuration to do it.
+
+```tsx
+<ArenaChartCard title="Deploys per day">
+  <ArenaBarChart labels={['Mon','Tue','Wed','Thu','Fri']} values={[12,19,9,22,17]} seriesLabel="Deploys" />
+</ArenaChartCard>
+
+<ArenaChartCard title="p95 latency" actions={<ArenaSelect options={ranges} value={range} onChange={setRange} />}>
+  <ArenaLineChart labels={days} values={latency} seriesLabel="ms" slot={5} area />
+</ArenaChartCard>
+```
+
+<!-- @api GENERATED from contracts/api/components/ArenaChartCard.json. Edit the contract, not this table. -->
+
+**Members**, in contract order and under this layer's own names. `*` marks a required one.
+
+| Member | Form | Type | Default | What it is |
+|---|---|---|---|---|
+| `title` | primitive | `string` |  | The card heading. Absent renders no head unless `actions` is present. |
+| `actions` | slot |  |  | Controls in the head row, right-aligned beside the title. |
+| `children` | slot |  |  | The chart (or any body) the card frames. |
+
+<!-- @api end -->
+
+**Do**
+- Let `title` name the series when there is only one; that is why a single-series chart draws no legend box.
+- Keep `title` to a short uppercase microlabel, like every other label in Arena (H2/H6/H8).
+- Put the range picker or the export button in `actions`, not above the card.
+- Pass several controls as siblings, in a fragment. The head row and the actions row both
+  wrap, and they wrap their own children: a `<div>` of your own holding three buttons is one
+  flex item that can never wrap, and overflows the tile at 390px.
+
+**Don't**
+- Don't pass a heading into `title` expecting an `h2`: it renders a label on purpose. A dashboard is a grid of tiles, not a document outline.
+- Don't nest an `ArenaChartCard` inside an `ArenaCard`. It *is* the card surface; nesting doubles the border and the padding.
+
+The card's own inner padding is not something a chart inside it needs to know. A chart that
+overflows scrolls in its own rail rather than in the card's box, so `minPointSpacing` needs no
+cooperation from here, and there is no member for the padding because nothing outside has to
+reproduce it.

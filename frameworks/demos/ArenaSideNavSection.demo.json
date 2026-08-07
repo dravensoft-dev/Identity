@@ -1,0 +1,39 @@
+{
+  "component": "ArenaSideNavSection",
+  "seed": {
+    "label": "Delivery"
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaSideNavItem",
+        "members": {
+          "id": "overview",
+          "label": "Overview",
+          "icon": "ph-bold ph-squares-four"
+        }
+      },
+      {
+        "component": "ArenaSideNavItem",
+        "members": {
+          "id": "services",
+          "label": "Services",
+          "icon": "ph-bold ph-stack"
+        }
+      }
+    ]
+  },
+  "host": {
+    "component": "ArenaSideNav",
+    "members": {
+      "ariaLabel": "Main",
+      "active": "services"
+    },
+    "slots": {
+      "content": [
+        "$subject"
+      ]
+    }
+  },
+  "note": "It renders a heading naming the group, which is why its content slot is required."
+}

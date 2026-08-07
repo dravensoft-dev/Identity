@@ -1,0 +1,6 @@
+{
+  "name": "ArenaSortDirection",
+  "kind": "enum",
+  "description": "Which way a column is ordered. Deliberately not ArenaDirection, which is a delta's arrow: up and down say which way a NUMBER moved, and ascending and descending say how a COLUMN is arranged. One set of names for both would read as the same idea in the two places it is not.",
+  "values": ["asc", "desc"]
+}

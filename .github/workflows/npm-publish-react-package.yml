@@ -33,7 +33,7 @@ jobs:
       version: ${{ steps.decide.outputs.version }}
       published: ${{ steps.decide.outputs.published }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
@@ -89,7 +89,7 @@ jobs:
             exit 0
           fi
 
-          mapfile -t SPECS < <(bun scripts/ci/arena/package-inputs.mjs "$LAYER")
+          mapfile -t SPECS < <(bun scripts/ci/arena/package-inputs.ts "$LAYER")
           CHANGED=$(git diff --name-only "v$PUBLISHED..HEAD" -- "${SPECS[@]}")
 
           if [ -z "$CHANGED" ]; then
@@ -114,7 +114,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
@@ -122,7 +122,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ env.BUN_VERSION }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: bun-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
@@ -130,7 +130,7 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - name: the tag exists and the plugin.json it serves hands out this version
-        run: bun scripts/check/arena/check-release.mjs
+        run: bun scripts/check/arena/check-release.ts
 
       - name: build the sources the package is assembled from
         run: bun run build
@@ -162,7 +162,7 @@ jobs:
             > publish-record.json
           cat publish-record.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: arena-react-${{ needs.guard.outputs.version }}
           path: |
@@ -172,9 +172,9 @@ jobs:
 
       # Provenance is generated automatically for a trusted publisher, with no --provenance
       # flag, and needs an npm newer than the one the image ships.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
           registry-url: https://registry.npmjs.org
       - name: npm new enough for trusted publishing
         run: |

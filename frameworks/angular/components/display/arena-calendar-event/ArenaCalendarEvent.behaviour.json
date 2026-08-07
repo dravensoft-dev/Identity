@@ -1,0 +1,25 @@
+{
+  "component": "ArenaCalendarEvent",
+  "cases": [
+    {
+      "name": "clickable",
+      "when": "interactive is true and actionsEnabled is false or absent -- the chip root itself renders as <button>",
+      "pattern": "button",
+      "exceptions": []
+    },
+    {
+      "name": "clickable-with-actions",
+      "when": "interactive is true and actionsEnabled is true -- a kebab cannot nest inside a button, so the root becomes a <div> and the interactive attributes move down to the chip BODY, a descendant <button>",
+      "pattern": "button",
+      "exceptions": []
+    },
+    {
+      "name": "inert",
+      "when": "interactive is false or absent, regardless of actionsEnabled -- the consumer has declared the chip is not activated",
+      "pattern": "none",
+      "reason": "A chip the consumer has declared non-interactive is a <div> with no role, no activation and nothing to disable. The kebab actionsEnabled may draw beside it is its own arena-icon-button with its own accessible name and is not the subject of this binding. `interactive` is a DECLARED member and never inferred from whether (click) is subscribed -- R6 -- which is exactly what a layer cannot ask.",
+      "exceptions": []
+    }
+  ],
+  "reason": "The chip's shape is declared rather than inferred: `interactive` decides it, and R6 in contracts/api/README.md is why -- \"is (click) subscribed?\" is not a question a component may ask. It is the same member arena-table-row carries, for the same reason, and the two compound-item families now have one shape. What differs is the cost each was avoiding: a dead tab stop on every row of every table there, and a screenful of buttons that do nothing on a read-only schedule here."
+}

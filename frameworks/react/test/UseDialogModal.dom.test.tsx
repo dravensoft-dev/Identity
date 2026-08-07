@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { focusableElements, focusFirstFocusable, trapTabKey } from '../UseDialogModal.ts';
+import { arenaFocusableElements, arenaFocusFirstFocusable, arenaTrapTabKey } from '../UseDialogModal.ts';
 
 function panelWith(html: string) {
   const el = document.createElement('div');
@@ -9,46 +9,46 @@ function panelWith(html: string) {
   return el;
 }
 
-test('focusableElements skips a native control marked tabindex="-1"', () => {
+test('arenaFocusableElements skips a native control marked tabindex="-1"', () => {
   const p = panelWith('<button>a</button><button tabindex="-1">b</button><button>c</button>');
-  assert.deepEqual(focusableElements(p).map((e) => e.textContent), ['a', 'c']);
+  assert.deepEqual(arenaFocusableElements(p).map((e) => e.textContent), ['a', 'c']);
 });
 
-test('focusableElements skips a disabled control', () => {
+test('arenaFocusableElements skips a disabled control', () => {
   const p = panelWith('<button>a</button><button disabled>b</button>');
-  assert.deepEqual(focusableElements(p).map((e) => e.textContent), ['a']);
+  assert.deepEqual(arenaFocusableElements(p).map((e) => e.textContent), ['a']);
 });
 
-test('focusFirstFocusable falls back to the panel itself when it has none', () => {
+test('arenaFocusFirstFocusable falls back to the panel itself when it has none', () => {
   const p = panelWith('<p>text only</p>');
   p.setAttribute('tabindex', '-1');
-  focusFirstFocusable(p);
+  arenaFocusFirstFocusable(p);
   assert.equal(document.activeElement, p, 'a panel with no focusable child must take focus itself');
 });
 
-test('trapTabKey wraps Shift+Tab from the first focusable to the last', () => {
+test('arenaTrapTabKey wraps Shift+Tab from the first focusable to the last', () => {
   const p = panelWith('<button>a</button><button>b</button><button>c</button>');
-  const [first, , last] = focusableElements(p);
+  const [first, , last] = arenaFocusableElements(p);
   first!.focus();
   let prevented = false;
-  trapTabKey(p!, { key: 'Tab', shiftKey: true, preventDefault: () => { prevented = true; } }, first ?? null);
+  arenaTrapTabKey(p!, { key: 'Tab', shiftKey: true, preventDefault: () => { prevented = true; } }, first ?? null);
   assert.equal(prevented, true, 'the key at a boundary must be consumed');
   assert.equal(document.activeElement, last, 'Shift+Tab from the first did not wrap to the last');
 });
 
-test('trapTabKey wraps Tab from the last focusable to the first', () => {
+test('arenaTrapTabKey wraps Tab from the last focusable to the first', () => {
   const p = panelWith('<button>a</button><button>b</button><button>c</button>');
-  const [first, , last] = focusableElements(p);
+  const [first, , last] = arenaFocusableElements(p);
   last!.focus();
-  trapTabKey(p!, { key: 'Tab', shiftKey: false, preventDefault: () => {} }, last ?? null);
+  arenaTrapTabKey(p!, { key: 'Tab', shiftKey: false, preventDefault: () => {} }, last ?? null);
   assert.equal(document.activeElement, first, 'Tab from the last did not wrap to the first');
 });
 
-test('trapTabKey leaves a middle element alone -- the browser does that part', () => {
+test('arenaTrapTabKey leaves a middle element alone -- the browser does that part', () => {
   const p = panelWith('<button>a</button><button>b</button><button>c</button>');
-  const [, middle] = focusableElements(p);
+  const [, middle] = arenaFocusableElements(p);
   middle!.focus();
-  trapTabKey(p!, { key: 'Tab', shiftKey: false, preventDefault: () => {} }, middle ?? null);
+  arenaTrapTabKey(p!, { key: 'Tab', shiftKey: false, preventDefault: () => {} }, middle ?? null);
   assert.equal(document.activeElement, middle,
     'the trap must not move focus off a middle element -- native sequential navigation owns that');
 });

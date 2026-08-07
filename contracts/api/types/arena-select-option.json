@@ -1,0 +1,11 @@
+{
+  "name": "ArenaSelectOption",
+  "kind": "object",
+  "description": "One option in an ArenaSelect.",
+  "fields": {
+    "value": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the option submits, and what ArenaSelect's `value` is matched against." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the option reads. Free to differ from the value." }
+  }
+}

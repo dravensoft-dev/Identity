@@ -16,10 +16,10 @@
   --shadow-2:0px 12px 28px -12px rgba(0,0,0,.6);
   --shadow-3:0px 30px 60px -20px rgba(0,0,0,.7);
   /*
-     Overlay scrim: backdrop for anything that covers the app (Dialog,
-     ConfirmDialog, CommandPalette, Onboarding). The blur is what separates a
-     modal from a coachmark: Dialog/ConfirmDialog/CommandPalette pair the scrim
-     with --scrim-blur, Onboarding uses the scrim alone, because a tour that
+     Overlay scrim: backdrop for anything that covers the app (ArenaDialog,
+     ConfirmDialog, ArenaCommandPalette, ArenaOnboarding). The blur is what separates a
+     modal from a coachmark: ArenaDialog/ArenaConfirmDialog/ArenaCommandPalette pair the scrim
+     with --scrim-blur, ArenaOnboarding uses the scrim alone, because a tour that
      blurs the product it is touring defeats itself.
    */
   --scrim:rgba(20,16,16,.6);
@@ -42,9 +42,9 @@
      value prefers-reduced-motion slows every working loop to; it was copied into
      three files before it was a token.
    */
-  --loop-spin:700ms; /* Spinner, and Button's loading ring */
-  --loop-sweep:1150ms; /* ProgressBar's indeterminate sweep */
-  --loop-shimmer:1400ms; /* Skeleton */
+  --loop-spin:700ms; /* ArenaSpinner, and ArenaButton's loading ring */
+  --loop-sweep:1150ms; /* ArenaProgressBar's indeterminate sweep */
+  --loop-shimmer:1400ms; /* ArenaSkeleton */
   --loop-brand:8000ms; /* Rotor: slow enough to read as presence rather than progress */
   --loop-reduced:2400ms; /* What a working loop slows to under prefers-reduced-motion. Motion that reports work slows rather than stopping: a frozen spinner reads as a hung process. */
   --loop-brand-reduced:24000ms; /* Rotor's reduced step: the brand mark is three times slower again, because it is decoration that happens to also mean 'alive' */
@@ -88,21 +88,21 @@
   /*
      Layering: a system-wide invariant (what covers what), not geometry. The
      family declares the order; the values only have to preserve it. Before this
-     it was five magic numbers in five files: Menu and Tooltip both sat at 900,
+     it was five magic numbers in five files: ArenaMenu and ArenaTooltip both sat at 900,
      so a tooltip on a menu item resolved by DOM order rather than by design;
-     Dialog and ConfirmDialog both sat at 1000, and ConfirmDialog opens from a
-     Dialog, so it worked only by accident of mount order; Toast, the one thing
+     Dialog and ArenaConfirmDialog both sat at 1000, and ArenaConfirmDialog opens from a
+     Dialog, so it worked only by accident of mount order; ArenaToast, the one thing
      that must float above everything, declared nothing at all. The order, least
      to most interruptible: nav < sheet < dropdown < tooltip < modal <
      modal-nested < palette < onboarding < toast.
    */
-  --z-nav:800; /* Fixed page navigation: a bottom bar, a sticky top bar. Arena draws one of these, BottomNav, and the slot is not there for it: it is there because the invariant is system-wide and a consumer's own shell is part of the system, so a host's sticky header and Arena's bar interleave with Arena's overlays by design rather than by DOM order. That was the reason before any component carried it and it is the reason still; what changed is only that the set of things standing on this step is no longer empty. Below dropdown, so a Menu opened from the bar covers it rather than resolving by DOM order, which is the failure this family was created to end. Anything drawn against this slot also reads --pad-safe-bottom, in contracts/design/environment.css, and --layout-bar for its own height */
-  --z-sheet:850; /* A non-modal panel anchored to an edge: a cart, a filter drawer, a detail pane that leaves the page usable behind it. Arena draws one of these, Sheet, and the slot exists for the same reason nav does: a host's own edge panel stands beside it on the same step. Above nav, because a sheet that slides over a fixed bar and lands under it is the failure; below dropdown, because a Menu opened from inside the sheet belongs over it. It is NOT modal: a panel that takes the whole interaction is a Dialog, which is two slots higher and has a scrim to say so */
-  --z-dropdown:900; /* Menu's panel: a dropdown anchored to its trigger */
+  --z-nav:800; /* Fixed page navigation: a bottom bar, a sticky top bar. Arena draws one of these, ArenaBottomNav, and the slot is not there for it: it is there because the invariant is system-wide and a consumer's own shell is part of the system, so a host's sticky header and Arena's bar interleave with Arena's overlays by design rather than by DOM order. That was the reason before any component carried it and it is the reason still; what changed is only that the set of things standing on this step is no longer empty. Below dropdown, so an ArenaMenu opened from the bar covers it rather than resolving by DOM order, which is the failure this family was created to end. Anything drawn against this slot also reads --pad-safe-bottom, in contracts/design/environment.css, and --layout-bar for its own height */
+  --z-sheet:850; /* A non-modal panel anchored to an edge: a cart, a filter drawer, a detail pane that leaves the page usable behind it. Arena draws one of these, ArenaSheet, and the slot exists for the same reason nav does: a host's own edge panel stands beside it on the same step. Above nav, because a sheet that slides over a fixed bar and lands under it is the failure; below dropdown, because an ArenaMenu opened from inside the sheet belongs over it. It is NOT modal: a panel that takes the whole interaction is an ArenaDialog, which is two slots higher and has a scrim to say so */
+  --z-dropdown:900; /* ArenaMenu's panel: a dropdown anchored to its trigger */
   --z-tooltip:950; /* above dropdown, so a tooltip on a menu item wins */
-  --z-modal:1000; /* Dialog */
-  --z-modal-nested:1050; /* ConfirmDialog, which opens from a Dialog */
-  --z-palette:1100; /* CommandPalette */
+  --z-modal:1000; /* ArenaDialog */
+  --z-modal-nested:1050; /* ArenaConfirmDialog, which opens from an ArenaDialog */
+  --z-palette:1100; /* ArenaCommandPalette */
   --z-onboarding:1200; /* the coachmark and the scrim beneath it: one slot, two uses. The scrim takes the slot and the coachmark is drawn inside it, so the two are separated by containment rather than by a second number; nothing else on the page may sit between them, which is what a single slot means here */
   --z-toast:1300; /* floats above everything, including onboarding: a transient notice raised by an action taken inside a dialog must stay visible */
 }
@@ -176,7 +176,7 @@
 
   /*
      Automatic permanence: how long a transient notice remains before it
-     withdraws itself. The HOST owns dismissal, not Toast: Toast renders and exposes
+     withdraws itself. The HOST owns dismissal, not ArenaToast: ArenaToast renders and exposes
      persist, the host runs the clock.
    */
   /*

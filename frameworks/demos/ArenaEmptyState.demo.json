@@ -1,0 +1,23 @@
+{
+  "component": "ArenaEmptyState",
+  "seed": {
+    "icon": "ph-duotone ph-folder-open",
+    "title": "No deployments yet",
+    "message": "The first push to main will show up here."
+  },
+  "slots": {
+    "action": [
+      {
+        "component": "ArenaButton",
+        "slots": {
+          "content": [
+            {
+              "text": "Read the guide"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "note": "Nothing to show yet, and the way out of it."
+}

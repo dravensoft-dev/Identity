@@ -16,7 +16,7 @@
    padding plus its borders, and Arena carried SEVEN hand-written
    `boxSizing: 'border-box'` opt-ins across its React components --
    one per place somebody had hit it and patched it locally. The
-   ones nobody hit stayed wrong: `Textarea` overran its container by
+   ones nobody hit stayed wrong: `ArenaTextarea` overran its container by
    26px on a 720px card, measured in Chromium.
 
    Why the other candidates looked safe and were not Arena's doing:

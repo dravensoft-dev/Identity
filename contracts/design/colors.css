@@ -10,7 +10,7 @@
 
 /* Theme polarity — not a color, a direction. Read by the injected
    style that recolors the native date picker indicator, which is a
-   vendor pseudo-element an inline style cannot reach (see Input.jsx). */
+   vendor pseudo-element an inline style cannot reach (see ArenaInput.tsx). */
 :root{ --picker-invert:1; }
 .arena-light{ --picker-invert:0; }
 
@@ -29,10 +29,10 @@
   --bone-dim:color-mix(in oklab,var(--color-base-content) 82%,transparent);
   --mute:color-mix(in oklab,var(--color-base-content) 62%,transparent);
   /* Disabled text only. Low by design and NOT a failure: WCAG 1.4.3/1.4.11
-     exempt inactive components, and Pagination's disabled controls must read
+     exempt inactive components, and ArenaPagination's disabled controls must read
      as inactive. Do not raise this to fix a contrast report. */
   --mute-2-disabled:color-mix(in oklab,var(--color-base-content) 40%,transparent);
-  /* Presence "offline" only (Avatar's status dot) — never disabled state.
+  /* Presence "offline" only (ArenaAvatar's status dot) — never disabled state.
      52% clears WCAG 1.4.11's 3:1 for graphical objects in both themes
      (4.93:1 dark / 3.46:1 light on the card). */
   --status-offline:color-mix(in oklab,var(--color-base-content) 52%,transparent);
@@ -53,13 +53,13 @@
   --danger:var(--color-error);
   --danger-strong:var(--color-error);
   --danger-soft:color-mix(in oklab,var(--color-error) 14%,transparent);
-  /* The only filled danger surface in Arena (ConfirmDialog's final
+  /* The only filled danger surface in Arena (ArenaConfirmDialog's final
      confirmation). Never a border or text color — --danger is that.
      A skin MAY pin --color-error-fill for an exact value (the Dravensoft skin
      does: #ce3838). If it doesn't, the fill DERIVES from --color-error by
      darkening it in oklab — so a skin that only swaps the palette still gets a
      filled danger dark enough to carry --color-error-content, and nothing goes
-     backgroundless. check-text-contrast.mjs gates whichever path is live, and
+     backgroundless. check-text-contrast.ts gates whichever path is live, and
      always gates the fallback too. */
   --danger-fill:var(--color-error-fill,color-mix(in oklab,var(--color-error) 85%,black));
   --info:var(--color-info);

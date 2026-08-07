@@ -5,7 +5,7 @@ phase** the script belongs to, and **what it is allowed to know about**.
 
 ```
 scripts/
-  serve.mjs   the dev server; neither a phase nor a library
+  serve.ts   the dev server; neither a phase nor a library
   lib/        shared modules, and every test that covers one, beside it
   build/      compiles: JSX to JS, TypeScript to ESM, a CSS layer, a vendor bundle
   generate/   emits source from data: DTCG JSON to CSS, contracts to types, fonts
@@ -36,16 +36,16 @@ rather than implied:
 | `arena` | two or more layers at once, or the repository root |
 
 The domain is decided by what a script **touches**, never by what it is about.
-`generate/arena/generate-tokens.mjs` reads `contracts/design/` but writes
+`generate/arena/generate-tokens.ts` reads `contracts/design/` but writes
 `Tokens.generated.*` into both framework layers, so it is `arena` and not `core`.
 
 **A library that touches nothing is placed by the vocabulary it speaks**, because most of
 `lib/` is pure functions and the reads-and-writes test cannot separate them.
-`core/serialize-token.mjs` opens no file, but every name in it is a DTCG one, so it is `core`;
-`core/behaviour-compliance.mjs` is the same, in `contracts/behaviour`'s vocabulary of
-requirement keys. What is left over is `arena`, meaning the parsers, the browser harness, `layers.mjs`
-and `repo-root.mjs`, because it belongs to no layer in particular. Never place a library by
-**who imports it**: `behaviour-compliance.mjs` is read from both framework layers' harnesses
+`core/serialize-token.ts` opens no file, but every name in it is a DTCG one, so it is `core`;
+`core/behaviour-compliance.ts` is the same, in `contracts/behaviour`'s vocabulary of
+requirement keys. What is left over is `arena`, meaning the parsers, the browser harness, `layers.ts`
+and `repo-root.ts`, because it belongs to no layer in particular. Never place a library by
+**who imports it**: `behaviour-compliance.ts` is read from both framework layers' harnesses
 and is still `core`.
 
 **An npm script's prefix names its phase directory.** `bun run generate:tokens` runs something
@@ -57,15 +57,25 @@ stdin or are imported.
 ## Rules a script here holds to
 
 **Never count `..` to find the repository root.** Import `repoRoot` from
-`lib/arena/repo-root.mjs`. A script deriving the root from its own location breaks on a move,
+`lib/arena/repo-root.ts`. A script deriving the root from its own location breaks on a move,
 silently, because the wrong path still exists. That module is
 the one place that counts, which is why moving *it* is the one move needing care.
 
-**A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.mjs`,
-`core/arena-tokens.mjs` and the rest are there because more than one gate reads them, and a
+**A library never imports a gate.** `lib/` is the bottom of the graph: `arena/layers.ts`,
+`core/arena-tokens.ts` and the rest are there because more than one gate reads them, and a
 gate reaching down is the only direction allowed. Across domains the same holds in both
-directions: `core/arena-tokens.mjs` imports `../arena/css-decls.mjs` and nothing forbids it,
+directions: `core/arena-tokens.ts` imports `../arena/css-decls.ts` and nothing forbids it,
 because a domain is a statement about subject matter, not a visibility boundary.
+
+**Never read a spawned child's output through a pipe.** Take it from
+`lib/arena/child-output.ts`, which reads it from a file. A child that writes its results and
+then calls `process.exit()` -- tsc, ngc, and every JavaScript compiler here -- exits before
+the tail of stdout has drained, and `spawnSync` reports that short read as a whole one: status
+0, no error, output simply missing its last lines. The loss is a race, so it survives local
+runs and lands in CI, where it once had `check:script-types` name 16 files as unreached by
+globs that reach them. A gate that parses what it captured is the dangerous case, because a
+truncated read there is a wrong answer rather than a failure. Spawning with `stdio: 'inherit'`
+is unaffected and stays as it is: a runner that only relays a child's output reads none of it.
 
 **A test lives beside what it tests**, in the same directory, which for a `lib/` module means
 the same domain, not merely somewhere under `lib/`.
@@ -74,7 +84,7 @@ the same domain, not merely somewhere under `lib/`.
 grants `scripts/` and test files. Anything that will not fit goes in the gate's own reason
 strings, which its paired suite already asserts by name.
 
-**A test under `scripts/` may not import a framework layer's `.ts` or `.tsx`.** `check-all.mjs`
+**A test under `scripts/` may not import a framework layer's `.ts` or `.tsx`.** `check-all.ts`
 also runs these suites under plain node, which cannot resolve the extensionless imports those
 toolchains expect.
 
@@ -99,9 +109,9 @@ notices each missing piece.
 
 ## Adding a gate
 
-Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.mjs` with its domain
+Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.ts` with its domain
 in the path, give it an npm script, and add a row to that domain's table.
-`check-all.test.mjs` asserts every gate names one of the five domains, so a gate landing
+`check-all.test.ts` asserts every gate names one of the five domains, so a gate landing
 outside the grid fails rather than running unnoticed.
 
 **A gate has two existences, the file and every place that invokes it, and only the second is
@@ -127,9 +137,9 @@ per commit.
 **except that the repository declares itself strict**, so it fails instead. Count them and read
 each one's dependency in [`check/AGENTS.md`](./check/AGENTS.md), which also has the table of
 every environment variable the scripts read; all of them are declared in
-`lib/arena/arena-scripts-vars.mjs`, and a real one wins over the declared value.
+`lib/arena/arena-scripts-vars.ts`, and a real one wins over the declared value.
 
-**CI narrows that run by domain, never by gate name.** `check-all.mjs` takes `--domain=` and
-`--no-tests`, four jobs partition `GATES`, and `check-all.test.mjs` asserts the partition, so a
+**CI narrows that run by domain, never by gate name.** `check-all.ts` takes `--domain=` and
+`--no-tests`, four jobs partition `GATES`, and `check-all.test.ts` asserts the partition, so a
 gate cannot join `GATES` and then run in no job.
 [`../.github/workflows/AGENTS.md`](../.github/workflows/AGENTS.md) has the four workflows.

@@ -11,7 +11,7 @@ function readsSpacingTheme(validator: unknown): boolean {
   return (validator as ThemeGetterLike)({ spacing: probe }) === probe;
 }
 
-export function spacingConsumingGroups(): Record<string, Set<string>> {
+export function arenaSpacingConsumingGroups(): Record<string, Set<string>> {
   const found: Record<string, Set<string>> = {};
   const classGroups = getDefaultConfig().classGroups as Record<string, readonly unknown[]>;
   for (const [groupId, entries] of Object.entries(classGroups)) {
@@ -54,12 +54,12 @@ const handWritten: Record<string, ClassGroupEntries[]> = {
 };
 
 const classGroups: Record<string, ClassGroupEntries[]> = { ...handWritten };
-for (const [groupId, classParts] of Object.entries(spacingConsumingGroups())) {
+for (const [groupId, classParts] of Object.entries(arenaSpacingConsumingGroups())) {
   const generated = [Object.fromEntries([...classParts].map((part) => [part, ARENA_SPACING_SUFFIXES]))];
   classGroups[groupId] = mergeClassGroup(handWritten[groupId], generated);
 }
 
-export const tv = createTV({
+export const arenaTv = createTV({
   twMerge: true,
   twMergeConfig: { classGroups },
 });

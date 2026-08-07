@@ -10,7 +10,7 @@ what dismisses it.
 It is a level under `contracts/`, beside `contracts/api/`, rather than a corner of the
 design one, and deliberately so. A contract is not a value: DTCG models colours,
 dimensions and durations, and does not model "Escape closes this". Putting a
-pattern under `contracts/design/` would mean relaxing `scripts/check/core/check-dtcg.mjs`, which
+pattern under `contracts/design/` would mean relaxing `scripts/check/core/check-dtcg.ts`, which
 is one of the cleanest gates in the repo.
 
 ## Patterns
@@ -31,7 +31,7 @@ two patterns and not one.
 
 **That set is machine-checked**, which is what makes it safe to name here at
 all: `none aside, exactly the patterns with no APG pattern page cite something
-else`, in `scripts/lib/arena/behaviour-contracts.test.mjs`, asserts it by literal value.
+else`, in `scripts/lib/arena/behaviour-contracts.test.ts`, asserts it by literal value.
 Adding a pattern that cites anything but an APG *patterns* page fails that test
 until the list follows, so the test is the authority and this paragraph is the
 explanation.
@@ -74,14 +74,14 @@ agree or the difference is written down.
 ### Flat bindings and cased bindings
 
 A binding describes a component; a render suite judges one render of it. A
-component that renders differently depending on its own props, as `Alert` does by
+component that renders differently depending on its own props, as `ArenaAlert` does by
 rendering `role="alert"` for a `danger` tone and `role="status"` for any other,
 is several renders, and no single flat exception list is correct for all of them.
 
 **Name no component here as a present-tense example of carrying cases.** A component
 name written into another file's prose is a claim no gate reads, so it rots while every
 gate stays green, and `AGENTS.md` carries the hazard and the change-time grep that finds
-it. `Alert` is the one present-tense name this page keeps, because the
+it. `ArenaAlert` is the one present-tense name this page keeps, because the
 paragraph on `when` below reasons from its `danger` case, so removing it would cost a
 worked example and buy nothing. For the live set, run the command at the end of this
 section rather than reading any name from this page.
@@ -105,10 +105,10 @@ component with one render worth judging. A cased binding replaces both with a
 `when` is prose, and prose is all that is possible: nothing can verify that a
 render suite actually rendered the configuration a case names. A DOM
 discriminator would be circular in every motivating case anyway: what marks
-`Alert`'s `danger` case is `role="alert"`, which is the very attribute the
+`ArenaAlert`'s `danger` case is `role="alert"`, which is the very attribute the
 requirement under examination is about.
 
-`bindingCases()` in `scripts/lib/arena/behaviour-contracts.mjs` is the one place the
+`bindingCases()` in `scripts/lib/arena/behaviour-contracts.ts` is the one place the
 two shapes meet: a flat binding normalises to a single anonymous case (`name:
 null`), so every consumer (`check:behaviour`, `check:compliance` and both
 layers' render-suite wrappers) reads a binding as a list of cases and never
@@ -159,7 +159,7 @@ the current set with
 grep -rHo '"requirement": "[^"]*"' --include='*.behaviour.json' frameworks/ | sort -u
 ```
 
-against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.mjs`, rather than any list
+against `BEHAVIOURAL` in `scripts/lib/core/behaviour-compliance.ts`, rather than any list
 written here.
 
 ### A name that is PRESENT is never checked for being USEFUL
@@ -227,12 +227,12 @@ documented way to reach it, which is not merely "no explicit prop", since a gene
 element without the component ever having designed for it. The test is whether
 the component's own design acknowledges the capability: is it destructured, does
 it drive any of the component's own logic or styling, is it named in the
-`*.prompt.md`? `Input`'s `min`/`max` pass through `...rest` too, but
-`Input.prompt.md` calls them out by name as a supported feature, and that
+`*.prompt.md`? `ArenaInput`'s `min`/`max` pass through `...rest` too, but
+`ArenaInput.prompt.md` calls them out by name as a supported feature, and that
 authorship is what makes them "met", not the passthrough alone. `readOnly`
 reaching the native `<input>`/`<textarea>` the same way, with no default, no
 effect on any rendered state, and no mention in the prompt, is not a designed
-capability, so it is exactly the gap `Tag.behaviour.json` already records for
+capability, so it is exactly the gap `ArenaTag.behaviour.json` already records for
 its remove button's missing `disabled` concept: the component offers no
 supported way to make the state true, whether or not a determined consumer
 could force it through.
@@ -242,7 +242,7 @@ A component can bind `dialog-modal` here and trap no focus at all.
 
 `check:behaviour` still proves only that a declaration is well formed. What proves
 a declaration is *true* is a render suite: for a component listed in `COVERED`
-(`scripts/check/arena/check-compliance.mjs`), a suite asserts per requirement that the rendered
+(`scripts/check/arena/check-compliance.ts`), a suite asserts per requirement that the rendered
 DOM either meets it with no exception declared or fails it with one declared. That
 is bidirectional on purpose, catching an overclaim and a stale exception with
 one statement, and it is why an exception can expire. Coverage is partial:

@@ -1,0 +1,32 @@
+{
+  "component": "ArenaGrid",
+  "slots": {
+    "root": "grid w-full"
+  },
+  "variants": {
+    "gap": {
+      "none": {
+        "root": "gap-0"
+      },
+      "sm": {
+        "root": "gap-3"
+      },
+      "md": {
+        "root": "gap-4"
+      },
+      "lg": {
+        "root": "gap-6"
+      }
+    },
+    "centred": {
+      "true": {
+        "root": "mx-auto"
+      },
+      "false": {}
+    }
+  },
+  "defaultVariants": {
+    "gap": "md",
+    "centred": false
+  }
+}

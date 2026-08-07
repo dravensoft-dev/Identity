@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { comparePattern } from '../../../scripts/lib/core/behaviour-compliance.mjs';
-import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/arena/behaviour-contracts.mjs';
+import { comparePattern } from '../../../scripts/lib/core/behaviour-compliance.ts';
+import { loadBinding, loadPatterns, bindingCases } from '../../../scripts/lib/arena/behaviour-contracts.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 

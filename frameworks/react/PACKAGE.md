@@ -5,28 +5,16 @@ value traces to a design token, with one stylesheet to import and no theme provi
 your tree in.
 
 **The package carries the language. It does not carry a skin.** Your palettes and your fonts
-are yours, declared in one JSON file, and the `arena-theme` command that ships here turns
-that file into the stylesheet Arena reads.
+are yours, declared in one JSON file, and the `arena-to-prod` command that ships here turns
+that file into the stylesheets Arena reads.
 
-**No CSS toolchain, no runtime dependency, and Phosphor is required.** Every component's CSS
-ships compiled inside `arena.css`, so one import is the whole of it and you compile nothing.
-The rules are written against Arena's own class names and read Arena's own tokens, and against
-nothing else: no utility class and no custom property from any other framework appears in this
-package, so a project running its own utility framework cannot collide with it in either
-direction. It brings a browser base with it too:
-a form control that inherits nothing falls back to the browser's own 13.33px Arial, and a
-`<button>` styled that way is 20% off in every measurement that matters. Arena's other layer
-reads the same rules, so the two render one component one way.
-
-**You can pay for only what you render.** `css/components/<name>.css` is one component and
-imports the prelude it needs itself, so importing one alone is safe.
-
-Because the components render classes, a rule of yours can reach them by specificity. Nothing
-stops you, and nothing supports you either: a class is not part of the API, no contract names
-one, and a manifest may rename a slot in any release. Re-skin through `arena.config.json`,
-which is what it is for. What is not optional is the icon font: every `icon` member is a
-Phosphor class name a component renders, never an SVG it bundles, so `@phosphor-icons/web` is
-a peer dependency.
+**What comes down with it.** `react` and `react-dom`, which you already have, and
+`@phosphor-icons/web`, which you may not: Arena's icons are Phosphor class names a component
+renders, never SVGs it bundles, so the font is installed alongside the package rather than
+bundled inside it. There is no runtime dependency and no CSS toolchain to run. Every component's
+CSS ships compiled, written against Arena's own class names and Arena's own tokens and against
+nothing else, so a project running its own utility framework cannot collide with it in either
+direction.
 
 ## It works with the repository, and that is the point
 
@@ -46,17 +34,34 @@ The package is the code. The repository is the criterion.
 
 ```bash
 bun add @dravensoft/arena-react
-bun add react react-dom @phosphor-icons/web
 ```
 
-`@phosphor-icons/web` is **required**, not optional. Arena's single-icon convention is a
-Phosphor class name that a component renders, never an SVG it bundles, so without that
-stylesheet every icon is an empty box. Import it once, wherever you import your styles:
+That is the whole install. `react`, `react-dom` and `@phosphor-icons/web` are peer dependencies,
+so your package manager brings down whichever of them the project does not already have.
 
-```js
-import '@phosphor-icons/web/bold';
-import '@phosphor-icons/web/fill';
+**An icon is a class name, not an element.** Every `icon` prop takes a Phosphor class list,
+`"ph-bold ph-bell"`, and the component renders it. The stylesheet that turns those classes into
+glyphs is not the one Phosphor ships: it is the subset `arena-to-prod` writes for you, below.
+
+## One name everywhere
+
+Every export carries the `Arena` prefix, and so does every type: the component is
+`ArenaButton`, its props are `ArenaButtonProps`, and a tone is an `ArenaTone`.
+
+```tsx
+import { ArenaButton, ArenaCard } from '@dravensoft/arena-react';
+import type { ArenaTone } from '@dravensoft/arena-react';
 ```
+
+The prefix is the name rather than a decoration on it, which is what lets `"components":
+"auto"` tell a component of Arena's from one of yours: a `<Card>` in your own source belongs to
+whoever wrote it, and an `<ArenaCard>` belongs here.
+
+**The class names carry it too, and they carry it once.** A component renders
+`.arena-button__root`, spelt from the component's own name, so a rule of yours written against
+that class is a rule about this component and nothing else. Every sheet is named the same way,
+which is why `css/components/arena-button.css` is the file and `arena-button` is what you write
+in a `stylesheet` list.
 
 ## Declare your skin
 
@@ -125,111 +130,86 @@ What each part means:
 - **`fonts`** fills the three families Arena reads. `src` takes either a stylesheet URL, as
   above, or a font binary you host yourself, which becomes an `@font-face`:
   `{ "family": "Archivo", "src": "/fonts/archivo.woff2", "weight": "400 900" }`.
+- **`stylesheet`** is optional and names what you render, so you send nothing else. See
+  Build to production, below.
 
-## Generate the stylesheet
+# Build to production
 
 ```bash
-bunx arena-theme arena.config.json -o src/arena.generated.css
+bunx arena-to-prod
 ```
 
-Wire it into your build so it can never go stale:
+One command, no arguments. It reads `arena.config.json` and your `src` tree, and writes two
+files into `src`:
+
+- **`arena.generated.css`**, your palettes and your `@font-face` rules, led by an `@import` of
+  the package's own stylesheet. Both declare into `:root` at equal specificity, so source order
+  decides and your values win.
+- **`icons.generated.css`**, the Phosphor subset in `woff2` alone: every glyph your sources draw
+  and every glyph Arena draws for you. It exists because a whole Phosphor weight carries every
+  icon Phosphor has and a screen draws a handful, which makes it the largest thing an Arena
+  project would send that nothing on it reads. Counting what Arena draws is the part you cannot
+  do by hand: a component renders icons you never wrote, and leaving those out is an empty box
+  in a menu you did not know had one.
+
+Import both, and import them **last**:
+
+```js
+import './icons.generated.css';
+import './arena.generated.css';
+```
+
+| flag | what it does |
+| --- | --- |
+| `--strict` | Exit 1 on a contrast report, a ramp report or a glyph Phosphor does not have, rather than writing anyway. Use it in CI if you want that discipline. |
+| `--no-import` | Omit the `@import` of the package stylesheet, for when you would rather import `@dravensoft/arena-react/arena.css` yourself. |
+| `--config`, `--src`, `--out` | The config file, the trees to scan and where the two files go. They default to `arena.config.json`, `src` and `src`. |
+
+**It reports rather than refuses.** If a text colour lands under 4.5:1, if two ramp slots are
+too close to tell apart with a common colour vision deficiency, or if you name a glyph Phosphor
+does not have, it says so on stderr and writes the files anyway. Your brand is yours; Arena's
+job is to tell you what it costs. A malformed config is a different matter and always fails,
+naming the key.
+
+**`stylesheet` in `arena.config.json` is how you pay for only what you render.** Set
+`"components": "auto"` and the command reads your sources and works the list out:
+
+```json
+{ "stylesheet": { "components": "auto", "preflight": false } }
+```
+
+It counts a component as drawn when you import it from this package or open its tag, and it adds
+what Arena draws on your behalf, because an `ArenaTable` renders an `ArenaPagination` and an `ArenaSelect` you
+never wrote. It tells you both counts on stderr, and names anything it saw and could not place.
+`preflight: false` is separate: set it when your project already ships an equivalent browser
+reset.
+
+**What a scan cannot see, it cannot send.** A component reached only through a value your code
+computes is a component this misses, and a missing sheet renders with no border, no padding and
+no colour, with nothing to tell you. Naming the sheets yourself is still there, and is the honest
+choice for a project that renders through indirection:
+
+```json
+{ "stylesheet": { "components": ["arena-button", "arena-page-head", "arena-side-nav", "arena-stat-card", "arena-table"] } }
+```
+
+A name this package does not ship fails the command and lists the ones it does, so a typo stops
+the build instead. That list is then yours to keep current.
+
+## Run it before your build
 
 ```json
 {
   "scripts": {
-    "prebuild": "arena-theme arena.config.json -o src/arena.generated.css",
-    "predev": "arena-theme arena.config.json -o src/arena.generated.css"
+    "prebuild": "arena-to-prod",
+    "predev": "arena-to-prod"
   }
 }
 ```
 
-| command | what it does |
-| --- | --- |
-| `arena-theme <config.json> -o <output.css>` | Reads the config, writes the stylesheet. Also accepts `--out` and `--out=`. |
-| `arena-theme --help` | Prints the usage above. |
-| `--strict` | Turns the contrast and ramp reports into a failure. Use it in CI if you want that discipline. |
-| `--no-import` | Omits the `@import '@dravensoft/arena-react/arena.css';` line, for when you would rather import the package stylesheet yourself. |
-
-The command **reports rather than refuses**. If a text colour lands under 4.5:1, or two ramp
-slots are too close to tell apart with a common colour vision deficiency, it says so on stderr
-and writes the file anyway. Your brand is yours; Arena's job is to tell you what it costs.
-
-A malformed config is a different matter and always fails, naming the key.
-
-Then import the generated file, and import it **last**:
-
-```js
-import './arena.generated.css';
-```
-
-That one file `@import`s the package's own stylesheet first and then your palette and fonts,
-which is why your values win. If you pass `--no-import`, do it by hand and keep the order:
-
-```js
-import '@dravensoft/arena-react/arena.css';
-import './arena.generated.css';
-```
-
-### If your project already ships a browser reset of its own
-
-`arena.css` carries two halves of the compiled sheet, and they are separate files so you can
-take one without the other. `css/base.css` is the stock browser reset and nothing of Arena's:
-`box-sizing`, the margin and padding zeroing, `font: inherit` on form controls.
-`css/components.css` is every component Arena draws, and `css/components/<name>.css` is one
-of them.
-
-If your own build already emits that reset, importing `arena.css` gives you a second copy of
-every rule in it, with the same selectors and possibly different values, and the cascade order
-decides which wins. Import the halves instead and skip the one you already have:
-
-```js
-import '@dravensoft/arena-react/css/components.css';
-import './arena.generated.css';
-```
-
-Two things become yours when you do that. **Order**, because nothing composes it for you:
-Arena's components have to come before your own rules if you want yours to win. And **the
-preflight itself**, because Arena needs one. Without `button, input, select, textarea { font: inherit }`
-a control falls back to the browser's 13.33px Arial and every control in the library is 20%
-off, with nothing to tell you: keep yours, or keep Arena's, but keep one.
-
-## One stylesheet gives you a treatment, not a component
-
-`css/numerals.css` holds `.arena-num`: the mono face and `tabular-nums`, and no colour. Put it
-on a figure you draw yourself, in a definition list, a KPI or a cart line, and a column of them
-aligns by digit the way a table's does.
-
-`arena.css` already imports it, so the separate file is only for an app importing the halves
-by hand.
-
-## Use it
-
-```tsx
-import { Button, Tag, StatCard, Table, TableRow, TableCell } from '@dravensoft/arena-react';
-
-export function Fleet({ rotors }) {
-  return (
-    <section>
-      <StatCard label="Rotors in service" value={rotors.length} tone="success" />
-
-      <Table label="Rotors by depot">
-        {rotors.map((rotor) => (
-          <TableRow key={rotor.id}>
-            <TableCell>{rotor.id}</TableCell>
-            <TableCell><Tag tone={rotor.grounded ? 'danger' : 'success'}>{rotor.status}</Tag></TableCell>
-          </TableRow>
-        ))}
-      </Table>
-
-      <Button icon="ph-plus" onClick={() => {}}>Add a rotor</Button>
-    </section>
-  );
-}
-```
-
-Every component is imported from the package root. Types ship with it, emitted from the
-components' own source rather than written beside it, so an editor tells you what a component
-takes and no declaration can disagree with the implementation it describes.
+Both bun and npm run a `pre<name>` script ahead of the script it names, so wiring it once is
+what keeps the two files from ever going stale. They are build products of your config and your
+sources, so ignore them in version control the way you ignore the rest of your build.
 
 ## Switch palettes
 
@@ -246,7 +226,7 @@ initArenaTheme({
 
 function ThemeButton() {
   const [theme, setTheme] = useArenaTheme();
-  return <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme}</Button>;
+  return <ArenaButton onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme}</ArenaButton>;
 }
 ```
 
@@ -269,53 +249,38 @@ To avoid a flash on first paint, apply the class before your stylesheet loads:
 </script>
 ```
 
-## What the package exports besides components
+## What the package ships besides the components
 
-Four small surfaces reach the package root beside the components, each answering a question a
-consumer cannot answer from outside. Everything here imports from `@dravensoft/arena-react`.
+Every component is imported from the package root, and its types ship with it, emitted from the
+components' own source rather than written beside it. Four other surfaces reach that root, each
+answering a question a consumer cannot answer from outside.
 
-**The theme surface**, above: `initArenaTheme`, `useArenaTheme`, `getArenaTheme`,
-`setArenaTheme`, `toggleArenaTheme`, `arenaPalettes` and the `ArenaPalette` /
-`ArenaThemeConfig` types.
-
-**Two measurements, and they answer different questions.**
-
-| | returns | reach for it |
-| --- | --- | --- |
-| `useContainerWidth(ref?)` | `[ref, width]`: attach the ref to the box, read the width a `ResizeObserver` reports | a component or a panel that has to fit the room it was given |
-| `useViewportBelow(name)` | a boolean over `not all and (min-width: N)` | a page's own layout |
-
-**`width` is `null` until the first measurement**, so render the wide branch while it is, rather
-than the narrow one: a panel that flashes into its phone shape on every mount is worse than one
-that settles into it.
-
-`name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components
-branch on, which is the point: a media query condition holds no `var()`, so a threshold cannot
-be named from a stylesheet at all. `useViewportBelow` is the exact complement of "at least this
-wide" rather than a `max-width` an epsilon short of it. **Never branch a component on
-the viewport**: it is wrong the first time somebody puts it in a narrow column. If your app
-swaps its stylesheet at runtime, call `forgetBreakpoints()` afterwards to drop the cached
-thresholds.
-
-**The chart ramp, for a legend or a chip you draw yourself.** `catColor(slot)` returns the
-custom property for a slot, `catSurface(slot)` the fill and border pair for a chip carrying that
-identity, `catSlotFor(key)` assigns a stable slot from a string, and `CAT_SLOTS` is how many
-there are. The ramp's order is its identity, so a slot means the same thing in every chart on
-the screen.
-
-**`isPrimaryActivation(event)`**, the predicate behind the anchor rule: true for a primary
-click with no modifier, false for every modified click, middle click and context menu. Use it if
-you draw an anchor of your own beside Arena's and want the same split.
+| export | what it is |
+| --- | --- |
+| `initArenaTheme`, `useArenaTheme`, `getArenaTheme`, `setArenaTheme`, `toggleArenaTheme`, `arenaPalettes`, `ArenaPalette`, `ArenaThemeConfig` | the theme surface above |
+| `useArenaContainerWidth(ref?)` | `[ref, width]`: attach the ref to the box and read the width a `ResizeObserver` reports. For a component or a panel that has to fit the room it was given. **`width` is `null` until the first measurement**, so render the wide branch while it is: a panel that flashes into its phone shape on every mount is worse than one that settles into it |
+| `useArenaViewportBelow(name)` | a boolean over `not all and (min-width: N)`, where `name` is `'sm' \| 'md' \| 'lg'` and resolves the same `--bp-*` token Arena's own components branch on. For a page's own layout, and **never for a component**: that is wrong the first time somebody puts it in a narrow column. Call `forgetArenaBreakpoints()` if your app swaps its stylesheet at runtime |
+| `arenaCatColor(slot)`, `arenaCatSurface(slot)`, `arenaCatSlotFor(key)`, `ARENA_CAT_SLOTS` | the chart ramp, for a legend or a chip you draw yourself. The ramp's order is its identity, so a slot means the same thing in every chart on the screen |
+| `isArenaPrimaryActivation(event)` | the predicate behind the anchor rule: true for a primary click with no modifier, false for every modified click, middle click and context menu |
 
 Every other symbol reaching the root is an internal of this layer, exported because the barrel
-is generated wholesale rather than curated, and **carries no compatibility promise**. Nothing
-lists that set for you, and the rule is the safe one to follow instead: what this page names is
-what you may lean on, and a symbol you found by autocomplete is not.
+is generated wholesale rather than curated, and **carries no compatibility promise**. It carries
+the prefix too, since the convention is about the name and not about the promise, so reading
+`Arena` on a symbol tells you where it comes from and never that it is yours to depend on. What this
+page names is what you may lean on; a symbol you found by autocomplete is not.
 
-## What is in the package
+The stylesheets are a tree, and you pick your depth. `arena.css` is all of it and the
+zero-friction path:
 
-Every component, its types, the layer helpers above, the invariant stylesheets, and the
-`arena-theme` command. No tests, no demo pages, no font binaries, and no icons.
+| stylesheet | what it is |
+| --- | --- |
+| `css/base.css` | the browser reset and nothing of Arena's. Arena needs one: without `button, input, select, textarea { font: inherit }` a control falls back to the browser's 13.33px Arial and every control in the library is 20% off, with nothing to tell you. Keep yours or keep this one, but keep one |
+| `css/components.css` | every component Arena draws |
+| `css/components/<name>.css` | one component, named for its sheet as `arena-button.css` or `arena-stat-card.css`. Each imports the prelude it needs itself, so importing one alone is safe |
+| `css/numerals.css` | `.arena-num`, the mono face and `tabular-nums` and no colour. Put it on a figure you draw yourself and a column of them aligns by digit the way a table's does |
+
+Importing the halves rather than `arena.css` makes **order** yours: Arena's components have to
+come before your own rules if you want yours to win.
 
 ## Why might this package's latest version not match Arena's latest version?
 

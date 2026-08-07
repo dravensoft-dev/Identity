@@ -1,0 +1,40 @@
+{
+  "component": "ArenaSideNavCollapsible",
+  "seed": {
+    "id": "reports",
+    "label": "Reports",
+    "icon": "ph-bold ph-chart-bar",
+    "defaultExpanded": true
+  },
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaSideNavItem",
+        "members": {
+          "id": "usage",
+          "label": "Usage"
+        }
+      },
+      {
+        "component": "ArenaSideNavItem",
+        "members": {
+          "id": "billing",
+          "label": "Billing"
+        }
+      }
+    ]
+  },
+  "host": {
+    "component": "ArenaSideNav",
+    "members": {
+      "ariaLabel": "Main",
+      "active": "usage"
+    },
+    "slots": {
+      "content": [
+        "$subject"
+      ]
+    }
+  },
+  "note": "It owns its own expansion; toggle reports the change rather than asking for it."
+}

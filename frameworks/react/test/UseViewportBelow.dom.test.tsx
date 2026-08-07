@@ -1,4 +1,4 @@
-/* The other half of the breakpoint question: useContainerWidth answers "how wide is this box",
+/* The other half of the breakpoint question: useArenaContainerWidth answers "how wide is this box",
  * which is what a component needs, and this answers "which side of the threshold is the
  * viewport on", which is what a consumer's own page layout needs and could not get from CSS,
  * since a media query condition holds no var(). The query is `not all and (min-width: N)`
@@ -8,13 +8,13 @@ import test, { after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from './Harness.tsx';
-import { forgetBreakpoints, useViewportBelow } from '../UseContainerWidth.ts';
+import { forgetArenaBreakpoints, useArenaViewportBelow } from '../UseArenaContainerWidth.ts';
 
 afterEach(cleanup);
-after(forgetBreakpoints);
+after(forgetArenaBreakpoints);
 
 function Probe({ name }: { name: 'sm' | 'md' | 'lg' }) {
-  return <span data-below={String(useViewportBelow(name))} />;
+  return <span data-below={String(useArenaViewportBelow(name))} />;
 }
 
 function viewport(width: number) {

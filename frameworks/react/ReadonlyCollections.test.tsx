@@ -7,40 +7,40 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
-import { ActivityFeed } from './components/display/activity-feed/ActivityFeed.tsx';
-import { BarChart } from './components/charts/bar-chart/BarChart.tsx';
-import { Breadcrumbs } from './components/navigation/breadcrumbs/Breadcrumbs.tsx';
-import { BulkActionBar } from './components/navigation/bulk-action-bar/BulkActionBar.tsx';
-import { DoughnutChart } from './components/charts/doughnut-chart/DoughnutChart.tsx';
-import { LineChart } from './components/charts/line-chart/LineChart.tsx';
-import { SegmentedControl } from './components/navigation/segmented-control/SegmentedControl.tsx';
-import { Select } from './components/forms/select/Select.tsx';
-import { Table } from './components/display/table/Table.tsx';
+import { ArenaActivityFeed } from './components/display/arena-activity-feed/ArenaActivityFeed.tsx';
+import { ArenaBarChart } from './components/charts/arena-bar-chart/ArenaBarChart.tsx';
+import { ArenaBreadcrumbs } from './components/navigation/arena-breadcrumbs/ArenaBreadcrumbs.tsx';
+import { ArenaBulkActionBar } from './components/navigation/arena-bulk-action-bar/ArenaBulkActionBar.tsx';
+import { ArenaDoughnutChart } from './components/charts/arena-doughnut-chart/ArenaDoughnutChart.tsx';
+import { ArenaLineChart } from './components/charts/arena-line-chart/ArenaLineChart.tsx';
+import { ArenaSegmentedControl } from './components/navigation/arena-segmented-control/ArenaSegmentedControl.tsx';
+import { ArenaSelect } from './components/forms/arena-select/ArenaSelect.tsx';
+import { ArenaTable } from './components/display/arena-table/ArenaTable.tsx';
 import type {
-  ActivityItem, BulkAction, Crumb, SegmentOption, SelectOption, TableColumn,
+  ArenaActivityItem, ArenaBulkAction, ArenaCrumb, ArenaSegmentOption, ArenaSelectOption, ArenaTableColumn,
 } from './Api.generated.ts';
 
 const LABELS: readonly string[] = Object.freeze(['Mon', 'Tue']);
 const VALUES: readonly number[] = Object.freeze([1, 2]);
 const SLOTS: readonly number[] = Object.freeze([1, 2]);
-const ITEMS: readonly ActivityItem[] = Object.freeze([{ id: '1', actor: 'Marta', action: 'deployed' }]);
-const CRUMBS: readonly Crumb[] = Object.freeze([{ label: 'Clients', href: '/clients' }]);
-const ACTIONS: readonly BulkAction[] = Object.freeze([{ id: 'archive', label: 'Archive' }]);
-const SEGMENTS: readonly SegmentOption[] = Object.freeze([{ value: 'grid', label: 'Grid' }]);
-const OPTIONS: readonly SelectOption[] = Object.freeze([{ value: 'a', label: 'A' }]);
-const COLUMNS: readonly TableColumn[] = Object.freeze([{ header: 'Build' }]);
+const ITEMS: readonly ArenaActivityItem[] = Object.freeze([{ id: '1', actor: 'Marta', action: 'deployed' }]);
+const CRUMBS: readonly ArenaCrumb[] = Object.freeze([{ label: 'Clients', href: '/clients' }]);
+const ACTIONS: readonly ArenaBulkAction[] = Object.freeze([{ id: 'archive', label: 'Archive' }]);
+const SEGMENTS: readonly ArenaSegmentOption[] = Object.freeze([{ value: 'grid', label: 'Grid' }]);
+const OPTIONS: readonly ArenaSelectOption[] = Object.freeze([{ value: 'a', label: 'A' }]);
+const COLUMNS: readonly ArenaTableColumn[] = Object.freeze([{ header: 'Build' }]);
 
 test('every collection prop takes data the consumer holds as readonly, and nothing writes to it', () => {
   const markup = [
-    renderToStaticMarkup(<ActivityFeed label="Activity" items={ITEMS} />),
-    renderToStaticMarkup(<Breadcrumbs ariaLabel="Trail" items={CRUMBS} />),
-    renderToStaticMarkup(<BulkActionBar count={1} actions={ACTIONS} />),
-    renderToStaticMarkup(<SegmentedControl ariaLabel="View" options={SEGMENTS} value="grid" onChange={() => {}} />),
-    renderToStaticMarkup(<Select options={OPTIONS} />),
-    renderToStaticMarkup(<Table label="Deployments" columns={COLUMNS} />),
-    renderToStaticMarkup(<BarChart seriesLabel="Deploys" labels={LABELS} values={VALUES} slots={SLOTS} />),
-    renderToStaticMarkup(<DoughnutChart seriesLabel="Traffic" labels={LABELS} values={VALUES} slots={SLOTS} />),
-    renderToStaticMarkup(<LineChart seriesLabel="Latency" labels={LABELS} values={VALUES} />),
+    renderToStaticMarkup(<ArenaActivityFeed label="Activity" items={ITEMS} />),
+    renderToStaticMarkup(<ArenaBreadcrumbs ariaLabel="Trail" items={CRUMBS} />),
+    renderToStaticMarkup(<ArenaBulkActionBar count={1} actions={ACTIONS} />),
+    renderToStaticMarkup(<ArenaSegmentedControl ariaLabel="View" options={SEGMENTS} value="grid" onChange={() => {}} />),
+    renderToStaticMarkup(<ArenaSelect options={OPTIONS} />),
+    renderToStaticMarkup(<ArenaTable label="Deployments" columns={COLUMNS} />),
+    renderToStaticMarkup(<ArenaBarChart seriesLabel="Deploys" labels={LABELS} values={VALUES} slots={SLOTS} />),
+    renderToStaticMarkup(<ArenaDoughnutChart seriesLabel="Traffic" labels={LABELS} values={VALUES} slots={SLOTS} />),
+    renderToStaticMarkup(<ArenaLineChart seriesLabel="Latency" labels={LABELS} values={VALUES} />),
   ];
 
   for (const html of markup) assert.ok(html.length > 0, 'a component rendered nothing, so its prop proves nothing');

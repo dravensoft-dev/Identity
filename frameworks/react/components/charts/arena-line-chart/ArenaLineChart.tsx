@@ -1,0 +1,167 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
+import {
+  arenaResolveColors, arenaCatColor, arenaNiceMax, arenaTicks, arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
+  ARENA_PAD, ARENA_CHART_HEIGHT,
+} from '../../../DataVisuals.ts';
+import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
+
+import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
+
+export type { ArenaSeriesTone };
+
+export interface ArenaLineChartProps {
+
+  /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
+  labels: readonly string[];
+
+  /** The plotted data, in order. One point per entry; a negative value clamps to the baseline. */
+  values: readonly number[];
+
+  /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
+  seriesLabel: string;
+
+  /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */
+  slot?: number;
+
+  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. */
+  tone?: ArenaSeriesTone;
+
+  /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
+  area?: boolean;
+
+  /** Appended verbatim to every number the chart draws: the axis arenaTicks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
+  valueSuffix?: string;
+
+  /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
+  valuePrefix?: string;
+
+  /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
+  valueFormat?: ArenaNumberFormat;
+
+  /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
+  height?: number;
+
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  minPointSpacing?: number;
+}
+
+
+export function ArenaLineChart({
+  labels, values, seriesLabel, slot, tone, area = false, valueSuffix, valuePrefix, valueFormat,
+  height = ARENA_CHART_HEIGHT, minPointSpacing,
+}: ArenaLineChartProps) {
+  if (!seriesLabel) throw new Error('ArenaLineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
+  if (!labels) throw new Error('ArenaLineChart: `labels` is required');
+  if (!values) throw new Error('ArenaLineChart: `values` is required');
+  const [ref, measured] = useArenaContainerWidth();
+  const rail = useRef<HTMLDivElement>(null);
+  const [hover, setHover] = useState<number | null>(null);
+
+  const available = measured ?? 600;
+  const n = values.length;
+  const width = arenaPlotWidth(available, n, minPointSpacing);
+  const scrolls = width > available;
+  const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
+
+  useEffect(() => {
+    const box = rail.current;
+    if (!box || !scrolls) return;
+    box.scrollLeft = box.scrollWidth - box.clientWidth;
+  }, [scrolls, width]);
+
+  const [color = arenaCatColor(1)] = arenaResolveColors({ slot, tone, count: 1 });
+
+  const max = arenaNiceMax(Math.max(0, ...values));
+  const iw = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
+  const ih = Math.max(1, height - ARENA_PAD.t - ARENA_PAD.b);
+  const xOf = (i: number) => ARENA_PAD.l + (n <= 1 ? iw / 2 : (iw / (n - 1)) * i);
+  const yOf = (v: number) => ARENA_PAD.t + ih - (Math.max(0, v) / max) * ih;
+  const baseline = ARENA_PAD.t + ih;
+
+  const points = values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' ');
+  const areaPath = n
+    ? `M${xOf(0)},${baseline} L${values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' L')} L${xOf(n - 1)},${baseline} Z`
+    : '';
+
+  const name = `${seriesLabel} — line chart`;
+
+  const onMove = (e: React.MouseEvent<SVGRectElement>) => {
+    if (!n) return;
+    const box = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+    if (!box) return;
+    const x = e.clientX - box.left;
+    let best = 0;
+    for (let i = 1; i < n; i++) if (Math.abs(xOf(i) - x) < Math.abs(xOf(best) - x)) best = i;
+    setHover(best);
+  };
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
+      <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
+        role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
+      <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
+        {arenaTicks(max).map((t, i) => (
+          <g key={i}>
+            <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
+            <text x={ARENA_PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
+              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
+          </g>
+        ))}
+        <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
+
+        {}
+        {area && n > 0 && (
+          <path d={areaPath} fill={arenaAreaFill(color)} stroke="none" />
+        )}
+
+        {hover !== null && (
+          <line x1={xOf(hover)} x2={xOf(hover)} y1={ARENA_PAD.t} y2={baseline}
+            stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
+        )}
+
+        {n > 1 && <polyline points={points} fill="none" stroke={color} style={{ strokeWidth: 'var(--bw-strong)' }}
+          strokeLinejoin="round" strokeLinecap="round" />}
+
+        {values.map((v, i) => (
+          <circle key={i} cx={xOf(i)} cy={yOf(v)} r={hover === i ? chartPointRHover : chartPointR}
+            fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
+        ))}
+
+        {
+
+}
+        {values.map((_, i) => (
+          <text key={i} x={xOf(i)} y={height - chartLabelGap} textAnchor="middle"
+            fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
+        ))}
+
+        {
+}
+        <rect x={ARENA_PAD.l} y={ARENA_PAD.t} width={iw} height={ih} fill="transparent"
+          onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
+      </svg>
+      </div>
+
+      {hover !== null && values[hover] !== undefined && (
+        <div style={{
+          position: 'absolute', left: xOf(hover), top: `calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`,
+          transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
+          background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
+          borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
+        }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>
+        </div>
+      )}
+
+      <table style={arenaSrOnly}>
+        <caption>{name}</caption>
+        <thead><tr><th>Point</th><th>{seriesLabel}</th></tr></thead>
+        <tbody>
+          {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+  );
+}

@@ -47,7 +47,7 @@ Three things at once, from the same tree:
 
 **A published Arena carries the language and never the skin**, which is the decision the whole
 npm channel follows from: the palettes and the fonts arrive as an `arena.config.json` the
-consuming project writes, and the `arena-theme` command each package ships turns it into the one
+consuming project writes, and the `arena-to-prod` command each package ships turns it into the one
 stylesheet a package cannot carry. Two couplings are part of the adoption contract: Phosphor for
 iconography, and Tailwind, whose compiled sheet both packages carry inside `arena.css`.
 
@@ -59,7 +59,7 @@ lives in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and the
 artifact list; because the plugin is served from the tag, `source.ref` must name it and the tag
 must exist on the release commit. **Forgetting the `ref` fails silently**: the marketplace
 advertises a new version while Claude Code keeps fetching the old tag and resolves the old
-version, so nothing errors and the update is never offered. `bun scripts/check/arena/check-release.mjs`
+version, so nothing errors and the update is never offered. `bun scripts/check/arena/check-release.ts`
 is what refuses that combination. **Because a published tag is a promise about the tree it
 resolves to, history is never rewritten**, and `git filter-repo` and every equivalent are
 refused outright whatever a repository-size argument says.
@@ -85,8 +85,8 @@ under `css/`, a class a consumer writes. That home is the layer's `PACKAGE.md`, 
 npm shows; the layer's `SKILL.md` beside it is generated and indexes components alone. **A
 layer's `AGENTS.md` is neither**, because the router forbids reading it, so a shipped thing
 documented only there is a thing nobody can find. Derive what ships rather than trusting a list:
-`ROOT_TS` in `scripts/build/react/build-react-package.mjs`, and every `copy(` in
-`scripts/build/angular/build-angular-package.mjs`.
+`ROOT_TS` in `scripts/build/react/build-react-package.ts`, and every `copy(` in
+`scripts/build/angular/build-angular-package.ts`.
 
 **A rule binding more than one component is the router's, stated once**; a rule binding one
 component is that component's `.prompt.md`, in each layer's own idiom. **A consumer document
@@ -104,7 +104,7 @@ two copies and never reads either for meaning. Verify with
 
 ## Documentation rules
 
-- **Every `.md` file stays under 60,000 characters.** `SIZE_EXEMPT` in `check-docs.mjs` names
+- **Every `.md` file stays under 60,000 characters.** `SIZE_EXEMPT` in `check-docs.ts` names
   what is exempt by charter, and `SIZE_ALLOWANCE` beside it names what holds to a **higher**
   limit instead, with its reason. **An allowance is not an exemption**: the document is still
   measured, and one that falls back inside the shared limit **fails as a stale allowance**, so
@@ -116,7 +116,7 @@ two copies and never reads either for meaning. Verify with
   the budget is a new **rule**, not a new component.
 - **No document on this branch carries a literal count of anything**, only the command that
   produces it, with **one** exception: the gate table in `scripts/check/AGENTS.md`, whose numbers
-  `check-all.test.mjs` derives from `GATES` and fails when they disagree. A number an assertion
+  `check-all.test.ts` derives from `GATES` and fails when they disagree. A number an assertion
   holds is better than a command; a number nothing holds is the defect this rule exists to stop.
 - **Documentation punctuates with a colon, a comma, a semicolon or a full stop, never with an em
   dash.** A dash pair enclosing an aside becomes commas, or parentheses where commas would nest;
@@ -124,10 +124,23 @@ two copies and never reads either for meaning. Verify with
   semicolon or a second sentence. An en dash between two numbers is a range and stays. The rule
   reaches prose only, so a fence and a code span keep what the code they quote contains.
 - **Documentation is written in the present tense** and describes what Arena is, never what it
-  was, when a part of it arrived, or which part is newest. A retired token, a fixed defect, a
-  former directory layout and a batch number belong in the commit log, which is where the history
-  already is, and is dated. The reason a rule exists is not history and stays: state it as a
-  property of the thing, not as an incident.
+  was, when a part of it arrived, or which part is newest. **No released version other than this
+  one exists on the page.** Nothing says what a name used to be, what a command replaced, what an
+  upgrade costs or which release moved it: a reader on this tree cannot act on any of it, and a
+  reader arriving from an older one is served by the version number and by the commit log, which
+  is dated and is where the history already is. A retired token, a fixed defect, a former
+  directory layout and a batch number belong in that log. The reason a rule exists is not history
+  and stays: state it as a property of the thing, not as an incident.
+- **A debt is written in the present tense as well, and it goes to [`DOUBTS.md`](./DOUBTS.md).**
+  Anything tracked, ambiguous, or implemented only in part is stated there as what the tree
+  currently is, never as what went wrong or what is left over. That page says what counts as one
+  and which records beat a paragraph, and every one of those records is a present-tense claim
+  that fails the day it stops being true.
+- **A document cites code as `path/to/file:member(parameters)` and never by line number.** A line
+  moves under the next edit and takes every citation with it in silence, while a member carries
+  its own address: `scripts/lib/arena/layers.ts:kebab(name)` still resolves after the file is
+  reordered around it. `check:citations` holds the path half of that citation to a file that is
+  there, which is the half a rename breaks.
 - **The best comment is the one not written.** A method carries its own context through its name.
   The only exception is `scripts/` and test files, which may carry **one** comment, inline or
   block, as a file header, **at most 10 lines**. Files a script generates are outside the rule
@@ -160,13 +173,13 @@ the one that opened it. `bun run check:citations` holds every path a document na
   drop the suffix when the plan lands. **They are deleted once executed**, which is why debt filed
   in one dies with it, and why a document citing one is a citation that was condemned when it was
   written.
-- **No gradients** on any surface, the sole exception being `Skeleton`'s neutral shimmer. Depth
+- **No gradients** on any surface, the sole exception being `ArenaSkeleton`'s neutral shimmer. Depth
   comes from the `base-100` to `base-200` to `base-300` surface scale, the hairline border and
   the warm shadow.
 - **No emoji**, in product or docs.
 - **Danger is outline, never filled**: transparent background, border and content in
   `--error`/`--danger`. The only filled danger surface in the whole system is the final
-  irreversible confirmation inside `ConfirmDialog`.
+  irreversible confirmation inside `ArenaConfirmDialog`.
 - **A commit message containing a backtick is written with a quoted here-doc**, never
   `git commit -m "…"`. A backtick inside a double-quoted shell string opens command substitution
   and is silently spliced away: the message lands with the name it was quoting missing, and
@@ -201,7 +214,7 @@ around it says. Three shapes recur, and none is findable by a keyword query:
 When you change component `X`, read every hit of:
 
 ```bash
-X=Skeleton   # the component you just changed
+X=ArenaSkeleton   # the component you just changed
 grep -rn --binary-files=without-match "\b$X\b" \
     --include='*.md' --include='*.json' --include='*.mjs' --include='*.tsx' --include='*.ts' \
     AGENTS.md DOUBTS.md contracts/ docs/ frameworks/ scripts/

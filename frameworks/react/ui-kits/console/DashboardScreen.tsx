@@ -1,13 +1,13 @@
 import React from 'react';
-import type { Tone } from '../../Api.generated';
+import type { ArenaTone } from '../../Api.generated';
 import { Shell } from './Shell.tsx';
-import { Card } from '../../components/display/card/Card.tsx';
-import { Badge } from '../../components/display/badge/Badge.tsx';
-import { Tag } from '../../components/display/tag/Tag.tsx';
-import { StatCard } from '../../components/display/stat-card/StatCard.tsx';
-import { Button } from '../../components/forms/button/Button.tsx';
+import { ArenaCard } from '../../components/display/arena-card/ArenaCard.tsx';
+import { ArenaBadge } from '../../components/display/arena-badge/ArenaBadge.tsx';
+import { ArenaTag } from '../../components/display/arena-tag/ArenaTag.tsx';
+import { ArenaStatCard } from '../../components/display/arena-stat-card/ArenaStatCard.tsx';
+import { ArenaButton } from '../../components/forms/arena-button/ArenaButton.tsx';
 
-const METRICS: { k: string; v: string; tone?: Tone }[] = [
+const METRICS: { k: string; v: string; tone?: ArenaTone }[] = [
   { k: 'Active projects', v: '12' },
   { k: 'Deployments (7d)', v: '48' },
   { k: 'Average uptime', v: '99.98%', tone: 'success' },
@@ -16,7 +16,7 @@ const METRICS: { k: string; v: string; tone?: Tone }[] = [
 export interface ConsoleProject {
   name: string;
   client: string;
-  status: [Tone, string];
+  status: [ArenaTone, string];
   build: string;
   when: string;
   tags: string[];
@@ -39,25 +39,25 @@ export interface DashboardScreenProps {
 export function DashboardScreen({ onNav, onOpenProject }: DashboardScreenProps) {
   return (
     <Shell active="dashboard" onNav={onNav} title="Projects"
-      actions={<Button variant="primary" size="sm" icon="ph-bold ph-plus">New project</Button>}>
+      actions={<ArenaButton variant="primary" size="sm" icon="ph-bold ph-plus">New project</ArenaButton>}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'calc(var(--sp-1) * 4)', marginBottom: 'calc(var(--sp-1) * 7)' }}>
-        {METRICS.map((m) => <StatCard key={m.k} label={m.k} value={m.v} tone={m.tone} />)}
+        {METRICS.map((m) => <ArenaStatCard key={m.k} label={m.k} value={m.v} tone={m.tone} />)}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'calc(var(--sp-1) * 4)' }}>
         {PROJECTS.map((p) => (
           <div key={p.name} onClick={() => onOpenProject && onOpenProject(p)} style={{ cursor: 'pointer', display: 'grid' }}>
-            <Card accent={p.status[0] === 'danger'}
+            <ArenaCard accent={p.status[0] === 'danger'}
               eyebrow={p.client}
               title={p.name}
-              action={<Badge tone={p.status[0]} dot>{p.status[1]}</Badge>}>
+              action={<ArenaBadge tone={p.status[0]} dot>{p.status[1]}</ArenaBadge>}>
               <div style={{ display: 'flex', gap: 'calc(var(--sp-1) * 2)', flexWrap: 'wrap', margin: 'calc(var(--sp-1) * 1) 0 calc(var(--sp-1) * 4)' }}>
-                {p.tags.map((t) => <Tag key={t}>{t}</Tag>)}
+                {p.tags.map((t) => <ArenaTag key={t}>{t}</ArenaTag>)}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: 'var(--bw) solid var(--color-base-300)', paddingTop: 'calc(var(--sp-1) * 3.5)' }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--gold)' }}>build {p.build}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{p.when}</span>
               </div>
-            </Card>
+            </ArenaCard>
           </div>
         ))}
       </div>

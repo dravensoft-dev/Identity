@@ -9,31 +9,31 @@ import { join } from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { REACT_COMPONENTS } from './AssertPattern.tsx';
-import { SideNav } from '../components/navigation/side-nav/SideNav.tsx';
-import { SideNavItem } from '../components/navigation/side-nav-item/SideNavItem.tsx';
-import { SideNavSection } from '../components/navigation/side-nav-section/SideNavSection.tsx';
-import { RadioGroup } from '../components/forms/radio-group/RadioGroup.tsx';
-import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs.tsx';
-import { ActivityFeed } from '../components/display/activity-feed/ActivityFeed.tsx';
-import { Table } from '../components/display/table/Table.tsx';
-import { Pagination } from '../components/navigation/pagination/Pagination.tsx';
-import { BottomNav } from '../components/navigation/bottom-nav/BottomNav.tsx';
-import { Sheet } from '../components/feedback/sheet/Sheet.tsx';
+import { ArenaSideNav } from '../components/navigation/arena-side-nav/ArenaSideNav.tsx';
+import { ArenaSideNavItem } from '../components/navigation/arena-side-nav-item/ArenaSideNavItem.tsx';
+import { ArenaSideNavSection } from '../components/navigation/arena-side-nav-section/ArenaSideNavSection.tsx';
+import { ArenaRadioGroup } from '../components/forms/arena-radio-group/ArenaRadioGroup.tsx';
+import { ArenaBreadcrumbs } from '../components/navigation/arena-breadcrumbs/ArenaBreadcrumbs.tsx';
+import { ArenaActivityFeed } from '../components/display/arena-activity-feed/ArenaActivityFeed.tsx';
+import { ArenaTable } from '../components/display/arena-table/ArenaTable.tsx';
+import { ArenaPagination } from '../components/navigation/arena-pagination/ArenaPagination.tsx';
+import { ArenaBottomNav } from '../components/navigation/arena-bottom-nav/ArenaBottomNav.tsx';
+import { ArenaSheet } from '../components/feedback/arena-sheet/ArenaSheet.tsx';
 
 interface MemberSpec { form?: string; type?: string; required?: boolean; description?: string }
 const CONTRACTS = join(REACT_COMPONENTS, '../../../contracts/api/components');
 const BLANK = '   ';
 
 const WITH_A_BLANK_NAME = new Map([
-  ['SideNav', () => <SideNav ariaLabel={BLANK}><SideNavItem id="a" label="Alpha" /></SideNav>],
-  ['SideNavSection', () => <SideNavSection label={BLANK}><SideNavItem id="a" label="Alpha" /></SideNavSection>],
-  ['RadioGroup', () => <RadioGroup ariaLabel={BLANK} value="a" />],
-  ['Breadcrumbs', () => <Breadcrumbs ariaLabel={BLANK} items={[{ label: 'Home' }]} />],
-  ['ActivityFeed', () => <ActivityFeed label={BLANK} items={[]} />],
-  ['Table', () => <Table label={BLANK} columns={[{ header: 'A' }]} />],
-  ['Pagination', () => <Pagination ariaLabel={BLANK} page={1} pageCount={3} />],
-  ['Sheet', () => <Sheet open title={BLANK}>Two line items.</Sheet>],
-  ['BottomNav', () => <BottomNav ariaLabel={BLANK} />],
+  ['ArenaSideNav', () => <ArenaSideNav ariaLabel={BLANK}><ArenaSideNavItem id="a" label="Alpha" /></ArenaSideNav>],
+  ['ArenaSideNavSection', () => <ArenaSideNavSection label={BLANK}><ArenaSideNavItem id="a" label="Alpha" /></ArenaSideNavSection>],
+  ['ArenaRadioGroup', () => <ArenaRadioGroup ariaLabel={BLANK} value="a" />],
+  ['ArenaBreadcrumbs', () => <ArenaBreadcrumbs ariaLabel={BLANK} items={[{ label: 'Home' }]} />],
+  ['ArenaActivityFeed', () => <ArenaActivityFeed label={BLANK} items={[]} />],
+  ['ArenaTable', () => <ArenaTable label={BLANK} columns={[{ header: 'A' }]} />],
+  ['ArenaPagination', () => <ArenaPagination ariaLabel={BLANK} page={1} pageCount={3} />],
+  ['ArenaSheet', () => <ArenaSheet open title={BLANK}>Two line items.</ArenaSheet>],
+  ['ArenaBottomNav', () => <ArenaBottomNav ariaLabel={BLANK} />],
 ]);
 
 export function guardedNames(dir: string, read = readFileSync, list = readdirSync) {

@@ -1,0 +1,14 @@
+{
+  "component": "ArenaTag",
+  "cases": [
+    { "name": "plain",
+      "when": "removable() is false or absent -- the common case, a plain tone dot and projected content with no interactive affordance",
+      "pattern": "none",
+      "reason": "Without `removable` arena-tag is a label: a tone dot and projected content, with nothing to press. No interactive pattern applies, and binding one with an exception would tell a reader the pattern always holds.",
+      "exceptions": [] },
+    { "name": "removable",
+      "when": "removable() is true -- a real <button> renders inside the tag",
+      "pattern": "button",
+      "exceptions": [] }
+  ]
+}

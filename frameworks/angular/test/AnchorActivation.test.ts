@@ -12,12 +12,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { Command, Crumb } from '../Api.generated';
-import { Card } from '../components/display/card/Card';
-import { Breadcrumbs } from '../components/navigation/breadcrumbs/Breadcrumbs';
-import { CommandPalette } from '../components/navigation/command-palette/CommandPalette';
-import { SideNav } from '../components/navigation/side-nav/SideNav';
-import { SideNavItem } from '../components/navigation/side-nav-item/SideNavItem';
+import type { ArenaCommand, ArenaCrumb } from '../Api.generated';
+import { ArenaCard } from '../components/display/arena-card/ArenaCard';
+import { ArenaBreadcrumbs } from '../components/navigation/arena-breadcrumbs/ArenaBreadcrumbs';
+import { ArenaCommandPalette } from '../components/navigation/arena-command-palette/ArenaCommandPalette';
+import { ArenaSideNav } from '../components/navigation/arena-side-nav/ArenaSideNav';
+import { ArenaSideNavItem } from '../components/navigation/arena-side-nav-item/ArenaSideNavItem';
 
 const MODIFIERS = ['ctrlKey', 'metaKey', 'shiftKey', 'altKey'] as const;
 
@@ -53,14 +53,14 @@ function assertConvention(name: string, anchor: () => Element, reported: () => n
 
 @Component({
   standalone: true,
-  imports: [Card],
+  imports: [ArenaCard],
   template: '<arena-card href="/clients/acme" title="Acme Corp" (click)="hits.set(hits() + 1)" />',
 })
 class CardHost { readonly hits = signal(0); }
 
 @Component({
   standalone: true,
-  imports: [Card],
+  imports: [ArenaCard],
   template: '<arena-card href="/clients/acme" title="Acme Corp" disabled'
     + ' (click)="hits.set(hits() + 1)" />',
 })
@@ -68,18 +68,18 @@ class DisabledCardHost { readonly hits = signal(0); }
 
 @Component({
   standalone: true,
-  imports: [Breadcrumbs],
+  imports: [ArenaBreadcrumbs],
   template: '<arena-breadcrumbs ariaLabel="Project navigation" [items]="items"'
     + ' (navigate)="hits.set(hits() + 1)" />',
 })
 class CrumbHost {
   readonly hits = signal(0);
-  readonly items: Crumb[] = [{ label: 'Clients', href: '/clients' }, { label: 'Acme' }];
+  readonly items: ArenaCrumb[] = [{ label: 'Clients', href: '/clients' }, { label: 'Acme' }];
 }
 
 @Component({
   standalone: true,
-  imports: [SideNav, SideNavItem],
+  imports: [ArenaSideNav, ArenaSideNavItem],
   template: '<arena-side-nav ariaLabel="Primary" (nav)="hits.set(hits() + 1)">'
     + '<arena-side-nav-item id="prod" label="Production" href="/deploys/prod" />'
     + '<arena-side-nav-item id="local" label="Local" />'
@@ -89,12 +89,12 @@ class NavHost { readonly hits = signal(0); }
 
 @Component({
   standalone: true,
-  imports: [CommandPalette],
+  imports: [ArenaCommandPalette],
   template: '<arena-command-palette open [commands]="commands" (run)="hits.set(hits() + 1)" />',
 })
 class PaletteHost {
   readonly hits = signal(0);
-  readonly commands: Command[] = [
+  readonly commands: ArenaCommand[] = [
     { id: 'clients', label: 'Clients', route: '/clients' },
     { id: 'new', label: 'New invoice' },
   ];
@@ -110,14 +110,14 @@ function render<T>(type: Type<T>) {
   };
 }
 
-test('Card.href reports the primary click and leaves every other one to the browser', () => {
+test('ArenaCard.href reports the primary click and leaves every other one to the browser', () => {
   const { host, instance, destroy } = render(CardHost);
   try {
-    assertConvention('Card', () => host.querySelector('a')!, () => instance.hits());
+    assertConvention('ArenaCard', () => host.querySelector('a')!, () => instance.hits());
   } finally { destroy(); }
 });
 
-test('an href Card reports ONCE, because `click` is also the name of the DOM event', () => {
+test('an href ArenaCard reports ONCE, because `click` is also the name of the DOM event', () => {
   const { host, instance, destroy } = render(CardHost);
   try {
     const event = click(host.querySelector('a')!);
@@ -128,7 +128,7 @@ test('an href Card reports ONCE, because `click` is also the name of the DOM eve
   } finally { destroy(); }
 });
 
-test('a disabled href Card reports nothing at all', () => {
+test('a disabled href ArenaCard reports nothing at all', () => {
   const { host, instance, destroy } = render(DisabledCardHost);
   try {
     const event = click(host.querySelector('a')!);
@@ -137,24 +137,24 @@ test('a disabled href Card reports nothing at all', () => {
   } finally { destroy(); }
 });
 
-test('a Crumb reports the primary click and leaves every other one to the browser', () => {
+test('an ArenaCrumb reports the primary click and leaves every other one to the browser', () => {
   const { host, instance, destroy } = render(CrumbHost);
   try {
-    assertConvention('Breadcrumbs', () => host.querySelector('a')!, () => instance.hits());
+    assertConvention('ArenaBreadcrumbs', () => host.querySelector('a')!, () => instance.hits());
   } finally { destroy(); }
 });
 
-test('SideNavItem with href reports the primary click and leaves every other one alone', () => {
+test('ArenaSideNavItem with href reports the primary click and leaves every other one alone', () => {
   const { host, instance, destroy } = render(NavHost);
   try {
-    assertConvention('SideNavItem', () => host.querySelector('a')!, () => instance.hits());
+    assertConvention('ArenaSideNavItem', () => host.querySelector('a')!, () => instance.hits());
   } finally { destroy(); }
 });
 
-test('a Command with route reports the primary click and leaves every other one alone', () => {
+test('an ArenaCommand with route reports the primary click and leaves every other one alone', () => {
   const { host, instance, destroy } = render(PaletteHost);
   try {
-    assertConvention('CommandPalette', () => host.querySelector('a[role="option"]')!,
+    assertConvention('ArenaCommandPalette', () => host.querySelector('a[role="option"]')!,
       () => instance.hits());
   } finally { destroy(); }
 });
@@ -171,7 +171,7 @@ test('Enter on a routed row runs it exactly once, through the palette and not th
   } finally { destroy(); }
 });
 
-test('a SideNavItem WITHOUT href still activates on a modified click', () => {
+test('an ArenaSideNavItem WITHOUT href still activates on a modified click', () => {
   const { host, instance, destroy } = render(NavHost);
   try {
     click(host.querySelector('button')!, { ctrlKey: true });
@@ -180,7 +180,7 @@ test('a SideNavItem WITHOUT href still activates on a modified click', () => {
   } finally { destroy(); }
 });
 
-test('a Command WITHOUT route still runs on a modified click', () => {
+test('an ArenaCommand WITHOUT route still runs on a modified click', () => {
   const { host, instance, destroy } = render(PaletteHost);
   try {
     click(host.querySelector('button[role="option"]')!, { metaKey: true });

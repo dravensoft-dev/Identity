@@ -1,0 +1,12 @@
+{
+  "component": "ArenaPagination",
+  "seed": {
+    "page": 2,
+    "pageCount": 7,
+    "ariaLabel": "Deployments"
+  },
+  "bind": {
+    "change": "page"
+  },
+  "note": "Controlled: the page knob is what the component renders."
+}

@@ -1,12 +1,12 @@
 import { afterNextRender, DestroyRef, DOCUMENT, ElementRef, inject, signal, Signal } from '@angular/core';
 
-export type BreakpointName = 'sm' | 'md' | 'lg';
+export type ArenaBreakpointName = 'sm' | 'md' | 'lg';
 
 const breakpoints = new Map<string, number>();
 
 export type WidthTarget = ElementRef<HTMLElement> | (() => HTMLElement | null | undefined);
 
-export function containerWidth(target?: WidthTarget): Signal<number | null> {
+export function arenaContainerWidth(target?: WidthTarget): Signal<number | null> {
   const fallback = target === undefined ? inject<ElementRef<HTMLElement>>(ElementRef) : null;
   const destroyRef = inject(DestroyRef);
   const width = signal<number | null>(null);
@@ -32,20 +32,20 @@ const warned = new Set<string>();
 function warnUnresolved(name: string): void {
   if (warned.has(name) || typeof console === 'undefined') return;
   warned.add(name);
-  console.warn(`[arena] --bp-${name} did not resolve, so readBreakpoint('${name}') is NaN and every`
+  console.warn(`[arena] --bp-${name} did not resolve, so arenaReadBreakpoint('${name}') is NaN and every`
     + ' comparison against it is false: a responsive component stays on its wide branch on a phone.'
     + " Arena's stylesheet is missing, or it loads after this ran.");
 }
 
-export function forgetBreakpoints(): void {
+export function forgetArenaBreakpoints(): void {
   breakpoints.clear();
   warned.clear();
 }
 
-export function viewportBelow(name: BreakpointName): Signal<boolean> {
+export function arenaViewportBelow(name: ArenaBreakpointName): Signal<boolean> {
   const doc = inject(DOCUMENT);
   const destroyRef = inject(DestroyRef);
-  const width = readBreakpoint(name);
+  const width = arenaReadBreakpoint(name);
   const below = signal(false);
 
   afterNextRender(() => {
@@ -61,7 +61,7 @@ export function viewportBelow(name: BreakpointName): Signal<boolean> {
   return below.asReadonly();
 }
 
-export function readBreakpoint(name: BreakpointName): number {
+export function arenaReadBreakpoint(name: ArenaBreakpointName): number {
   const doc = inject(DOCUMENT);
   const cached = breakpoints.get(name);
   if (cached !== undefined) return cached;

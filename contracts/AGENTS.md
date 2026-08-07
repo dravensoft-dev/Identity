@@ -24,7 +24,7 @@ what a reader **consults** while doing the work:
 - `behaviour/` is one file, because it has no second audience to separate: nobody reads a
   pattern without intending to implement it.
 
-**Every one of those files is named in `SHAPE`**, in `scripts/check/arena/check-contracts.mjs`,
+**Every one of those files is named in `SHAPE`**, in `scripts/check/arena/check-contracts.ts`,
 so a sibling nobody declared fails rather than sitting invisible to every gate that reads a
 level by extension. **Splitting a level is therefore a two-file change**, the document and the
 declaration, and the gate is what makes it one.
@@ -62,7 +62,7 @@ additive: bringing a component under an API contract may not weaken, remove or c
 behaviour binding or the tokens it renders from.
 
 **When an API reshape appears to require dropping something a behaviour binding depends on, the
-reshape is what is wrong.** `ConfirmDialog` is the worked example: its `cancel` event is how the
+reshape is what is wrong.** `ArenaConfirmDialog` is the worked example: its `cancel` event is how the
 dialog reports an Escape-key dismissal, which `dialog-modal` requires, so a contract that
 omitted it to look tidier would leave the Escape handler with nothing to emit and silently void
 that requirement.
@@ -82,7 +82,7 @@ consume it to produce a position: an SVG `y` from a data value, a clamp against
 re-theme and cannot re-densify.
 
 **One type ties the API level back to the design one, and it is deliberately one case rather
-than a mechanism.** `api/types/cat-slot.json` declares `CatSlot` as a literal set whose bound is
+than a mechanism.** `api/types/cat-slot.json` declares `ArenaCatSlot` as a literal set whose bound is
 not authored there: it is the count of `--color-cat-*` slots in `design/palette.dark.json`,
 reaching the layers as the derived `catSlots` constant. `check:script-tokens` asserts the set is
 exactly `1..catSlots` **in order**, so a further colour in the ramp fails the build until the
@@ -121,7 +121,7 @@ Established systems (Material 3, Fluent, Carbon, Polaris) are **light-by-default
 ## Why only design has a `-generated` sibling
 
 `design-generated/` holds the five CSS files built from `design/`: four by Style
-Dictionary (`bun run generate:tokens`) and `fonts.generated.css` by `scripts/generate/core/fetch-fonts.mjs`, which can
+Dictionary (`bun run generate:tokens`) and `fonts.generated.css` by `scripts/generate/core/fetch-fonts.ts`, which can
 also rebuild that one file alone, from the binaries already committed under `assets/fonts/`
 and with no network involved, via `--css-only`. Never edit any of the five directly; edit
 the source and rebuild.
@@ -151,8 +151,8 @@ vocabularies a gate reads as two sets.
 
 ## The zero-result guards, by name
 
-`zeroContractProblems` in `check-api.mjs`, `zeroPatternProblems` in `check-behaviour.mjs` and
-`zeroGeneratedCssProblems` in `check-script-tokens.mjs`. `design/` carries the same guard under
+`zeroContractProblems` in `check-api.ts`, `zeroPatternProblems` in `check-behaviour.ts` and
+`zeroGeneratedCssProblems` in `check-script-tokens.ts`. `design/` carries the same guard under
 a different name: `check:dtcg` walks `contracts/design/` itself and fails the same way on zero
 token files.
 
@@ -181,7 +181,7 @@ framework is added without touching the language.
   none is DTCG: values are what `design/` governs, and how a value is combined at runtime
   belongs to each platform's own idiom.
 - `contracts/design-generated/`: the five built CSS files, `fonts.generated.css` (from
-  `fetch-fonts.mjs`), plus `palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and
+  `fetch-fonts.ts`), plus `palette.generated.css`, `typography.generated.css`, `spacing.generated.css` and
   `effects.generated.css` (from `build-tokens.mjs`). Never edit any of them.
 - `assets/`: `rotor-crimson/bone/ink.svg`, `app-icon.svg`, and `fonts/` (the bundled
   self-hosted `.woff2` binaries).
@@ -191,13 +191,13 @@ framework is added without touching the language.
   (`effects-radius`, `effects-shadow`), iconography (`icons`), brand (`brand-logo`) and
   the **danger convention** (`components-danger`).
 - `scripts/`: the build steps and the gates. `build-tokens.mjs` generates the four token
-  CSS files from `contracts/design/`; `check-dtcg.mjs` asserts the source conforms to
-  2025.10; `check-tokens-generated.mjs` asserts the committed CSS matches the source;
-  `check-ramp.mjs` asserts the shipped ramp clears every gate in both themes;
-  `check-text-contrast.mjs` measures every text level against the real surfaces in both
+  CSS files from `contracts/design/`; `check-dtcg.ts` asserts the source conforms to
+  2025.10; `check-tokens-generated.ts` asserts the committed CSS matches the source;
+  `check-ramp.ts` asserts the shipped ramp clears every gate in both themes;
+  `check-text-contrast.ts` measures every text level against the real surfaces in both
   themes; `validate-palette.mjs` is the vendored data-viz palette validator;
-  `check-release.mjs` asserts the version, the marketplace `ref` and the tag agree; and
-  `serve.mjs` backs `bun run demos`.
+  `check-release.ts` asserts the version, the marketplace `ref` and the tag agree; and
+  `serve.ts` backs `bun run demos`.
 
 **The framework layers**
 

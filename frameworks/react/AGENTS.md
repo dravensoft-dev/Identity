@@ -31,17 +31,17 @@ crosses no boundary:
 
 ```tsx
 import { arenaStyles } from '../../../ArenaStyles.generated.ts';
-import manifest from './Tag.classes.generated.ts';
+import manifest from './ArenaTag.classes.generated.ts';
 
-const tagStyles = arenaStyles(manifest);
-const styles = tagStyles({ tone, disabled });
+const arenaTagStyles = arenaStyles(manifest);
+const styles = arenaTagStyles({ tone, disabled });
 <span className={styles.root()}>
 ```
 
-`components/display/tag/Tag.tsx` is the reference shape. A compound child reaches the parent's
+`components/display/arena-tag/ArenaTag.tsx` is the reference shape. A compound child reaches the parent's
 table the same way, by importing the composer and the parent's generated module rather than a
 sibling component's exported recipe, so no component depends on another's module:
-`components/display/calendar-event/CalendarEvent.tsx` is that shape.
+`components/display/arena-calendar-event/ArenaCalendarEvent.tsx` is that shape.
 
 **Nothing here merges classes, and nothing needs to.** A variant is additive and its rule is
 emitted after the base at equal specificity, so source order decides; that is what
@@ -49,7 +49,7 @@ emitted after the base at equal specificity, so source order decides; that is wh
 with this arrangement.
 
 Both layers compose the same names, and neither is the other's authority: the manifest is.
-Where a manifest and a component disagreed, the manifest won, which is how `Card` came to draw
+Where a manifest and a component disagreed, the manifest won, which is how `ArenaCard` came to draw
 a focus ring rather than an outline. `check:appearance` holds the arrangement.
 
 **What stays an inline `style` is a value computed at runtime**, from data or from a
@@ -63,8 +63,8 @@ keeps a `useState` to paint one.
 **A variant key the manifest does not declare resolves to no classes at all**, where a lookup
 table used to fall back through `|| TONES.neutral`. Where a member can carry a value the
 manifest has never heard of, the guard that answers it is **derived from the manifest** rather
-than written out beside it; `ActivityFeed`, `Badge`, `Alert`, `Toast`, `Avatar`, `ToastHost`
-and `Grid` all carry one.
+than written out beside it; `ArenaActivityFeed`, `ArenaBadge`, `ArenaAlert`, `ArenaToast`, `ArenaAvatar`, `ArenaToastHost`
+and `ArenaGrid` all carry one.
 
 **What a component inherits is not the browser's.** The layer's pages and its package carry the
 compiled utility sheet, which is both the utilities the manifests resolve to and the `@layer
@@ -79,7 +79,7 @@ keyframe animation is a utility in the compiled sheet this layer loads, carrying
 `prefers-reduced-motion` branch, so `arena-menu`, `arena-pop`, `arena-fade`, `arena-shimmer`,
 `arena-spinner` and `arena-prog-indeterminate` are classes a manifest names.
 Every vendor pseudo-element and sibling selector is an arbitrary variant on a slot, so
-`Input`'s `::-webkit-calendar-picker-indicator` and `Checkbox`'s `:has(~ input:focus-visible)`
+`ArenaInput`'s `::-webkit-calendar-picker-indicator` and `ArenaCheckbox`'s `:has(~ input:focus-visible)`
 are in the manifest too. A component that reaches for an injected sheet is a component whose
 manifest is short: grow the manifest, which moves both layers, rather than adding a rule only
 one of them can see.
@@ -88,12 +88,12 @@ one of them can see.
 
 The answer depends on what the motion means:
 
-- Motion that reports work in progress **slows** rather than stops (`Spinner`,
-  `ProgressBar`, `Button`), because a frozen spinner reads as a hung process.
-- Decorative motion **stops** outright (`Skeleton`).
-- An entrance **keeps its fade and drops its travel** (`Dialog`, `Menu`): the movement is
+- Motion that reports work in progress **slows** rather than stops (`ArenaSpinner`,
+  `ArenaProgressBar`, `ArenaButton`), because a frozen spinner reads as a hung process.
+- Decorative motion **stops** outright (`ArenaSkeleton`).
+- An entrance **keeps its fade and drops its travel** (`ArenaDialog`, `ArenaMenu`): the movement is
   the vestibular trigger, the fade is the meaning.
-- An opacity-only animation needs no clause at all (`Tooltip`): there is no motion to
+- An opacity-only animation needs no clause at all (`ArenaTooltip`): there is no motion to
   reduce.
 
 ## Layout
@@ -127,18 +127,18 @@ cannot prove is that the browser honours the URL write-back**: happy-dom's
 `history.replaceState` is a no-op, so the suite asserts the call and the real write is the
 smoke pass's.
 
-**`UseContainerWidth.ts`'s `readBreakpoint` warns once per name when a breakpoint token does not
+**`UseArenaContainerWidth.ts`'s `arenaReadBreakpoint` warns once per name when a breakpoint token does not
 resolve, and never caches the failure.** Every comparison against `NaN` is false, so a silent one
-leaves `Table`, `Calendar` and `PageHead` on their wide branch on a phone with nothing reported,
-and a cached one pins that for the life of the process. `test/UseContainerWidth.dom.test.tsx`
-holds both halves. `forgetBreakpoints()` drops what was cached, for the two callers that need
+leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on their wide branch on a phone with nothing reported,
+and a cached one pins that for the life of the process. `test/UseArenaContainerWidth.dom.test.tsx`
+holds both halves. `forgetArenaBreakpoints()` drops what was cached, for the two callers that need
 it: a document that swapped its stylesheet at runtime, and a suite whose subject is the cache,
 which would otherwise depend on which file the runner reached first.
 
-**`useViewportBelow(name)` answers the other question, and it is a different one.**
-`useContainerWidth` measures a box, which is what a component needs, because a component may be
+**`useArenaViewportBelow(name)` answers the other question, and it is a different one.**
+`useArenaContainerWidth` measures a box, which is what a component needs, because a component may be
 rendered anywhere and the viewport says nothing about how much room it was given.
-`useViewportBelow` measures the viewport, which is what a page layout needs and what a consumer
+`useArenaViewportBelow` measures the viewport, which is what a page layout needs and what a consumer
 writing their own stylesheet cannot get any other way: a media query condition
 holds no `var()`, so the threshold cannot be named from CSS at all. The query is
 `not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
@@ -148,16 +148,16 @@ it in a narrow column.
 
 **`AnchorActivation.ts` is the predicate behind the anchor convention**: an anchor Arena draws
 cancels a primary click with no modifier and reports through its own navigation event, and
-everything else is the browser's. `Card`, `Breadcrumbs`, `SideNavItem` and `CommandPalette` all
+everything else is the browser's. `ArenaCard`, `ArenaBreadcrumbs`, `ArenaSideNavItem` and `ArenaCommandPalette` all
 read it, `contracts/api/AGENTS.md` states the rule, and `test/AnchorActivation.dom.test.tsx`
 holds each activation separately.
 
 **A compound family injects downward, direct children only, one hop**, and that is what makes
-`SideNav` nest to any depth with **no context anywhere**: a section or a collapsible re-injects
+`ArenaSideNav` nest to any depth with **no context anywhere**: a section or a collapsible re-injects
 into its own children with `depth + 1`. The shared helper is
-`components/navigation/side-nav/SideNavInject.tsx`, which covers that family and no more, so the
+`components/navigation/arena-side-nav/SideNavInject.tsx`, which covers that family and no more, so the
 placement rule sends it to the family's parent directory. **Its `.tsx` extension is
-load-bearing**: `check:dimensions` never opens a `.js`, and its `indentFor()` produces a governed
+load-bearing**: `check:dimensions` never opens a `.js`, and its `arenaIndentFor()` produces a governed
 `padding-inline-start`. It is a `.tsx` under `components/` that is **not a component**, since a
 component is a **directory**, in `reactComponents()` and in every count of the set.
 
@@ -169,7 +169,7 @@ miss because the array half works.
 
 **And a guard must count what the render path counts.** `React.Children.count()` counts a bare
 `false` as one child where `toArray()` drops it, so a `count()`-based "this must not be empty"
-guard passes the commonest conditional-render idiom, `{isAdmin && <SideNavItem …/>}` with the
+guard passes the commonest conditional-render idiom, `{isAdmin && <ArenaSideNavItem …/>}` with the
 condition false, straight through to the empty render the guard exists to refuse. Use
 `toArray().length`.
 
@@ -198,7 +198,7 @@ what covers it: real Chromium over each declared page, one real Tab press per st
   that page is `index.html`, which is the name an HTTP directory index is answered by. Renaming
   the pair would stop serving the app at `/frameworks/react/ui-kits/console/`.
 - `vendor/`: a generated CommonJS→ESM bundle of React for the demo pages'
-  importmap (`build-vendor.mjs`, guarded by `check:vendor`).
+  importmap (`build-vendor.ts`, guarded by `check:vendor`).
 - `test/`: the harness (`Harness.tsx`, `Preload.js`, `AssertPattern.tsx`) and the suites
   that belong to no one component.
 
@@ -299,7 +299,7 @@ suite belongs to. Only the infix does.
 
 **The split reaches past this layer**, because a process-wide happy-dom also replaces Bun's own
 `fetch` and so decides which invocation `scripts/` may ride in. **The single authority for the
-whole command is `testStep()` in `scripts/check/arena/check-all.mjs`**, whose header carries
+whole command is `testStep()` in `scripts/check/arena/check-all.ts`**, whose header carries
 that reasoning and whose `.test.mjs` sibling asserts the args array by literal value; read it
 there rather than reconstructing one.
 
@@ -331,10 +331,10 @@ finished rather than before every commit.
 A bare literal is a bug, and `bun run check:dimensions` fails on each one. A value passes
 when it is `var(--token)`, a `calc()`/`min()`/`max()`/`clamp()` over one, zero, or a unit
 the token layer does not model. A handful of sites are exempt by name with a reason each;
-read `EXEMPT` in `scripts/check/arena/check-dimension-literals.mjs` for the current set.
+read `EXEMPT` in `scripts/check/arena/check-dimension-literals.ts` for the current set.
 
 Responsive branches are JS rather than media queries, and they measure the **container** via
-`useContainerWidth`: a media query can only ask about the viewport, and the box that decides
+`useArenaContainerWidth`: a media query can only ask about the viewport, and the box that decides
 whether a component narrows is the one containing it. The hook owns a
 ref and returns it, and takes one when the caller already holds the box to measure, so an
 inner panel does not have to become a component to be measured. It reports `null` until it

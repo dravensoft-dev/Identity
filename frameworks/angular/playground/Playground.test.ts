@@ -41,15 +41,15 @@ const model: KnobModel = {
   affordances: [],
   knobs: [
     knob({ member: 'label', bind: 'pinned', bound: true, initial: 'Client Portal' }),
-    knob({ member: 'tone', form: 'enum', type: 'Tone', bind: 'defaulted', bound: true, control: 'select', options: ['neutral', 'accent'], initial: 'neutral' }),
-    knob({ member: 'slot', form: 'enum', type: 'CatSlot', bind: 'defaulted', bound: true, control: 'select', options: [1, 2, 3], initial: 1 }),
+    knob({ member: 'tone', form: 'enum', type: 'ArenaTone', bind: 'defaulted', bound: true, control: 'select', options: ['neutral', 'accent'], initial: 'neutral' }),
+    knob({ member: 'slot', form: 'enum', type: 'ArenaCatSlot', bind: 'defaulted', bound: true, control: 'select', options: [1, 2, 3], initial: 1 }),
     knob({ member: 'open', type: 'boolean', control: 'check', codec: 'flag', bind: 'defaulted', bound: true, initial: false }),
     knob({ member: 'hint', bind: 'optional', bound: false, initial: 'unset' }),
     knob({ member: 'index', type: 'number', control: 'number', codec: 'number', bind: 'defaulted', bound: true, initial: 0 }),
     knob({
       member: 'sort',
       form: 'object',
-      type: 'TableSort',
+      type: 'ArenaTableSort',
       control: 'fields',
       codec: 'json',
       bind: 'optional',
@@ -57,12 +57,12 @@ const model: KnobModel = {
       initial: { column: 0, direction: 'asc' },
       fields: [
         { name: 'column', form: 'primitive', type: 'number', required: true, initial: 0 },
-        { name: 'direction', form: 'enum', type: 'SortDirection', required: true, options: ['asc', 'desc'], initial: 'asc' },
+        { name: 'direction', form: 'enum', type: 'ArenaSortDirection', required: true, options: ['asc', 'desc'], initial: 'asc' },
       ],
     }),
   ],
   events: [
-    { name: 'sortChange', payload: 'TableSort', bind: 'sort', doc: 'Sorted.' },
+    { name: 'sortChange', payload: 'ArenaTableSort', bind: 'sort', doc: 'Sorted.' },
     { name: 'pageChange', payload: 'number', bind: 'sort.column', doc: 'Paged.' },
     { name: 'next', payload: null, bind: { index: { $delta: 1 } }, doc: 'Next.' },
     { name: 'poke', payload: 'string', bind: null, doc: 'Poked.' },
@@ -109,7 +109,7 @@ test('a flag decodes from either spelling, and a number that is not one falls ba
   assert.equal(decode(model.knobs[5]!, 'nonsense'), 0);
 });
 
-test('a numeric enum decodes back to a number, so CatSlot does not arrive as a string', () => {
+test('a numeric enum decodes back to a number, so ArenaCatSlot does not arrive as a string', () => {
   const slot = model.knobs[2]!;
   assert.equal(decode(slot, '3'), 3);
   assert.equal(encode(slot, 3), '3');

@@ -40,10 +40,27 @@ So the packages ship everything that is invariant, and the consumer declares the
   derives the muted text levels from `--color-base-content`.
 - **The consumer's, in `arena.config.json`**: the palettes and the fonts.
 
-A command in each package, `arena-theme`, turns that JSON into the missing stylesheet. Its
-source is `scripts/generate/core/arena-theme/`, described in
-[`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md),
-copied whole into `dist/bin/`.
+One command travels in each package, `arena-to-prod`, and `CLI_BINS` in
+[`scripts/lib/arena/package-assembly.ts`](../scripts/lib/arena/package-assembly.ts) is the
+list both manifests take their `bin` from. Its source is its own directory under
+`scripts/generate/core/`, described in
+[`scripts/generate/core/AGENTS.md`](../scripts/generate/core/AGENTS.md), copied whole into
+`dist/bin/`. **That copy is flat**, so two CLI trees may not share a filename and a command may
+only import a sibling of its own; `copyCli` refuses either.
+
+It does the two jobs a project always did together, and a failure in the first stops the second:
+
+- **The theme** turns the consumer's JSON into the missing stylesheet, `arena.generated.css`.
+  When their config carries a `stylesheet` key it writes the layer chain and the named component
+  sheets in place of the `arena.css` barrel, reading both lists off the package it is running
+  from rather than from a copy of them that could age. `"components": "auto"` resolves that list
+  from their own sources against `components.json`, which each package carries and
+  [`scripts/lib/arena/component-map.ts`](../scripts/lib/arena/component-map.ts) derives from the
+  layer: what a consumer writes is not what dresses it, since 43 sheets dress 55 components, and
+  the closure matters more than the mapping because Arena draws components nobody named.
+- **The icons** write the Phosphor subset a project draws, `icons.generated.css`, reading the
+  consumer's sources and the package it ships in, since a component renders icons the consumer
+  never names.
 
 **Import order is what makes it work.** The consumer's generated file comes last, and its
 first line is an `@import` of the package's own `arena.css`. Both files declare into `:root`,
@@ -143,11 +160,11 @@ Nothing moves. `bun run build:packages` reads the tree as it stands and writes t
 directories that were not there before. The two other channels keep working on the same
 files, byte for byte.
 
-The shared half is [`scripts/lib/arena/package-assembly.mjs`](../scripts/lib/arena/package-assembly.mjs):
+The shared half is [`scripts/lib/arena/package-assembly.ts`](../scripts/lib/arena/package-assembly.ts):
 the exclusion list, the copy that honours it, the CSS chain and the manifest template.
 Neither half compiles anything, because the two layers need different compilers.
 
-**React** goes through `Bun.Transpiler`, the same path `build-demos.mjs` already uses, and
+**React** goes through `Bun.Transpiler`, the same path `build-demos.ts` already uses, and
 each declaration is EMITTED by `tsc` rather than copied, so it cannot disagree with the
 implementation it describes. There is exactly one rewrite, and it normalises every relative
 specifier to `.js`: one carrying `.ts`, `.tsx`, `.jsx` or `.js` is retargeted, and one carrying
@@ -170,7 +187,7 @@ because it was not always true: a `.variants.ts` used to import a Tailwind manif
 directories up, which ng-packagr refuses, since it infers `rootDir` from the entry file's
 directory. A component composes its own class names now, from a table emitted beside it, so
 nothing reaches out and the staging tree is a compiler's requirement rather than the shape of a
-coupling. `build-angular-package.mjs` fails on a staging run that copies zero files, so a layer
+coupling. `build-angular-package.ts` fails on a staging run that copies zero files, so a layer
 that moved is loud rather than silently empty.
 
 ### What never ships
@@ -211,7 +228,7 @@ name is not the API" above before treating a manifest edit as a break.
 ## What `check:packages` holds
 
 **That the two palette emitters agree.** There are now two things that turn a palette into
-CSS: Style Dictionary, which serves this repository, and `arena-theme`, which serves a
+CSS: Style Dictionary, which serves this repository, and `arena-to-prod`, which serves a
 consumer who has no repository. The gate builds a config out of Arena's own skin, runs the
 CLI over it, and asserts every `--color-*` declaration matches
 `contracts/design-generated/palette.generated.css` in both blocks. A comparison that looked
@@ -240,14 +257,14 @@ git tag -a vX.Y.Z -m "Arena vX.Y.Z"
 git push origin main --follow-tags
 ```
 
-`--follow-tags` matters here for a second reason now: the workflow runs `check-release.mjs`
+`--follow-tags` matters here for a second reason now: the workflow runs `check-release.ts`
 before it publishes anything, and that gate refuses a version whose tag does not exist and
 does not serve it. A version bump pushed without its tag is rejected loudly rather than
 published quietly.
 
 **A package is published only when something it carries has moved.** The workflow asks
 whether `plugin.json`'s version is already on the registry, and if it is not, whether
-anything in `scripts/ci/arena/package-inputs.mjs` has changed since the tag of the version
+anything in `scripts/ci/arena/package-inputs.ts` has changed since the tag of the version
 that is. So a release touching only React publishes only React, and the Angular package
 keeps its number rather than shipping an identical tree under a new one. That is why the two
 packages can sit at different versions, and both `PACKAGE.md` files point a reader at
@@ -266,7 +283,7 @@ Three things about the publish itself, each of which has a way of going wrong:
 Still possible, and the fallback when the workflow cannot run:
 
 ```bash
-bun scripts/check/arena/check-release.mjs
+bun scripts/check/arena/check-release.ts
 bun run build                   # the generated sources build:packages reads
 bun run build:packages          # the manifests take the version from plugin.json here
 bun run check:packages          # and this fails if they did not
@@ -316,6 +333,6 @@ nothing in this repository would notice.
 
 The mechanism inherits the release rule it always had: the version moves in `plugin.json`,
 `marketplace.json` and the README's artifact list together, `source.ref`
-names the tag, and `check-release.mjs` refuses the combination that fails silently. The two
+names the tag, and `check-release.ts` refuses the combination that fails silently. The two
 manifests take that same version from `plugin.json` at assembly, so a published package can
 never disagree with the tag it was cut from.

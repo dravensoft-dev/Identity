@@ -1,0 +1,5 @@
+{
+  "component": "ArenaSpinner",
+  "seed": {},
+  "note": "A busy indicator that names what it is waiting for."
+}

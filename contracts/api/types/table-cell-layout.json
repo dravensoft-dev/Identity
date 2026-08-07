@@ -1,6 +1,0 @@
-{
-  "name": "TableCellLayout",
-  "kind": "enum",
-  "description": "How a Table column's cells render in card mode: `row` is a label/value pair, `block` is full width with no label. Checked against every enum already declared here; nothing carries this pair. SkeletonVariant is the only other declaration containing the value `block`, and it names a shape of placeholder rather than a layout.",
-  "values": ["row", "block"]
-}

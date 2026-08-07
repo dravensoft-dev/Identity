@@ -1,15 +1,15 @@
-import type { ToastTone } from '../../Api.generated';
+import type { ArenaToastTone } from '../../Api.generated';
 import type { ConsoleProject } from './DashboardScreen.tsx';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { LoginScreen } from './LoginScreen.tsx';
 import { DashboardScreen } from './DashboardScreen.tsx';
 import { ProjectScreen } from './ProjectScreen.tsx';
-import { Toast, TOAST_DISMISS } from '../../components/feedback/toast/Toast.tsx';
-import { ToastHost } from '../../components/feedback/toast-host/ToastHost.tsx';
+import { ArenaToast, ARENA_TOAST_DISMISS } from '../../components/feedback/arena-toast/ArenaToast.tsx';
+import { ArenaToastHost } from '../../components/feedback/arena-toast-host/ArenaToastHost.tsx';
 
 interface ConsoleToast {
-  tone: ToastTone;
+  tone: ArenaToastTone;
   title: string;
   message: string;
   persist?: boolean;
@@ -28,7 +28,7 @@ function App(){
 
     if (t.persist) return;
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)),
-      t.actionLabel ? TOAST_DISMISS.actionable : TOAST_DISMISS.default);
+      t.actionLabel ? ARENA_TOAST_DISMISS.actionable : ARENA_TOAST_DISMISS.default);
   };
 
   const nav = (id: string) => {
@@ -54,13 +54,13 @@ function App(){
   return (
     <React.Fragment>
       {view}
-      <ToastHost>
+      <ArenaToastHost>
         {toasts.map((t) => (
-          <Toast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist}
+          <ArenaToast key={t.id} tone={t.tone} title={t.title} message={t.message} persist={t.persist}
             actionLabel={t.actionLabel} onAction={t.onAction} dismissible
             onClose={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} />
         ))}
-      </ToastHost>
+      </ArenaToastHost>
     </React.Fragment>
   );
 }

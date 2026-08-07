@@ -12,16 +12,16 @@ export interface ArenaThemeConfig {
   default?: string;
 }
 
-export const DEFAULT_THEMES: ArenaThemeConfig = {
+export const ARENA_DEFAULT_THEMES: ArenaThemeConfig = {
   palettes: [{ name: 'dark', polarity: 'dark' }, { name: 'light', polarity: 'light' }],
   default: 'dark',
 };
 
-export const themeClass = (name: string): string => `arena-${name}`;
+export const arenaThemeClass = (name: string): string => `arena-${name}`;
 
 const STORAGE_KEY = 'arena-theme';
 
-let config: ArenaThemeConfig = DEFAULT_THEMES;
+let config: ArenaThemeConfig = ARENA_DEFAULT_THEMES;
 const listeners = new Set<(name: string) => void>();
 let current: string | null = null;
 
@@ -58,7 +58,7 @@ function apply(name: string): void {
   const element = root();
   if (!element) return;
   for (const palette of config.palettes) {
-    element.classList.toggle(themeClass(palette.name), palette.name === name && name !== fallback());
+    element.classList.toggle(arenaThemeClass(palette.name), palette.name === name && name !== fallback());
   }
 }
 
@@ -81,7 +81,7 @@ export function setArenaTheme(name: string): string {
   return name;
 }
 
-export function initArenaTheme(themes: ArenaThemeConfig = DEFAULT_THEMES): string {
+export function initArenaTheme(themes: ArenaThemeConfig = ARENA_DEFAULT_THEMES): string {
   config = themes;
   current = null;
   const name = getArenaTheme();

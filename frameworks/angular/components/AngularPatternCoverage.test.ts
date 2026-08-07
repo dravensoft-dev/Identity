@@ -12,13 +12,13 @@ import assert from 'node:assert/strict';
 import { assertSameNode } from '../test/NodeAssert';
 import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
-import { Skeleton } from './display/skeleton/Skeleton';
-import { ErrorState } from './feedback/error-state/ErrorState';
-import { Onboarding } from './feedback/onboarding/Onboarding';
+import { ArenaSkeleton } from './display/arena-skeleton/ArenaSkeleton';
+import { ArenaErrorState } from './feedback/arena-error-state/ArenaErrorState';
+import { ArenaOnboarding } from './feedback/arena-onboarding/ArenaOnboarding';
 import { assertPattern, ANGULAR_COMPONENTS } from '../test/Compliance';
 
 test('arena-skeleton is a polite status that never takes focus', () => {
-  const fixture = TestBed.createComponent(Skeleton);
+  const fixture = TestBed.createComponent(ArenaSkeleton);
   fixture.detectChanges();
   try {
     const host = fixture.nativeElement as HTMLElement;
@@ -29,7 +29,7 @@ test('arena-skeleton is a polite status that never takes focus', () => {
 
     assertPattern({
       root: host,
-      bindingPath: join(ANGULAR_COMPONENTS, 'display/skeleton/Skeleton.behaviour.json'),
+      bindingPath: join(ANGULAR_COMPONENTS, 'display/arena-skeleton/ArenaSkeleton.behaviour.json'),
       subjects: { default: host },
       behavioural: { 'focus.unaffected': true },
     });
@@ -40,7 +40,7 @@ test('arena-skeleton is a polite status that never takes focus', () => {
 
 test('arena-error-state announces itself and schedules nothing that could retract it', () => {
   const before = document.activeElement;
-  const fixture = TestBed.createComponent(ErrorState);
+  const fixture = TestBed.createComponent(ArenaErrorState);
   fixture.componentRef.setInput('title', 'Deploy failed');
   fixture.detectChanges();
   try {
@@ -50,7 +50,7 @@ test('arena-error-state announces itself and schedules nothing that could retrac
 
     assertPattern({
       root: host,
-      bindingPath: join(ANGULAR_COMPONENTS, 'feedback/error-state/ErrorState.behaviour.json'),
+      bindingPath: join(ANGULAR_COMPONENTS, 'feedback/arena-error-state/ArenaErrorState.behaviour.json'),
       subjects: { default: host },
       behavioural: { 'focus.unaffected': true, 'content.noAutoDismiss': true },
     });
@@ -65,7 +65,7 @@ test('arena-onboarding is a labelled modal that takes focus on open and gives it
   document.body.appendChild(invoker);
   invoker.focus();
 
-  const fixture = TestBed.createComponent(Onboarding);
+  const fixture = TestBed.createComponent(ArenaOnboarding);
   try {
     fixture.componentRef.setInput('steps', [{ title: 'Projects', body: 'Everything starts here.' }]);
     fixture.componentRef.setInput('open', true);
@@ -80,7 +80,7 @@ test('arena-onboarding is a labelled modal that takes focus on open and gives it
 
     assertPattern({
       root: host,
-      bindingPath: join(ANGULAR_COMPONENTS, 'feedback/onboarding/Onboarding.behaviour.json'),
+      bindingPath: join(ANGULAR_COMPONENTS, 'feedback/arena-onboarding/ArenaOnboarding.behaviour.json'),
       subjects: { default: panel },
       behavioural: { 'focus.onOpen': true, 'focus.onClose': true, 'focus.trap': true, 'keyboard.Escape': true },
     });

@@ -36,10 +36,10 @@ are. `bun run check:layer-independence` holds it, and `ALLOWED` is empty.
 each is an `@import` in the host app's `styles.css`, so renaming one breaks every app that has
 adopted Arena. **`no-fouc.html` is not a third instance of that**: the adopter pastes the
 `<script>`'s contents and never names the file, so renaming it breaks a documentation line
-rather than an app. **Not exempt:** `theme/ThemeService.ts` and `icons/IconManifest.ts` are
+rather than an app. **Not exempt:** `theme/ArenaThemeService.ts` and `icons/IconManifest.ts` are
 reached through `frameworks/angular/index.ts`, which no adopter writes.
 
-- `theme/ThemeService.ts` and `theme/no-fouc.html`: the signal theme service and the
+- `theme/ArenaThemeService.ts` and `theme/no-fouc.html`: the signal theme service and the
   pre-paint snippet. It switches between **any number of named palettes**, because a
   consumer's `arena.config.json` declares as many as they like: the default palette sits on
   `:root` and wears no class, and every other one wears `.arena-<name>`. Declare them with
@@ -56,7 +56,7 @@ else's library is in reach of none of them. Each lives in
 quartet: `<Component>.ts` (standalone, `OnPush`, signal I/O, `arena-` selector),
 `<Component>.variants.ts` (the class-name table, composed by the shared `arenaStyles`),
 `<Component>.prompt.md` (usage and Do/Don't), and an `index.ts` barrel.
-`components/display/tag/` is the
+`components/display/arena-tag/` is the
 reference shape. **A directory with no `<Component>.variants.ts` is one of two declared cases
 rather than one**; derive the set rather than trusting a list here:
 
@@ -66,20 +66,20 @@ comm -23 <(find components -mindepth 2 -maxdepth 2 -type d -printf '%f\n' | sort
 ```
 
 The three SVG charts have no recipe at all, for the reason below. **A compound family's
-children have none either, because they import the parent's**: each `SideNav*` child imports
-`sideNavStyles` from `side-nav/SideNav.variants`, which is the recipe mirror of the rule
+children have none either, because they import the parent's**: each `ArenaSideNav*` child imports
+`arenaSideNavStyles` from `side-nav/ArenaSideNav.variants`, which is the recipe mirror of the rule
 `frameworks/tailwind/AGENTS.md` states for manifests, that a manifest mirrors a *surface* and a
 family draws one. The category is the one
 `frameworks/Components.json` declares, and the file-naming rule is the repo-wide one
 `frameworks/AGENTS.md` states: directories kebab-case, file names capital-initial. Each component's
 own tests sit in that same directory as `<Component>.<facet>.test.ts`.
 
-**A compound family pushes nothing, so its recursive case costs no helper.** `SideNav` nests to
-any depth because each container re-provides `SideNavState` at `depth + 1` and a row **pulls**
+**A compound family pushes nothing, so its recursive case costs no helper.** `ArenaSideNav` nests to
+any depth because each container re-provides `ArenaSideNavState` at `depth + 1` and a row **pulls**
 the nearest, which is the whole mechanism: an item reads its own indent from the injector rather
 than being handed one. A consumer's own wrapper component between two levels is therefore
 harmless here, since it interrupts nothing that travels. **The coordination is a member of no
-contract**, the way `Table`/`TableRow` and `RadioGroup`/`Radio` are not.
+contract**, the way `ArenaTable`/`ArenaTableRow` and `ArenaRadioGroup`/`ArenaRadio` are not.
 
 The layer spans every category the layout rule allows: `brand`, `charts`, `display`,
 `feedback`, `forms`, `layout` and `navigation`. **Read the set from the tree
@@ -100,15 +100,15 @@ Some files at the layer root are not components, and each sits at the narrowest 
 contains all of its consumers rather than in one shared bucket. **List them rather than trusting
 this paragraph**, with `ls *.ts | grep -v generated`; what follows is why the interesting ones
 are where they are:
-`ContainerSize.ts` (the host element's width as a signal, plus `readBreakpoint`, which **warns
+`ContainerSize.ts` (the host element's width as a signal, plus `arenaReadBreakpoint`, which **warns
 once per name when a breakpoint token does not resolve and never caches the failure**: every
-comparison against `NaN` is false, so a silent one leaves `Table`, `Calendar` and `PageHead` on
-their wide branch on a phone with nothing reported, plus `forgetBreakpoints`, which drops what
+comparison against `NaN` is false, so a silent one leaves `ArenaTable`, `ArenaCalendar` and `ArenaPageHead` on
+their wide branch on a phone with nothing reported, plus `forgetArenaBreakpoints`, which drops what
 was cached for the two callers that need it, a document that swapped its stylesheet at runtime
-and a suite whose subject is the cache, and `viewportBelow`, below),
+and a suite whose subject is the cache, and `arenaViewportBelow`, below),
 `AnchorActivation.ts` (the predicate behind the anchor convention: an anchor Arena draws cancels
 a primary click with no modifier and reports through its own navigation event, and everything
-else is the browser's, which `Card`, `Breadcrumbs`, `SideNavItem` and `CommandPalette` all read
+else is the browser's, which `ArenaCard`, `ArenaBreadcrumbs`, `ArenaSideNavItem` and `ArenaCommandPalette` all read
 and `test/AnchorActivation.test.ts` holds one activation at a time),
 `FocusTrap.ts` (the shared overlay focus trap, generalized out of `confirm-dialog` and
 used by it, `command-palette` and `onboarding`) and `ProjectionMarkers.ts` (the `[action]`,
@@ -119,7 +119,7 @@ name, per `contracts/api/AGENTS.md`'s binding table) all have consumers in more 
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
 directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
 sits at the layer root beside them, and the rule puts it there in both layers now: its
-consumers are the three charts **and** `arena-calendar-event`, which reads `catColor` for a
+consumers are the three charts **and** `arena-calendar-event`, which reads `arenaCatColor` for a
 chip's identity colour. The name matches the placement: a module a schedule grid consumes is
 not "chart internals".
 
@@ -141,14 +141,14 @@ see it. `check:playgrounds` holds each copy to the source and to the other copy.
 `Playground.test.ts` asserts the codec again here rather than trusting the other layer's suite,
 because this copy is what this layer compiles.
 
-**`viewportBelow(name)` answers the other half of the breakpoint question, and it is a
-different question.** `containerWidth` measures a box, which is what a component needs, because
+**`arenaViewportBelow(name)` answers the other half of the breakpoint question, and it is a
+different question.** `arenaContainerWidth` measures a box, which is what a component needs, because
 a component may be rendered anywhere and the viewport says nothing about how much room it was
-given. `viewportBelow` measures the viewport, which is what a page layout needs and what an app
+given. `arenaViewportBelow` measures the viewport, which is what a page layout needs and what an app
 writing CSS in a `styles:` block cannot get any other way: a media query condition holds no
 `var()`, so the threshold cannot be named from a stylesheet at all. It returns a signal over
 `not all and (min-width: N)`, the exact complement of the `md:` variant rather than a
-`max-width` an epsilon short of it, and it warns through the same `readBreakpoint` when the
+`max-width` an epsilon short of it, and it warns through the same `arenaReadBreakpoint` when the
 token does not resolve. **Reach for it for a page's own layout and never for a component's**: a
 component that branches on the viewport is wrong the first time somebody puts it in a narrow
 column.
@@ -157,7 +157,7 @@ column.
 `select()`, because none of the nine contract forms is imperative and returning focus after each
 completed transaction is what lets a till chain sales without the mouse; `autoFocus` fires once
 at mount and answers a different question. `IMPERATIVE_HANDLES` in
-`scripts/lib/arena/api-surface.mjs` is what lets `check:api` read a public method on a component
+`scripts/lib/arena/api-surface.ts` is what lets `check:api` read a public method on a component
 class at all, it names these two and no others with a reason each, and any other public method
 still fails the gate as an undeclared surface.
 
@@ -171,13 +171,13 @@ that can go stale while the gates read another one.
 
 ```ts
 import { arenaStyles } from '../../../ArenaStyles.generated';
-import manifest from './Tag.classes.generated';
+import manifest from './ArenaTag.classes.generated';
 
-export const tagStyles = arenaStyles(manifest);
+export const arenaTagStyles = arenaStyles(manifest);
 ```
 
 The import is extensionless and names a stem nothing else claims. An extensionless import of
-`Tag.classes` would resolve to the `.ts` **only because** TS and bun probe `.ts` before
+`ArenaTag.classes` would resolve to the `.ts` **only because** TS and bun probe `.ts` before
 `.json`, so a bundler configured `.json`-first could resolve something else entirely. The
 `.generated` infix is what removes the ambiguity, and it says the same thing to a reader: this
 file is written by `bun run build:tailwind` and editing it is editing the wrong file.
@@ -234,7 +234,7 @@ positions an overlay imports it, so it is pinned in the root `package.json` at a
 version, and the app must import `theme/arena-cdk.css` once.
 
 **The bridge is verified, not rendered.** `bun run check:cdk` reads the bridge with
-`scripts/lib/arena/css-decls.mjs` and asserts that every Arena token it references exists and that
+`scripts/lib/arena/css-decls.ts` and asserts that every Arena token it references exists and that
 every `cdk-*` class it overrides is one the installed `@angular/cdk` really defines. It
 checks the **selectors** as well as the values, which it can because
 `@angular/cdk/overlay-prebuilt.css` ships installed and is the oracle: a class renamed
@@ -244,7 +244,7 @@ so a bridge that has stopped being a bridge cannot pass by having nothing left t
 
 **What the gate does not cover** is whether an override's *value* is the right one for the
 class it lands on: the gate reads names and selectors, never paint, so only a real render
-catches that. `Tooltip.demo.generated.html` and `Menu.demo.generated.html` are that render: both open a real CDK
+catches that. `ArenaTooltip.demo.generated.html` and `ArenaMenu.demo.generated.html` are that render: both open a real CDK
 overlay in a real browser, which is where a z-index that stacks wrongly is visible at all.
 `check:cdk` fails the moment the bridge and the installed package disagree.
 
@@ -336,7 +336,7 @@ collects by that infix and a shared module must not be collected as a suite.
 `testStep()` all run `bun test` over that emitted output, never over the `.ts` sources. A type
 error anywhere in the test surface, a template diagnostic in an inline `template:` string
 included, fails the *build* step, and no test in that run executes at all. Staleness is prevented
-by the build always running ahead of the tests that read it, and `build-angular-tests.mjs` prunes
+by the build always running ahead of the tests that read it, and `build-angular-tests.ts` prunes
 output whose source is gone, because `ngc` does not. **The compile itself is skipped when no input
 has moved since the last one**, which is what keeps a step that costs around seventeen seconds
 ahead of suites that cost around twelve; `--force` compiles anyway, and the rule it decides by is
@@ -468,7 +468,7 @@ cannot tell an emit from a bubble and would read a doubled call as a passing one
 suites assert **both** numbers, the output on the component instance and what a template
 binding hears, because either alone is blind: the instance count cannot see a native event
 escaping to the consumer, and the binding count cannot see the output going silent.
-`CalendarEvent.cases.test.ts` is the shape.
+`ArenaCalendarEvent.cases.test.ts` is the shape.
 
 **`click` is not the only output named after a native event, and the rest are unaudited.**
 Derive the set rather than trusting a list:
@@ -479,18 +479,18 @@ grep -rhoE 'readonly (blur|cancel|change|click|close|focus|input|select|submit|t
 ```
 
 Every one of them carries the same double-fire risk, and only the four `click` ones are
-measured. `change` is the widest at eight primitives, and `Checkbox.compliance.test.ts` and
-`RadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
+measured. `change` is the widest at eight primitives, and `ArenaCheckbox.compliance.test.ts` and
+`ArenaRadioGroup.compliance.test.ts` already assert their consumer hears it exactly once, which is
 half the pair above; the other six assert nothing about it.
 
 ## Two roots, two projections, one template
 
 Angular hands projected content to the **first matching** `<ng-content>`, so a component with
-two root branches cannot give each its own. `Table.prompt.md` records what that cost the table:
+two root branches cannot give each its own. `ArenaTable.prompt.md` records what that cost the table:
 its wide and card shapes are one projection into a box whose display and role change, and the
 empty state is a block beside the grid rather than a cell spanning it.
 
-`Card` is the one place in this layer that pays for both roots instead. `href` has to render a
+`ArenaCard` is the one place in this layer that pays for both roots instead. `href` has to render a
 real `<a>`, because openable in a new tab, address copyable and announced as a link cannot be
 rebuilt on a div, and a card projects into two slots. So both `<ng-content>` elements live in
 one `<ng-template>`, and whichever branch renders stamps it with `ngTemplateOutlet`:
@@ -512,14 +512,14 @@ copying this shape owes the same suite**, because the answer is a property of th
 version rather than of the pattern, and it is the only thing standing between the idiom and a
 card that renders nothing.
 
-`SideNavItem` splits on `href` too and needs none of this: it projects nothing, so its two
+`ArenaSideNavItem` splits on `href` too and needs none of this: it projects nothing, so its two
 branches carry only interpolated inputs.
 
 ## Adopting it
 
 Adopt it in the order the layer is built. Import `theme/arena-tailwind.css` once from the
 app's global stylesheet for the tokens and the `@theme` preset; add `theme/arena-cdk.css`
-when you first use a primitive that positions an overlay. Wire `ThemeService`, declaring
+when you first use a primitive that positions an overlay. Wire `ArenaThemeService`, declaring
 your palettes with `provideArenaThemes` if there are more than two, and paste
 `theme/no-fouc.html`'s script contents into `index.html`, setting its two names to match. Then replace the app's own
 controls with `arena-*` primitives as you touch the files that use them, incrementally and

@@ -5,15 +5,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CommandPalette } from '../components/navigation/command-palette/CommandPalette';
-import { ConfirmDialog } from '../components/feedback/confirm-dialog/ConfirmDialog';
-import { EmptyState } from '../components/feedback/empty-state/EmptyState';
+import { ArenaCommandPalette } from '../components/navigation/arena-command-palette/ArenaCommandPalette';
+import { ArenaConfirmDialog } from '../components/feedback/arena-confirm-dialog/ArenaConfirmDialog';
+import { ArenaEmptyState } from '../components/feedback/arena-empty-state/ArenaEmptyState';
 import { ArenaAction } from '../ProjectionMarkers';
-import { StatCard } from '../components/display/stat-card/StatCard';
+import { ArenaStatCard } from '../components/display/arena-stat-card/ArenaStatCard';
 
 @Component({
   standalone: true,
-  imports: [EmptyState, ArenaAction],
+  imports: [ArenaEmptyState, ArenaAction],
   template: `<arena-empty-state [title]="heading"><button action>New project</button></arena-empty-state>`,
 })
 class EmptyStateWithActionHost {
@@ -52,7 +52,7 @@ test('contentChild() resolves against real projected content', () => {
 });
 
 test('setInput() drives required string inputs on a directly created fixture', () => {
-  const fixture = TestBed.createComponent(StatCard);
+  const fixture = TestBed.createComponent(ArenaStatCard);
   try {
     fixture.componentRef.setInput('label', 'Uptime');
     fixture.componentRef.setInput('value', '99.98%');
@@ -67,7 +67,7 @@ test('setInput() drives required string inputs on a directly created fixture', (
 });
 
 test('setInput() drives a required boolean input carrying a booleanAttribute transform', () => {
-  const fixture = TestBed.createComponent(CommandPalette);
+  const fixture = TestBed.createComponent(ArenaCommandPalette);
   try {
 
     fixture.componentRef.setInput('open', true);
@@ -83,7 +83,7 @@ test('setInput() drives a required boolean input carrying a booleanAttribute tra
 });
 
 test('setInput() drives an OPTIONAL boolean input carrying a booleanAttribute transform', () => {
-  const fixture = TestBed.createComponent(ConfirmDialog);
+  const fixture = TestBed.createComponent(ArenaConfirmDialog);
   try {
 
     fixture.componentRef.setInput('open', true);

@@ -9,8 +9,8 @@
  * Served over HTTP only — it fetches its source, which file:// forbids.
  * Run: bun run demos
  */
-import { flattenTokens, previewFor } from '../scripts/lib/core/token-preview.mjs';
-import { parseDecls } from '../scripts/lib/arena/css-decls.mjs';
+import { flattenTokens, previewFor } from '../scripts/lib/core/token-preview.ts';
+import { parseDecls } from '../scripts/lib/arena/css-decls.ts';
 
 const root = document.documentElement;
 const host = document.getElementById('sections');
@@ -265,7 +265,7 @@ async function main() {
   const spacing = await loadTokens('spacing.json');
   sections.push(() => renderSection({
     eyebrow: 'Spacing',
-    title: 'Grid, layout and breakpoints',
+    title: 'ArenaGrid, layout and breakpoints',
     note: 'A 4px base grid. Breakpoints are shared values read by JS, never media queries: components style '
       + 'themselves with inline style objects, which cannot hold one.',
     tokens: spacing.filter((t) => t.group !== 'dz'),

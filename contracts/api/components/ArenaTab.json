@@ -1,0 +1,13 @@
+{
+  "component": "ArenaTab",
+  "description": "One tab in an ArenaTabs strip, and the panel it shows. ArenaTab draws the button; its content fills the tabpanel ArenaTabs renders beside the tablist.",
+  "affordances": ["focus"],
+  "api": {
+    "value": { "form": "primitive", "type": "string", "required": true,
+               "description": "What this tab selects, and what the parent's `change` carries." },
+    "label": { "form": "primitive", "type": "string", "required": true,
+               "description": "What the tab reads. Arena draws the button; the consumer names it." },
+    "content": { "form": "slot",
+                 "description": "What the panel shows while this tab is selected. ArenaTabs places it; ArenaTab never renders it, because a tabpanel may not sit inside a tablist." }
+  }
+}

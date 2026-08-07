@@ -1,6 +1,0 @@
-{
-  "name": "CellAlign",
-  "kind": "enum",
-  "description": "How a Table column's cells align. Checked against every enum already declared here before it was added; PageHeadAlign is the near miss and is a different set: start/center on a flex axis, with no `right`, and a right-aligned column of figures is precisely what this exists for.",
-  "values": ["left", "center", "right"]
-}

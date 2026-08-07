@@ -25,10 +25,10 @@ the shape each value arrives in.
 
 ## Visual foundations
 - **Color, token architecture (daisyUI structure):** the source of truth is a set of `--color-*` tokens paired with their `-content` counterpart (the legible color on top), defined per theme in `contracts/design/palette.dark.json` and `contracts/design/palette.light.json`, from which `contracts/design-generated/palette.generated.css` is generated. On top of them, a **compatibility layer** in `contracts/design/colors.css` maps Arena's legacy aliases (`--bg`, `--surface-card`, `--crimson`, `--gold`, `--danger`, `--mute`…) to the daisyUI tokens, so existing components don't break. Muted text levels (`--bone-dim`, `--mute`) and `--status-offline` are derived from `--color-base-content` with `color-mix`, not fixed hex values.
-  - **One token breaks the pairing, on purpose: `--color-error-fill`** (alias `--danger-fill`). It has no `-content` of its own, because it *is* a second fill for `--color-error`'s content, because danger is worn two ways and one hex cannot do both. See [Danger convention](#danger-convention-destructive-actions-and-risk-indicators). Pinning it is **optional**: `--danger-fill` falls back to `color-mix(in oklab, var(--color-error) 85%, black)`, so a palette copied without it still gets a filled danger dark enough for white text. Pin it to override the derived tone (the Dravensoft skin pins `#ce3838`); `check-text-contrast.mjs` gates both the pin and the fallback.
+  - **One token breaks the pairing, on purpose: `--color-error-fill`** (alias `--danger-fill`). It has no `-content` of its own, because it *is* a second fill for `--color-error`'s content, because danger is worn two ways and one hex cannot do both. See [Danger convention](#danger-convention-destructive-actions-and-risk-indicators). Pinning it is **optional**: `--danger-fill` falls back to `color-mix(in oklab, var(--color-error) 85%, black)`, so a palette copied without it still gets a filled danger dark enough for white text. Pin it to override the derived tone (the Dravensoft skin pins `#ce3838`); `check-text-contrast.ts` gates both the pin and the fallback.
 - **The muted text scale**, every level AA on both surfaces in both themes: `--text-strong` (100%, 15.23:1 dark / 15.86:1 light on the card), `--text-body` (82%, 10.46 / 9.28), `--text-muted` (62%, 6.52 / 4.71). `--text-muted` in light is the tightest of the three: it clears AA, and it is the reason nothing fits below it. A fainter level cannot be added, because clearing AA in light needs 61% while `--text-muted` already sits at 62%.
-- **`--status-offline`** (52%, 4.93:1 dark / 3.46:1 light on the card) is **presence only**, meaning `Avatar`'s offline dot. It clears WCAG 1.4.11's 3:1 for graphical objects. It is *not* `--mute-2-disabled` (40%), which dresses disabled controls: that one is low **by design** and exempt under 1.4.3/1.4.11's inactive-component carve-out. Do not raise it, and do not reach for it to render presence.
-- **Verifying it:** `bun scripts/check/core/check-text-contrast.mjs` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `contracts/design/colors.css`, or after rebuilding a change to `contracts/design/palette.dark.json` / `palette.light.json`. The claim above is machine-checkable, which is the point: a contrast figure nothing measures can be false for a whole theme with nothing to say so.
+- **`--status-offline`** (52%, 4.93:1 dark / 3.46:1 light on the card) is **presence only**, meaning `ArenaAvatar`'s offline dot. It clears WCAG 1.4.11's 3:1 for graphical objects. It is *not* `--mute-2-disabled` (40%), which dresses disabled controls: that one is low **by design** and exempt under 1.4.3/1.4.11's inactive-component carve-out. Do not raise it, and do not reach for it to render presence.
+- **Verifying it:** `bun scripts/check/core/check-text-contrast.ts` measures every level against the real surfaces in both themes and exits non-zero on failure. Run it after touching `contracts/design/colors.css`, or after rebuilding a change to `contracts/design/palette.dark.json` / `palette.light.json`. The claim above is machine-checkable, which is the point: a contrast figure nothing measures can be false for a whole theme with nothing to say so.
 - **Themes:** the language is **dark-first** but supports two switchable themes, **dark** (`:root`, default) and **light** (`.arena-light`, warm inverse). The same tokens change value per theme; components are never rewritten. (The Overview includes the toggle in its header.)
 - **Key values:** a warm black background (`--color-base-100`) under elevated surfaces (`--color-base-200` for cards, `--color-base-300` for panels and borders) and bone text (`--color-base-content`). A single primary accent (crimson, `--color-primary`) per view; gold (`--color-secondary`) reserved for focus, distinction and highlighted data. At most one dominant accent per screen. The literal values live in `contracts/design/palette.dark.json` and `contracts/design/palette.light.json`, from which `contracts/design-generated/palette.generated.css` is generated. See [Theming](#theming): the scale is the language, the hexes are the skin.
 - **Typography:** Archivo (display/headlines, 800–900), Familjen Grotesk (body, 400–600), Spline Sans Mono (data, labels, code). Negative tracking on display (`-0.02em`), wide tracking on mono labels (`0.22em`).
@@ -37,10 +37,10 @@ the shape each value arrives in.
 To tell **destructive / risk actions and indicators** apart from the primary action, Arena distinguishes them by **shape, not weight**: **transparent background** with the **border and all its content** (text and icons) in the semantic token **`--error`** (alias `--danger`). This way danger reads through color and never visually competes with the filled crimson primary button.
 - **Applies to** every risk trigger or indicator: buttons (`.btn.danger`), icon buttons (`.iconbtn.danger`), menu items (`.mitem.danger`) and equivalents in lists, cards and toolbars. Hover: lightens with `--danger-soft`. Focus: `--error` ring.
 - **Rule:** a **filled** danger button never appears as a trigger in the UI (lists, cards, toolbars). The solid fill is reserved by visual weight for the primary action (crimson).
-- **Only exception, the final irreversible confirmation:** inside a `ConfirmDialog`, the button for the final "point of no return" **is** filled, in `--danger-fill` (`--color-error-fill`) over `--color-error-content` and **not** in `--danger`. It's the only surface where danger is filled, precisely because it must not be confused with an ordinary action.
-- **Danger is two reds, and they cannot be one.** `--danger` is read *as text* on the base surfaces, so it is tuned against them (lighter in dark, darker in light). That leaves it too light to carry white text, which is exactly what the filled confirmation needs, so the fill is its own token, tuned in the opposite direction. Collapsing them puts one of the two roles under WCAG AA; `bun scripts/check/core/check-text-contrast.mjs` gates both.
+- **Only exception, the final irreversible confirmation:** inside an `ArenaConfirmDialog`, the button for the final "point of no return" **is** filled, in `--danger-fill` (`--color-error-fill`) over `--color-error-content` and **not** in `--danger`. It's the only surface where danger is filled, precisely because it must not be confused with an ordinary action.
+- **Danger is two reds, and they cannot be one.** `--danger` is read *as text* on the base surfaces, so it is tuned against them (lighter in dark, darker in light). That leaves it too light to carry white text, which is exactly what the filled confirmation needs, so the fill is its own token, tuned in the opposite direction. Collapsing them puts one of the two roles under WCAG AA; `bun scripts/check/core/check-text-contrast.ts` gates both.
 - **Specimen:** `intro/guidelines/components-danger.html` (all three states side by side: filled primary · outline danger · filled final confirmation).
-- **"Danger is outline" governs controls and surfaces, not presence or identity marks.** `Avatar`'s presence dot (online/busy/away/offline) is a different semantic family, a status taxonomy like the chart `tone` colors rather than a destructive affordance, and it is filled: `--color-success`, `--color-warning` and `--color-error` for the three live states, `--status-offline` for the fourth. An outline dot at that size (`max(8px, diameter * 0.28)`) would not read at all. The same carve-out covers any other small identifying dot at that size, filled via `currentColor` from a `tone`/status token: `Tag`'s leading dot and `ActivityFeed`'s per-row tone dot are both `bg-current`, and both fill with `text-error` for their danger tone. A tag or a feed row is naming *what kind of thing this is*, the same taxonomy Avatar's presence is, not asking to be read as a risk trigger. Nothing here contradicts the rule above: the rule is about *danger*, and a dot filled in `--color-error` at this size is identity/status borrowing the error hue for "this one," not a risk indicator.
+- **"Danger is outline" governs controls and surfaces, not presence or identity marks.** `ArenaAvatar`'s presence dot (online/busy/away/offline) is a different semantic family, a status taxonomy like the chart `tone` colors rather than a destructive affordance, and it is filled: `--color-success`, `--color-warning` and `--color-error` for the three live states, `--status-offline` for the fourth. An outline dot at that size (`max(8px, diameter * 0.28)`) would not read at all. The same carve-out covers any other small identifying dot at that size, filled via `currentColor` from a `tone`/status token: `ArenaTag`'s leading dot and `ArenaActivityFeed`'s per-row tone dot are both `bg-current`, and both fill with `text-error` for their danger tone. A tag or a feed row is naming *what kind of thing this is*, the same taxonomy ArenaAvatar's presence is, not asking to be read as a risk trigger. Nothing here contradicts the rule above: the rule is about *danger*, and a dot filled in `--color-error` at this size is identity/status borrowing the error hue for "this one," not a risk indicator.
 
 ## Iconography
 - **Official set: [Phosphor Icons](https://phosphoricons.com)** (MIT license, free commercial use, no attribution). Chosen for aligning with Dravensoft's bold identity: it's the open-source family with the widest style range (1,500+ icons in 6 weights) and its **Bold** weight has the presence and high contrast the brand calls for, the icon equivalent of Archivo Black.
@@ -56,11 +56,11 @@ To tell **destructive / risk actions and indicators** apart from the primary act
   | `--icon-sm` | 14px | compact inline glyph: a remove/status icon beside dense chrome |
   | `--icon-md` | 16px | default inline control icon: close buttons, chevrons, list-item icons |
   | `--icon-lg` | 18px | prominent standalone icon: a tone icon, a search glyph |
-  | `--icon-xl` | 34px | illustration-scale icon: `EmptyState`, `ErrorState` |
+  | `--icon-xl` | 34px | illustration-scale icon: `ArenaEmptyState`, `ArenaErrorState` |
 
   A glyph rendered as a webfont is still an icon rather than type, since an icon at 15px beside a label at 15px is not the same design decision as an icon at 16px, so these stay out of the `fs` scale. Exposed in the Tailwind layer under `--size-*`, not `--text-*`: `.size-icon-md` sets both width and height, since an icon is a size, not a font size. Color: inherits `currentColor`; accent only when interactive/active.
 - **Do not** override `font-family/weight/style` on `.ph-*` classes (breaks the glyphs).
-- **No emoji.** No arbitrary unicode as an icon. The **Rotor** (`assets/rotor-*.svg`) is brand, not a UI icon: don't use it as a functional glyph, and Arena ships no component that wraps it. The lock-up is `AppLogo`, which takes the mark as its `mark` node.
+- **No emoji.** No arbitrary unicode as an icon. The **Rotor** (`assets/rotor-*.svg`) is brand, not a UI icon: don't use it as a functional glyph, and Arena ships no component that wraps it. The lock-up is `ArenaAppLogo`, which takes the mark as its `mark` node.
 - The `console/Icon.tsx` UI kit draws its own stroke-style SVGs; the official reference for product work is Phosphor.
 
 ---
@@ -78,7 +78,7 @@ attributes, durations, easings, shadows) is authored once in `contracts/design/*
 strictly-conformant DTCG 2025.10, the platform-neutral contract. A new framework target
 consumes that JSON directly, or through a Style Dictionary platform emitting CSS, JS,
 iOS, Android or SCSS. Nothing in it is Arena-specific, and
-`bun scripts/check/core/check-dtcg.mjs` proves it conforms.
+`bun scripts/check/core/check-dtcg.ts` proves it conforms.
 
 **Per-platform (the composition layer).** Three things DTCG deliberately does not model,
 and that therefore live in each platform's own idiom:
@@ -88,7 +88,7 @@ and that therefore live in each platform's own idiom:
    skin swaps. In CSS they live in the hand-authored `contracts/design/colors.css`. A new framework
    rebuilds this thin layer in its idiom (Tailwind `color-mix` utilities, a JS token
    helper) **on top of the same standard values**, and never re-defines a value.
-2. **`@font-face` bundling**, generated by `scripts/generate/core/fetch-fonts.mjs` into
+2. **`@font-face` bundling**, generated by `scripts/generate/core/fetch-fonts.ts` into
    `contracts/design-generated/fonts.generated.css`, pointing at the self-hosted `assets/fonts/` binaries.
 3. **The device's own geometry**, meaning the safe-area insets a browser resolves per device
    at paint. `env(safe-area-inset-*)` is a value and a unit to nobody: it has no value until
@@ -106,14 +106,14 @@ at runtime.** `contracts/design/colors.css` therefore holds no skin value, only 
 only a token and what the device reports. The full `$type` table is
 `contracts/design/AGENTS.md`.
 
-**A swap is not done until it is measured**, and two scripts measure it. `bun scripts/check/core/check-ramp.mjs` holds the categorical ramp; `bun scripts/check/core/check-text-contrast.mjs` holds the text: the levels derived from `--color-base-content`, every `--color-*` / `--color-*-content` pair (all seven, at 4.5:1, because the pair is the contract a skin defines, so an illegible one fails before a component can inherit it), and the accents painted straight onto the base surfaces (`--color-error` as the danger outline). Both read the values out of `palette.generated.css` and hardcode nothing, so a new skin is one edit and two commands away from a real answer.
+**A swap is not done until it is measured**, and two scripts measure it. `bun scripts/check/core/check-ramp.ts` holds the categorical ramp; `bun scripts/check/core/check-text-contrast.ts` holds the text: the levels derived from `--color-base-content`, every `--color-*` / `--color-*-content` pair (all seven, at 4.5:1, because the pair is the contract a skin defines, so an illegible one fails before a component can inherit it), and the accents painted straight onto the base surfaces (`--color-error` as the danger outline). Both read the values out of `palette.generated.css` and hardcode nothing, so a new skin is one edit and two commands away from a real answer.
 
 Two of these numbers the scripts **report without gating**: crimson as text sits at 2.80:1 on the dark card, gold as text at 2.24:1 on the light one. Both are below AA and both are deliberate: they are the brand, and a gate there would not tighten a token but repaint Dravensoft. Use them as fills or on the theme that carries them, and reach for `--text-strong` when the job is reading text.
 
 | Invariant, this *is* Arena | Skin, yours to change |
 |---|---|
-| Danger is outline, never filled (one exception: `ConfirmDialog`'s final confirmation) | Crimson (`--color-primary`) |
-| No gradients on any surface (one exception: `Skeleton`'s shimmer) | Gold (`--color-secondary`) |
+| Danger is outline, never filled (one exception: `ArenaConfirmDialog`'s final confirmation) | Crimson (`--color-primary`) |
+| No gradients on any surface (one exception: `ArenaSkeleton`'s shimmer) | Gold (`--color-secondary`) |
 | The `base-100`→`base-200`→`base-300` surface scale | The warm-black base values |
 | The hairline border, and the warm shadow scale | The status hues |
 | The type scale, the three families, the uppercase-microlabel rule | The 8 categorical slots |
@@ -123,9 +123,9 @@ Two of these numbers the scripts **report without gating**: crimson as text sits
 
 Eight slots for colouring N arbitrary entities: chart series, calendar events, any set where the color answers *which thing*. Authored per theme, **fixed order, never cycled**. A ninth entity folds to "Other", small multiples, or direct labels, never a generated hue. The slots carry **identity only**; when a series *is* a state, a chart's `tone` prop uses the status colors instead.
 
-The ramp is one system with one entry point: `catColor(slot)`, which every layer carries in its own `DataVisuals` module. `Calendar` reads it from there rather than keeping its own copy: two clamps over one ramp is how a ramp stops being a ramp.
+The ramp is one system with one entry point: `arenaCatColor(slot)`, which every layer carries in its own `DataVisuals` module. `ArenaCalendar` reads it from there rather than keeping its own copy: two clamps over one ramp is how a ramp stops being a ramp.
 
-Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel**, never by turning an identity-coloured entity `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which. `Calendar` is the strict case: it draws every event chip itself, so a consumer has no chromatic channel *and* no non-chromatic one, and a cancelled class says so in its title or does not appear on the schedule. That is a real capability the API contract removed, and `Calendar.prompt.md` records it.
+Where a component has no `tone` escape hatch, **state goes on a non-chromatic channel**, never by turning an identity-coloured entity `--danger`. An entity painted a status color while its neighbours carry identity colors makes the palette mean two things at once, and the reader cannot tell which. `ArenaCalendar` is the strict case: it draws every event chip itself, so a consumer has no chromatic channel *and* no non-chromatic one, and a cancelled class says so in its title or does not appear on the schedule. That is a real capability the API contract removed, and `ArenaCalendar.prompt.md` records it.
 
 | Slot | Name | Hue | Dark | Light |
 |---|---|---|---|---|
@@ -152,14 +152,14 @@ It was derived by enumeration against the validator, not chosen by eye: candidat
 
 **Brand clearance** (ΔE to the ramp's closest slot): crimson 17.0, gold 18.0, error 19.6, warning 26.3, all above the 15 bar. That is the requirement: the ramp cannot be mistaken for the brand or for an error.
 
-**Accepted collision:** success 6.0, info 7.8. This is structural. Eight slots need ~126° of arc; banning the red family leaves green, cyan, blue and violet, which is exactly where success (156°) and info (250°) live, and guarding those as hard as the brand leaves only ~76°. **A ramp can be clear of the brand or clear of status, not both.** Clear of the brand is the right choice: brand colors carry identity everywhere, while status colors always ship with an icon and a label (`Alert`, `Toast`, `Badge`) and never appear as a bare fill.
+**Accepted collision:** success 6.0, info 7.8. This is structural. Eight slots need ~126° of arc; banning the red family leaves green, cyan, blue and violet, which is exactly where success (156°) and info (250°) live, and guarding those as hard as the brand leaves only ~76°. **A ramp can be clear of the brand or clear of status, not both.** Clear of the brand is the right choice: brand colors carry identity everywhere, while status colors always ship with an icon and a label (`ArenaAlert`, `ArenaToast`, `ArenaBadge`) and never appear as a bare fill.
 
 ### Re-check after you swap
 
 The promise above is only worth the validator that backs it. After changing anything in `contracts/design/`, rebuild (`bun run generate:tokens`) and then:
 
 ```bash
-bun scripts/check/core/check-ramp.mjs
+bun scripts/check/core/check-ramp.ts
 ```
 
 It reads the ramp straight out of `palette.generated.css`, which the build regenerates from the DTCG source, measures both themes against their real surfaces, and exits non-zero on any failure, **including** the warnings the upstream validator tolerates, because Arena's shipped ramp needs no relief rule and neither should yours. Do not trust your eye here; nobody's eye simulates deuteranopia.

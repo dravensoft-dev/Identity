@@ -15,7 +15,7 @@
   },
   "dismiss": {
     "$type": "duration",
-    "$description": "Automatic permanence: how long a transient notice remains before it\nwithdraws itself. The HOST owns dismissal, not Toast: Toast renders and exposes\npersist, the host runs the clock.",
+    "$description": "Automatic permanence: how long a transient notice remains before it\nwithdraws itself. The HOST owns dismissal, not ArenaToast: ArenaToast renders and exposes\npersist, the host runs the clock.",
     "default": {
       "$value": { "value": 4200, "unit": "ms" },
       "$description": "A toast that only has to be read. This is the value the Delivery Console\nshipped hard-coded before it was a token.",

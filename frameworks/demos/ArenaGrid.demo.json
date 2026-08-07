@@ -1,0 +1,48 @@
+{
+  "component": "ArenaGrid",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaCard",
+        "members": {
+          "title": "checkout-api"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build #4821"
+            }
+          ]
+        }
+      },
+      {
+        "component": "ArenaCard",
+        "members": {
+          "title": "billing-worker"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build #3190"
+            }
+          ]
+        }
+      },
+      {
+        "component": "ArenaCard",
+        "members": {
+          "title": "search-indexer"
+        },
+        "slots": {
+          "content": [
+            {
+              "text": "Build #2277"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "note": "The column count comes from the room, not from a breakpoint anyone picked."
+}

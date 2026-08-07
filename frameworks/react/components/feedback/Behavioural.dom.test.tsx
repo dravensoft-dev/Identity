@@ -2,8 +2,8 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
 import { mount, cleanup, act } from '../../test/Harness.tsx';
-import { Dialog } from './dialog/Dialog.tsx';
-import { ConfirmDialog } from './confirm-dialog/ConfirmDialog.tsx';
+import { ArenaDialog } from './arena-dialog/ArenaDialog.tsx';
+import { ArenaConfirmDialog } from './arena-confirm-dialog/ArenaConfirmDialog.tsx';
 
 afterEach(cleanup);
 
@@ -19,27 +19,27 @@ function click(el: Element) {
   });
 }
 
-test('Dialog closes on Escape -- keyboard.Escape is met', () => {
+test('ArenaDialog closes on Escape -- keyboard.Escape is met', () => {
 
   let closed = false;
   const container = mount(
-    <Dialog open onClose={() => { closed = true; }} title="t"><p>b</p></Dialog>,
+    <ArenaDialog open onClose={() => { closed = true; }} title="t"><p>b</p></ArenaDialog>,
   );
   press(container!.querySelector<HTMLElement>('[role="dialog"]')!, 'Escape');
   assert.equal(closed, true, 'Escape did not reach the dialog\'s own dismissal channel');
 });
 
-test('Dialog closes on a backdrop click too -- the mouse path Escape joins rather than replaces', () => {
+test('ArenaDialog closes on a backdrop click too -- the mouse path Escape joins rather than replaces', () => {
 
   let closed = false;
   const container = mount(
-    <Dialog open onClose={() => { closed = true; }} title="t"><p>b</p></Dialog>,
+    <ArenaDialog open onClose={() => { closed = true; }} title="t"><p>b</p></ArenaDialog>,
   );
   click(container!.firstElementChild!);
   assert.equal(closed, true, 'the backdrop click must still dismiss');
 });
 
-test('Dialog moves focus to the first focusable inside the panel on open -- focus.onOpen is met', () => {
+test('ArenaDialog moves focus to the first focusable inside the panel on open -- focus.onOpen is met', () => {
 
   const invoker = document.createElement('button');
   document.body.appendChild(invoker);
@@ -47,7 +47,7 @@ test('Dialog moves focus to the first focusable inside the panel on open -- focu
   assert.equal(document.activeElement, invoker, 'precondition: the invoker holds focus');
 
   const container = mount(
-    <Dialog open onClose={() => {}} title="t"><button type="button">Inside</button></Dialog>,
+    <ArenaDialog open onClose={() => {}} title="t"><button type="button">Inside</button></ArenaDialog>,
   );
   assert.notEqual(document.activeElement, invoker, 'focus stayed on the invoker, outside the modal');
   assert.equal(
@@ -63,14 +63,14 @@ function DialogHarness() {
   return (
     <div>
       <button type="button" data-role="invoker" onClick={() => setOpen(true)}>Open</button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="t">
+      <ArenaDialog open={open} onClose={() => setOpen(false)} title="t">
         <button type="button" data-role="inside">Inside</button>
-      </Dialog>
+      </ArenaDialog>
     </div>
   );
 }
 
-test('Dialog restores focus to the invoker on close -- focus.onClose is met', () => {
+test('ArenaDialog restores focus to the invoker on close -- focus.onClose is met', () => {
 
   const container = mount(<DialogHarness />);
   const invoker = container.querySelector<HTMLElement>('[data-role="invoker"]');
@@ -90,11 +90,11 @@ test('Dialog restores focus to the invoker on close -- focus.onClose is met', ()
   assert.equal(document.activeElement, invoker, 'focus was not restored to the invoker that opened the dialog');
 });
 
-test('Dialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
+test('ArenaDialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
   const container = mount(
-    <Dialog open onClose={() => {}} title="Delete project"
+    <ArenaDialog open onClose={() => {}} title="Delete project"
       footer={<><button type="button">Cancel</button><button type="button">Delete</button></>}
-    ><p>Body</p></Dialog>,
+    ><p>Body</p></ArenaDialog>,
   );
   const panel = container.querySelector<HTMLElement>('[role="dialog"]');
   const buttons = panel!.querySelectorAll<HTMLElement>('button');
@@ -107,11 +107,11 @@ test('Dialog wraps Shift+Tab from the first focusable to the last -- focus.trap 
   assert.equal(document.activeElement, last, 'Shift+Tab at the first boundary did not wrap to the last');
 });
 
-test('Dialog wraps Tab from the last focusable to the first -- the other boundary', () => {
+test('ArenaDialog wraps Tab from the last focusable to the first -- the other boundary', () => {
   const container = mount(
-    <Dialog open onClose={() => {}} title="Delete project"
+    <ArenaDialog open onClose={() => {}} title="Delete project"
       footer={<><button type="button">Cancel</button><button type="button">Delete</button></>}
-    ><p>Body</p></Dialog>,
+    ><p>Body</p></ArenaDialog>,
   );
   const panel = container.querySelector<HTMLElement>('[role="dialog"]');
   const buttons = panel!.querySelectorAll<HTMLElement>('button');
@@ -123,34 +123,34 @@ test('Dialog wraps Tab from the last focusable to the first -- the other boundar
   assert.equal(document.activeElement, first, 'Tab at the last boundary did not wrap to the first');
 });
 
-test('ConfirmDialog closes on Escape -- keyboard.Escape is met', () => {
+test('ArenaConfirmDialog closes on Escape -- keyboard.Escape is met', () => {
 
   let cancelled = false;
   const container = mount(
-    <ConfirmDialog open onCancel={() => { cancelled = true; }} onConfirm={() => {}} title="t" confirmLabel="Delete" />,
+    <ArenaConfirmDialog open onCancel={() => { cancelled = true; }} onConfirm={() => {}} title="t" confirmLabel="Delete" />,
   );
   press(container!.querySelector<HTMLElement>('[role="alertdialog"], [role="dialog"]')!, 'Escape');
   assert.equal(cancelled, true, 'Escape did not reach the dialog\'s own dismissal channel');
 });
 
-test('ConfirmDialog still does NOT close on a scrim click -- the inertness is deliberate and stays', () => {
+test('ArenaConfirmDialog still does NOT close on a scrim click -- the inertness is deliberate and stays', () => {
 
   let cancelled = false;
   const container = mount(
-    <ConfirmDialog open onCancel={() => { cancelled = true; }} onConfirm={() => {}} title="t" confirmLabel="Delete" />,
+    <ArenaConfirmDialog open onCancel={() => { cancelled = true; }} onConfirm={() => {}} title="t" confirmLabel="Delete" />,
   );
   click(container!.firstElementChild!);
-  assert.equal(cancelled, false, 'the scrim click is deliberately inert -- ConfirmDialog does not close on click-outside');
+  assert.equal(cancelled, false, 'the scrim click is deliberately inert -- ArenaConfirmDialog does not close on click-outside');
 });
 
-test('ConfirmDialog moves focus to the first focusable inside the panel on open -- focus.onOpen is met', () => {
+test('ArenaConfirmDialog moves focus to the first focusable inside the panel on open -- focus.onOpen is met', () => {
 
   const invoker = document.createElement('button');
   document.body.appendChild(invoker);
   invoker.focus();
   assert.equal(document.activeElement, invoker, 'precondition: the invoker holds focus');
 
-  const container = mount(<ConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="t" confirmLabel="Delete" />);
+  const container = mount(<ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="t" confirmLabel="Delete" />);
   assert.notEqual(document.activeElement, invoker, 'focus stayed on the invoker, outside the modal');
   assert.equal(
     document.activeElement,
@@ -160,14 +160,14 @@ test('ConfirmDialog moves focus to the first focusable inside the panel on open 
   invoker.remove();
 });
 
-test('ConfirmDialog DOES focus the confirmation input when requireText is set -- the branch its exception used to carve out', () => {
+test('ArenaConfirmDialog DOES focus the confirmation input when requireText is set -- the branch its exception used to carve out', () => {
 
   const invoker = document.createElement('button');
   document.body.appendChild(invoker);
   invoker.focus();
 
   const container = mount(
-    <ConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="t" confirmLabel="Delete" requireText="DELETE" />,
+    <ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="t" confirmLabel="Delete" requireText="DELETE" />,
   );
   const input = container.querySelector<HTMLInputElement>('input');
   assert.notEqual(input, null, 'precondition: requireText renders the confirmation input');
@@ -175,9 +175,9 @@ test('ConfirmDialog DOES focus the confirmation input when requireText is set --
   invoker.remove();
 });
 
-test('ConfirmDialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
+test('ArenaConfirmDialog wraps Shift+Tab from the first focusable to the last -- focus.trap is met at the boundary', () => {
   const container = mount(
-    <ConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project" confirmLabel="Delete" />,
+    <ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project" confirmLabel="Delete" />,
   );
   const panel = container.querySelector<HTMLElement>('[role="alertdialog"]');
   const buttons = panel!.querySelectorAll<HTMLElement>('button');
@@ -190,10 +190,10 @@ test('ConfirmDialog wraps Shift+Tab from the first focusable to the last -- focu
   assert.equal(document.activeElement, last, 'Shift+Tab at the first boundary did not wrap to the last');
 });
 
-test('ConfirmDialog wraps Tab from the last focusable to the first -- the other boundary', () => {
+test('ArenaConfirmDialog wraps Tab from the last focusable to the first -- the other boundary', () => {
 
   const container = mount(
-    <ConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project"
+    <ArenaConfirmDialog open onCancel={() => {}} onConfirm={() => {}} title="Delete project"
       confirmLabel="Delete" requireText="DELETE" />,
   );
   const panel = container.querySelector<HTMLElement>('[role="alertdialog"]');
@@ -213,7 +213,7 @@ function ConfirmDialogHarness() {
   return (
     <div>
       <button type="button" data-role="invoker" onClick={() => setOpen(true)}>Open</button>
-      <ConfirmDialog
+      <ArenaConfirmDialog
         open={open}
         onCancel={() => setOpen(false)}
         onConfirm={() => {}}
@@ -225,7 +225,7 @@ function ConfirmDialogHarness() {
   );
 }
 
-test('ConfirmDialog restores focus to the invoker on close -- focus.onClose is met', () => {
+test('ArenaConfirmDialog restores focus to the invoker on close -- focus.onClose is met', () => {
 
   const container = mount(<ConfirmDialogHarness />);
   const invoker = container.querySelector<HTMLElement>('[data-role="invoker"]');

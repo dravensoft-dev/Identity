@@ -1,0 +1,13 @@
+{
+  "cases": [
+    { "name": "plain",
+      "when": "removable is false or absent -- the common case, a <span> with no interactive affordance",
+      "pattern": "none",
+      "reason": "Without `removable` an ArenaTag is a label: a <span> carrying text and a tone, with nothing to press. No interactive pattern applies, and binding one with an exception would tell a reader the pattern always holds.",
+      "exceptions": [] },
+    { "name": "removable",
+      "when": "removable is true -- a real <button> renders inside the tag",
+      "pattern": "button",
+      "exceptions": [] }
+  ]
+}

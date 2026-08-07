@@ -1,0 +1,11 @@
+{
+  "component": "ArenaRadio",
+  "description": "One option inside an ArenaRadioGroup. Selected shows a crimson dot inside the ring.",
+  "affordances": ["focus"],
+  "api": {
+    "value": { "form": "primitive", "type": "string", "required": true, "description": "This option's value, matched against the group's." },
+    "label": { "form": "primitive", "type": "string", "description": "The option's label." },
+    "hint": { "form": "primitive", "type": "string", "description": "A line of help under the label." },
+    "disabled": { "form": "primitive", "type": "boolean", "default": false, "description": "Blocks selection and dims the option." }
+  }
+}

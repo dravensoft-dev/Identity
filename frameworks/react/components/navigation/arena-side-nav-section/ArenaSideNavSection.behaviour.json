@@ -1,0 +1,5 @@
+{
+  "pattern": "none",
+  "reason": "ArenaSideNavSection renders a labelled role=\"group\" wrapper -- its heading and aria-labelledby name the group for assistive technology -- but carries no interactive affordance of its own. Every control inside it belongs to a child component: an ArenaSideNavItem's link or button, or a nested ArenaSideNavSection's own group. Binding a control pattern here would claim an affordance that lives one level down instead.",
+  "exceptions": []
+}

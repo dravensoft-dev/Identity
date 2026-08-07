@@ -1,0 +1,17 @@
+{
+  "component": "ArenaProgressBar",
+  "cases": [
+    {
+      "name": "determinate",
+      "when": "indeterminate is false -- the bar reports a value, and aria-valuenow carries the percentage clamped and rounded from progressPercentage",
+      "pattern": "progressbar",
+      "exceptions": []
+    },
+    {
+      "name": "indeterminate",
+      "when": "indeterminate is true -- the bar reports that work is under way without a value, and aria-valuenow is absent because ARIA expresses indeterminacy by omitting it",
+      "pattern": "progressbar",
+      "exceptions": []
+    }
+  ]
+}

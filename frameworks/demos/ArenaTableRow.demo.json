@@ -1,0 +1,48 @@
+{
+  "component": "ArenaTableRow",
+  "seed": {},
+  "slots": {
+    "content": [
+      {
+        "component": "ArenaTableCell",
+        "slots": {
+          "content": [
+            {
+              "text": "checkout-api"
+            }
+          ]
+        }
+      },
+      {
+        "component": "ArenaTableCell",
+        "slots": {
+          "content": [
+            {
+              "text": "4f2a1c9"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "host": {
+    "component": "ArenaTable",
+    "members": {
+      "label": "Recent deployments",
+      "columns": [
+        {
+          "header": "Service"
+        },
+        {
+          "header": "Commit"
+        }
+      ]
+    },
+    "slots": {
+      "content": [
+        "$subject"
+      ]
+    }
+  },
+  "note": "With interactive the whole row becomes one activation target."
+}

@@ -10,17 +10,17 @@ const FOCUSABLE_SELECTOR = [
   `[tabindex]${REACHABLE_BY_TAB}`,
 ].join(', ');
 
-export function focusableElements(container: HTMLElement): HTMLElement[] {
+export function arenaFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
 }
 
-export function focusFirstFocusable(container: HTMLElement): void {
-  const [first] = focusableElements(container);
+export function arenaFocusFirstFocusable(container: HTMLElement): void {
+  const [first] = arenaFocusableElements(container);
   (first ?? container).focus();
 }
 
-export function trapTabKey(container: HTMLElement, event: KeyboardEvent, activeElement: Element | null): void {
-  const focusables = focusableElements(container);
+export function arenaTrapTabKey(container: HTMLElement, event: KeyboardEvent, activeElement: Element | null): void {
+  const focusables = arenaFocusableElements(container);
   if (focusables.length === 0) {
     event.preventDefault();
     return;
@@ -41,7 +41,7 @@ export interface FocusTrapState {
   restoreTo: HTMLElement | null;
 }
 
-export function handleOpenTransition(
+export function arenaHandleOpenTransition(
   state: FocusTrapState,
   isOpen: boolean,
   panel: HTMLElement | null,
@@ -49,7 +49,7 @@ export function handleOpenTransition(
 ): void {
   if (isOpen && !state.wasOpen) {
     state.restoreTo = activeElement as HTMLElement | null;
-    if (panel) focusFirstFocusable(panel);
+    if (panel) arenaFocusFirstFocusable(panel);
   } else if (!isOpen && state.wasOpen) {
     state.restoreTo?.focus();
     state.restoreTo = null;

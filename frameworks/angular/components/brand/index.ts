@@ -1,1 +1,1 @@
-export * from './app-logo';
+export * from './arena-app-logo';
