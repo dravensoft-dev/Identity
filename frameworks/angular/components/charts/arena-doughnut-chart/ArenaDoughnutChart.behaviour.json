@@ -1,7 +1,32 @@
 {
   "component": "ArenaDoughnutChart",
   "pattern": "figure-with-data-table",
-  "exceptions": [],
+  "exceptions": [
+    {
+      "requirement": "focus.roving",
+      "reason": "A ring has no ordered sequence to arrow along, and its marks are already one tab stop each: every legend row is a real button, so a keyboard user reaches a slice directly instead of walking to it. A roving cursor is the answer for an axis, and substituting one here would replace N direct stops with N key presses. Focus on a row moves the same hover the pointer does, so the emphasis and the centre percentage follow the keyboard either way."
+    },
+    {
+      "requirement": "keyboard.ArrowLeft",
+      "reason": "A ring has no ordered sequence to arrow along, and its marks are already one tab stop each: every legend row is a real button, so a keyboard user reaches a slice directly instead of walking to it. A roving cursor is the answer for an axis, and substituting one here would replace N direct stops with N key presses. Focus on a row moves the same hover the pointer does, so the emphasis and the centre percentage follow the keyboard either way."
+    },
+    {
+      "requirement": "keyboard.ArrowRight",
+      "reason": "A ring has no ordered sequence to arrow along, and its marks are already one tab stop each: every legend row is a real button, so a keyboard user reaches a slice directly instead of walking to it. A roving cursor is the answer for an axis, and substituting one here would replace N direct stops with N key presses. Focus on a row moves the same hover the pointer does, so the emphasis and the centre percentage follow the keyboard either way."
+    },
+    {
+      "requirement": "keyboard.Home",
+      "reason": "A ring has no ordered sequence to arrow along, and its marks are already one tab stop each: every legend row is a real button, so a keyboard user reaches a slice directly instead of walking to it. A roving cursor is the answer for an axis, and substituting one here would replace N direct stops with N key presses. Focus on a row moves the same hover the pointer does, so the emphasis and the centre percentage follow the keyboard either way."
+    },
+    {
+      "requirement": "keyboard.End",
+      "reason": "A ring has no ordered sequence to arrow along, and its marks are already one tab stop each: every legend row is a real button, so a keyboard user reaches a slice directly instead of walking to it. A roving cursor is the answer for an axis, and substituting one here would replace N direct stops with N key presses. Focus on a row moves the same hover the pointer does, so the emphasis and the centre percentage follow the keyboard either way."
+    },
+    {
+      "requirement": "keyboard.Escape",
+      "reason": "A ring has no ordered sequence to arrow along, and its marks are already one tab stop each: every legend row is a real button, so a keyboard user reaches a slice directly instead of walking to it. A roving cursor is the answer for an axis, and substituting one here would replace N direct stops with N key presses. Focus on a row moves the same hover the pointer does, so the emphasis and the centre percentage follow the keyboard either way."
+    }
+  ],
   "additions": [
     {
       "provides": "keyboard.legend-reachable",

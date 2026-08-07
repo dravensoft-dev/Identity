@@ -53,6 +53,16 @@ test('a substring that is not modifier-shaped does not false-positive', () => {
   assert.deepEqual([...stateFamilies('overflow-hidden shadow-2')], []);
 });
 
+test('a pointer spelling of hover counts as hover, because the affordance is the same one', () => {
+
+  const pointer = "function X() { return <rect onPointerMove={() => {}} onPointerLeave={() => {}} />; }";
+  assert.deepEqual(sourceImplements(pointer), { hover: true, focus: false });
+  assert.deepEqual(sourceImplements('<path (pointerenter)="x()" />'), { hover: true, focus: false });
+
+  assert.deepEqual(sourceImplements('<rect onPointerDown={() => {}} />'), { hover: false, focus: false },
+    'a press is not a hover, and reading it as one would license an undeclared affordance');
+});
+
 test('a component with onMouseEnter/onMouseLeave implements hover, not focus', () => {
   const src = "function X() { return <button onMouseEnter={() => {}} onMouseLeave={() => {}} />; }";
   assert.deepEqual(sourceImplements(src), { hover: true, focus: false });

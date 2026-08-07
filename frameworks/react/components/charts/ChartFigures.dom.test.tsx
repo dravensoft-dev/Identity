@@ -9,7 +9,7 @@ import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import React from 'react';
-import { mount, cleanup } from '../../test/Harness.tsx';
+import { mount, cleanup, act } from '../../test/Harness.tsx';
 import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
 import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart.tsx';
 import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart.tsx';
@@ -31,6 +31,72 @@ const CHARTS: [string, ChartComponent, string, string][] = [
   ['ArenaDoughnutChart', ArenaDoughnutChart as unknown as ChartComponent, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json', 'Category'],
   ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent, 'charts/arena-line-chart/ArenaLineChart.behaviour.json', 'Point'],
 ];
+
+function press(region: HTMLElement, key: string) {
+  act(() => {
+    region.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+  });
+}
+
+function reading(root: HTMLElement): string | null {
+
+  const tooltip = [...root.querySelectorAll<HTMLElement>('div')]
+    .find((el) => el.style.position === 'absolute' && el.style.pointerEvents === 'none');
+  return tooltip ? (tooltip.textContent ?? '').trim() : null;
+}
+
+const CURSOR_KEYS = ['focus.roving', 'keyboard.ArrowLeft', 'keyboard.ArrowRight',
+  'keyboard.Home', 'keyboard.End', 'keyboard.Escape'] as const;
+
+function noCursor(root: HTMLElement): Record<string, boolean> {
+
+  const legend = root.querySelector<HTMLElement>('[role="group"]');
+  assert.ok(legend, 'the ring answers the keyboard through its legend, so the legend is the group');
+  assert.equal(legend.getAttribute('tabindex'), null,
+    'the legend rows are the stops; a stop on their container would be a dead one in front of them');
+  const rows = [...root.querySelectorAll<HTMLElement>('[role="group"] > button')];
+  assert.equal(rows.length, VALUES.length, 'one reachable button per slice, so a slice is not walked to');
+
+  press(legend, 'ArrowRight');
+  assert.equal(reading(root), null, 'a ring has no sequence to arrow along, and pretending otherwise would be a lie');
+
+  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, false]));
+}
+
+function cursorVerdicts(root: HTMLElement, name: string): Record<string, boolean> {
+
+  if (name === 'ArenaDoughnutChart') return noCursor(root);
+  const region = root.querySelector<HTMLElement>('[role="group"]');
+  assert.ok(region, 'the plot must be one keyboard region');
+  assert.equal(root.querySelectorAll('[tabindex="0"]').length, 1,
+    'one tab stop for the whole plot: the cursor moves inside it and never adds a second');
+
+  assert.equal(reading(root), null, 'a chart at rest reads nothing');
+
+  press(region, 'ArrowRight');
+  const first = reading(root);
+  assert.ok(first?.includes(LABELS[0]!), `ArrowRight from rest must land on the first point, got ${first}`);
+
+  press(region, 'ArrowRight');
+  assert.ok(reading(root)?.includes(LABELS[1]!), 'ArrowRight steps forward');
+
+  press(region, 'ArrowLeft');
+  assert.ok(reading(root)?.includes(LABELS[0]!), 'ArrowLeft steps back');
+
+  press(region, 'ArrowLeft');
+  assert.ok(reading(root)?.includes(LABELS[0]!), 'and CLAMPS at the first, because an axis has ends');
+
+  press(region, 'End');
+  assert.ok(reading(root)?.includes(LABELS[LABELS.length - 1]!), 'End jumps to the last point');
+
+  press(region, 'Home');
+  assert.ok(reading(root)?.includes(LABELS[0]!), 'Home jumps to the first');
+
+  press(region, 'Escape');
+  assert.equal(reading(root), null, 'Escape clears the cursor');
+
+  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, true]));
+}
 
 for (const [name, Chart, tail, heading] of CHARTS) {
   test(`${name} pairs a named graphic with a real table of the same numbers`, () => {
@@ -62,7 +128,7 @@ for (const [name, Chart, tail, heading] of CHARTS) {
       root,
       bindingPath: join(REACT_COMPONENTS, tail!),
       subjects: { default: graphic },
-      behavioural: { 'alternative.table': true },
+      behavioural: { 'alternative.table': true, ...cursorVerdicts(root, name) },
     });
   });
 

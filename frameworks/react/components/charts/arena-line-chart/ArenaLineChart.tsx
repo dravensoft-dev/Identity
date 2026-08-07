@@ -11,6 +11,7 @@ import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
+import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer.ts';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated.js';
 
 import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
@@ -41,7 +42,7 @@ export interface ArenaLineChartProps {
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
   height?: number;
 
-  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is the same region the data cursor lives in, and it is keyboard-reachable whether it overflows or not. */
   minPointSpacing?: number;
 }
 
@@ -88,8 +89,8 @@ export function ArenaLineChart({
 
   const name = `${label} — line chart`;
 
-  const onMove = (e: React.MouseEvent<SVGRectElement>) => {
-    if (!n) return;
+  const onPointer = (e: React.PointerEvent<SVGRectElement>, phase: string) => {
+    if (!n || !arenaPointerUpdates(e.pointerType, phase)) return;
     const svg = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
     if (!svg) return;
     const across = Array.from({ length: n }, (_, i) => ({ x: arenaPointAt(xScale, i), y: 0 }));
@@ -97,10 +98,15 @@ export function ArenaLineChart({
     if (index >= 0) setHover(index);
   };
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!arenaCursorHandles(e.key)) return;
+    e.preventDefault();
+    setHover(arenaCursorStep(hover, e.key, n));
+  };
+
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
-      <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
-        role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
+      <div ref={rail} style={arenaRailStyle} tabIndex={0} role="group" aria-label={name} onKeyDown={onKeyDown}>
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
         {axis.ticks.map((tick, i) => (
           <g key={i}>
@@ -142,7 +148,9 @@ export function ArenaLineChart({
         {
 }
         <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="transparent"
-          onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
+          onPointerMove={(e) => onPointer(e, 'move')} onPointerDown={(e) => onPointer(e, 'down')}
+          onPointerLeave={(e) => { if (arenaPointerClears(e.pointerType)) setHover(null); }}
+          onPointerCancel={() => setHover(null)} />
       </svg>
       </div>
 

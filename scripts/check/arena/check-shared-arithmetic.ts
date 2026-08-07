@@ -21,6 +21,7 @@ export const PAIRED = [
   'components/charts/ChartLegend.ts',
   'components/charts/ChartTooltip.ts',
   'components/charts/ChartSeries.ts',
+  'components/charts/ChartPointer.ts',
   'components/display/arena-calendar/CalendarInternals.ts',
   'components/navigation/arena-pagination/PaginationWindow.ts',
 ];

@@ -4,8 +4,8 @@
   "exceptions": [],
   "additions": [
     {
-      "provides": "keyboard.rail-reachable",
-      "reason": "With `minPointSpacing` set, the plot outgrows its container and scrolls horizontally, and a tabindex-less overflow box is a keyboard trap (WCAG 2.1.1). The rail carries tabindex=\"0\" and role=\"group\" with the chart's own name, and only while it actually overflows: a rail that fits is not a scroll region and a tab stop on it would be dead. This is ahead of the pattern rather than a divergence from it -- figure-with-data-table does not require it, and ArenaDoughnutChart records the same addition for its scrolling legend."
+      "provides": "keyboard.data-cursor",
+      "reason": "The chart plot is one keyboard region and the data cursor rides inside it: the rail carries tabindex=\"0\", role=\"group\" and the chart name whether it overflows or not, and the arrow keys, Home, End and Escape move a cursor that drives exactly what hover drives. The tab stop used to appear only while the rail overflowed, on the reasoning that a stop on a fitting rail would be dead; it stopped being dead the moment the region answered keys."
     }
   ]
 }

@@ -71,13 +71,13 @@ export function ArenaDoughnutChart({
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height, display: 'flex', gap: 'var(--chart-legend-gap)' }}>
       <svg width={plotW} height={height} role="img" aria-label={name}
-        onMouseLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
+        onPointerLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
         {segments.map(({ index, from, to }) => to > from && (
           <path key={index} d={arenaArcPath(cx, cy, rOuter, rInner, from, to)} fill={colors[index]}
 
             stroke="var(--surface-card)"
             opacity={hover === null || hover === index ? 1 : 0.55}
-            onMouseEnter={() => setHover(index)} onClick={() => onSliceActivate?.(index)}
+            onPointerEnter={() => setHover(index)} onClick={() => onSliceActivate?.(index)}
             style={{ transition: 'opacity var(--dur-fast) var(--ease-out)', strokeWidth: 'var(--bw-strong)' }} />
         ))}
         {hover !== null && segments[hover] && (
@@ -94,7 +94,7 @@ export function ArenaDoughnutChart({
       <div role="group" aria-label="Doughnut chart legend"
         style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {values.map((_, i) => (
-          <button key={i} type="button" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
+          <button key={i} type="button" onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)}
             onFocus={() => setHover(i)} onBlur={() => setHover(null)}
             onClick={() => onSliceActivate?.(i)}
             style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', cursor: 'pointer', opacity: hover === null || hover === i ? 1 : 0.55,

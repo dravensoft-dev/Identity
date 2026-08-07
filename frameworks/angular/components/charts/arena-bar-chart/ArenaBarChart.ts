@@ -7,12 +7,13 @@ import {
   ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaPlotWidth, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandSubBand, arenaScaleValue,
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandIndex, arenaBandSubBand, arenaScaleValue,
 } from '../ChartScales';
 import { arenaBarPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries';
 import { arenaTooltipAnchor } from '../ChartTooltip';
+import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer';
 import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
 import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 import { chartBarGap, chartSeriesGap, chartBarRadius } from '../../../Tokens.generated';
@@ -41,10 +42,10 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
     '[style.height.px]': 'height()',
   },
   template: `
-    <div #rail [style]="arenaRailStyle" [attr.tabindex]="scrolls() ? 0 : null"
-         [attr.role]="scrolls() ? 'group' : null" [attr.aria-label]="scrolls() ? name() : null">
+    <div #rail [style]="arenaRailStyle" tabindex="0" role="group" [attr.aria-label]="name()"
+         (keydown)="onKey($event)">
     <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="height()" role="img" [attr.aria-label]="name()"
-         style="display:block;overflow:visible" (mouseleave)="hover.set(null)">
+         style="display:block;overflow:visible">
       @for (tick of gridLines(); track tick.value) {
         <g>
           <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="tick.y" [attr.y2]="tick.y"
@@ -64,10 +65,12 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
                   [attr.opacity]="hover() === null || hover() === bar.index ? 1 : 0.55"
                   [style]="barStyle" />
           }
-          <rect [attr.x]="bar.hitX" [attr.y]="plotTop()" [attr.width]="step()" [attr.height]="innerHeight()"
-                fill="transparent" (mouseenter)="hover.set(bar.index)" />
         </g>
       }
+
+      <rect [attr.x]="plotLeft()" [attr.y]="plotTop()" [attr.width]="innerWidth()" [attr.height]="innerHeight()"
+            fill="transparent" (pointermove)="onPointer($event, 'move')" (pointerdown)="onPointer($event, 'down')"
+            (pointerleave)="onPointerLeave($event)" (pointercancel)="hover.set(null)" />
 
       @for (bar of bars(); track bar.index) {
         <text [attr.x]="bar.midX" [attr.y]="categoryLabelY()" text-anchor="middle"
@@ -112,7 +115,7 @@ export class ArenaBarChart {
   readonly valueFormat = input<ArenaNumberFormat>();
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
   readonly height = input<number>(ARENA_CHART_HEIGHT);
-  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is the same region the data cursor lives in, and it is keyboard-reachable whether it overflows or not. */
   readonly minPointSpacing = input<number>();
 
   protected readonly arenaSrOnly = ARENA_SR_ONLY;
@@ -154,6 +157,7 @@ export class ArenaBarChart {
   protected readonly plotLeft = computed(() => this.box().x);
   protected readonly plotRight = computed(() => this.box().x + this.box().w);
   protected readonly plotTop = computed(() => this.box().y);
+  protected readonly innerWidth = computed(() => this.box().w);
   protected readonly innerHeight = computed(() => this.box().h);
 
   private readonly yScale = computed(() => {
@@ -214,6 +218,24 @@ export class ArenaBarChart {
     const top = Math.min(...bar.marks.map((mark) => mark.y));
     return { ...bar, anchor: arenaTooltipAnchor(bar.midX, top) };
   });
+
+  protected onPointer(event: PointerEvent, phase: string): void {
+    if (!arenaPointerUpdates(event.pointerType, phase)) return;
+    const box = (event.currentTarget as SVGRectElement).ownerSVGElement?.getBoundingClientRect();
+    if (!box) return;
+    const index = arenaBandIndex(this.bands(), event.clientX - box.left);
+    if (index >= 0) this.hover.set(index);
+  }
+
+  protected onPointerLeave(event: PointerEvent): void {
+    if (arenaPointerClears(event.pointerType)) this.hover.set(null);
+  }
+
+  protected onKey(event: KeyboardEvent): void {
+    if (!arenaCursorHandles(event.key)) return;
+    event.preventDefault();
+    this.hover.set(arenaCursorStep(this.hover(), event.key, this.points()));
+  }
 
   constructor() {
 

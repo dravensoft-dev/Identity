@@ -89,7 +89,7 @@ export function arenaPlotWidth(available: number, count: number, minPointSpacing
   return Math.max(available, needed);
 }
 export const arenaRailStyle: React.CSSProperties = {
-  overflowX: 'auto', overflowY: 'hidden', display: 'block',
+  overflowX: 'auto', overflowY: 'hidden', display: 'block', outlineOffset: 'var(--focus-offset)',
 };
 
 export const arenaSrOnly: React.CSSProperties = {

@@ -40,7 +40,7 @@ function crosshairX(root: ParentNode) {
 
 function hoverAt(overlay: Element, clientX: number) {
   act(() => {
-    overlay.dispatchEvent(new window.MouseEvent('mousemove', { clientX, bubbles: true }));
+    overlay.dispatchEvent(new window.MouseEvent('pointermove', { clientX, bubbles: true }));
   });
 }
 

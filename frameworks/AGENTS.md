@@ -219,6 +219,23 @@ an Angular template cannot call a closure held in a `computed()` without rebuild
 cycle. So `arenaLinearScale(min, max, from, to)` returns a record and `arenaScaleValue(scale,
 value)` reads it. A y axis passes an inverted pixel range, bottom first, which is why "up is
 more" needs no minus sign and `arenaScaleZero(scale)` falls out of the same arithmetic.
+**A `role="img"` subtree is presentational, and that one fact splits the chart's keyboard story
+in two.** Nothing focusable inside the graphic reaches a screen reader however correct its ARIA,
+so the reader of a screen reader gets the hidden table, which is already there, and a sighted
+keyboard user gets a data cursor. **One tab stop for the whole plot, always**: the rail carries
+it whether it overflows or not, and the cursor moves inside the region rather than adding stops,
+which is what `focus.roving` means in `contracts/behaviour/figure-with-data-table.json`. Arrows
+clamp and never wrap, because an axis has ends and wrapping loses the reader's place.
+
+**Tap to read, drag to scroll.** `arenaPointerUpdates(pointerType, phase)` is the whole rule: a
+`pointerdown` always reads, and a `pointermove` reads for every pointer except touch, because a
+touch move is a scroll and hijacking it is how a chart eats the page. Nothing calls
+`setPointerCapture` and nothing calls `preventDefault` on `pointerdown`, both of which would
+take the scroll away. **No `touch-action` is set**, deliberately: `pan-x` would block vertical
+page scroll over a 280px-tall element, and the browser already pans the rail natively because
+the component never intercepts it. A lifted finger has no leave, so a touch reading persists
+until the next tap or Escape, while mouse and pen clear on `pointerleave`.
+
 **A chart takes series, and a series names itself.** `ArenaSeries` replaced five loose members
 that all described ONE of them, which is why a chart that draws two had nowhere to put the
 second. Its label is not decoration: it heads that series' own column in the accessible table,

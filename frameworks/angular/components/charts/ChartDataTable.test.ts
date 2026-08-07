@@ -77,7 +77,7 @@ test('arena-bar-chart matches its figure-with-data-table binding, which excepts 
       root: host,
       bindingPath: BINDING,
       subjects: { default: host.querySelector('[role="img"]') },
-      behavioural: { 'alternative.table': true },
+      behavioural: { 'alternative.table': true, ...cursorVerdicts(fixture, host) },
     });
   } finally {
     fixture.destroy();
@@ -144,7 +144,70 @@ test('arena-doughnut-chart takes its accessible name and caption from label, and
   }
 });
 
-function assertFigure(host: Element, tail: string): void {
+const CURSOR_KEYS = ['focus.roving', 'keyboard.ArrowLeft', 'keyboard.ArrowRight',
+  'keyboard.Home', 'keyboard.End', 'keyboard.Escape'] as const;
+
+function press(fixture: { detectChanges: () => void }, region: Element, key: string): void {
+  region.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+  fixture.detectChanges();
+}
+
+function reading(host: Element): string | null {
+
+  const tooltip = [...host.querySelectorAll('div')]
+    .find((el) => (el as HTMLElement).style.position === 'absolute' && (el as HTMLElement).style.pointerEvents === 'none');
+  return tooltip ? (tooltip.textContent ?? '').trim() : null;
+}
+
+function cursorVerdicts(fixture: { detectChanges: () => void }, host: Element): Record<string, boolean> {
+
+  const region = host.querySelector('[role="group"]') as HTMLElement;
+  assert.notEqual(region, null, 'the plot must be one keyboard region');
+  assert.equal(host.querySelectorAll('[tabindex="0"]').length, 1,
+    'one tab stop for the whole plot: the cursor moves inside it and never adds a second');
+
+  assert.equal(reading(host), null, 'a chart at rest reads nothing');
+
+  press(fixture, region, 'ArrowRight');
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'ArrowRight from rest lands on the first point');
+
+  press(fixture, region, 'ArrowRight');
+  assert.match(reading(host) ?? '', new RegExp(LABELS[1] as string), 'ArrowRight steps forward');
+
+  press(fixture, region, 'ArrowLeft');
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'ArrowLeft steps back');
+
+  press(fixture, region, 'ArrowLeft');
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'and CLAMPS at the first, because an axis has ends');
+
+  press(fixture, region, 'End');
+  assert.match(reading(host) ?? '', new RegExp(LABELS[LABELS.length - 1] as string), 'End jumps to the last point');
+
+  press(fixture, region, 'Home');
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'Home jumps to the first');
+
+  press(fixture, region, 'Escape');
+  assert.equal(reading(host), null, 'Escape clears the cursor');
+
+  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, true]));
+}
+
+function noCursorVerdicts(fixture: { detectChanges: () => void }, host: Element): Record<string, boolean> {
+
+  const legend = host.querySelector('[role="group"]') as HTMLElement;
+  assert.notEqual(legend, null, 'the ring answers the keyboard through its legend, so the legend is the group');
+  assert.equal(legend.getAttribute('tabindex'), null,
+    'the legend rows are the stops; a stop on their container would be a dead one in front of them');
+  assert.equal(host.querySelectorAll('[role="group"] > button').length, VALUES.length,
+    'one reachable button per slice, so a slice is not walked to');
+
+  press(fixture, legend, 'ArrowRight');
+  assert.equal(reading(host), null, 'a ring has no sequence to arrow along, and pretending otherwise would be a lie');
+
+  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, false]));
+}
+
+function assertFigure(host: Element, tail: string, cursor: Record<string, boolean>): void {
   const graphic = host.querySelector('[role="img"]') as Element;
   assert.match(graphic.getAttribute('aria-label') ?? '', /\S/, 'the graphic must carry a name');
 
@@ -161,7 +224,7 @@ function assertFigure(host: Element, tail: string): void {
     root: host,
     bindingPath: join(ANGULAR_COMPONENTS, tail),
     subjects: { default: graphic },
-    behavioural: { 'alternative.table': true },
+    behavioural: { 'alternative.table': true, ...cursor },
   });
 }
 
@@ -172,7 +235,9 @@ test('arena-doughnut-chart matches its figure-with-data-table binding, which exc
   fixture.componentRef.setInput('label', CHART);
   fixture.detectChanges();
   try {
-    assertFigure(fixture.nativeElement as Element, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json');
+    const host = fixture.nativeElement as Element;
+    assertFigure(host, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json',
+      noCursorVerdicts(fixture, host));
   } finally {
     fixture.destroy();
   }
@@ -185,7 +250,8 @@ test('arena-line-chart matches its figure-with-data-table binding, which excepts
   fixture.componentRef.setInput('label', CHART);
   fixture.detectChanges();
   try {
-    assertFigure(fixture.nativeElement as Element, 'charts/arena-line-chart/ArenaLineChart.behaviour.json');
+    const host = fixture.nativeElement as Element;
+    assertFigure(host, 'charts/arena-line-chart/ArenaLineChart.behaviour.json', cursorVerdicts(fixture, host));
   } finally {
     fixture.destroy();
   }

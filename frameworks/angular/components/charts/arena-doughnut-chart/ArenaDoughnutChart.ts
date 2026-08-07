@@ -64,12 +64,12 @@ const LEGEND_VALUE_STYLE = {
   },
   template: `
     <svg [attr.width]="arenaPlotWidth()" [attr.height]="height" role="img" [attr.aria-label]="name()"
-         [style]="svgStyle" (mouseleave)="hover.set(null)">
+         [style]="svgStyle" (pointerleave)="hover.set(null)">
       @for (segment of segments(); track segment.index) {
         @if (segment.path) {
           <path [attr.d]="segment.path" [attr.fill]="segment.color" stroke="var(--surface-card)"
                 [attr.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
-                (mouseenter)="hover.set(segment.index)" (click)="sliceActivate.emit(segment.index)"
+                (pointerenter)="hover.set(segment.index)" (click)="sliceActivate.emit(segment.index)"
                 [style]="segmentStyle" />
         }
       }
@@ -84,7 +84,7 @@ const LEGEND_VALUE_STYLE = {
       @for (segment of segments(); track segment.index) {
         <button type="button" [style]="legendRowStyle"
                 [style.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
-                (mouseenter)="hover.set(segment.index)" (mouseleave)="hover.set(null)"
+                (pointerenter)="hover.set(segment.index)" (pointerleave)="hover.set(null)"
                 (focus)="hover.set(segment.index)" (blur)="hover.set(null)"
                 (click)="sliceActivate.emit(segment.index)">
           <span aria-hidden="true" [style]="swatchStyle" [style.background]="segment.color"></span>

@@ -101,6 +101,12 @@ export function arenaBandCenter(scale: ArenaBandScale, index: number): number {
   return arenaBandStart(scale, index) + scale.step / 2;
 }
 
+export function arenaBandIndex(scale: ArenaBandScale, px: number): number {
+  if (scale.count <= 0) return -1;
+  const raw = Math.floor((px - scale.start) / scale.step);
+  return Math.min(scale.count - 1, Math.max(0, raw));
+}
+
 export function arenaBandSubBand(
   scale: ArenaBandScale, index: number, seriesCount: number, seriesIndex: number, gap: number,
 ): { x: number; width: number } {

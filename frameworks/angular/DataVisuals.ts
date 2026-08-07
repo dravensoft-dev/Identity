@@ -96,6 +96,6 @@ export function arenaPlotWidth(available: number, count: number, minPointSpacing
   return Math.max(available, needed);
 }
 export const ARENA_RAIL_STYLE = {
-  overflowX: 'auto', overflowY: 'hidden', display: 'block',
+  overflowX: 'auto', overflowY: 'hidden', display: 'block', outlineOffset: 'var(--focus-offset)',
 } as const satisfies Readonly<Record<string, string>>;
 

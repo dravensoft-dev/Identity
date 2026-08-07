@@ -35,7 +35,7 @@ const FAMILY_PATTERNS = {
 };
 
 const IMPLEMENTS_PATTERNS = {
-  hover: /\bonMouseEnter\b|\bonMouseLeave\b|:hover\b|\(mouseenter\)|\(mouseleave\)/,
+  hover: /\bonMouseEnter\b|\bonMouseLeave\b|\bonPointerEnter\b|\bonPointerLeave\b|\bonPointerMove\b|:hover\b|\(mouseenter\)|\(mouseleave\)|\(pointerenter\)|\(pointerleave\)|\(pointermove\)/,
   focus: /\bonFocus\b|\bonBlur\b|:focus(?:-visible|-within)?\b|\(focus\)|\(blur\)/,
 };
 

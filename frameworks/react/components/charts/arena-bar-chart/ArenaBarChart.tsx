@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import { arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandSubBand, arenaScaleValue,
+  arenaLinearScale, arenaBandScale, arenaBandCenter, arenaBandIndex, arenaBandSubBand, arenaScaleValue,
 } from '../ChartScales.ts';
 import { arenaBarPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
+import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer.ts';
 import { chartBarGap, chartSeriesGap, chartBarRadius } from '../../../Tokens.generated.js';
 
 import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
@@ -35,7 +36,7 @@ export interface ArenaBarChartProps {
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
   height?: number;
 
-  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is the same region the data cursor lives in, and it is keyboard-reachable whether it overflows or not. */
   minPointSpacing?: number;
 }
 
@@ -73,12 +74,25 @@ export function ArenaBarChart({
 
   const name = `${label} — bar chart`;
 
+  const onPointer = (e: React.PointerEvent<SVGRectElement>, phase: string) => {
+    if (!arenaPointerUpdates(e.pointerType, phase)) return;
+    const svg = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+    if (!svg) return;
+    const index = arenaBandIndex(bands, e.clientX - svg.left);
+    if (index >= 0) setHover(index);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!arenaCursorHandles(e.key)) return;
+    e.preventDefault();
+    setHover(arenaCursorStep(hover, e.key, n));
+  };
+
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
-      <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
-        role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
+      <div ref={rail} style={arenaRailStyle} tabIndex={0} role="group" aria-label={name} onKeyDown={onKeyDown}>
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name}
-        onMouseLeave={() => setHover(null)} style={{ display: 'block', overflow: 'visible' }}>
+        style={{ display: 'block', overflow: 'visible' }}>
         {}
         {axis.ticks.map((tick, i) => (
           <g key={i}>
@@ -104,10 +118,6 @@ export function ArenaBarChart({
                   style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
               );
             })}
-            {
-}
-            <rect x={arenaBandStart(bands, i)} y={box.y} width={bands.step} height={box.h}
-              fill="transparent" onMouseEnter={() => setHover(i)} />
           </g>
         ))}
 
@@ -118,6 +128,13 @@ export function ArenaBarChart({
           <text key={i} x={arenaBandCenter(bands, i)} y={arenaCategoryLabelY(height)} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
+
+        {
+}
+        <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="transparent"
+          onPointerMove={(e) => onPointer(e, 'move')} onPointerDown={(e) => onPointer(e, 'down')}
+          onPointerLeave={(e) => { if (arenaPointerClears(e.pointerType)) setHover(null); }}
+          onPointerCancel={() => setHover(null)} />
       </svg>
       </div>
 
