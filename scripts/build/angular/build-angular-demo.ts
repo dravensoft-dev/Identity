@@ -4,9 +4,10 @@
  * `splitting` keeps the Angular runtime in one shared chunk across every page. */
 
 import { spawnSync } from 'node:child_process';
-import { join, relative } from 'node:path';
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { basename, join, relative } from 'node:path';
+import { existsSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { ngcBin } from '../../check/angular/check-angular.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -25,43 +26,24 @@ export const isEntry = (name: string, ext = '.js') => ENTRY_SUFFIXES.some((s) =>
 function pruneOrphans(dir: string) {
   const pruned: string[] = [];
   if (!existsSync(dir)) return pruned;
-  walk(dir);
-  return pruned;
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      const rel = relative(EMIT_DIR, full);
-      let srcRel;
-      if (rel.endsWith('.js.map')) srcRel = rel.slice(0, -'.js.map'.length) + '.ts';
-      else if (rel.endsWith('.d.ts')) srcRel = rel.slice(0, -'.d.ts'.length) + '.ts';
-      else if (rel.endsWith('.js')) srcRel = rel.slice(0, -'.js'.length) + '.ts';
-      else continue;
-      if (srcRel.startsWith('..') || !existsSync(join(LAYER_ROOT, srcRel))) {
-        rmSync(full);
-        pruned.push(relative(repoRoot, full));
-      }
+  for (const full of walkFiles(dir)) {
+    const rel = relative(EMIT_DIR, full);
+    let srcRel;
+    if (rel.endsWith('.js.map')) srcRel = rel.slice(0, -'.js.map'.length) + '.ts';
+    else if (rel.endsWith('.d.ts')) srcRel = rel.slice(0, -'.d.ts'.length) + '.ts';
+    else if (rel.endsWith('.js')) srcRel = rel.slice(0, -'.js'.length) + '.ts';
+    else continue;
+    if (srcRel.startsWith('..') || !existsSync(join(LAYER_ROOT, srcRel))) {
+      rmSync(full);
+      pruned.push(relative(repoRoot, full));
     }
   }
+  return pruned;
 }
 
 export function collectEntries(dir: string) {
-  const out: string[] = [];
-  if (!existsSync(dir)) return out;
-  walk(dir);
-  return out.sort();
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (isEntry(entry.name)) out.push(full);
-    }
-  }
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir).filter((full) => isEntry(basename(full))).sort();
 }
 
 export function missingEntryProblems(sourceEntries: string[], emittedEntries: string[], emitDir = relative(repoRoot, EMIT_DIR)) {
@@ -80,19 +62,10 @@ export function missingEntryProblems(sourceEntries: string[], emittedEntries: st
 }
 
 function collectSourceEntries(dir: string) {
-  const out: string[] = [];
-  if (!existsSync(dir)) return out;
-  walk(dir);
-  return out;
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (full === EMITTED) continue;
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (isEntry(entry.name, '.ts')) out.push(relative(dir, full));
-    }
-  }
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir, { skip: (_name, path) => path === EMITTED })
+    .filter((full) => isEntry(basename(full), '.ts'))
+    .map((full) => relative(dir, full));
 }
 
 async function main() {

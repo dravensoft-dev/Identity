@@ -8,8 +8,9 @@
 
 import { spawnSync } from 'node:child_process';
 import { join, relative } from 'node:path';
-import { existsSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { ngcBin } from '../../check/angular/check-angular.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
@@ -31,58 +32,30 @@ const EXTERNAL_INPUTS = [
 
 function pruneOrphans(dir: string) {
   const pruned: string[] = [];
-  walk(dir);
-  return pruned;
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      const rel = relative(EMIT_DIR, full);
-      let srcRel;
-      if (rel.endsWith('.js.map')) srcRel = rel.slice(0, -'.js.map'.length) + '.ts';
-      else if (rel.endsWith('.d.ts')) srcRel = rel.slice(0, -'.d.ts'.length) + '.ts';
-      else if (rel.endsWith('.js')) srcRel = rel.slice(0, -'.js'.length) + '.ts';
-      else continue;
-      if (srcRel.startsWith('..') || !existsSync(join(LAYER_ROOT, srcRel))) {
-        rmSync(full);
-        pruned.push(relative(repoRoot, full));
-      }
+  for (const full of walkFiles(dir)) {
+    const rel = relative(EMIT_DIR, full);
+    let srcRel;
+    if (rel.endsWith('.js.map')) srcRel = rel.slice(0, -'.js.map'.length) + '.ts';
+    else if (rel.endsWith('.d.ts')) srcRel = rel.slice(0, -'.d.ts'.length) + '.ts';
+    else if (rel.endsWith('.js')) srcRel = rel.slice(0, -'.js'.length) + '.ts';
+    else continue;
+    if (srcRel.startsWith('..') || !existsSync(join(LAYER_ROOT, srcRel))) {
+      rmSync(full);
+      pruned.push(relative(repoRoot, full));
     }
   }
+  return pruned;
 }
 
 function collectTestSources(dir: string) {
-  const out: string[] = [];
-  walk(dir);
-  return out;
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (full === EMITTED) continue;
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (entry.name.endsWith('.test.ts')) out.push(relative(dir, full));
-    }
-  }
+  return walkFiles(dir, { skip: (_name, path) => path === EMITTED })
+    .filter((full) => full.endsWith('.test.ts'))
+    .map((full) => relative(dir, full));
 }
 
 function collectEmittedTests(dir: string) {
-  const out: string[] = [];
-  if (!existsSync(dir)) return out;
-  walk(dir);
-  return out;
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (entry.name.endsWith('.test.js')) out.push(relative(dir, full));
-    }
-  }
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir).filter((full) => full.endsWith('.test.js')).map((full) => relative(dir, full));
 }
 
 export function missingEmitProblems(sourceTests: string[], emittedTests: string[], emitDir = relative(repoRoot, EMIT_DIR)) {
@@ -101,19 +74,11 @@ export function missingEmitProblems(sourceTests: string[], emittedTests: string[
 }
 
 function collectInputs() {
-  const out = [];
-  walk(LAYER_ROOT);
+  const out = walkFiles(LAYER_ROOT, { skip: (_name, path) => path === EMITTED })
+    .filter((full) => full.endsWith('.ts') || full.endsWith('.json'))
+    .map(stamp);
   for (const path of EXTERNAL_INPUTS) if (existsSync(path)) out.push(stamp(path));
   return out;
-
-  function walk(current: string) {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (full === EMITTED) continue;
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (entry.name.endsWith('.ts') || entry.name.endsWith('.json')) out.push(stamp(full));
-    }
-  }
 }
 
 function stamp(path: string) {

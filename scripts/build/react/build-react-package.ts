@@ -8,9 +8,10 @@
  * states the entry declaration twice, in exports and at the root, because a consumer on
  * moduleResolution node reads no exports and npm's registry page reads only the root field. */
 
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, dirname, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { childOutput } from '../../lib/arena/child-output.ts';
 import { tscBin } from '../../lib/arena/typecheck.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -33,14 +34,9 @@ export function isSource(path: string) {
   return (path.endsWith('.ts') || path.endsWith('.tsx')) && !path.endsWith('.d.ts');
 }
 
-export function distFiles(dir: string, keep: (path: string) => boolean, found: string[] = []) {
-  if (!existsSync(dir)) return found;
-  for (const entry of readdirSync(dir).sort()) {
-    const p = join(dir, entry);
-    if (statSync(p).isDirectory()) { distFiles(p, keep, found); continue; }
-    if (keep(p)) found.push(p);
-  }
-  return found;
+export function distFiles(dir: string, keep: (path: string) => boolean) {
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir).filter(keep);
 }
 
 export function emitDeclarations(root: string, outDir: string) {
