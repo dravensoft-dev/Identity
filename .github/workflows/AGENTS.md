@@ -161,6 +161,23 @@ built from the same tree.
 
 ## Notes on the runner
 
+**Every action here runs on `node24`.** That is the runtime GitHub executes the action's own code
+in, declared as `runs.using` in its `action.yml`, and the only other value is `node20`. A `node20`
+action is warned about on every run, forced onto `node24` anyway, and will eventually be refused,
+so an action's major is bumped when the new one moves the runtime rather than when it merely
+exists. It is unrelated to `node-version` in the publish workflows, which is the Node those jobs
+install to run `npm`. Versions live in these `.yml` files and nowhere else, and nothing generates
+them, so the whole rule is `grep -n 'uses:' .github/workflows/*.yml` against each major's
+`runs.using`.
+
+Two of those majors carry a guard worth reading before the next bump. `actions/checkout` from v7
+refuses to check out fork pull request code under `pull_request_target` or `workflow_run`, which
+the publish workflows escape only because the run they follow is a push to `main`; a `workflow_run`
+whose upstream event began with `pull_request` would need `allow-unsafe-pr-checkout`, which is a
+question to answer rather than a flag to set. `actions/setup-node` from v6 caches automatically
+only when `packageManager` names npm, and this repository's names bun, so a jump to v5 rather than
+past it would have switched on a cache nobody asked for.
+
 **Chromium.** `check:cards` and `check:focus-trap` drive a real browser, and `CHROME_PATH` is
 terminal: set and pointing at nothing, the gates report that rather than falling back to the
 candidate list. The workflows set it to `/usr/bin/google-chrome`, which the image documents,
