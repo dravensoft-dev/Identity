@@ -9,8 +9,9 @@
  * cannot quietly become permanent. A generated file is never read here. */
 
 import { fileURLToPath } from 'node:url';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { findComments } from '../../lib/arena/comments.ts';
 import { proseSegments } from '../../lib/arena/markdown-prose.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
@@ -49,18 +50,10 @@ export const READ_DESPITE_THE_DOT = new Set(['.gitkeep', '.github']);
 export { emittedTree };
 
 function walk(dir: string, keep: (path: string) => boolean, emitted: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') && !READ_DESPITE_THE_DOT.has(entry.name)) continue;
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (SKIPPED_DIRECTORIES.has(entry.name) || full === emitted) continue;
-      found.push(...walk(full, keep, emitted));
-    } else if (keep(full)) {
-      found.push(full);
-    }
-  }
-  return found;
+  return walkFiles(dir, {
+    skip: (name, path) => (name.startsWith('.') && !READ_DESPITE_THE_DOT.has(name))
+      || SKIPPED_DIRECTORIES.has(name) || path === emitted,
+  }).filter(keep);
 }
 
 export const SHEBANG = /^#![^\n]*\n/;
