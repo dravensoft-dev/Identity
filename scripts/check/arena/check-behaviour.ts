@@ -1,6 +1,7 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import {
   loadPatterns, validatePattern, validateBinding,
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath,
@@ -9,8 +10,6 @@ import {
 import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 import { pascal, kebab } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
-
-const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 
 export function describeBinding(binding: BehaviourBinding) {
   return bindingCases(binding)
@@ -43,7 +42,7 @@ async function main() {
       problems.push(`react/${component}: no ${component}.behaviour.json — every component declares, including a presentational one`);
       continue;
     }
-    const binding = read(found.path);
+    const binding = readJson(found.path);
     problems.push(...validateBinding(component, 'react', binding, patterns));
     react.set(component, binding);
   }
@@ -56,7 +55,7 @@ async function main() {
       problems.push(`angular/${name}: no ${pascal(name)}.behaviour.json`);
       continue;
     }
-    const binding = read(found.path);
+    const binding = readJson(found.path);
     problems.push(...validateBinding(name, 'angular', binding, patterns));
     if (binding.component && !react.has(binding.component)) {
       problems.push(`angular/${name}: component "${binding.component}" is not a React component — mistyped, or React dropped it`);
@@ -65,7 +64,7 @@ async function main() {
   }
 
   const delegatedPath = join(root, 'frameworks/angular/BehaviourDelegated.json');
-  const delegated = existsSync(delegatedPath) ? read(delegatedPath) : {};
+  const delegated = existsSync(delegatedPath) ? readJson(delegatedPath) : {};
   for (const [component] of react) {
     if (angular.has(component)) continue;
     const entry = delegated[component];

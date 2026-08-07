@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
-const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
+const categories = readJson(join(repoRoot, 'frameworks/Components.json'));
 
 test('the seven categories are exactly the React component group directories', () => {
   assert.deepEqual(Object.keys(categories).sort(), ['brand', 'charts', 'display', 'feedback', 'forms', 'layout', 'navigation']);

@@ -16,6 +16,7 @@ import {
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { readJson, readIfExists } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { PACKAGES, distDir } from './check-packages.ts';
 import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
@@ -76,7 +77,7 @@ export function fixture(
   layer: string, files: Record<string, string>, stylesheet: Record<string, unknown>, base = root,
 ) {
   const dir = mkdtempSync(join(tmpdir(), `arena-consumer-${layer}-`));
-  const example = JSON.parse(readFileSync(join(distDir(layer, base), 'arena.config.example.json'), 'utf8'));
+  const example = readJson(join(distDir(layer, base), 'arena.config.example.json'));
   writeFileSync(join(dir, 'arena.config.json'), JSON.stringify({ ...example, stylesheet }, null, 2));
   for (const [rel, body] of Object.entries(files) as [string, string][]) {
     mkdirSync(join(dir, rel, '..'), { recursive: true });
@@ -99,7 +100,7 @@ export function runCli(layer: string, dir: string, base = root) {
     { cwd: dir, encoding: 'utf8' });
   const read = (name: string) => {
     const at = join(dir, 'out', name);
-    return existsSync(at) ? readFileSync(at, 'utf8') : null;
+    return readIfExists(at);
   };
   return { status: run.status, stderr: run.stderr ?? '', theme: read(THEME_SHEET), icons: read(ICONS_SHEET) };
 }

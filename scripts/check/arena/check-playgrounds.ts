@@ -12,6 +12,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
@@ -34,7 +35,7 @@ export const FIXTURE_SUFFIX = '.demo.json';
 const SEEDABLE = new Set(['primitive', 'enum', 'object', 'array', 'functionInput']);
 
 export function loadJson(path: string) {
-  return JSON.parse(readFileSync(path, 'utf8'));
+  return readJson(path);
 }
 
 export function loadTypes(base = root): Types {

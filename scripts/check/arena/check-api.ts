@@ -6,6 +6,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
 import { PREFIX } from './check-structure.ts';
 import {
@@ -317,8 +318,6 @@ export function compareSurface(
   return problems;
 }
 
-const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
-
 export const REACT_SURFACE_EXTENSIONS = ['.tsx', '.d.ts'];
 
 export function resolveReactImplementations(tree: Record<string, string[]>, exists: (path: string) => boolean) {
@@ -444,7 +443,7 @@ function main() {
   }
 
   const typeDir = join(root, 'contracts/api/types');
-  const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => read(join(typeDir, f)));
+  const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => readJson(join(typeDir, f)));
   problems.push(...validateTypes(types));
   const typeNames = new Map(types.map((t) => [t.name, t.kind]));
 
@@ -461,7 +460,7 @@ function main() {
   let layersChecked = 0;
 
   for (const file of files) {
-    const contract = read(join(contractDir, file));
+    const contract = readJson(join(contractDir, file));
     problems.push(...validateContract(contract, typeNames));
 
     const react = reactLayer.implementations.get(contract.component) ?? null;

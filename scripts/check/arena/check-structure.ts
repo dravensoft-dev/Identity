@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
@@ -69,7 +69,7 @@ export function zeroLayerProblems(layers: Record<string, ComponentTree>) {
 }
 
 function main() {
-  const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
+  const categories = readJson(join(repoRoot, 'frameworks/Components.json'));
   const layers = Object.fromEntries(LAYERS.map((l) => [l, readLayer(l)]));
 
   const complete = true;

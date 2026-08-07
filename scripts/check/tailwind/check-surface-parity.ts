@@ -6,9 +6,9 @@
  * is not ArenaCard's single body p-5, so `panel` is not a clean substitution for `root`. What was
  * never rejected is checking that the surface halves agree, which is this. */
 
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
 
@@ -71,7 +71,7 @@ export function parityProblems(
 }
 
 function main() {
-  const read = (file: string) => JSON.parse(readFileSync(join(MANIFESTS, file), 'utf8'));
+  const read = (file: string) => readJson(join(MANIFESTS, file));
   const problems = parityProblems(PAIRS, read);
   if (PAIRS.length === 0) problems.push('PAIRS is empty -- a gate with nothing to compare finds nothing by construction');
 

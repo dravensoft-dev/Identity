@@ -5,8 +5,9 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import {
   stateFamilies,
   sourceImplements,
@@ -108,7 +109,7 @@ test('every contract declares the key, and only from the closed set', () => {
   const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.ok(files.length > 40, 'expected the contracted set, not an empty directory');
   for (const f of files) {
-    const contract = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    const contract = readJson(join(dir, f));
     assert.ok(Array.isArray(contract.affordances), `${f} declares no affordances array`);
     for (const a of contract.affordances) assert.ok(FAMILIES.includes(a), `${f} declares ${a}`);
   }
@@ -127,7 +128,7 @@ test('and the same modifier passes once a contract declares the affordance', () 
 });
 
 test('THE OTHER HALF: React implementing an affordance its contract does not declare is invented too', () => {
-  const contract = JSON.parse(readFileSync(join(repoRoot, 'contracts/api/components/ArenaBarChart.json'), 'utf8'));
+  const contract = readJson(join(repoRoot, 'contracts/api/components/ArenaBarChart.json'));
   assert.ok(contract.affordances.includes('hover'), 'ArenaBarChart hovers, and the contract is where that is said');
   assert.deepEqual(reactProblems('ArenaBarChart', 'charts').findings, []);
 

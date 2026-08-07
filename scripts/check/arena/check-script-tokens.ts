@@ -6,6 +6,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, extname, relative } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from '../../generate/arena/generate-tokens.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -181,7 +182,7 @@ async function main() {
     problems.push('catSlots: the generated module no longer exports a numeric catSlots — ArenaCatSlot cannot be checked against the ramp');
   } else {
     try {
-      const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/arena-cat-slot.json'), 'utf8'));
+      const catSlot = readJson(join(root, 'contracts/api/types/arena-cat-slot.json'));
       problems.push(...catSlotEnumProblems(catSlots, catSlot.values));
     } catch (err) {
       problems.push(`contracts/api/types/arena-cat-slot.json: unreadable (${(err as Error).message}) — ArenaCatSlot restates the --color-cat-* ramp and must exist`);

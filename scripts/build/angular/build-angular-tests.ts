@@ -8,8 +8,9 @@
 
 import { spawnSync } from 'node:child_process';
 import { join, relative } from 'node:path';
-import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { readJson } from '../../utils/read-file.ts';
 import { ngcBin } from '../../check/angular/check-angular.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -122,7 +123,7 @@ function stamp(path: string) {
 function readStamp() {
   if (!existsSync(STAMP)) return null;
   try {
-    return { mtimeMs: statSync(STAMP).mtimeMs, paths: JSON.parse(readFileSync(STAMP, 'utf8')).paths };
+    return { mtimeMs: statSync(STAMP).mtimeMs, paths: readJson(STAMP).paths };
   } catch {
     return null;
   }

@@ -5,8 +5,9 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { TRAPS, FOCUSABLE, walkProblems } from './check-focus-trap.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
@@ -36,7 +37,7 @@ test('a trap opens from its own fixture, so no walk depends on finding a button 
     assert.ok(!('open' in trap),
       `${trap.name} still clicks something open: a page whose copy moved would walk with nothing open `
       + 'and report a trap that holds');
-    const fixture = JSON.parse(readFileSync(join(repoRoot, 'frameworks/demos', `${trap.name.split(':')[0]}.demo.json`), 'utf8'));
+    const fixture = readJson(join(repoRoot, 'frameworks/demos', `${trap.name.split(':')[0]}.demo.json`));
     assert.equal(fixture.seed.open, true, `${trap.name}'s fixture does not open it`);
   }
 });

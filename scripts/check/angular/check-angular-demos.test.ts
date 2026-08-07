@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readIfExists } from '../../utils/read-file.ts';
 import { BUNDLE_DIR, PAGE_SUFFIX, ENTRY_SUFFIX, pageProblems } from './check-angular-demos.ts';
 import { readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -83,10 +83,7 @@ test('an entry without @angular/compiler fails, because the library ships partia
 });
 
 test('every component in the shipped tree has a page, and the count is the tree rather than a list', () => {
-  const read = (rel: string) => {
-    const path = join(repoRoot, rel);
-    return existsSync(path) ? readFileSync(path, 'utf8') : null;
-  };
+  const read = (rel: string) => readIfExists(join(repoRoot, rel));
   const tree = readLayer('angular');
   const { problems, pages } = pageProblems(tree, read);
   assert.deepEqual(problems, []);

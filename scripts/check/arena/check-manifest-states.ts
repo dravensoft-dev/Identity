@@ -11,6 +11,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import {
   HAND_DRAWN, MANIFEST_COVERS, categoryOf, coveredContracts, surfaceProblems,
@@ -72,7 +73,7 @@ export function classStringsBySlot(manifest: ManifestClassSource) {
 export function readContract(name: string) {
   const path = join(CONTRACTS_DIR, `${name}.json`);
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, 'utf8'));
+  return readJson(path);
 }
 
 export function declaredAffordances(contract: ContractCandidate, where: string): Set<string> {
@@ -184,7 +185,7 @@ export function collect() {
   let sites = 0;
 
   for (const p of manifestFiles(COMPONENTS_DIR)) {
-    const manifest = JSON.parse(readFileSync(p, 'utf8'));
+    const manifest = readJson(p);
     const name = basename(p).replace(/\.manifest\.json$/, '');
     const result = manifestProblems(manifest, affordancesFor(coveredContracts(name)));
     findings.push(...result.findings);
@@ -192,7 +193,7 @@ export function collect() {
     sites += result.sites;
   }
 
-  const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
+  const categories = readJson(join(repoRoot, 'frameworks/Components.json'));
   const missingSources = [];
   let sourcesRead = 0;
   for (const [category, names] of Object.entries(categories) as [string, string[]][])

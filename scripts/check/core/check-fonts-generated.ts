@@ -8,6 +8,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { readJson } from '../../utils/read-file.ts';
 import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-fonts.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -66,7 +67,7 @@ async function main() {
   if (present.length === 0) {
     errs.push('found 0 .woff2 under assets/fonts -- an empty result set is a failure, not a clean pass; check the discovery path');
   } else {
-    const recorded = JSON.parse(readFileSync(join(root, FONTS), 'utf8'));
+    const recorded = readJson(join(root, FONTS));
     const hashOf = (file: string) => createHash('sha256').update(readFileSync(join(root, 'assets', 'fonts', file))).digest('hex');
     errs.push(...recordProblems(recorded, present, hashOf));
   }

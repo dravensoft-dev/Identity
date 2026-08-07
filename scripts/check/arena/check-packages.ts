@@ -12,6 +12,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname, basename, sep } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
@@ -161,7 +162,7 @@ export function componentMapProblems(pkg: { layer: string; name: string }, dir: 
   }
   let map;
   try {
-    map = JSON.parse(readFileSync(at, 'utf8'));
+    map = readJson(at);
   } catch (error) {
     return [`${pkg.name}: ${MAP_FILE} does not parse: ${(error as Error).message}`];
   }
@@ -217,7 +218,7 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
 }
 
 export function collect(base = root) {
-  const version = JSON.parse(readFileSync(join(base, '.claude-plugin/plugin.json'), 'utf8')).version;
+  const version = readJson(join(base, '.claude-plugin/plugin.json')).version;
   const problems = [];
 
   const cli = themeCss(arenaConfig(base), { importHeader: false });
@@ -231,7 +232,7 @@ export function collect(base = root) {
     const manifestPath = join(dir, 'package.json');
     if (!existsSync(manifestPath)) continue;
     assembled.push(pkg.name);
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    const manifest = readJson(manifestPath);
     problems.push(...manifestProblems(pkg, manifest, version));
     problems.push(...exportProblems(pkg, manifest, dir));
     problems.push(...componentMapProblems(pkg, dir));

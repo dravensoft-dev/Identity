@@ -10,6 +10,7 @@ import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep, posix } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import {
@@ -151,7 +152,7 @@ export function buildAngularPackage(root = repoRoot) {
   written.push(copy(join(root, LAYER, 'PACKAGE.md'), dist, 'README.md'));
   written.push(copy(join(root, 'LICENSE'), dist, 'LICENSE'));
 
-  const emitted = JSON.parse(readFileSync(join(dist, 'package.json'), 'utf8'));
+  const emitted = readJson(join(dist, 'package.json'));
   write(dist, 'package.json', `${JSON.stringify(withAssets(emitted), null, 2)}\n`);
 
   return { dir: dist, written, staged: staged.length, log: result.stdout };
