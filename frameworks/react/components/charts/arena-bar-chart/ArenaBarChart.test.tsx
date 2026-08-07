@@ -7,7 +7,7 @@ import { ArenaBarChart } from './ArenaBarChart.tsx';
 const LABELS = ['Mon', 'Tue', 'Wed'];
 const VALUES = [12, 30, 7];
 
-test('ArenaBarChart appends valueSuffix to the axis arenaTicks and to the accessible table', () => {
+test('ArenaBarChart appends valueSuffix to the axis ticks and to the accessible table', () => {
   const html = renderToStaticMarkup(
     <ArenaBarChart labels={LABELS} values={VALUES} seriesLabel="Deploys" valueSuffix=" ms" />
   );

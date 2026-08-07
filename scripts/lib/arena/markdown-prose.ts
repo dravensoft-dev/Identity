@@ -23,15 +23,15 @@ function blankFollows(source: string, newlineAt: number) {
   return /^[ \t]*(\n|$)/.test(source.slice(newlineAt + 1));
 }
 
-function spanEnd(source: string, at: number, arenaTicks: number) {
-  for (let i = at + arenaTicks; i < source.length; i += 1) {
+function spanEnd(source: string, at: number, ticks: number) {
+  for (let i = at + ticks; i < source.length; i += 1) {
     if (source[i] === '\n') {
       if (blankFollows(source, i)) return -1;
       continue;
     }
     if (source[i] !== '`') continue;
     const run = runLength(source, i, '`');
-    if (run === arenaTicks) return i + run;
+    if (run === ticks) return i + run;
     i += run - 1;
   }
   return -1;
@@ -95,8 +95,8 @@ export function proseSegments(source: string) {
     }
 
     if (character === '`') {
-      const arenaTicks = runLength(source, index, '`');
-      const end = spanEnd(source, index, arenaTicks);
+      const ticks = runLength(source, index, '`');
+      const end = spanEnd(source, index, ticks);
       if (end !== -1) {
         flush();
         advanceTo(end);

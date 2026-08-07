@@ -26,7 +26,7 @@ test('ArenaLineChart writes the same number in the tick, the tooltip source and 
   assert.doesNotMatch(html, /1234\.5/, 'the raw JavaScript number must not survive anywhere');
 });
 
-test('ArenaBarChart writes it the same way, in its arenaTicks and in its accessible table', () => {
+test('ArenaBarChart writes it the same way, in its ticks and in its accessible table', () => {
   const html = renderToStaticMarkup(
     <ArenaBarChart labels={['Mon']} values={[1234.5]} seriesLabel="Revenue"
       valuePrefix="Bs. " valueFormat={FORMAT} />,

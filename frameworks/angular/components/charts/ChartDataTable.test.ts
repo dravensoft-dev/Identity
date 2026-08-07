@@ -98,7 +98,7 @@ test('arena-bar-chart REFUSES to render without a seriesLabel, where it used to 
     fixture.destroy();
   }
 });
-test('arena-bar-chart appends valueSuffix to the axis arenaTicks and to the accessible table alike', () => {
+test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
   const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
   fixture.componentRef.setInput('values', VALUES);
