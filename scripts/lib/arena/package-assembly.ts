@@ -3,9 +3,10 @@
  * `arena` because it reads two framework layers and the repository root. Nothing here
  * compiles anything; each layer's own builder does that with its own toolchain. */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript';
 import { join, dirname, relative, sep, basename } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from './repo-root.ts';
 import { kebab } from './layers.ts';
@@ -53,17 +54,8 @@ export function excluded(name: string) {
 }
 
 export function collectFiles(dir: string, keep: (path: string) => boolean = () => true) {
-  const found: string[] = [];
-  const walk = (current: string) => {
-    for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (excluded(entry.name) || entry.name.startsWith('.')) continue;
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (keep(full)) found.push(full);
-    }
-  };
-  if (existsSync(dir)) walk(dir);
-  return found;
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir, { skip: (name) => excluded(name) || name.startsWith('.') }).filter(keep);
 }
 
 export function reset(dir: string) {
