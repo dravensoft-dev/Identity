@@ -6,9 +6,10 @@
  * frameworks/angular/test/NodeAssert.ts compares identity and renders the operands itself;
  * this gate is what keeps the raw form from coming back. NodeAssert.ts has the measurement. */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const SUITE_ROOT = 'frameworks/angular';
@@ -54,22 +55,8 @@ export function isNodeExpression(argument: string) {
   return NODE_MARKERS.test(argument) && !SCALAR_TAIL.test(argument.trim());
 }
 
-type DirEntry = { name: string; isDirectory(): boolean };
-
-export function suiteFiles(
-  root: string,
-  list: (dir: string, options: { withFileTypes: true }) => DirEntry[] = readdirSync,
-) {
-  const found: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of list(dir, { withFileTypes: true })) {
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.test.ts')) found.push(path);
-    }
-  };
-  walk(root);
-  return found.sort();
+export function suiteFiles(root: string) {
+  return walkFiles(root).filter((path) => path.endsWith('.test.ts')).sort();
 }
 
 export function assertionProblems(files: string[], read: (path: string) => string) {

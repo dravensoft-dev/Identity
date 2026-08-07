@@ -1,21 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { basename, join, relative, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { DOMAINS, SCRIPT_EXTENSIONS, SUITE_EXTENSIONS, STAYS_JAVASCRIPT,
   domainOfTestPath, isScript, isSuite } from './domains.ts';
 import { LAYERS } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
 
-function suitesUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...suitesUnder(full));
-    else if (isSuite(entry.name)) found.push(full);
-  }
-  return found;
-}
+const suitesUnder = (dir: string) => walkFiles(dir).filter((full) => isSuite(basename(full)));
 
 test('the five domains are the grid the repository is sorted by, and every layer is one of them', () => {
   assert.deepEqual(DOMAINS, ['core', 'react', 'angular', 'tailwind', 'arena']);
@@ -113,15 +105,7 @@ test('a .ts path classifies by its directory, so the domain survives the rename'
   assert.equal(domainOfTestPath('scripts/lib/arena/domains.test.ts'), 'arena');
 });
 
-function mjsUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...mjsUnder(full));
-    else if (entry.name.endsWith('.mjs')) found.push(full);
-  }
-  return found;
-}
+const mjsUnder = (dir: string) => walkFiles(dir).filter((full) => full.endsWith('.mjs'));
 
 test('every JavaScript left under scripts/ is one of the four on the record', () => {
   const left = mjsUnder(join(repoRoot, 'scripts'))

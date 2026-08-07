@@ -11,7 +11,8 @@
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
@@ -348,32 +349,18 @@ const CITING_TREES = LAYERS.map((layer) => join('frameworks', layer));
 const PATH_LIKE = /frameworks\/[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)+/g;
 const PAGE_LIKE = /\b[A-Za-z][A-Za-z0-9]*\.(?:card|demo)(?:\.generated)?\.(?:html|json|entry\.tsx|entry\.ts)\b/g;
 
+const CITING_SKIP = new Set(['node_modules', 'dist', 'build', 'vendor']);
+
+const scanned = (dir: string) =>
+  (existsSync(dir) ? walkFiles(dir, { skip: (name) => CITING_SKIP.has(name) }) : []);
+
 export function basenameIndex(base = root) {
-  const seen = new Set();
-  const walk = (dir: string) => {
-    if (!existsSync(dir)) return;
-    for (const entry of readdirSync(dir).sort()) {
-      if (entry === 'node_modules' || entry === 'dist' || entry === 'build' || entry === 'vendor') continue;
-      const path = join(dir, entry);
-      if (statSync(path).isDirectory()) walk(path);
-      else seen.add(entry);
-    }
-  };
-  walk(join(base, 'frameworks'));
-  return seen;
+  return new Set(scanned(join(base, 'frameworks')).map((path) => basename(path)));
 }
 
-export function* citingFiles(base = root) {
-  const walk = function* (dir: string): Generator<string> {
-    if (!existsSync(dir)) return;
-    for (const entry of readdirSync(dir).sort()) {
-      if (entry === 'node_modules' || entry === 'dist' || entry === 'build' || entry === 'vendor') continue;
-      const path = join(dir, entry);
-      if (statSync(path).isDirectory()) { yield* walk(path); continue; }
-      if (entry.endsWith('.prompt.md') || entry === 'AGENTS.md') yield path;
-    }
-  };
-  for (const tree of CITING_TREES) yield* walk(join(base, tree));
+export function citingFiles(base = root): string[] {
+  return CITING_TREES.flatMap((tree) => scanned(join(base, tree)))
+    .filter((path) => path.endsWith('.prompt.md') || basename(path) === 'AGENTS.md');
 }
 
 export function citationProblems(

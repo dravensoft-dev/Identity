@@ -7,8 +7,9 @@
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, existsSync, appendFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { testStep } from '../../check/arena/check-all.ts';
 import { DOMAINS, domainOfTestPath, isSuite } from '../../lib/arena/domains.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -67,17 +68,13 @@ export function tally(cases: { file: string | null; status: CaseStatus }[]) {
 }
 
 export function suiteDomains(dir: string) {
+  if (!existsSync(dir)) return [];
   const found = new Set<string>();
-  const walk = (current: string) => {
-    for (const entry of readdirSync(current, { withFileTypes: true })) {
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (!isSuite(entry.name)) continue;
-      const domain = domainOfTestPath(relative(repoRoot, full));
-      if (domain) found.add(domain);
-    }
-  };
-  if (existsSync(dir)) walk(dir);
+  for (const full of walkFiles(dir)) {
+    if (!isSuite(basename(full))) continue;
+    const domain = domainOfTestPath(relative(repoRoot, full));
+    if (domain) found.add(domain);
+  }
   return [...found].sort();
 }
 

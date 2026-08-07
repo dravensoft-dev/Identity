@@ -11,8 +11,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
-import { join, dirname, relative, sep } from 'node:path';
+import { readFileSync, existsSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { basename, join, dirname, relative, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { literalRanges, insideLiteral } from '../../lib/arena/comments.ts';
@@ -41,14 +41,7 @@ export function guardProblems(paths: string[], root = repoRoot) {
 }
 
 export function scriptsUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) { found.push(...scriptsUnder(full)); continue; }
-    if (!isScript(entry.name)) continue;
-    found.push(full);
-  }
-  return found;
+  return walkFiles(dir).filter((full) => isScript(basename(full)));
 }
 
 export const isInterpolated = (specifier: string) => specifier.includes('${');

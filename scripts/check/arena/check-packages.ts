@@ -11,7 +11,8 @@
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, dirname, basename, sep } from 'node:path';
+import { join, dirname, basename, relative, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
@@ -116,17 +117,10 @@ function exportTargets(exports: unknown) {
 export function globMatches(target: string, dir: string) {
   const rel = target.replace(/^\.\//, '');
   const pattern = new RegExp(`^${rel.split('*').map((p: string) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
-  const found: string[] = [];
-  const walk = (at: string, prefix: string) => {
-    if (!existsSync(at)) return;
-    for (const entry of readdirSync(at, { withFileTypes: true })) {
-      const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(join(at, entry.name), path);
-      else if (pattern.test(path)) found.push(path);
-    }
-  };
-  walk(dir, '');
-  return found;
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir)
+    .map((path) => relative(dir, path).split(sep).join('/'))
+    .filter((path) => pattern.test(path));
 }
 
 export function exportProblems(pkg: { layer: string; name: string }, manifest: PackageManifest, dir: string) {

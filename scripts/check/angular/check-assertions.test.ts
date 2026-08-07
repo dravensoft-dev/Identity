@@ -3,6 +3,9 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { assertionProblems, isNodeExpression, splitArguments, suiteFiles, SUITE_ROOT } from './check-assertions.ts';
 
 const scan = (source: string) => assertionProblems(['a.test.ts'], () => source);
@@ -77,15 +80,14 @@ test('an empty file set fails rather than passing vacuously', () => {
 });
 
 test('suiteFiles collects only .test.ts, and walks the whole layer', () => {
-  const tree: Record<string, { name: string; isDirectory: () => boolean }[]> = {
-    '/root': [
-      { name: 'A.test.ts', isDirectory: () => false },
-      { name: 'NodeAssert.ts', isDirectory: () => false },
-      { name: 'nested', isDirectory: () => true },
-    ],
-    '/root/nested': [{ name: 'B.test.ts', isDirectory: () => false }],
-  };
-  assert.deepEqual(suiteFiles('/root', (dir) => tree[dir] ?? []), ['/root/A.test.ts', '/root/nested/B.test.ts']);
+  const root = mkdtempSync(join(tmpdir(), 'arena-assertions-'));
+  try {
+    mkdirSync(join(root, 'nested'));
+    for (const rel of ['A.test.ts', 'NodeAssert.ts', 'nested/B.test.ts']) writeFileSync(join(root, rel), '');
+    assert.deepEqual(suiteFiles(root), [join(root, 'A.test.ts'), join(root, 'nested', 'B.test.ts')],
+      'the fixture is a real directory rather than an injected lister, because a walk mocked over '
+      + 'an object literal proves the mock');
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
 test('the gate is pointed at the Angular layer, the one whose suites share a document', () => {

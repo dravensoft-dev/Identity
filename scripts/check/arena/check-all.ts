@@ -10,9 +10,9 @@
  * Read the args here, never reconstruct them. */
 
 import { spawnSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
 
@@ -138,13 +138,7 @@ function runStep(name: string, args: string[]) {
 }
 
 export function testFilesUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...testFilesUnder(full));
-    else if (isSuite(entry.name)) found.push(full);
-  }
-  return found;
+  return walkFiles(dir).filter((full) => isSuite(basename(full)));
 }
 
 function main() {
