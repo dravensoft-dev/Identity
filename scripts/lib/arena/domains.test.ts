@@ -26,7 +26,7 @@ test('a script suite is classified by the domain directory it sits in, whatever 
 test('a util sits under no phase and is arena, which is what belongs to no one layer means', () => {
   assert.equal(domainOfTestPath('scripts/utils/walk-files.test.ts'), 'arena');
   assert.equal(domainOfTestPath('scripts/utils/read-file.test.ts'), 'arena');
-  assert.equal(domainOfTestPath('/runner/work/Identity/Identity/scripts/utils/walk-files.test.ts'), 'arena',
+  assert.equal(domainOfTestPath('/runner/work/arena/arena/scripts/utils/walk-files.test.ts'), 'arena',
     'a junit report names the file a runner wrote, and it may name it absolutely');
   assert.equal(DOMAINS.includes('utils'), false,
     'utils is a directory and not a sixth domain: a domain states the vocabulary a module speaks '
@@ -49,8 +49,8 @@ test("the Angular suites run from the emit, and the emit is still the Angular la
 });
 
 test('an absolute path is classified, because a junit report names the files a runner wrote', () => {
-  assert.equal(domainOfTestPath('/runner/work/Identity/Identity/frameworks/react/a.test.tsx'), 'react');
-  assert.equal(domainOfTestPath('/runner/work/Identity/Identity/scripts/lib/core/serialize-token.test.ts'), 'core');
+  assert.equal(domainOfTestPath('/runner/work/arena/arena/frameworks/react/a.test.tsx'), 'react');
+  assert.equal(domainOfTestPath('/runner/work/arena/arena/scripts/lib/core/serialize-token.test.ts'), 'core');
 });
 
 test('a checkout under a directory of an anchor name does not decide every path in the run', () => {

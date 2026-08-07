@@ -127,7 +127,9 @@ export function manifest(root = repoRoot) {
   return {
     name: NAME,
     description: 'Arena, the Dravensoft design system: React components styled entirely by design tokens.',
-    keywords: ['design-system', 'react', 'ui', 'arena', 'dravensoft', 'design-tokens'],
+    keywords: ['design-system', 'react', 'ui', 'ui-components', 'arena', 'dravensoft',
+      'design-tokens', 'dtcg', 'tailwindcss', 'themeable', 'accessibility', 'claude-code',
+      'agent-skills', 'ai-agents'],
     type: 'module',
     sideEffects: ['*.css'],
     ...baseManifest(root),

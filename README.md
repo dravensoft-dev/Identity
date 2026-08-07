@@ -1,11 +1,25 @@
 # Arena, the Dravensoft Design System
 
+[![npm react](https://img.shields.io/npm/v/@dravensoft/arena-react?style=flat-square&color=c5a059&label=arena-react)](https://www.npmjs.com/package/@dravensoft/arena-react)
+[![npm angular](https://img.shields.io/npm/v/@dravensoft/arena-angular?style=flat-square&color=c5a059&label=arena-angular)](https://www.npmjs.com/package/@dravensoft/arena-angular)
+[![downloads](https://img.shields.io/npm/dm/@dravensoft/arena-react?style=flat-square&color=c5a059&label=downloads)](https://www.npmjs.com/package/@dravensoft/arena-react)
+[![license](https://img.shields.io/npm/l/@dravensoft/arena-react?style=flat-square&color=c5a059)](./LICENSE)
+
 MIT License · Token-driven design system for React, Angular and Tailwind.
 
 **Arena** is the single interface language under which every Dravensoft software product is built.
 
+**It is built to be operated by an agent.** Every value traces to a design token, every
+component's API and every accessibility pattern it binds is a contract file rather than a
+paragraph, and a gate holds the code, the documentation and the published packages to those
+contracts. An agent handed this repository does not guess at Arena: it reads the contract that
+governs what it is about to write, and the gate tells it when it got it wrong.
+
+**Three ways to take it**, and they compose: an npm package for React or for Angular, a Claude
+Code plugin, and a standalone Agent Skill in [`SKILL.md`](./SKILL.md) that any agent can read.
+
 ## Latest project artifacts
-- **Repo/Claude Code plugin**: 6.0.1
+- **Repo/Claude Code plugin**: 6.0.2
 - [npm React package](https://www.npmjs.com/package/@dravensoft/arena-react?activeTab=versions)
 - [npm Angular package](https://www.npmjs.com/package/@dravensoft/arena-angular?activeTab=versions)
 
@@ -16,7 +30,7 @@ Arena ships three ways: as a **Claude Code plugin**, as two **npm packages**, an
 Inside Claude Code, add the marketplace and install the plugin:
 
 ```
-/plugin marketplace add dravensoft-dev/Identity
+/plugin marketplace add dravensoft-dev/arena
 /plugin install arena@dravensoft
 /reload-plugins
 ```

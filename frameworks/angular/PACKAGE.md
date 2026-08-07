@@ -1,5 +1,9 @@
 # @dravensoft/arena-angular
 
+[![npm](https://img.shields.io/npm/v/@dravensoft/arena-angular?style=flat-square&color=c5a059&label=npm)](https://www.npmjs.com/package/@dravensoft/arena-angular)
+[![downloads](https://img.shields.io/npm/dm/@dravensoft/arena-angular?style=flat-square&color=c5a059)](https://www.npmjs.com/package/@dravensoft/arena-angular)
+[![license](https://img.shields.io/npm/l/@dravensoft/arena-angular?style=flat-square&color=c5a059)](https://github.com/dravensoft-dev/arena/blob/main/LICENSE)
+
 Arena is Dravensoft's design system. This package is its Angular layer: 50 standalone
 `OnPush` components with signal inputs and outputs, styled by a shared Tailwind recipe per
 component, and shipped in Angular Package Format.
@@ -22,7 +26,7 @@ were authored and nothing more, so a `--spacing` of your own moves nothing here.
 
 ## It works with the repository, and that is the point
 
-Source, guidelines and full documentation: **https://github.com/dravensoft-dev/Identity**
+Source, guidelines and full documentation: **https://github.com/dravensoft-dev/arena**
 
 That repository is not just where the code comes from. It ships as a **Claude Code plugin**
 and as an **Agent Skill**, and installing either hands an agent the whole design language:
@@ -305,7 +309,7 @@ sheet.
 
 ## Why might this package's latest version not match Arena's latest version?
 
-[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/AGENTS.md#why-are-the-published-package-versions-not-identical)
+[Why are the published package versions not identical?](https://github.com/dravensoft-dev/arena/blob/main/.github/workflows/AGENTS.md#why-are-the-published-package-versions-not-identical)
 
 ## License
 
