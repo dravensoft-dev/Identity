@@ -12,6 +12,9 @@ import {
 } from '../ChartScales';
 import { arenaBarPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
+import { arenaChartTable } from '../ChartSeries';
+import { arenaTooltipAnchor } from '../ChartTooltip';
+import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
 
@@ -27,20 +30,8 @@ const CATEGORY_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Rea
 
 const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as const satisfies Readonly<Record<string, string>>;
 
-const TOOLTIP_STYLE = {
-  position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none',
-  whiteSpace: 'nowrap', background: 'var(--bg-raised)',
-  border: 'var(--bw) solid var(--border-strong)', borderRadius: 'var(--r-sm)',
-  boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
-} as const satisfies Readonly<Record<string, string>>;
 
-const TOOLTIP_LABEL_STYLE = {
-  fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)',
-} as const satisfies Readonly<Record<string, string>>;
 
-const TOOLTIP_VALUE_STYLE = {
-  fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)',
-} as const satisfies Readonly<Record<string, string>>;
 
 @Component({
   selector: 'arena-bar-chart',
@@ -86,8 +77,7 @@ const TOOLTIP_VALUE_STYLE = {
     </div>
 
     @if (active(); as point) {
-      <div [style]="tooltipStyle" [style.left.px]="point.midX"
-           [style.top]="'calc(' + point.y + 'px - var(--sp-2))'">
+      <div [style]="tooltipStyle" [style.left.px]="point.anchor.left" [style.top]="point.anchor.top">
         <div [style]="tooltipLabelStyle">{{ point.label }}</div>
         <div [style]="tooltipValueStyle">{{ point.value }}</div>
       </div>
@@ -95,10 +85,10 @@ const TOOLTIP_VALUE_STYLE = {
 
     <table [style]="arenaSrOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Category</th><th>{{ seriesLabel() }}</th></tr></thead>
+      <thead><tr>@for (column of table().columns; track $index) { <th>{{ column }}</th> }</tr></thead>
       <tbody>
-        @for (bar of bars(); track bar.index) {
-          <tr><th scope="row">{{ bar.label }}</th><td>{{ bar.value }}</td></tr>
+        @for (row of table().rows; track $index) {
+          <tr><th scope="row">{{ row.header }}</th>@for (cell of row.cells; track $index) { <td>{{ cell }}</td> }</tr>
         }
       </tbody>
     </table>
@@ -134,9 +124,9 @@ export class ArenaBarChart {
   protected readonly tickLabelStyle = TICK_LABEL_STYLE;
   protected readonly categoryLabelStyle = CATEGORY_LABEL_STYLE;
   protected readonly barStyle = BAR_STYLE;
-  protected readonly tooltipStyle = TOOLTIP_STYLE;
-  protected readonly tooltipLabelStyle = TOOLTIP_LABEL_STYLE;
-  protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
+  protected readonly tooltipStyle = ARENA_TOOLTIP_STYLE;
+  protected readonly tooltipLabelStyle = ARENA_TOOLTIP_LABEL_STYLE;
+  protected readonly tooltipValueStyle = ARENA_TOOLTIP_VALUE_STYLE;
   protected readonly tickLabelX = arenaTickLabelX();
   protected readonly categoryLabelY = computed(() => arenaCategoryLabelY(this.height()));
   protected readonly hover = signal<number | null>(null);
@@ -200,6 +190,7 @@ export class ArenaBarChart {
         hitX: arenaBandStart(bands, index),
         midX: arenaBandCenter(bands, index),
         y,
+        anchor: arenaTooltipAnchor(arenaBandCenter(bands, index), y),
         path: arenaBarPath(arenaBandMark(bands, index), y, bands.band, baseline - y, BAR_RADIUS),
         color: colors[index],
         label: this.labels()[index] ?? '',
@@ -207,6 +198,10 @@ export class ArenaBarChart {
       };
     });
   });
+
+  protected readonly table = computed(() => arenaChartTable(
+    'Category', this.seriesLabel(), this.labels(), this.values(), this.write(),
+  ));
 
   protected readonly active = computed(() => {
     const index = this.hover();

@@ -293,10 +293,10 @@ test('a nested-parens call is deliberately out of scope, not misread', () => {
 });
 
 test('EXEMPT records the data-to-pixel projections, by name', () => {
-  assert.ok(EXEMPT.has('frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${arenaValueY(yScale, values[hover])}px - var(--sp-2))`'));
-  assert.ok(EXEMPT.has('frameworks/react/components/charts/arena-line-chart/ArenaLineChart.tsx:top:`calc(${arenaValueY(yScale, values[hover])}px - calc(var(--sp-1) * 2.5))`'));
+  assert.ok(EXEMPT.has('frameworks/react/components/charts/ChartTooltip.ts:top:`calc(${y}px - var(--chart-tooltip-offset))`'));
+  assert.ok(EXEMPT.has('frameworks/angular/components/charts/ChartTooltip.ts:top:`calc(${y}px - var(--chart-tooltip-offset))`'));
   assert.ok(!EXEMPT.has('frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`'),
-    'the ad-hoc yOf closure is the shared y scale now, so the projection it exempted is spelt differently');
+    'both charts anchor their tooltip through one paired module now, so neither spells the projection for itself');
   assert.ok(EXEMPT.has('frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`'));
   assert.ok(!EXEMPT.has('frameworks/react/components/display/arena-avatar/ArenaAvatar.tsx:fontSize:d * 0.4'));
   assert.ok(!EXEMPT.has('frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:top:`calc(${y(m)}px - var(--sp-1))`'),

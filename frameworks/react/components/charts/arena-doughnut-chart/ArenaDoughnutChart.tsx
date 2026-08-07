@@ -3,8 +3,9 @@ import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import { arenaResolveColors, arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { arenaDoughnutSlices } from '../ChartScales.ts';
 import { arenaArcPath } from '../ChartMarks.ts';
-import { arenaDoughnutLegendWidth, arenaDoughnutPlotWidth, arenaDoughnutRadii } from '../ChartAxis.ts';
-import { chartLegendMax } from '../../../Tokens.generated.js';
+import { arenaDoughnutRadii } from '../ChartAxis.ts';
+import { arenaLegendPlotWidth, arenaLegendStacked } from '../ChartLegend.ts';
+import { arenaChartTable } from '../ChartSeries.ts';
 
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
 
@@ -55,14 +56,14 @@ export function ArenaDoughnutChart({
   const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
   const colors = arenaResolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
 
-  const legendW = arenaDoughnutLegendWidth(width);
-  const stacked = legendLayout === 'auto' ? legendW < chartLegendMax : legendLayout === 'stacked';
-  const plotW = arenaDoughnutPlotWidth(width);
+  const stacked = arenaLegendStacked(legendLayout, width);
+  const plotW = arenaLegendPlotWidth(width);
   const cx = plotW / 2;
   const cy = height / 2;
   const { outer: rOuter, inner: rInner } = arenaDoughnutRadii(plotW, height);
 
   const name = `${seriesLabel} — doughnut chart`;
+  const table = arenaChartTable('Category', seriesLabel, labels, values, fmt);
 
   const segments = arenaDoughnutSlices(values);
 
@@ -89,12 +90,14 @@ export function ArenaDoughnutChart({
       {
 
 }
-      <div tabIndex={0} role="group" aria-label="Doughnut chart legend"
+      <div role="group" aria-label="Doughnut chart legend"
         style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {values.map((_, i) => (
-          <div key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
+          <button key={i} type="button" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
+            onFocus={() => setHover(i)} onBlur={() => setHover(null)}
             onClick={() => onSliceActivate?.(i)}
-            style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', cursor: 'pointer', opacity: hover === null || hover === i ? 1 : 0.55 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', cursor: 'pointer', opacity: hover === null || hover === i ? 1 : 0.55,
+              background: 'none', border: 0, padding: 0, margin: 0, font: 'inherit', color: 'inherit', textAlign: 'left', width: '100%' }}>
             <span aria-hidden="true" style={{ width: 'calc(var(--sp-1) * 2.5)', height: 'calc(var(--sp-1) * 2.5)', borderRadius: 'var(--r-xs)', background: colors[i], flexShrink: 0 }} />
             <span style={stacked
               ? { display: 'flex', flex: 1, minWidth: 0, flexDirection: 'column', alignItems: 'stretch' }
@@ -103,15 +106,17 @@ export function ArenaDoughnutChart({
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{labels[i] ?? ''}</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)' }}>{fmt(values[i] ?? 0)}</span>
             </span>
-          </div>
+          </button>
         ))}
       </div>
 
       <table style={arenaSrOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
+        <thead><tr>{table.columns.map((column, i) => <th key={i}>{column}</th>)}</tr></thead>
         <tbody>
-          {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
+          {table.rows.map((row, i) => (
+            <tr key={i}><th scope="row">{row.header}</th>{row.cells.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
+          ))}
         </tbody>
       </table>
     </div>

@@ -1,10 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
-import {
-  arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY,
-  arenaDoughnutLegendWidth, arenaDoughnutPlotWidth, arenaDoughnutRadii,
-} from './ChartAxis';
+import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY, arenaDoughnutRadii } from './ChartAxis';
 import { arenaLinearScale } from './ChartScales';
 
 test('the tick label ends one label gap left of the plot, inside the left pad', () => {
@@ -50,37 +47,6 @@ test('a tick is placed by the scale itself, never floored the way a datum is', (
 
 test('no ticks produce no lines, rather than one at the origin', () => {
   assert.deepEqual(arenaAxisTicks(arenaLinearScale(0, 100, 252, 8), [], String), []);
-});
-
-test('the legend takes 34% of a mid-size container', () => {
-  assert.ok(Math.abs(arenaDoughnutLegendWidth(400) - 136) < 1e-9);
-});
-
-test('the legend never falls below its floor, however narrow the container', () => {
-
-  for (const width of [0, 1, 100, 352]) assert.equal(arenaDoughnutLegendWidth(width), 120, `at width ${width}`);
-});
-
-test('the legend never exceeds its ceiling, however wide the container', () => {
-  for (const width of [530, 600, 4000]) assert.equal(arenaDoughnutLegendWidth(width), 180, `at width ${width}`);
-});
-
-test('the plot is what is left after the legend and the gap between them', () => {
-  assert.equal(arenaDoughnutPlotWidth(600), 600 - 180 - 16);
-});
-
-test('the plot width stays positive even in a container narrower than the legend alone', () => {
-  for (const width of [0, 1, 50, 120]) {
-    const plot = arenaDoughnutPlotWidth(width);
-    assert.ok(plot >= 1, `plot width was ${plot} at container width ${width}`);
-  }
-});
-
-test('the plot and the legend and the gap never claim more than the container has', () => {
-  for (const width of [200, 400, 600, 1200]) {
-    const used = arenaDoughnutPlotWidth(width) + arenaDoughnutLegendWidth(width) + 16;
-    assert.ok(used <= width + 1e-9, `the layout claimed ${used} of a ${width}px container`);
-  }
 });
 
 test('the ring fits the smaller of the plot\'s two axes, inset so its stroke is not clipped', () => {

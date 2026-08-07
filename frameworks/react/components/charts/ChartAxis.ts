@@ -1,5 +1,5 @@
 import { ARENA_PAD } from '../../DataVisuals.ts';
-import { chartLabelGap, chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../Tokens.generated.js';
+import { chartLabelGap, chartRingInset } from '../../Tokens.generated.js';
 import type { ArenaLinearScale } from './ChartScales.ts';
 import { arenaScaleValue } from './ChartScales.ts';
 
@@ -37,14 +37,6 @@ export function arenaTickLabelX(): number {
 
 export function arenaCategoryLabelY(height: number): number {
   return height - chartLabelGap;
-}
-
-export function arenaDoughnutLegendWidth(width: number): number {
-  return Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
-}
-
-export function arenaDoughnutPlotWidth(width: number): number {
-  return Math.max(1, width - arenaDoughnutLegendWidth(width) - chartLegendGap);
 }
 
 export function arenaDoughnutRadii(plotWidth: number, height: number): { outer: number; inner: number } {

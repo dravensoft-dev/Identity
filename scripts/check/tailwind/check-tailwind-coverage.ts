@@ -39,6 +39,7 @@ export const EXCLUDED = new Map([
   ['chart-bar-gap', 'script-readable: subtracted from the per-bar step width'],
   ['chart-point-r', 'script-readable: an SVG circle r attribute computed per point'],
   ['chart-point-r-hover', 'script-readable: an SVG circle r attribute computed per point'],
+  ['chart-tooltip-offset', 'read inside a calc() beside a runtime px projection of the hovered datum, so the whole expression is inline and no utility could carry it'],
   ['chart-legend-min', 'script-readable: a clamp bound compared against a measured width'],
   ['chart-legend-max', 'script-readable: a clamp bound compared against a measured width'],
   ['chart-legend-gap', 'script-readable: subtracted from a measured width to size the plot'],

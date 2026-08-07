@@ -12,6 +12,9 @@ import {
 } from '../ChartScales';
 import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
+import { arenaChartTable } from '../ChartSeries';
+import { arenaTooltipAnchor } from '../ChartTooltip';
+import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
 
@@ -28,20 +31,8 @@ const TICK_LABEL_STYLE = { fontSize: 'var(--dz-text-2xs)' } as const satisfies R
 
 const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readonly<Record<string, string>>;
 
-const TOOLTIP_STYLE = {
-  position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none',
-  whiteSpace: 'nowrap', background: 'var(--bg-raised)',
-  border: 'var(--bw) solid var(--border-strong)', borderRadius: 'var(--r-sm)',
-  boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
-} as const satisfies Readonly<Record<string, string>>;
 
-const TOOLTIP_LABEL_STYLE = {
-  fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)',
-} as const satisfies Readonly<Record<string, string>>;
 
-const TOOLTIP_VALUE_STYLE = {
-  fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)',
-} as const satisfies Readonly<Record<string, string>>;
 
 @Component({
   selector: 'arena-line-chart',
@@ -100,8 +91,7 @@ const TOOLTIP_VALUE_STYLE = {
     </div>
 
     @if (active(); as point) {
-      <div [style]="tooltipStyle" [style.left.px]="point.x"
-           [style.top]="'calc(' + point.y + 'px - calc(var(--sp-1) * 2.5))'">
+      <div [style]="tooltipStyle" [style.left.px]="point.anchor.left" [style.top]="point.anchor.top">
         <div [style]="tooltipLabelStyle">{{ point.label }}</div>
         <div [style]="tooltipValueStyle">{{ point.formatted }}</div>
       </div>
@@ -109,10 +99,10 @@ const TOOLTIP_VALUE_STYLE = {
 
     <table [style]="arenaSrOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Point</th><th>{{ seriesLabel() }}</th></tr></thead>
+      <thead><tr>@for (column of table().columns; track $index) { <th>{{ column }}</th> }</tr></thead>
       <tbody>
-        @for (point of points(); track point.index) {
-          <tr><th scope="row">{{ point.label }}</th><td>{{ point.formatted }}</td></tr>
+        @for (row of table().rows; track $index) {
+          <tr><th scope="row">{{ row.header }}</th>@for (cell of row.cells; track $index) { <td>{{ cell }}</td> }</tr>
         }
       </tbody>
     </table>
@@ -148,9 +138,9 @@ export class ArenaLineChart {
   protected readonly seriesStrokeStyle = SERIES_STROKE_STYLE;
   protected readonly tickLabelStyle = TICK_LABEL_STYLE;
   protected readonly pointLabelStyle = POINT_LABEL_STYLE;
-  protected readonly tooltipStyle = TOOLTIP_STYLE;
-  protected readonly tooltipLabelStyle = TOOLTIP_LABEL_STYLE;
-  protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
+  protected readonly tooltipStyle = ARENA_TOOLTIP_STYLE;
+  protected readonly tooltipLabelStyle = ARENA_TOOLTIP_LABEL_STYLE;
+  protected readonly tooltipValueStyle = ARENA_TOOLTIP_VALUE_STYLE;
   protected readonly pointR = POINT_R;
   protected readonly pointRHover = POINT_R_HOVER;
   protected readonly tickLabelX = arenaTickLabelX();
@@ -211,17 +201,19 @@ export class ArenaLineChart {
     const yScale = this.yScale();
     const xScale = this.xScale();
     const write = this.write();
-    return values.map((value, index) => ({
-      index,
-      x: arenaPointAt(xScale, index),
-      y: arenaValueY(yScale, value),
-      label: this.labels()[index] ?? '',
-      formatted: write(value),
-    }));
+    return values.map((value, index) => {
+      const x = arenaPointAt(xScale, index);
+      const y = arenaValueY(yScale, value);
+      return { index, x, y, anchor: arenaTooltipAnchor(x, y), label: this.labels()[index] ?? '', formatted: write(value) };
+    });
   });
 
   protected readonly polyline = computed(() => arenaLinePoints(this.points()));
   protected readonly areaPath = computed(() => arenaLineAreaPath(this.points(), this.baseline()));
+
+  protected readonly table = computed(() => arenaChartTable(
+    'Point', this.seriesLabel(), this.labels(), this.values(), this.write(),
+  ));
 
   protected readonly active = computed(() => {
     const index = this.hover();

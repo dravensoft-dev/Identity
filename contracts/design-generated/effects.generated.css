@@ -152,6 +152,16 @@
      affordance: the pair only means anything together.
    */
   --chart-point-r-hover:5px;
+  /*
+     Between the mark under the pointer and the tooltip's near edge. Not script-readable:
+     the chart interpolates the mark's own y into a calc() and CSS subtracts this from it, so
+     the stylesheet is what consumes the token. It settles a disagreement rather than recording
+     one: the bar chart offset its tooltip by --sp-2 and the line chart by 2.5 steps of --sp-1,
+     which is 10px against 8px for the same affordance. Naming it moves the line chart's tooltip
+     2px, and that is a visible design change taken deliberately, the same way chart.bar-radius
+     refuses to snap to --r-sm because doing so would be one.
+   */
+  --chart-tooltip-offset:8px;
   --chart-legend-min:120px; /* Doughnut legend, narrowest. */
   --chart-legend-max:180px; /* Doughnut legend, widest. */
   --chart-legend-gap:16px; /* Between the doughnut plot and its legend. */

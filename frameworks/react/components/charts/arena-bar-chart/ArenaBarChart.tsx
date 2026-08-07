@@ -9,6 +9,8 @@ import {
 } from '../ChartScales.ts';
 import { arenaBarPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
+import { arenaChartTable } from '../ChartSeries.ts';
+import { arenaTooltipAnchor } from '../ChartTooltip.ts';
 import { chartBarGap, chartBarRadius } from '../../../Tokens.generated.js';
 
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
@@ -83,6 +85,7 @@ export function ArenaBarChart({
   const baseline = arenaScaleZero(yScale);
 
   const name = `${seriesLabel} — bar chart`;
+  const table = arenaChartTable('Category', seriesLabel, labels, values, fmt);
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
@@ -129,10 +132,10 @@ export function ArenaBarChart({
 
       {hover !== null && values[hover] !== undefined && (
         <div style={{
-          position: 'absolute', left: arenaBandCenter(bands, hover), top: `calc(${arenaValueY(yScale, values[hover])}px - var(--sp-2))`,
-          transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
+          position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
+          ...arenaTooltipAnchor(arenaBandCenter(bands, hover), arenaValueY(yScale, values[hover])),
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>
@@ -142,9 +145,11 @@ export function ArenaBarChart({
       {}
       <table style={arenaSrOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
+        <thead><tr>{table.columns.map((column, i) => <th key={i}>{column}</th>)}</tr></thead>
         <tbody>
-          {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
+          {table.rows.map((row, i) => (
+            <tr key={i}><th scope="row">{row.header}</th>{row.cells.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
+          ))}
         </tbody>
       </table>
     </div>

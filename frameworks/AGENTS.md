@@ -219,6 +219,17 @@ an Angular template cannot call a closure held in a `computed()` without rebuild
 cycle. So `arenaLinearScale(min, max, from, to)` returns a record and `arenaScaleValue(scale,
 value)` reads it. A y axis passes an inverted pixel range, bottom first, which is why "up is
 more" needs no minus sign and `arenaScaleZero(scale)` falls out of the same arithmetic.
+**A shared appearance module is a manifest, and these charts have none by charter**, so the
+tooltip's arithmetic and its appearance part company. `ChartTooltip.ts` is paired and holds
+`arenaTooltipAnchor(x, y)`, which is where the hovered datum meets `--chart-tooltip-offset`; the
+style objects stay where each layer already kept them. Angular's were module-level constants
+duplicated across two components and now sit once in `ChartTooltipStyles.ts`, which is
+deliberately **not** in `PAIRED` because its members are constants rather than functions, and
+`check-shared-arithmetic.ts` compares only functions. React has no counterpart on purpose:
+`check-appearance.ts` excuses a chart that draws geometry but not a loose module beside it, so
+lifting the same literals out of the JSX would ask for the manifest the charter refuses. **Do
+not add one.**
+
 **`ArenaPlotBox` spells its size `w` and `h` rather than `width` and `height`**, because
 `check-dimension-literals.ts` reads a property named `width` as a CSS dimension and follows the
 local it was assigned from, so a plot box would report its `Math.max(1, ...)` floor as a raw px

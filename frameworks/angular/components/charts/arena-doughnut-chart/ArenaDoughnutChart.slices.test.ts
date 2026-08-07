@@ -70,7 +70,7 @@ function click(el: Element): void {
 }
 
 function textWrapper(fixture: ComponentFixture<DoughnutHost>): HTMLElement {
-  return host(fixture).querySelector('[role="group"] > div > span:nth-child(2)') as HTMLElement;
+  return host(fixture).querySelector('[role="group"] > button > span:nth-child(2)') as HTMLElement;
 }
 
 test('a zero-valued slice paints no path, so the drawn shapes are not the values', async () => {
@@ -97,7 +97,7 @@ test('the index carried is the index in values, not the index among the drawn pa
 test('a legend row reports the same index the arc does, including for the slice with no arc', async () => {
   const fixture = await render();
   try {
-    const rows = [...host(fixture).querySelectorAll('[role="group"] > div')];
+    const rows = [...host(fixture).querySelectorAll('[role="group"] > button')];
     assert.equal(rows.length, 4, 'the legend lists every value, arc or no arc');
 
     click(rows[2]!);

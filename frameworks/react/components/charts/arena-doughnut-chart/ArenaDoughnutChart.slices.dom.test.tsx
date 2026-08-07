@@ -68,7 +68,7 @@ test('the index carried is the index in values, not the index among the drawn pa
 test('a legend row reports the same index the arc does, including for the slice with no arc', () => {
   const seen: number[] = [];
   const root = render({ seen });
-  const rows = [...root.querySelectorAll('[role="group"] > div')];
+  const rows = [...root.querySelectorAll('[role="group"] > button')];
   assert.equal(rows.length, 4, 'the legend lists every value, arc or no arc');
 
   click(rows[2]!);
@@ -78,27 +78,27 @@ test('a legend row reports the same index the arc does, including for the slice 
 
 test('a narrow legend stacks the concept over the figure, and a wide one keeps one line', () => {
   const narrow = widths(390, () => render());
-  const wideRow = () => narrow.querySelector('[role="group"] > div > span:nth-child(2)') as HTMLElement;
+  const wideRow = () => narrow.querySelector('[role="group"] > button > span:nth-child(2)') as HTMLElement;
   assert.equal(wideRow().style.flexDirection, 'column',
     'on one line the figure does not yield, so the concept is what gets truncated');
 
   cleanup();
   const wide = widths(1200, () => render());
-  const row = wide.querySelector('[role="group"] > div > span:nth-child(2)') as HTMLElement;
+  const row = wide.querySelector('[role="group"] > button > span:nth-child(2)') as HTMLElement;
   assert.notEqual(row.style.flexDirection, 'column');
 });
 
 test('the layout can be pinned either way, whatever the container measures', () => {
   const forced = widths(1200, () => render({ legendLayout: 'stacked' }));
   assert.equal(
-    (forced.querySelector('[role="group"] > div > span:nth-child(2)') as HTMLElement).style.flexDirection,
+    (forced.querySelector('[role="group"] > button > span:nth-child(2)') as HTMLElement).style.flexDirection,
     'column',
   );
 
   cleanup();
   const inline = widths(390, () => render({ legendLayout: 'inline' }));
   assert.notEqual(
-    (inline.querySelector('[role="group"] > div > span:nth-child(2)') as HTMLElement).style.flexDirection,
+    (inline.querySelector('[role="group"] > button > span:nth-child(2)') as HTMLElement).style.flexDirection,
     'column',
   );
 });

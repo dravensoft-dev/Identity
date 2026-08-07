@@ -3,13 +3,12 @@ import { arenaContainerWidth } from '../../../ContainerSize';
 import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaResolveColors, arenaValueWriter } from '../../../DataVisuals';
 import { arenaDoughnutSlices } from '../ChartScales';
 import { arenaArcPath } from '../ChartMarks';
-import { arenaDoughnutLegendWidth, arenaDoughnutPlotWidth, arenaDoughnutRadii } from '../ChartAxis';
+import { arenaDoughnutRadii } from '../ChartAxis';
+import { arenaLegendPlotWidth, arenaLegendStacked } from '../ChartLegend';
+import { arenaChartTable } from '../ChartSeries';
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
-import { chartLegendMax } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
-
-const LEGEND_STACK_BELOW = chartLegendMax;
 
 const DIM_OPACITY = 0.55;
 
@@ -28,6 +27,8 @@ const LEGEND_STYLE = {
 
 const LEGEND_ROW_STYLE = {
   display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 2)', cursor: 'pointer',
+  background: 'none', border: '0', padding: '0', margin: '0', font: 'inherit',
+  color: 'inherit', textAlign: 'left', width: '100%',
 } as const satisfies Readonly<Record<string, string>>;
 
 const LEGEND_TEXT_INLINE_STYLE = {
@@ -79,27 +80,28 @@ const LEGEND_VALUE_STYLE = {
       }
     </svg>
 
-    <div [style]="legendStyle" tabindex="0" role="group" aria-label="Doughnut chart legend">
+    <div [style]="legendStyle" role="group" aria-label="Doughnut chart legend">
       @for (segment of segments(); track segment.index) {
-        <div [style]="legendRowStyle"
-             [style.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
-             (mouseenter)="hover.set(segment.index)" (mouseleave)="hover.set(null)"
-             (click)="sliceActivate.emit(segment.index)">
+        <button type="button" [style]="legendRowStyle"
+                [style.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
+                (mouseenter)="hover.set(segment.index)" (mouseleave)="hover.set(null)"
+                (focus)="hover.set(segment.index)" (blur)="hover.set(null)"
+                (click)="sliceActivate.emit(segment.index)">
           <span aria-hidden="true" [style]="swatchStyle" [style.background]="segment.color"></span>
           <span [style]="legendTextStyle()">
             <span [style]="legendLabelStyle">{{ segment.label }}</span>
             <span [style]="legendValueStyle">{{ segment.formatted }}</span>
           </span>
-        </div>
+        </button>
       }
     </div>
 
     <table [style]="arenaSrOnly">
       <caption>{{ name() }}</caption>
-      <thead><tr><th>Category</th><th>{{ seriesLabel() }}</th></tr></thead>
+      <thead><tr>@for (column of table().columns; track $index) { <th>{{ column }}</th> }</tr></thead>
       <tbody>
-        @for (segment of segments(); track segment.index) {
-          <tr><th scope="row">{{ segment.label }}</th><td>{{ segment.formatted }}</td></tr>
+        @for (row of table().rows; track $index) {
+          <tr><th scope="row">{{ row.header }}</th>@for (cell of row.cells; track $index) { <td>{{ cell }}</td> }</tr>
         }
       </tbody>
     </table>
@@ -146,11 +148,7 @@ export class ArenaDoughnutChart {
 
   private readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
-  protected readonly stacked = computed(() => {
-    const choice = this.legendLayout();
-    if (choice !== 'auto') return choice === 'stacked';
-    return arenaDoughnutLegendWidth(this.width()) < LEGEND_STACK_BELOW;
-  });
+  protected readonly stacked = computed(() => arenaLegendStacked(this.legendLayout(), this.width()));
 
   protected readonly legendTextStyle = computed(
     () => (this.stacked() ? LEGEND_TEXT_STACKED_STYLE : LEGEND_TEXT_INLINE_STYLE),
@@ -161,7 +159,7 @@ export class ArenaDoughnutChart {
     return `${series} — doughnut chart`;
   });
 
-  protected readonly arenaPlotWidth = computed(() => arenaDoughnutPlotWidth(this.width()));
+  protected readonly arenaPlotWidth = computed(() => arenaLegendPlotWidth(this.width()));
   protected readonly centreX = computed(() => this.arenaPlotWidth() / 2);
   protected readonly centreY = computed(() => this.height / 2);
 
@@ -184,6 +182,10 @@ export class ArenaDoughnutChart {
       path: slice.to > slice.from ? arenaArcPath(centreX, centreY, outer, inner, slice.from, slice.to) : '',
     }));
   });
+
+  protected readonly table = computed(() => arenaChartTable(
+    'Category', this.seriesLabel(), this.labels(), this.values(), this.write(),
+  ));
 
   protected readonly active = computed(() => {
     const index = this.hover();

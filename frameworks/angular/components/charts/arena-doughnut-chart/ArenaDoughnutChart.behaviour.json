@@ -5,7 +5,7 @@
   "additions": [
     {
       "provides": "keyboard.legend-reachable",
-      "reason": "The legend column scrolls (`overflow: auto`) once its rows outgrow the clamped width, and a tabindex-less overflow box is a keyboard trap (WCAG 2.1.1). The legend carries tabindex=\"0\" and role=\"group\" with an aria-label so a keyboard user can reach and scroll it. This is ahead of the pattern rather than a divergence from it -- figure-with-data-table does not require it."
+      "reason": "Every legend row is a real <button type=\"button\">, so sliceActivate is reachable by keyboard and the row answers Enter and Space without the component binding either. It replaces a <div> with a click handler inside a tabindex=\"0\" group, which let a keyboard user scroll the legend and activate nothing (WCAG 2.1.1). The group keeps its role and aria-label and drops its own tab stop: a focusable child scrolls its overflow ancestor into view, so the stop the container carried is dead once the rows can take focus. Focus moves the same hover the pointer does, so the ring emphasis and the centre percentage follow the keyboard. This is ahead of the pattern rather than a divergence from it -- figure-with-data-table does not require it."
     }
   ]
 }
