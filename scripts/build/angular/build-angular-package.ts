@@ -28,7 +28,9 @@ export function manifest(root = repoRoot) {
   return {
     name: NAME,
     description: 'Arena, the Dravensoft design system: standalone Angular components on a shared Tailwind recipe layer.',
-    keywords: ['design-system', 'angular', 'ui', 'arena', 'dravensoft', 'design-tokens'],
+    keywords: ['design-system', 'angular', 'ui', 'ui-components', 'arena', 'dravensoft',
+      'design-tokens', 'dtcg', 'tailwindcss', 'themeable', 'accessibility', 'claude-code',
+      'agent-skills', 'ai-agents'],
     sideEffects: false,
     ...baseManifest(root),
     peerDependencies: {

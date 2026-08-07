@@ -1,5 +1,9 @@
 # @dravensoft/arena-react
 
+[![npm](https://img.shields.io/npm/v/@dravensoft/arena-react?style=flat-square&color=c5a059&label=npm)](https://www.npmjs.com/package/@dravensoft/arena-react)
+[![downloads](https://img.shields.io/npm/dm/@dravensoft/arena-react?style=flat-square&color=c5a059)](https://www.npmjs.com/package/@dravensoft/arena-react)
+[![license](https://img.shields.io/npm/l/@dravensoft/arena-react?style=flat-square&color=c5a059)](https://github.com/dravensoft-dev/arena/blob/main/LICENSE)
+
 Arena is Dravensoft's design system. This package is its React layer: 55 components whose every
 value traces to a design token, with one stylesheet to import and no theme provider to wrap
 your tree in.
@@ -18,7 +22,7 @@ direction.
 
 ## It works with the repository, and that is the point
 
-Source, guidelines and full documentation: **https://github.com/dravensoft-dev/Identity**
+Source, guidelines and full documentation: **https://github.com/dravensoft-dev/arena**
 
 That repository is not just where the code comes from. It ships as a **Claude Code plugin**
 and as an **Agent Skill**, and installing either hands an agent the whole design language:
@@ -284,7 +288,7 @@ come before your own rules if you want yours to win.
 
 ## Why might this package's latest version not match Arena's latest version?
 
-[Why are the published package versions not identical?](https://github.com/dravensoft-dev/Identity/blob/main/.github/workflows/AGENTS.md#why-are-the-published-package-versions-not-identical)
+[Why are the published package versions not identical?](https://github.com/dravensoft-dev/arena/blob/main/.github/workflows/AGENTS.md#why-are-the-published-package-versions-not-identical)
 
 ## License
 

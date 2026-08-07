@@ -1,6 +1,6 @@
 ---
 name: design
-description: Use this skill to generate well-branded interfaces and assets for Dravensoft (design language "Arena"), for production or throwaway prototypes/mocks. Contains design guidelines, colors, type, fonts, assets, and UI kit components.
+description: Use this skill to build user interfaces with Arena, a token-driven design system with React and Angular component libraries on a shared Tailwind layer, for production screens or for throwaway prototypes and mocks. Covers design tokens, colour, type, spacing, motion, iconography, the accessibility pattern each component binds, and a UI kit. Arena carries the design language and not the skin: it ships Dravensoft's palette and fonts, and any project declares its own in arena.config.json.
 user-invocable: true
 ---
 
