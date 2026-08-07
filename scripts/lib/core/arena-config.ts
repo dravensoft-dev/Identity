@@ -8,14 +8,14 @@
  * weights up to 900 across families whose axes stop at 700. A list is clamped to the
  * nearest weight the family has, so one query holds for every family. */
 
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { childEntries } from './dtcg-shapes.ts';
 
 export const GOOGLE_FONTS = 'https://fonts.googleapis.com/css2';
 
 const skin = (root: string, theme: string) =>
-  JSON.parse(readFileSync(join(root, `contracts/design/palette.${theme}.json`), 'utf8')).color;
+  readJson(join(root, `contracts/design/palette.${theme}.json`)).color;
 
 export function paletteColors(root: string, theme: string) {
   const out: Record<string, string> = {};
@@ -26,7 +26,7 @@ export function paletteColors(root: string, theme: string) {
 }
 
 const typographyContract = (root: string) =>
-  JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
+  readJson(join(root, 'contracts/design/typography.json'));
 
 export function fontWeights(root: string) {
   return childEntries(typographyContract(root).fw)

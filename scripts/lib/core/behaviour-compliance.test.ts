@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../arena/repo-root.ts';
 import {
   roleOf, hasAccessibleName, isFocusable, evaluate,
@@ -15,7 +16,7 @@ const PATTERNS = new Map(
   readdirSync(PATTERN_DIR)
     .filter((f) => extname(f) === '.json')
     .sort()
-    .map((f) => [basename(f, '.json'), JSON.parse(readFileSync(join(PATTERN_DIR, f), 'utf8'))]),
+    .map((f) => [basename(f, '.json'), readJson(join(PATTERN_DIR, f))]),
 );
 
 function el(tagName: string, attrs: Record<string, unknown> = {}, text = '') {
@@ -214,7 +215,7 @@ test('no pattern outside LABEL_ACCEPTS_TEXT admits text content', () => {
 });
 
 test('the disclosure pattern is bound to the button role', () => {
-  const pattern = JSON.parse(readFileSync(join(PATTERN_DIR, 'disclosure.json'), 'utf8'));
+  const pattern = readJson(join(PATTERN_DIR, 'disclosure.json'));
   assert.equal(pattern.name, 'disclosure');
   assert.match(pattern.source, /apg\/patterns\/disclosure/);
   assert.equal(ELEMENT_ROLE.disclosure, 'button');

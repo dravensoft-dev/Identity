@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import {
   renderIndex, renderLayerIndex, renderTarget, renderRow, renderLayerRow, renderPatterns,
@@ -102,7 +103,7 @@ test('every emitted index is what is committed, so a reader of the tag reads the
 
 test('the index names every component and stays clear of the punctuation rule', () => {
   const out = renderIndex();
-  const declared = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
+  const declared = readJson(join(repoRoot, 'frameworks/Components.json'));
   for (const names of Object.values(declared) as string[][]) {
     for (const name of names) assert.ok(out.includes(`\`${name}\``), `the index omits ${name}`);
   }

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { readJson } from '../../utils/read-file.ts';
 import { flattenTokens, previewFor } from './token-preview.ts';
 import { parseDecls } from '../arena/css-decls.ts';
 import { FILES } from '../../generate/arena/generate-tokens.ts';
@@ -76,7 +77,7 @@ test('derived names match the custom properties the build actually emits', () =>
   assert.ok(cases.length >= 4, 'expected at least one case per output file');
   for (const [sources, css, selector] of cases) {
     const derived = sources
-      .flatMap((s: string) => flattenTokens(JSON.parse(readFileSync(s, 'utf8'))).map((t) => t.name))
+      .flatMap((s: string) => flattenTokens(readJson(s)).map((t) => t.name))
       .sort();
     const emitted = [...parseDecls(readFileSync(css, 'utf8')).get(selector).keys()].sort();
     assert.deepEqual(derived, emitted, `${sources.join(', ')} -> ${css} ${selector}`);

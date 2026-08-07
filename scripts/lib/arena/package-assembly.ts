@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript';
 import { join, dirname, relative, sep, basename } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from './repo-root.ts';
 import { kebab } from './layers.ts';
 import { componentMap, MAP_FILE } from './component-map.ts';
@@ -195,11 +196,11 @@ export function writeComponentMap(dir: string, layer: string, root = repoRoot) {
 }
 
 export function version(root = repoRoot) {
-  return JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')).version;
+  return readJson(join(root, '.claude-plugin', 'plugin.json')).version;
 }
 
 export function baseManifest(root = repoRoot) {
-  const plugin = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
+  const plugin = readJson(join(root, '.claude-plugin', 'plugin.json'));
   return {
     version: plugin.version,
     license: plugin.license,

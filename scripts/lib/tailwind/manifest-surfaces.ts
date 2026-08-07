@@ -7,8 +7,9 @@
  * composes another types that one's slot out by hand. HAND_DRAWN is the complement: a
  * component with no surface a class string can describe, which writes its own appearance. */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { kebab } from '../arena/layers.ts';
 import type { ComponentTree } from '../arena/layers.ts';
 import { repoRoot } from '../arena/repo-root.ts';
@@ -76,7 +77,7 @@ const MANIFEST_DIR = join(repoRoot, 'frameworks/tailwind/components');
 
 export function categories(root = repoRoot): ComponentTree {
   const path = root === repoRoot ? COMPONENTS_JSON : join(root, 'frameworks/Components.json');
-  return JSON.parse(readFileSync(path, 'utf8'));
+  return readJson(path);
 }
 
 export function categoryOf(name: string, root = repoRoot) {

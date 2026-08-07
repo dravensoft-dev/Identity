@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { docComment } from './generate-api-types.ts';
 import { normaliseDoc } from '../../lib/arena/api-surface.ts';
@@ -131,7 +132,7 @@ async function main() {
 
   const dir = join(root, 'contracts/api/components');
   const contracts = readdirSync(dir).filter((f) => f.endsWith('.json')).sort()
-    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
+    .map((f) => readJson(join(dir, f)));
 
   const sources = componentSources(
     resolveReactImplementations, resolveAngularImplementations, readLayer,

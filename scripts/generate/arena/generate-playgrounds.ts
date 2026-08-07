@@ -7,6 +7,7 @@
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { kebab } from '../../lib/arena/layers.ts';
 import { playgroundModel } from '../../lib/arena/playground-model.ts';
@@ -50,7 +51,7 @@ export function loadTypes(base = root) {
   const out = new Map();
   for (const file of readdirSync(dir).sort()) {
     if (!file.endsWith('.json')) continue;
-    const type = JSON.parse(readFileSync(join(dir, file), 'utf8'));
+    const type = readJson(join(dir, file));
     out.set(type.name, type);
   }
   return out;
@@ -61,13 +62,13 @@ export function loadContracts(base = root) {
   const out = new Map();
   for (const file of readdirSync(dir).sort()) {
     if (!file.endsWith('.json')) continue;
-    out.set(file.replace(/\.json$/, ''), JSON.parse(readFileSync(join(dir, file), 'utf8')));
+    out.set(file.replace(/\.json$/, ''), readJson(join(dir, file)));
   }
   return out;
 }
 
 export function loadPlaces(base = root) {
-  const categories = JSON.parse(readFileSync(join(base, 'frameworks/Components.json'), 'utf8'));
+  const categories = readJson(join(base, 'frameworks/Components.json'));
   const out = new Map();
   for (const [category, names] of Object.entries(categories) as [string, string[]][]) {
     for (const name of names) out.set(name, { name, category, dir: kebab(name) });
@@ -94,7 +95,7 @@ export function componentFiles(base = root, components = allComponents(base)) {
   const contracts = loadContracts(base);
   const fixtures = new Map();
   for (const name of components) {
-    fixtures.set(name, JSON.parse(readFileSync(join(base, 'frameworks/demos', `${name}.demo.json`), 'utf8')));
+    fixtures.set(name, readJson(join(base, 'frameworks/demos', `${name}.demo.json`)));
   }
   const types = loadTypes(base);
   const all = loadPlaces(base);

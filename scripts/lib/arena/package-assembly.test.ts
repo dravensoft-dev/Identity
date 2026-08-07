@@ -8,6 +8,7 @@ import {
   collectFiles, reset, write, copyTree, copyCli, CLI_BINS, baseManifest, version, componentSheets, writeCssChain,
   writeComponentMap,
 } from './package-assembly.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { MAP_FILE } from './component-map.ts';
 import { repoRoot } from './repo-root.ts';
 
@@ -170,8 +171,8 @@ test('what a command ships reaches nothing outside bin/, because scripts/ is not
 
 test('each package carries the map its own layer derives, under the one name the command reads', () => {
   const to = mkdtempSync(join(tmpdir(), 'arena-assembly-map-'));
-  const angular = JSON.parse(readFileSync(writeComponentMap(to, 'angular', repoRoot), 'utf8'));
-  const react = JSON.parse(readFileSync(writeComponentMap(join(to, 'react'), 'react', repoRoot), 'utf8'));
+  const angular = readJson(writeComponentMap(to, 'angular', repoRoot));
+  const react = readJson(writeComponentMap(join(to, 'react'), 'react', repoRoot));
   assert.equal(existsSync(join(to, MAP_FILE)), true);
   assert.equal(angular.match, 'selector');
   assert.equal(react.match, 'symbol');

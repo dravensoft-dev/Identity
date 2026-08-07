@@ -23,6 +23,17 @@ test('a document comes back parsed, and a caller that states a shape needs no ca
   } finally { rmSync(root, { recursive: true }); }
 });
 
+test('a bare read in a contextual position stays usable, which a defaulted type parameter is not', () => {
+  const root = dir();
+  try {
+    writeFileSync(join(root, 'a.json'), '{"requires":{"roles.element":"a role"}}');
+    const byStem = new Map([['a', readJson(join(root, 'a.json'))]]);
+    assert.equal(byStem.get('a').requires['roles.element'], 'a role',
+      '`<T = any>` would infer unknown here, since new Map() is itself an inference site, and '
+      + 'every such call site would then need the cast this exists to remove');
+  } finally { rmSync(root, { recursive: true }); }
+});
+
 test('a malformed document throws with its own path in the message', () => {
   const root = dir();
   try {
