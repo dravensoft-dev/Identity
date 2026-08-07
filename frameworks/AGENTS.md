@@ -207,6 +207,34 @@ binding, its prompt, its demo page, its tests. **A file that is not one componen
 narrowest level containing all of its consumers**, and a compound family counts as its parent
 rather than as the category.
 
+`components/charts/` carries the worked example, and the rule that goes with it. Three modules
+sit there rather than inside a chart or at the layer root, because bar, line and doughnut all
+read them and nothing outside the category does: `ChartScales.ts` maps a datum to a number,
+`ChartAxis.ts` lays out the plot frame, `ChartMarks.ts` turns numbers into an SVG path string.
+
+Two shapes inside them are decisions rather than taste. **A scale is plain data and the mapping
+is a free function**, never a closure factory: `check-shared-arithmetic.ts` compares function
+bodies, and a factory hides its arithmetic inside a returned lambda the gate never reads, while
+an Angular template cannot call a closure held in a `computed()` without rebuilding it every
+cycle. So `arenaLinearScale(min, max, from, to)` returns a record and `arenaScaleValue(scale,
+value)` reads it. A y axis passes an inverted pixel range, bottom first, which is why "up is
+more" needs no minus sign and `arenaScaleZero(scale)` falls out of the same arithmetic.
+**`ArenaPlotBox` spells its size `w` and `h` rather than `width` and `height`**, because
+`check-dimension-literals.ts` reads a property named `width` as a CSS dimension and follows the
+local it was assigned from, so a plot box would report its `Math.max(1, ...)` floor as a raw px
+forever. The floor is a guard against dividing by a collapsed container, not a dimension anybody
+chose, and there is no token that could stand in for it. Renaming the field says what the record
+is; four exemptions would only say that the gate was wrong four times.
+Each is named by `PAIRED` in `scripts/check/arena/check-shared-arithmetic.ts`, which compares
+every function two copies export under one name, so **the two copies are authored byte for byte
+identical and add no `DIVERGENT` entry**. That is only reachable while they hold no layer type:
+arithmetic and path strings go in the paired module, and every style object stays in the
+component that draws it. They also carry no comment, because `allowsHeader()` in
+`scripts/check/arena/check-docs.ts` grants one only under `scripts/` or a test path, which is
+why the reasoning is here instead. `DataVisuals.ts` stays at the layer root beside them and
+keeps the colour contract and the number writer, since `arena-calendar-event` reads
+`arenaCatColor(slot)` too and a module a schedule grid consumes is not chart internals.
+
 **Every exception to the naming rule is mechanical rather than stylistic**: a toolchain, a
 reader, or somebody else's source recognises the literal name, so capitalising it breaks or
 obscures something. All of them are cases the rule cannot cover, a name beginning with a

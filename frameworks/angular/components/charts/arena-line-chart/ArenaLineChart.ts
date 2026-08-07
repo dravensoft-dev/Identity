@@ -4,11 +4,16 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  ARENA_CHART_HEIGHT, ARENA_PAD, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
+  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
   arenaValueWriter,
 } from '../../../DataVisuals';
+import {
+  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleZero, arenaValueY, arenaNearestPointIndex,
+} from '../ChartScales';
+import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks';
+import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
-import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated';
+import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
 
@@ -38,40 +43,6 @@ const TOOLTIP_VALUE_STYLE = {
   fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)',
 } as const satisfies Readonly<Record<string, string>>;
 
-export interface ArenaLinePoint {
-
-  x: number;
-
-  y: number;
-}
-
-export function arenaLineX(index: number, count: number, innerWidth: number): number {
-  return ARENA_PAD.l + (count <= 1 ? innerWidth / 2 : (innerWidth / (count - 1)) * index);
-}
-
-export function arenaLineValueY(value: number, max: number, innerHeight: number): number {
-  return ARENA_PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
-}
-
-export function arenaNearestPointIndex(points: readonly ArenaLinePoint[], x: number): number {
-  if (points.length === 0) return -1;
-  let best = 0;
-  for (let i = 1; i < points.length; i++) {
-    if (Math.abs(points[i].x - x) < Math.abs(points[best].x - x)) best = i;
-  }
-  return best;
-}
-
-export function arenaLinePoints(points: readonly ArenaLinePoint[]): string {
-  return points.map((point) => `${point.x},${point.y}`).join(' ');
-}
-
-export function arenaLineAreaPath(points: readonly ArenaLinePoint[], baseline: number): string {
-  if (points.length === 0) return '';
-  const line = points.map((point) => `${point.x},${point.y}`).join(' L');
-  return `M${points[0].x},${baseline} L${line} L${points[points.length - 1].x},${baseline} Z`;
-}
-
 @Component({
   selector: 'arena-line-chart',
   standalone: true,
@@ -87,14 +58,14 @@ export function arenaLineAreaPath(points: readonly ArenaLinePoint[], baseline: n
          style="display:block;overflow:visible">
       @for (tick of gridLines(); track tick.value) {
         <g>
-          <line [attr.x1]="pad.l" [attr.x2]="width() - pad.r" [attr.y1]="tick.y" [attr.y2]="tick.y"
+          <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="tick.y" [attr.y2]="tick.y"
                 stroke="var(--border)" [style]="lineStyle" />
           <text [attr.x]="tickLabelX" [attr.y]="tick.y" text-anchor="end" dominant-baseline="middle"
                 fill="var(--text-muted)" font-family="var(--font-mono)"
                 [style]="tickLabelStyle">{{ tick.label }}</text>
         </g>
       }
-      <line [attr.x1]="pad.l" [attr.x2]="width() - pad.r" [attr.y1]="baseline()" [attr.y2]="baseline()"
+      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="baseline()" [attr.y2]="baseline()"
             stroke="var(--line-strong)" [style]="lineStyle" />
 
       @if (area() && points().length > 0) {
@@ -102,7 +73,7 @@ export function arenaLineAreaPath(points: readonly ArenaLinePoint[], baseline: n
       }
 
       @if (active(); as point) {
-        <line [attr.x1]="point.x" [attr.x2]="point.x" [attr.y1]="pad.t" [attr.y2]="baseline()"
+        <line [attr.x1]="point.x" [attr.x2]="point.x" [attr.y1]="plotTop()" [attr.y2]="baseline()"
               stroke="var(--border-strong)" stroke-dasharray="3 3" [style]="lineStyle" />
       }
 
@@ -123,7 +94,7 @@ export function arenaLineAreaPath(points: readonly ArenaLinePoint[], baseline: n
               [style]="pointLabelStyle">{{ point.label }}</text>
       }
 
-      <rect [attr.x]="pad.l" [attr.y]="pad.t" [attr.width]="innerWidth()" [attr.height]="innerHeight()"
+      <rect [attr.x]="plotLeft()" [attr.y]="plotTop()" [attr.width]="innerWidth()" [attr.height]="innerHeight()"
             fill="transparent" (mousemove)="onMove($event)" (mouseleave)="hover.set(null)" />
     </svg>
     </div>
@@ -171,7 +142,6 @@ export class ArenaLineChart {
   /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
   readonly minPointSpacing = input<number>();
 
-  protected readonly pad = ARENA_PAD;
   protected readonly arenaSrOnly = ARENA_SR_ONLY;
   protected readonly arenaRailStyle = ARENA_RAIL_STYLE;
   protected readonly lineStyle = LINE_STYLE;
@@ -183,8 +153,8 @@ export class ArenaLineChart {
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
   protected readonly pointR = POINT_R;
   protected readonly pointRHover = POINT_R_HOVER;
-  protected readonly tickLabelX = ARENA_PAD.l - chartLabelGap;
-  protected readonly pointLabelY = computed(() => this.height() - chartLabelGap);
+  protected readonly tickLabelX = arenaTickLabelX();
+  protected readonly pointLabelY = computed(() => arenaCategoryLabelY(this.height()));
   protected readonly hover = signal<number | null>(null);
 
   private readonly write = computed(() => arenaValueWriter({
@@ -213,27 +183,38 @@ export class ArenaLineChart {
   });
 
   private readonly max = computed(() => arenaNiceMax(Math.max(0, ...this.values())));
-  protected readonly innerWidth = computed(() => Math.max(1, this.width() - ARENA_PAD.l - ARENA_PAD.r));
-  protected readonly innerHeight = computed(() => Math.max(1, this.height() - ARENA_PAD.t - ARENA_PAD.b));
-  protected readonly baseline = computed(() => ARENA_PAD.t + this.innerHeight());
+  private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
+  protected readonly plotLeft = computed(() => this.box().x);
+  protected readonly plotRight = computed(() => this.box().x + this.box().w);
+  protected readonly plotTop = computed(() => this.box().y);
+  protected readonly innerWidth = computed(() => this.box().w);
+  protected readonly innerHeight = computed(() => this.box().h);
 
-  protected readonly gridLines = computed(() => {
-    const max = this.max();
-    const innerHeight = this.innerHeight();
-    const write = this.write();
-    return arenaTicks(max).map((value) => ({ value, y: arenaLineValueY(value, max, innerHeight), label: write(value) }));
+  private readonly yScale = computed(() => {
+    const box = this.box();
+    return arenaLinearScale(0, this.max(), box.y + box.h, box.y);
   });
+
+  private readonly xScale = computed(() => {
+    const box = this.box();
+    return arenaPointScale(this.values().length, box.x, box.w);
+  });
+
+  protected readonly baseline = computed(() => arenaScaleZero(this.yScale()));
+
+  protected readonly gridLines = computed(
+    () => arenaAxisTicks(this.yScale(), arenaTicks(this.max()), this.write()),
+  );
 
   protected readonly points = computed(() => {
     const values = this.values();
-    const max = this.max();
-    const innerWidth = this.innerWidth();
-    const innerHeight = this.innerHeight();
+    const yScale = this.yScale();
+    const xScale = this.xScale();
     const write = this.write();
     return values.map((value, index) => ({
       index,
-      x: arenaLineX(index, values.length, innerWidth),
-      y: arenaLineValueY(value, max, innerHeight),
+      x: arenaPointAt(xScale, index),
+      y: arenaValueY(yScale, value),
       label: this.labels()[index] ?? '',
       formatted: write(value),
     }));

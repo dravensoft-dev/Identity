@@ -4,13 +4,16 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  ARENA_CHART_HEIGHT, ARENA_PAD, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaBarPath, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
+  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
   arenaValueWriter,
 } from '../../../DataVisuals';
+import {
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleZero, arenaValueY,
+} from '../ChartScales';
+import { arenaBarPath } from '../ChartMarks';
+import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
-import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated';
-
-const BAR_GAP = chartBarGap;
+import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
 
 const BAR_RADIUS = chartBarRadius;
 
@@ -39,34 +42,6 @@ const TOOLTIP_VALUE_STYLE = {
   fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)',
 } as const satisfies Readonly<Record<string, string>>;
 
-export function arenaBarValueY(value: number, max: number, innerHeight: number): number {
-  return ARENA_PAD.t + innerHeight - (Math.max(0, value) / max) * innerHeight;
-}
-
-export interface ArenaBarColumn {
-
-  hitX: number;
-
-  x: number;
-
-  midX: number;
-}
-
-export function arenaBarColumns(count: number, width: number): {
-  step: number;
-  barWidth: number;
-  columns: ArenaBarColumn[];
-} {
-  const innerWidth = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
-  const step = innerWidth / Math.max(1, count);
-  const barWidth = Math.max(1, step - BAR_GAP);
-  const columns = Array.from({ length: count }, (_, index) => {
-    const hitX = ARENA_PAD.l + index * step;
-    return { hitX, x: hitX + (step - barWidth) / 2, midX: hitX + step / 2 };
-  });
-  return { step, barWidth, columns };
-}
-
 @Component({
   selector: 'arena-bar-chart',
   standalone: true,
@@ -82,14 +57,14 @@ export function arenaBarColumns(count: number, width: number): {
          style="display:block;overflow:visible" (mouseleave)="hover.set(null)">
       @for (tick of gridLines(); track tick.value) {
         <g>
-          <line [attr.x1]="pad.l" [attr.x2]="width() - pad.r" [attr.y1]="tick.y" [attr.y2]="tick.y"
+          <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="tick.y" [attr.y2]="tick.y"
                 stroke="var(--border)" [style]="lineStyle" />
           <text [attr.x]="tickLabelX" [attr.y]="tick.y" text-anchor="end" dominant-baseline="middle"
                 fill="var(--text-muted)" font-family="var(--font-mono)"
                 [style]="tickLabelStyle">{{ tick.label }}</text>
         </g>
       }
-      <line [attr.x1]="pad.l" [attr.x2]="width() - pad.r" [attr.y1]="baseline()" [attr.y2]="baseline()"
+      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="baseline()" [attr.y2]="baseline()"
             stroke="var(--line-strong)" [style]="lineStyle" />
 
       @for (bar of bars(); track bar.index) {
@@ -97,7 +72,7 @@ export function arenaBarColumns(count: number, width: number): {
           <path [attr.d]="bar.path" [attr.fill]="bar.color"
                 [attr.opacity]="hover() === null || hover() === bar.index ? 1 : 0.55"
                 [style]="barStyle" />
-          <rect [attr.x]="bar.hitX" [attr.y]="pad.t" [attr.width]="step()" [attr.height]="innerHeight()"
+          <rect [attr.x]="bar.hitX" [attr.y]="plotTop()" [attr.width]="step()" [attr.height]="innerHeight()"
                 fill="transparent" (mouseenter)="hover.set(bar.index)" />
         </g>
       }
@@ -153,7 +128,6 @@ export class ArenaBarChart {
   /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
   readonly minPointSpacing = input<number>();
 
-  protected readonly pad = ARENA_PAD;
   protected readonly arenaSrOnly = ARENA_SR_ONLY;
   protected readonly arenaRailStyle = ARENA_RAIL_STYLE;
   protected readonly lineStyle = LINE_STYLE;
@@ -163,8 +137,8 @@ export class ArenaBarChart {
   protected readonly tooltipStyle = TOOLTIP_STYLE;
   protected readonly tooltipLabelStyle = TOOLTIP_LABEL_STYLE;
   protected readonly tooltipValueStyle = TOOLTIP_VALUE_STYLE;
-  protected readonly tickLabelX = ARENA_PAD.l - chartLabelGap;
-  protected readonly categoryLabelY = computed(() => this.height() - chartLabelGap);
+  protected readonly tickLabelX = arenaTickLabelX();
+  protected readonly categoryLabelY = computed(() => arenaCategoryLabelY(this.height()));
   protected readonly hover = signal<number | null>(null);
 
   private readonly write = computed(() => arenaValueWriter({
@@ -189,34 +163,44 @@ export class ArenaBarChart {
   });
 
   private readonly max = computed(() => arenaNiceMax(Math.max(0, ...this.values())));
-  protected readonly innerHeight = computed(() => Math.max(1, this.height() - ARENA_PAD.t - ARENA_PAD.b));
-  private readonly layout = computed(() => arenaBarColumns(this.values().length, this.width()));
-  protected readonly step = computed(() => this.layout().step);
-  protected readonly baseline = computed(() => ARENA_PAD.t + this.innerHeight());
+  private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
+  protected readonly plotLeft = computed(() => this.box().x);
+  protected readonly plotRight = computed(() => this.box().x + this.box().w);
+  protected readonly plotTop = computed(() => this.box().y);
+  protected readonly innerHeight = computed(() => this.box().h);
 
-  protected readonly gridLines = computed(() => {
-    const max = this.max();
-    const innerHeight = this.innerHeight();
-    const write = this.write();
-    return arenaTicks(max).map((value) => ({ value, y: arenaBarValueY(value, max, innerHeight), label: write(value) }));
+  private readonly yScale = computed(() => {
+    const box = this.box();
+    return arenaLinearScale(0, this.max(), box.y + box.h, box.y);
   });
+
+  private readonly bands = computed(() => {
+    const box = this.box();
+    return arenaBandScale(this.values().length, box.x, box.w, chartBarGap);
+  });
+
+  protected readonly step = computed(() => this.bands().step);
+  protected readonly baseline = computed(() => arenaScaleZero(this.yScale()));
+
+  protected readonly gridLines = computed(
+    () => arenaAxisTicks(this.yScale(), arenaTicks(this.max()), this.write()),
+  );
 
   protected readonly bars = computed(() => {
     const values = this.values();
     const colors = arenaResolveColors({ slot: this.slot(), slots: this.slots(), tone: this.tone(), count: values.length });
-    const { barWidth, columns } = this.layout();
-    const max = this.max();
-    const innerHeight = this.innerHeight();
+    const bands = this.bands();
+    const yScale = this.yScale();
     const baseline = this.baseline();
     const write = this.write();
     return values.map((value, index) => {
-      const y = arenaBarValueY(value, max, innerHeight);
+      const y = arenaValueY(yScale, value);
       return {
         index,
-        hitX: columns[index].hitX,
-        midX: columns[index].midX,
+        hitX: arenaBandStart(bands, index),
+        midX: arenaBandCenter(bands, index),
         y,
-        path: arenaBarPath(columns[index].x, y, barWidth, baseline - y, BAR_RADIUS),
+        path: arenaBarPath(arenaBandMark(bands, index), y, bands.band, baseline - y, BAR_RADIUS),
         color: colors[index],
         label: this.labels()[index] ?? '',
         value: write(value),

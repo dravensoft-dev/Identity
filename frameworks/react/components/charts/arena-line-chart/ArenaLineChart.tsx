@@ -2,9 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
   arenaResolveColors, arenaCatColor, arenaNiceMax, arenaTicks, arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
-  ARENA_PAD, ARENA_CHART_HEIGHT,
+  ARENA_CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
-import { chartPointR, chartPointRHover, chartLabelGap } from '../../../Tokens.generated.js';
+import {
+  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleZero, arenaValueY, arenaNearestPointIndex,
+} from '../ChartScales.ts';
+import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks.ts';
+import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
+import { chartPointR, chartPointRHover } from '../../../Tokens.generated.js';
 
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 
@@ -73,16 +78,14 @@ export function ArenaLineChart({
   const [color = arenaCatColor(1)] = arenaResolveColors({ slot, tone, count: 1 });
 
   const max = arenaNiceMax(Math.max(0, ...values));
-  const iw = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
-  const ih = Math.max(1, height - ARENA_PAD.t - ARENA_PAD.b);
-  const xOf = (i: number) => ARENA_PAD.l + (n <= 1 ? iw / 2 : (iw / (n - 1)) * i);
-  const yOf = (v: number) => ARENA_PAD.t + ih - (Math.max(0, v) / max) * ih;
-  const baseline = ARENA_PAD.t + ih;
+  const box = arenaPlotBox(width, height);
+  const yScale = arenaLinearScale(0, max, box.y + box.h, box.y);
+  const xScale = arenaPointScale(n, box.x, box.w);
+  const baseline = arenaScaleZero(yScale);
 
-  const points = values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' ');
-  const areaPath = n
-    ? `M${xOf(0)},${baseline} L${values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' L')} L${xOf(n - 1)},${baseline} Z`
-    : '';
+  const plotted = values.map((v, i) => ({ x: arenaPointAt(xScale, i), y: arenaValueY(yScale, v) }));
+  const points = arenaLinePoints(plotted);
+  const areaPath = arenaLineAreaPath(plotted, baseline);
 
   const name = `${seriesLabel} — line chart`;
 
@@ -90,10 +93,8 @@ export function ArenaLineChart({
     if (!n) return;
     const box = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
     if (!box) return;
-    const x = e.clientX - box.left;
-    let best = 0;
-    for (let i = 1; i < n; i++) if (Math.abs(xOf(i) - x) < Math.abs(xOf(best) - x)) best = i;
-    setHover(best);
+    const index = arenaNearestPointIndex(plotted, e.clientX - box.left);
+    if (index >= 0) setHover(index);
   };
 
   return (
@@ -101,14 +102,14 @@ export function ArenaLineChart({
       <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
         role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
-        {arenaTicks(max).map((t, i) => (
+        {arenaAxisTicks(yScale, arenaTicks(max), fmt).map((tick, i) => (
           <g key={i}>
-            <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={yOf(t)} y2={yOf(t)} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
-            <text x={ARENA_PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
-              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
+            <line x1={box.x} x2={box.x + box.w} y1={tick.y} y2={tick.y} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
+            <text x={arenaTickLabelX()} y={tick.y} textAnchor="end" dominantBaseline="middle"
+              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{tick.label}</text>
           </g>
         ))}
-        <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
+        <line x1={box.x} x2={box.x + box.w} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {}
         {area && n > 0 && (
@@ -116,36 +117,36 @@ export function ArenaLineChart({
         )}
 
         {hover !== null && (
-          <line x1={xOf(hover)} x2={xOf(hover)} y1={ARENA_PAD.t} y2={baseline}
+          <line x1={arenaPointAt(xScale, hover)} x2={arenaPointAt(xScale, hover)} y1={box.y} y2={baseline}
             stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
         )}
 
         {n > 1 && <polyline points={points} fill="none" stroke={color} style={{ strokeWidth: 'var(--bw-strong)' }}
           strokeLinejoin="round" strokeLinecap="round" />}
 
-        {values.map((v, i) => (
-          <circle key={i} cx={xOf(i)} cy={yOf(v)} r={hover === i ? chartPointRHover : chartPointR}
+        {plotted.map((point, i) => (
+          <circle key={i} cx={point.x} cy={point.y} r={hover === i ? chartPointRHover : chartPointR}
             fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
         ))}
 
         {
 
 }
-        {values.map((_, i) => (
-          <text key={i} x={xOf(i)} y={height - chartLabelGap} textAnchor="middle"
+        {plotted.map((point, i) => (
+          <text key={i} x={point.x} y={arenaCategoryLabelY(height)} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
         {
 }
-        <rect x={ARENA_PAD.l} y={ARENA_PAD.t} width={iw} height={ih} fill="transparent"
+        <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="transparent"
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} />
       </svg>
       </div>
 
       {hover !== null && values[hover] !== undefined && (
         <div style={{
-          position: 'absolute', left: xOf(hover), top: `calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`,
+          position: 'absolute', left: arenaPointAt(xScale, hover), top: `calc(${arenaValueY(yScale, values[hover])}px - calc(var(--sp-1) * 2.5))`,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',

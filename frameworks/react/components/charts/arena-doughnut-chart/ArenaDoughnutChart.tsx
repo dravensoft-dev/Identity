@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
-import { arenaResolveColors, arenaArcPath, arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
-import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated.js';
+import { arenaResolveColors, arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
+import { arenaDoughnutSlices } from '../ChartScales.ts';
+import { arenaArcPath } from '../ChartMarks.ts';
+import { arenaDoughnutLegendWidth, arenaDoughnutPlotWidth, arenaDoughnutRadii } from '../ChartAxis.ts';
+import { chartLegendMax } from '../../../Tokens.generated.js';
 
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
 
@@ -52,43 +55,33 @@ export function ArenaDoughnutChart({
   const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
   const colors = arenaResolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
 
-  const total = values.reduce((a, b) => a + Math.max(0, b), 0);
-
-  const legendW = Math.min(chartLegendMax, Math.max(chartLegendMin, width * 0.34));
+  const legendW = arenaDoughnutLegendWidth(width);
   const stacked = legendLayout === 'auto' ? legendW < chartLegendMax : legendLayout === 'stacked';
-  const plotW = Math.max(1, width - legendW - chartLegendGap);
+  const plotW = arenaDoughnutPlotWidth(width);
   const cx = plotW / 2;
   const cy = height / 2;
-  const rOuter = Math.max(1, Math.min(plotW, height) / 2 - chartRingInset);
-  const rInner = rOuter * 0.62;
+  const { outer: rOuter, inner: rInner } = arenaDoughnutRadii(plotW, height);
 
   const name = `${seriesLabel} — doughnut chart`;
 
-  let angle = -Math.PI / 2;
-  const segments = values.map((v, i) => {
-    const share = total > 0 ? Math.max(0, v) / total : 0;
-    const a0 = angle;
-    const a1 = angle + share * Math.PI * 2;
-    angle = a1;
-    return { i, a0, a1, share };
-  });
+  const segments = arenaDoughnutSlices(values);
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height, display: 'flex', gap: 'var(--chart-legend-gap)' }}>
       <svg width={plotW} height={height} role="img" aria-label={name}
         onMouseLeave={() => setHover(null)} style={{ display: 'block', flexShrink: 0 }}>
-        {segments.map(({ i, a0, a1 }) => a1 > a0 && (
-          <path key={i} d={arenaArcPath(cx, cy, rOuter, rInner, a0, a1)} fill={colors[i]}
+        {segments.map(({ index, from, to }) => to > from && (
+          <path key={index} d={arenaArcPath(cx, cy, rOuter, rInner, from, to)} fill={colors[index]}
 
             stroke="var(--surface-card)"
-            opacity={hover === null || hover === i ? 1 : 0.55}
-            onMouseEnter={() => setHover(i)} onClick={() => onSliceActivate?.(i)}
+            opacity={hover === null || hover === index ? 1 : 0.55}
+            onMouseEnter={() => setHover(index)} onClick={() => onSliceActivate?.(index)}
             style={{ transition: 'opacity var(--dur-fast) var(--ease-out)', strokeWidth: 'var(--bw-strong)' }} />
         ))}
         {hover !== null && segments[hover] && (
           <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
             fill="var(--bone)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-lg)' }}>
-            {Math.round(segments[hover].share * 100)}%
+            {segments[hover].percent}%
           </text>
         )}
       </svg>

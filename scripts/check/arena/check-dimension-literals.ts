@@ -38,10 +38,10 @@ const PROPS = new Set([
 ]);
 
 export const EXEMPT = new Map([
-  ['frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
-   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike ArenaAvatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
-  ['frameworks/react/components/charts/arena-line-chart/ArenaLineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
-   'the same yOf(values[hover]) projection as ArenaBarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
+  ['frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${arenaValueY(yScale, values[hover])}px - var(--sp-2))`',
+   'arenaValueY projects the hovered datum through the chart\'s own y scale — a runtime data-to-pixel projection, not a design dimension. There is no token to give it: the series values, their nice maximum and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for the number. What IS a decision, the gap between the point and the tooltip, is the var(--sp-2) beside it'],
+  ['frameworks/react/components/charts/arena-line-chart/ArenaLineChart.tsx:top:`calc(${arenaValueY(yScale, values[hover])}px - calc(var(--sp-1) * 2.5))`',
+   'the same arenaValueY projection as ArenaBarChart\'s own exemption above — a datum mapped through the chart\'s y scale onto measured pixels, not a token. The two charts spell their tooltip offset differently, which is a real disagreement rather than an exemption, and it is what the chart-tooltip-offset token exists to settle'],
   ['frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 6.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/react/DataVisuals.ts:width:1',

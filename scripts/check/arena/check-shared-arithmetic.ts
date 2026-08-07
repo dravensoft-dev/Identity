@@ -15,14 +15,14 @@ export const PAIRED = [
   'AnchorActivation.ts',
   'WarnOnce.ts',
   'DataVisuals.ts',
+  'components/charts/ChartScales.ts',
+  'components/charts/ChartMarks.ts',
+  'components/charts/ChartAxis.ts',
   'components/display/arena-calendar/CalendarInternals.ts',
   'components/navigation/arena-pagination/PaginationWindow.ts',
 ];
 
 export const DIVERGENT = new Map([
-  ['DataVisuals.ts:arenaArcPath',
-   'the same two half-arcs for a sweep past a semicircle; one joins them by concatenation and the '
-   + 'other by a template. The geometry either side of the join is character for character the same.'],
   ['DataVisuals.ts:arenaResolveColors',
    'the same precedence, tone over slots over slot, with the same warning when a chart is given '
    + 'both. One destructures its options in the signature and the other declares the object inline, '

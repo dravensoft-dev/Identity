@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
-  arenaResolveColors, arenaNiceMax, arenaTicks, arenaBarPath, arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
-  ARENA_PAD, ARENA_CHART_HEIGHT,
+  arenaResolveColors, arenaNiceMax, arenaTicks, arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
+  ARENA_CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
-import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated.js';
+import {
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleZero, arenaValueY,
+} from '../ChartScales.ts';
+import { arenaBarPath } from '../ChartMarks.ts';
+import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
+import { chartBarGap, chartBarRadius } from '../../../Tokens.generated.js';
 
 import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
 
@@ -72,12 +77,10 @@ export function ArenaBarChart({
   const colors = arenaResolveColors({ slot, slots, tone, count: n });
 
   const max = arenaNiceMax(Math.max(0, ...values));
-  const iw = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
-  const ih = Math.max(1, height - ARENA_PAD.t - ARENA_PAD.b);
-  const step = iw / Math.max(1, n);
-  const bw = Math.max(1, step - chartBarGap);
-  const yOf = (v: number) => ARENA_PAD.t + ih - (Math.max(0, v) / max) * ih;
-  const baseline = ARENA_PAD.t + ih;
+  const box = arenaPlotBox(width, height);
+  const yScale = arenaLinearScale(0, max, box.y + box.h, box.y);
+  const bands = arenaBandScale(n, box.x, box.w, chartBarGap);
+  const baseline = arenaScaleZero(yScale);
 
   const name = `${seriesLabel} — bar chart`;
 
@@ -88,28 +91,27 @@ export function ArenaBarChart({
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name}
         onMouseLeave={() => setHover(null)} style={{ display: 'block', overflow: 'visible' }}>
         {}
-        {arenaTicks(max).map((t, i) => (
+        {arenaAxisTicks(yScale, arenaTicks(max), fmt).map((tick, i) => (
           <g key={i}>
-            <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={yOf(t)} y2={yOf(t)}
+            <line x1={box.x} x2={box.x + box.w} y1={tick.y} y2={tick.y}
               stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
-            <text x={ARENA_PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
-              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
+            <text x={arenaTickLabelX()} y={tick.y} textAnchor="end" dominantBaseline="middle"
+              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{tick.label}</text>
           </g>
         ))}
-        <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={baseline} y2={baseline}
+        <line x1={box.x} x2={box.x + box.w} y1={baseline} y2={baseline}
           stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {values.map((v, i) => {
-          const x = ARENA_PAD.l + i * step + (step - bw) / 2;
-          const y = yOf(v);
+          const y = arenaValueY(yScale, v);
           return (
             <g key={i}>
-              <path d={arenaBarPath(x, y, bw, baseline - y, chartBarRadius)} fill={colors[i]}
+              <path d={arenaBarPath(arenaBandMark(bands, i), y, bands.band, baseline - y, chartBarRadius)} fill={colors[i]}
                 opacity={hover === null || hover === i ? 1 : 0.55}
                 style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
               {
 }
-              <rect x={ARENA_PAD.l + i * step} y={ARENA_PAD.t} width={step} height={ih}
+              <rect x={arenaBandStart(bands, i)} y={box.y} width={bands.step} height={box.h}
                 fill="transparent" onMouseEnter={() => setHover(i)} />
             </g>
           );
@@ -119,7 +121,7 @@ export function ArenaBarChart({
 
 }
         {values.map((_, i) => (
-          <text key={i} x={ARENA_PAD.l + i * step + step / 2} y={height - chartLabelGap} textAnchor="middle"
+          <text key={i} x={arenaBandCenter(bands, i)} y={arenaCategoryLabelY(height)} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
       </svg>
@@ -127,7 +129,7 @@ export function ArenaBarChart({
 
       {hover !== null && values[hover] !== undefined && (
         <div style={{
-          position: 'absolute', left: ARENA_PAD.l + hover * step + step / 2, top: `calc(${yOf(values[hover])}px - var(--sp-2))`,
+          position: 'absolute', left: arenaBandCenter(bands, hover), top: `calc(${arenaValueY(yScale, values[hover])}px - var(--sp-2))`,
           transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',

@@ -1,23 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
-import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaArcPath, arenaResolveColors, arenaValueWriter } from '../../../DataVisuals';
+import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaResolveColors, arenaValueWriter } from '../../../DataVisuals';
+import { arenaDoughnutSlices } from '../ChartScales';
+import { arenaArcPath } from '../ChartMarks';
+import { arenaDoughnutLegendWidth, arenaDoughnutPlotWidth, arenaDoughnutRadii } from '../ChartAxis';
 import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
-import { chartLegendMin, chartLegendMax, chartLegendGap, chartRingInset } from '../../../Tokens.generated';
+import { chartLegendMax } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
 
-const START_ANGLE = -Math.PI / 2;
-
-const LEGEND_MIN = chartLegendMin;
-const LEGEND_MAX = chartLegendMax;
-const LEGEND_SHARE = 0.34;
-
-const LEGEND_GAP = chartLegendGap;
-
 const LEGEND_STACK_BELOW = chartLegendMax;
-
-
-const INNER_RATIO = 0.62;
 
 const DIM_OPACITY = 0.55;
 
@@ -60,44 +52,6 @@ const LEGEND_LABEL_STYLE = {
 const LEGEND_VALUE_STYLE = {
   fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--mute)',
 } as const satisfies Readonly<Record<string, string>>;
-
-export interface ArenaDoughnutSlice {
-
-  index: number;
-
-  from: number;
-
-  to: number;
-
-  share: number;
-
-  percent: number;
-}
-
-export function arenaDoughnutSlices(values: readonly number[]): ArenaDoughnutSlice[] {
-  const total = values.reduce((sum, value) => sum + Math.max(0, value), 0);
-  let angle = START_ANGLE;
-  return values.map((value, index) => {
-    const share = total > 0 ? Math.max(0, value) / total : 0;
-    const from = angle;
-    const to = angle + share * Math.PI * 2;
-    angle = to;
-    return { index, from, to, share, percent: Math.round(share * 100) };
-  });
-}
-
-export function arenaDoughnutLegendWidth(width: number): number {
-  return Math.min(LEGEND_MAX, Math.max(LEGEND_MIN, width * LEGEND_SHARE));
-}
-
-export function arenaDoughnutPlotWidth(width: number): number {
-  return Math.max(1, width - arenaDoughnutLegendWidth(width) - LEGEND_GAP);
-}
-
-export function arenaDoughnutRadii(arenaPlotWidth: number, height: number): { outer: number; inner: number } {
-  const outer = Math.max(1, Math.min(arenaPlotWidth, height) / 2 - chartRingInset);
-  return { outer, inner: outer * INNER_RATIO };
-}
 
 @Component({
   selector: 'arena-doughnut-chart',

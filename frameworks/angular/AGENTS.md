@@ -117,11 +117,12 @@ detect whether an optional slot was projected, so its spacing wrapper can be gat
 bare with no `arena-` prefix, because the attribute is the contract member's
 name, per `contracts/api/AGENTS.md`'s binding table) all have consumers in more than one category,
 so they sit at the layer root and `frameworks/angular/index.ts` names each of them
-directly. `DataVisuals.ts` (the chart maths and the identity-or-meaning colour contract)
-sits at the layer root beside them, and the rule puts it there in both layers now: its
-consumers are the three charts **and** `arena-calendar-event`, which reads `arenaCatColor` for a
+directly. `DataVisuals.ts` (the identity-or-meaning colour contract, the number writer and the
+axis domain) sits at the layer root beside them, and the rule puts it there in both layers now:
+its consumers are the three charts **and** `arena-calendar-event`, which reads `arenaCatColor` for a
 chip's identity colour. The name matches the placement: a module a schedule grid consumes is
-not "chart internals".
+not "chart internals". The geometry that only the charts read went the other way, down to
+`components/charts/`, and `frameworks/AGENTS.md` records why.
 
 `playground/` sits beside them and is the one directory here that never ships: the package
 build stages nothing under it and `index.ts` names none of it. It holds the harness every
