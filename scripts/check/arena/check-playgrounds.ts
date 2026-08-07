@@ -11,6 +11,7 @@
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { mapWithConcurrency } from '../../utils/concurrency.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
@@ -489,13 +490,9 @@ async function smoke(pages: string[]) {
   const cdp = await connect(chrome.wsUrl);
   const problems: string[] = [];
   try {
-    const queue = [...pages];
-    const workers = Array.from({ length: Math.min(SMOKE_CONCURRENCY, queue.length) }, async () => {
-      for (let page = queue.shift(); page !== undefined; page = queue.shift()) {
-        problems.push(...await visit(cdp, `http://127.0.0.1:${server.port}/${page}`, page));
-      }
-    });
-    await Promise.all(workers);
+    const perPage = await mapWithConcurrency(pages, SMOKE_CONCURRENCY,
+      (page: string) => visit(cdp, `http://127.0.0.1:${server.port}/${page}`, page));
+    problems.push(...perPage.flat());
   } finally {
     chrome.kill?.();
     server.close?.();

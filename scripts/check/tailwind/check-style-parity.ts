@@ -7,6 +7,7 @@
  * a default `getComputedStyle` cannot reach. * A ParityPass is one run of the page: how many cases it compared, and the ones whose
  * two layers disagreed. */
 
+import { withTimeout } from '../../utils/with-timeout.ts';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
@@ -38,12 +39,6 @@ export function writePage(manifests: Map<string, any>, base = root) {
   const html = parityPage(sheetsFor(manifests), allCases(manifests));
   writeFileSync(join(base, PAGE), html);
   return html;
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
-  return Promise.race([promise, new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error(message)), ms).unref?.();
-  })]);
 }
 
 export async function measure(cdp: Cdp, url: string, reducedMotion: boolean) {

@@ -8,6 +8,8 @@
  * answered about it. */
 import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { interleaveForDispatch, mapWithConcurrency } from '../../utils/concurrency.ts';
+import { withTimeout } from '../../utils/with-timeout.ts';
 import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
@@ -78,12 +80,6 @@ export const MEASURE_SCRIPT = `(async () => {
 const NAVIGATE_TIMEOUT_MS = 10_000;
 
 const EVALUATE_TIMEOUT_MS = 30_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
-  let timer: ReturnType<typeof setTimeout>;
-  const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
-  return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
-}
 
 function boundedSend(cdp: CdpSend, method: string, params: unknown, sessionId?: string): Promise<any> {
   return withTimeout(
@@ -255,29 +251,6 @@ function skip(reason: string): never {
 }
 
 const PAGE_CONCURRENCY = 1;
-
-export async function mapWithConcurrency<T, R>(items: T[], limit: number,
-  fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array(items.length);
-  let next = 0;
-  async function worker() {
-    while (next < items.length) {
-      const index = next++;
-      const item = items[index];
-    if (item !== undefined) results[index] = await fn(item);
-    }
-  }
-  const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
-  await Promise.all(workers);
-  return results;
-}
-
-export function interleaveForDispatch<T>(items: T[], groups: number): T[] {
-  const width = Math.max(1, Math.min(groups, items.length || 1));
-  const rows: T[][] = Array.from({ length: width }, (): T[] => []);
-  items.forEach((item, i) => rows[i % width]?.push(item));
-  return rows.flat();
-}
 
 async function main() {
   const browser = findChromium();
