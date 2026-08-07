@@ -30,6 +30,17 @@ test('a script suite is classified by the domain directory it sits in, whatever 
   assert.equal(domainOfTestPath('scripts/ci/arena/summarize-tests.test.ts'), 'arena');
 });
 
+test('a util sits under no phase and is arena, which is what belongs to no one layer means', () => {
+  assert.equal(domainOfTestPath('scripts/utils/walk-files.test.ts'), 'arena');
+  assert.equal(domainOfTestPath('scripts/utils/read-file.test.ts'), 'arena');
+  assert.equal(domainOfTestPath('/runner/work/Identity/Identity/scripts/utils/walk-files.test.ts'), 'arena',
+    'a junit report names the file a runner wrote, and it may name it absolutely');
+  assert.equal(DOMAINS.includes('utils'), false,
+    'utils is a directory and not a sixth domain: a domain states the vocabulary a module speaks '
+    + 'and a util speaks none, which is why it carries no grid and lands in the one domain that '
+    + 'already means it belongs to no layer in particular');
+});
+
 test('a framework suite is classified by its layer, DOM split and category depth included', () => {
   assert.equal(domainOfTestPath('frameworks/react/components/forms/arena-button/ArenaButton.test.tsx'), 'react');
   assert.equal(domainOfTestPath('frameworks/react/components/forms/arena-input/ArenaInput.dom.test.tsx'), 'react');

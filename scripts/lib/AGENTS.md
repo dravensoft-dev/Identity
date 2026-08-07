@@ -10,7 +10,9 @@ matter, not a visibility boundary.
 
 Everywhere else under `scripts/`, the domain is decided by what a script **touches**. Most of
 `lib/` touches nothing, being pure functions, so the reads-and-writes test cannot separate
-them, and **a library that touches nothing is placed by the vocabulary it speaks**.
+them, and **a library that touches nothing is placed by the vocabulary it speaks**. A module
+that speaks no vocabulary at all is neither, and lives in flat [`../utils/`](../utils/AGENTS.md)
+rather than here.
 
 `core/serialize-token.ts` opens no file, but every name in it is a DTCG one, so it is `core`.
 `core/behaviour-compliance.ts` is the same, in `contracts/behaviour`'s vocabulary of

@@ -17,8 +17,13 @@ import { tmpdir } from 'node:os';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { literalRanges, insideLiteral } from '../../lib/arena/comments.ts';
 import { isScript, isSuite } from '../../lib/arena/domains.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 
 const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]*)['"]/g;
+
+const ANY_SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
+
+export const UTILS = join(repoRoot, 'scripts', 'utils');
 
 const EXTENSION_COUPLED_GUARD = /process\.argv\[1\]\s*(?:&&\s*process\.argv\[1\]\s*)?\.endsWith\(/;
 
@@ -48,6 +53,21 @@ export function scriptsUnder(dir: string): string[] {
 
 export const isInterpolated = (specifier: string) => specifier.includes('${');
 
+export function reachesOutOfUtils(path: string) {
+  const source = readFileSync(path, 'utf8');
+  const literals = literalRanges(source);
+  const escaping = [];
+  for (const m of source.matchAll(ANY_SPECIFIER)) {
+    const spec = m[1] ?? '';
+    if (isInterpolated(spec)) continue;
+    if (insideLiteral(literals, m.index)) continue;
+    if (spec.startsWith('node:')) continue;
+    if (!spec.startsWith('.')) { escaping.push(spec); continue; }
+    if (!join(dirname(path), spec).startsWith(`${UTILS}${sep}`)) escaping.push(spec);
+  }
+  return escaping;
+}
+
 export function unresolvedSpecifiers(path: string) {
   const source = readFileSync(path, 'utf8');
   const literals = literalRanges(source);
@@ -68,6 +88,21 @@ test('every relative import in a non-suite script resolves to a file that is the
   const broken = scripts.flatMap((p) =>
     unresolvedSpecifiers(p).map((s) => `${relative(repoRoot, p)} imports ${s}`));
   assert.deepEqual(broken, []);
+});
+
+test('nothing under scripts/utils/ imports past scripts/utils/, which is the whole of what a util is', () => {
+  const files = walkFiles(UTILS).filter((p) => isScript(p) || isSuite(p));
+  assert.ok(files.length >= 4, 'an empty directory proves no boundary, so this counts what it walked');
+
+  const escaping = files.flatMap((p) =>
+    reachesOutOfUtils(p).map((s) => `${relative(repoRoot, p)} imports ${s}`));
+  assert.deepEqual(escaping, [],
+    'a util speaks no vocabulary of this repository, and its import list is where that stops being '
+    + 'a claim: one specifier into lib/ makes it a lib module sitting in the wrong directory, and '
+    + 'flat utils/ stops meaning anything. A node: builtin is not a reach out and a package name '
+    + 'is, since a util carrying a dependency is a dependency with a util inside it. A suite here '
+    + 'is in scope where the scan above excludes one, because running a suite proves its imports '
+    + 'RESOLVE and proves nothing about where they point.');
 });
 
 test('a specifier a generator is writing into its output is not one this script imports', () => {
