@@ -13,15 +13,15 @@ import { spawnSync } from 'node:child_process';
 import {
   mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, symlinkSync,
 } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson, readIfExists } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { PACKAGES, distDir } from './check-packages.ts';
 import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const CLI = 'bin/arena-to-prod.mjs';
 export const GLYPH = 'ph-bell';
@@ -237,4 +237,4 @@ function main() {
     + `a consumer's sources name${built ? ', after assembling what was missing' : ''}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

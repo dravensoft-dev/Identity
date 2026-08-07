@@ -4,7 +4,7 @@
  * and braceBody count brackets without string awareness, and classify's index-signature
  * carve-out tests only a literal's FIRST member. A quote-aware scanner is a larger change. */
 
-import { captured } from './captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export class UnrecognisedShape extends Error {
   constructor(message: string) { super(message); this.name = 'UnrecognisedShape'; }

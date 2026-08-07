@@ -10,8 +10,8 @@
  * never on a blind sleep, and a page that never draws still waits the whole deadline. */
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -25,7 +25,7 @@ import { buildPlaygrounds } from '../../generate/arena/generate-playgrounds.ts';
 import { memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ComponentContract, MemberSpec, TypeContract } from '../../lib/arena/contract-shapes.ts';
 import type { Fixture, FixtureChild } from '../../lib/arena/playground-model.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 type Contracts = Map<string, ComponentContract>;
 type Types = Map<string, TypeContract>;
@@ -543,4 +543,4 @@ async function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

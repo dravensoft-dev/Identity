@@ -6,15 +6,15 @@
  * and a wrong cell is fixed in the contract rather than here. */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { bindingName, normaliseDoc } from '../../lib/arena/api-surface.ts';
 import type { ContractCandidate, MemberCandidate } from '../../lib/arena/contract-shapes.ts';
 import {
   CONSUMER_LAYERS, componentDir, loadCategories, loadContract, escapeCell,
 } from './generate-skills.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const CONSUMER_DATA = 'Record<string, unknown>';
 
@@ -138,4 +138,4 @@ function main() {
   console.log(`generate-prompt-api: ${written.length} prompt(s) updated`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

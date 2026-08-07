@@ -1,7 +1,7 @@
 import StyleDictionary from 'style-dictionary';
 import { writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { serialize } from '../../lib/core/serialize-token.ts';
 import { serializeScript, scriptName } from '../../lib/core/serialize-script.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -214,4 +214,4 @@ async function main() {
   console.log(`build-tokens: wrote ${BREAKPOINT_TARGET}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

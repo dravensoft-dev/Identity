@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { join, relative } from 'node:path';
 import { existsSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { ngcBin } from '../../check/angular/check-angular.ts';
@@ -168,4 +169,4 @@ function verifyEmit() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

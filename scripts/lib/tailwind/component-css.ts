@@ -18,7 +18,7 @@ import {
 } from '../../../frameworks/tailwind/ManifestClasses.js';
 import type { ArenaClassManifest, ArenaSelection } from '../../../frameworks/tailwind/ArenaStyles.ts';
 import type { ComponentManifest, Manifests, SlotClasses } from './manifest-shapes.ts';
-import { captured } from '../arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const classesManifest = rawClassesManifest as (manifest: ComponentManifest) => ArenaClassManifest;
 export const classesFor =

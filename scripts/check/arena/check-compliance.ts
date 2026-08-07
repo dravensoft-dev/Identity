@@ -4,8 +4,8 @@
  * components were, on a memory measurement that no longer holds. */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, basename } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
@@ -293,4 +293,4 @@ function main() {
   console.log('  (A green run says the declarations are honest, never that the components are accessible.)');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

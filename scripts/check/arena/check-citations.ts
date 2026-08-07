@@ -9,8 +9,8 @@
  * fails. Use `<Name>` for a metavariable: an `X.prompt.md` reads as a claim. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { basename, dirname, join, relative, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -145,4 +145,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

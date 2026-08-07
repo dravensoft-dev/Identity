@@ -118,8 +118,8 @@ test('a suite is out of scope, because its fixtures are imports inside strings',
 test('no script decides it is the program by matching its own filename, which a rename silently falsifies', () => {
   const problems = guardProblems(scriptsUnder(join(repoRoot, 'scripts')));
   assert.deepEqual(problems, [],
-    'compare process.argv[1] to fileURLToPath(import.meta.url) instead: a gate whose main() stops '
-    + 'running exits 0 having read nothing, and check-all reports that as PASS');
+    'call isMainModule(import.meta.url) from utils/main-module.ts instead: a gate whose main() '
+    + 'stops running exits 0 having read nothing, and check-all reports that as PASS');
 });
 
 test('the two vendored copies are exempt on the record, because re-vendoring is the only edit they take', () => {

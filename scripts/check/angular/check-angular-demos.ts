@@ -5,12 +5,12 @@
  * component has a page: the inventory is the component tree, so a page cannot go missing
  * and a list cannot go stale. Whether a page RENDERS is check:playgrounds', with a browser. */
 
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readIfExists } from '../../utils/read-file.ts';
 import { pascal, readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const BUNDLE_DIR = 'build/demo/js';
 
@@ -99,4 +99,4 @@ function main() {
   console.log(`check-angular-demos: ${pages} page(s) mount a zoneless app from ${BUNDLE_DIR}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

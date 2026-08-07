@@ -7,12 +7,12 @@
  * its single source is the one that would notice if it did. */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, basename, extname, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 const EXEMPT = new Map([
   ['SSR_VIEWPORT_H',
@@ -113,4 +113,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

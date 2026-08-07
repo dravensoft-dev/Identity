@@ -5,14 +5,14 @@
  * two turns an outage into a pass, which is the one outcome a gate must never produce. */
 
 import { readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { families, FONTS, recordProblems, UA } from '../../generate/core/fetch-fonts.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export function facesIn(css: string) {
   const faces = new Set<string>();
@@ -93,4 +93,4 @@ async function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

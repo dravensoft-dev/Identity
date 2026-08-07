@@ -8,8 +8,8 @@
  * two layers disagreed. */
 
 import { writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
@@ -128,4 +128,4 @@ async function main() {
     + `across ${manifests.size} manifest(s), at rest and under reduced motion`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

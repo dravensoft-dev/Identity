@@ -7,8 +7,8 @@
  * check:structure is the analogue for frameworks/ and had no counterpart here. */
 
 import { readdirSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const LEVELS = ['api', 'behaviour', 'design'];
@@ -119,4 +119,4 @@ function main() {
   console.log(`check-contracts: ${LEVELS.length} level(s) plus ${GENERATED}/ hold the shape contracts/AGENTS.md describes, across ${counted} entries`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

@@ -5,9 +5,9 @@
  * contract and then bun run generate:api, never the table. Whether a component is contracted
  * at all is check:api's question, so an uncontracted one is counted here rather than failed. */
 
-import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { loadContract } from '../../generate/arena/generate-skills.ts';
 import {
@@ -70,4 +70,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

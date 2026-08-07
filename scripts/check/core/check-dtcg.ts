@@ -1,6 +1,6 @@
 import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import type { DtcgNode } from '../../lib/core/dtcg-shapes.ts';
@@ -120,4 +120,4 @@ function main() {
   console.log(`check-dtcg: ${files.length} file(s) valid DTCG 2025.10 — ${files.join(', ')}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

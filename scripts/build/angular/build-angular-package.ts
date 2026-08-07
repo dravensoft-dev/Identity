@@ -8,8 +8,8 @@
 
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import { join, relative, sep, posix } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
@@ -185,4 +185,4 @@ function main() {
   console.log(`build-angular-package: ${staged} source(s) staged and compiled by ng-packagr`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

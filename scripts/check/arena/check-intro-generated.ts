@@ -7,8 +7,8 @@
  * Bundling is Bun-only, so without Bun it reports SKIP on the same terms as check:vendor. */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 
@@ -56,4 +56,4 @@ async function main() {
   console.log(`check-intro-generated: ${built.size} page bundle(s) in sync`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

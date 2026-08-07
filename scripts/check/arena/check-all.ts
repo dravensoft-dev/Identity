@@ -12,6 +12,7 @@
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { basename, dirname, join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
@@ -172,4 +173,4 @@ function main() {
   process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

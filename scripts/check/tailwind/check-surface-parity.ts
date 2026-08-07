@@ -6,8 +6,8 @@
  * is not ArenaCard's single body p-5, so `panel` is not a clean substitution for `root`. What was
  * never rejected is checking that the surface halves agree, which is this. */
 
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
@@ -83,4 +83,4 @@ function main() {
   console.log(`check-surface-parity: ${PAIRS.length} hand-duplicated surface(s) still agree with the manifest they mirror`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

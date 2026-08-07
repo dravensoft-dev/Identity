@@ -2,7 +2,7 @@
  * disagreeing with the interface beside it, which is what 54 hand-written .d.ts could not.
  * tsc runs under plain node, so unlike check:demos and check:vendor this gate never skips. */
 
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { typecheck, zeroProjectProblems } from '../../lib/arena/typecheck.ts';
 
 export const PROJECTS = [
@@ -32,4 +32,4 @@ function main() {
   console.log(`check-react-types: ${PROJECTS.length} project(s) typecheck under strict`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

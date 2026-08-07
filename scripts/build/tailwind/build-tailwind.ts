@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { basename, dirname, join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { compileLayer, compileEntry, layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import {
   classBase, classesManifest, entryStylesheet, stripIndirection, stripProblems, themeMapFor,
@@ -188,4 +188,4 @@ function main() {
   console.log(`build-tailwind: wrote ${emitted.length} generated file(s) into ${CONSUME}/ and beside the manifests`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

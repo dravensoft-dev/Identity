@@ -8,8 +8,8 @@
  * which is the blind spot check-dimension-literals already declares in its own header. */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { basename, join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { blankComments, expressionLeaves, readValue, skipString } from './check-dimension-literals.ts';
 import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind/manifest-surfaces.ts';
@@ -255,4 +255,4 @@ function main() {
     + `${found.walked} React source(s) read for a literal`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

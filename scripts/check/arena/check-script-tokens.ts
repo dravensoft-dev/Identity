@@ -4,8 +4,8 @@
  * that merely re-exports a token is told from one that shadows it. */
 
 import { readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, basename, extname, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from '../../generate/arena/generate-tokens.ts';
@@ -13,7 +13,7 @@ import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { numericConstants } from './check-duplicate-constants.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 const LAYERS_WITH_MODULES = ['react', 'angular'];
 
@@ -194,4 +194,4 @@ async function main() {
   console.log(`check-script-tokens: ${flagged.length} script-readable token(s) in sync across ${SCRIPT_TARGETS.length} layer(s); ArenaCatSlot matches the ${catSlots}-slot ramp`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

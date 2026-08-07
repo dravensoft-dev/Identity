@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -58,4 +58,4 @@ async function main() {
   console.log(`check-demos-generated: ${built.size} file(s) in sync`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

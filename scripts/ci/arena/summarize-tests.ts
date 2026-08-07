@@ -8,7 +8,7 @@
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, existsSync, appendFileSync, readdirSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { testStep } from '../../check/arena/check-all.ts';
 import { DOMAINS, domainOfTestPath, isSuite } from '../../lib/arena/domains.ts';
@@ -158,4 +158,4 @@ function main() {
   process.exit(failed > 0 || problems.length > 0 ? 1 : 0);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

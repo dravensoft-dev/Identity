@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './repo-root.ts';
 import { kebab } from './layers.ts';
-import { captured } from './captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const MAP_FILE = 'components.json';
 

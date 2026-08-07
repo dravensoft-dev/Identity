@@ -5,8 +5,8 @@
  * empty and is meant to stay that way: a name Phosphor does not have is a typo, not a case. */
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
@@ -128,4 +128,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

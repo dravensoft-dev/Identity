@@ -8,9 +8,9 @@
  * falls back inside the shared limit after being raised fails, so a ceiling
  * cannot quietly become permanent. A generated file is never read here. */
 
-import { fileURLToPath } from 'node:url';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, relative, basename, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { findComments } from '../../lib/arena/comments.ts';
 import { proseSegments } from '../../lib/arena/markdown-prose.ts';
@@ -388,4 +388,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

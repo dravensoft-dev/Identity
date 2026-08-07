@@ -5,8 +5,8 @@
  * suite would pass, and only a person comparing two pages would notice. */
 
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { kebab } from '../../lib/arena/layers.ts';
@@ -144,4 +144,4 @@ function main() {
   console.log(`generate-playgrounds: ${files.size} file(s) emitted`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

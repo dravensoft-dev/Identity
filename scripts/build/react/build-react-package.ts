@@ -9,8 +9,8 @@
  * moduleResolution node reads no exports and npm's registry page reads only the root field. */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative, dirname, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { childOutput } from '../../lib/arena/child-output.ts';
 import { tscBin } from '../../lib/arena/typecheck.ts';
@@ -21,7 +21,7 @@ import {
   writeComponentMap,
 } from '../../lib/arena/package-assembly.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
@@ -185,4 +185,4 @@ async function main() {
   console.log(`build-react-package: ${sources} source(s) compiled, ${carried} declaration(s) emitted`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

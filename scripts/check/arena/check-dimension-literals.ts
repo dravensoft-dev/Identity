@@ -4,12 +4,12 @@
  * binding form, which sits outside all four of the scanners below. */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
@@ -545,4 +545,4 @@ function main() {
   console.log('check-dimension-literals: no bare literals under frameworks/, no stale exemptions');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

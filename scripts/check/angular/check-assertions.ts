@@ -7,8 +7,8 @@
  * this gate is what keeps the raw form from coming back. NodeAssert.ts has the measurement. */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
@@ -101,4 +101,4 @@ function main() {
   console.log(`check-assertions: ${files.length} Angular suite(s) compare DOM nodes by identity, not by diff`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

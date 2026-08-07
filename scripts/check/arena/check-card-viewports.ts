@@ -7,8 +7,8 @@
  * Removing either term reopens one case silently, since the gate only fails on clip. * A DsCard is what a page's first line declares, and a Measured is what the browser
  * answered about it. */
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
@@ -319,4 +319,4 @@ async function main() {
   if (summary.unrendered) skip(`${summary.unrendered} page(s) never rendered — see above`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

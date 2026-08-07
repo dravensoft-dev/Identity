@@ -5,8 +5,8 @@
 
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { findComments } from '../../lib/arena/comments.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
@@ -201,4 +201,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

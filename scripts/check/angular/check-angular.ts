@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { childOutput } from '../../lib/arena/child-output.ts';
 
@@ -52,4 +52,4 @@ function main() {
   console.log(`check-angular: ${PROJECTS.length} project(s) typecheck under strictTemplates`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

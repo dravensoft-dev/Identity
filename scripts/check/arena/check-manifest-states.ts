@@ -9,8 +9,8 @@
  * empty HAND_DRAWN leaves that half with no subject and fails rather than passing. */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import {
@@ -277,4 +277,4 @@ function main() {
     + `${EXEMPT.size} exempted on the record`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

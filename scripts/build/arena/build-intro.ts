@@ -10,10 +10,10 @@
  * would be served source, which is the arrangement this script exists to end. */
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const PAGE_DIR = 'intro';
 export const GENERATED_SUFFIX = '.generated.js';
@@ -84,4 +84,4 @@ async function main() {
   console.log(`build-intro: ${built.size} page bundle(s)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

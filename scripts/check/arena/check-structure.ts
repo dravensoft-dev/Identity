@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.ts';
@@ -94,4 +94,4 @@ function main() {
   console.log('  (A green run says the layers agree with one declaration, never that the categories are well chosen.)');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

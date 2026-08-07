@@ -9,7 +9,7 @@
  * :not([tabindex="-1"]) on every clause because a selector list is OR'd, and writing it
  * loose once made this gate call a correct combobox a broken trap. */
 
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
@@ -176,4 +176,4 @@ async function main() {
   console.log(`check-focus-trap: ${TRAPS.length} trap(s) walked with real Tab presses — focus stayed inside, reached every control and wrapped both ways`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

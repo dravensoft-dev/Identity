@@ -10,8 +10,8 @@
  * and check:cards only fails a page that overruns its box because of it. */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { arenaTokenNames } from '../../lib/core/arena-tokens.ts';
@@ -148,4 +148,4 @@ function main() {
     + 'they derive, reading Arena tokens alone');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

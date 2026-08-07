@@ -10,8 +10,8 @@
  * not mistaken for a citation of the layer itself. */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, basename, relative, extname, dirname, resolve } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -218,4 +218,4 @@ function main() {
     + `and ${ALLOWED_SPECIFIERS.size} reference pattern(s) authorised on the record`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

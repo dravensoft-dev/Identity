@@ -6,8 +6,8 @@
  * check-react-barrel.ts holds it to a fresh run. */
 
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { SOURCE_EXTENSIONS } from './build-demos.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { pascal } from '../../lib/arena/layers.ts';
@@ -124,4 +124,4 @@ function main() {
   console.log(`build-react-barrel: ${count} component(s) and ${HELPERS.length} helper(s)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

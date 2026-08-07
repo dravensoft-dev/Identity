@@ -4,8 +4,8 @@
  * asserts, and neither is a fact about source text -- contracts/api/AGENTS.md states why. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
 import { PREFIX } from './check-structure.ts';
@@ -501,4 +501,4 @@ function main() {
   console.log(`check-api: ${files.length} contract(s) and ${types.length} type(s) hold across ${layersChecked} layer implementation(s)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

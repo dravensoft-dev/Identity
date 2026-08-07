@@ -6,9 +6,9 @@
  * runs a build, and they carry no frontmatter: a nested file is reached by link rather than
  * registered, and the plugin root's SKILL.md is the one that is a skill. */
 
-import { fileURLToPath } from 'node:url';
 import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { LAYERS, kebab } from '../../lib/arena/layers.ts';
@@ -266,4 +266,4 @@ function main() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();
