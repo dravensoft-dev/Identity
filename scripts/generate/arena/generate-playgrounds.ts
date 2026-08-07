@@ -9,7 +9,7 @@ import { join, dirname } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { playgroundModel } from '../../lib/arena/playground-model.ts';
 import type { Place, Places, PlaygroundModel } from '../../lib/arena/playground-model.ts';
 import { reactEntry, reactPage } from '../../lib/react/playground-react.ts';

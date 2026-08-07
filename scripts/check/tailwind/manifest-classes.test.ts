@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import {
   arenaClassesFor, classBase, classesFor, slotClass,
 } from '../../lib/tailwind/component-css.ts';

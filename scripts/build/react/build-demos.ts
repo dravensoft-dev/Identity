@@ -4,7 +4,8 @@
  * on the page with every suite still green, because a suite imports the source. */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { basename, join, relative, sep } from 'node:path';
+import { basename, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
@@ -66,7 +67,7 @@ export async function buildDemos(opts: { root?: string } = {}) {
       if (!transpiler) throw new Error(`build-demos: no transpiler is configured for ${absPath}`);
       const compiled = transpiler.transformSync(source);
       const rewritten = rewriteRelativeSourceImports(compiled);
-      const outRel = outputPathFor(relative(root, absPath)).split(sep).join('/');
+      const outRel = toPosix(outputPathFor(relative(root, absPath)));
       if (files.has(outRel))
         throw new Error(`build-demos: ${outRel} is written by two sources at once; a .jsx and a .tsx `
           + 'of the same stem compile to one sibling and the second would overwrite the first');

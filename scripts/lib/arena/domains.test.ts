@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { basename, join, relative, sep } from 'node:path';
+import { basename, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { DOMAINS, SCRIPT_EXTENSIONS, SUITE_EXTENSIONS, STAYS_JAVASCRIPT,
   domainOfTestPath, isScript, isSuite } from './domains.ts';
@@ -109,7 +110,7 @@ const mjsUnder = (dir: string) => walkFiles(dir).filter((full) => full.endsWith(
 
 test('every JavaScript left under scripts/ is one of the four on the record', () => {
   const left = mjsUnder(join(repoRoot, 'scripts'))
-    .map((p) => relative(repoRoot, p).split(sep).join('/'))
+    .map((p) => toPosix(relative(repoRoot, p)))
     .sort();
   assert.deepEqual(left, [...STAYS_JAVASCRIPT.keys()].sort(),
     'a .mjs here is either a file the migration missed or a fifth exception nobody argued for; '

@@ -8,6 +8,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { lineOf } from '../../utils/text.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -71,7 +72,7 @@ export function assertionProblems(files: string[], read: (path: string) => strin
       EQUALITY.lastIndex = parsed.end;
       const [actual = '', expected = ''] = parsed.args;
       if (!isNodeExpression(actual) && !isNodeExpression(expected)) continue;
-      const line = source.slice(0, match.index).split('\n').length;
+      const line = lineOf(source, match.index);
       problems.push(
         `${file}:${line}: assert.${match[1]}() over a DOM node — use assertSameNode/`
         + `assertNotSameNode/assertNoNode from frameworks/angular/test/NodeAssert.ts, or the diff `

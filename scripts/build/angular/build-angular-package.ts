@@ -8,7 +8,8 @@
 
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { join, relative, sep, posix } from 'node:path';
+import { join, relative, posix } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -94,7 +95,7 @@ function stage(root: string) {
   let variants = 0;
   let annotated = 0;
   for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html') && !p.includes('/playground/'))) {
-    const rel = relative(layer, file).split(sep).join('/');
+    const rel = toPosix(relative(layer, file));
     const source = readFileSync(file, 'utf8');
     if (!rel.endsWith(VARIANTS)) { staged.push(write(dir, rel, source)); continue; }
     const pure = annotatePure(source);

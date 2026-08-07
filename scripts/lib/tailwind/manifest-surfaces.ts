@@ -10,7 +10,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { readJson } from '../../utils/read-file.ts';
-import { kebab } from '../arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import type { ComponentTree } from '../arena/layers.ts';
 import { repoRoot } from '../arena/repo-root.ts';
 

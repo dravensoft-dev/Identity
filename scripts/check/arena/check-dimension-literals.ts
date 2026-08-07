@@ -5,6 +5,8 @@
 
 import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { camel } from '../../utils/case.ts';
+import { lineOf } from '../../utils/text.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -255,10 +257,6 @@ function scanLeaf(prop: string, leaf: string) {
   return [];
 }
 
-function lineOf(text: string, index: number) {
-  return text.slice(0, index).split('\n').length;
-}
-
 const COLON_STOP = new Set([',', '}']);
 
 const PROP_COLON = /(?<![\w.-])([a-zA-Z]+)\s*:\s*/g;
@@ -324,10 +322,6 @@ function scanDataflow(text: string) {
           out.push({ prop, raw: hit.raw, reason: hit.reason, line });
   }
   return out;
-}
-
-function camel(prop: string) {
-  return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
 function stringLiteralRuns(text: string) {

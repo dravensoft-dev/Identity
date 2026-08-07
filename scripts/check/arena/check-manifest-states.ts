@@ -16,7 +16,7 @@ import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import {
   HAND_DRAWN, MANIFEST_COVERS, categoryOf, coveredContracts, surfaceProblems,
 } from '../../lib/tailwind/manifest-surfaces.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import type { ComponentManifest, ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';

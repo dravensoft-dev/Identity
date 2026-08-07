@@ -9,7 +9,8 @@
  * moduleResolution node reads no exports and npm's registry page reads only the root field. */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join, relative, dirname, sep } from 'node:path';
+import { join, relative, dirname } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { childOutput } from '../../lib/arena/child-output.ts';
@@ -96,7 +97,7 @@ export function assembleModules(root: string, dir: string) {
   };
 
   for (const source of sources) {
-    const rel = join('components', relative(join(layer, 'components'), source)).split(sep).join('/');
+    const rel = toPosix(join('components', relative(join(layer, 'components'), source)));
     emit(source, rel.replace(/\.tsx?$/, '.js'));
   }
   for (const name of ROOT_TS) {

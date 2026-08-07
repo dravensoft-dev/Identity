@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -151,7 +152,7 @@ test('bun is pointed at the tree ngc actually emits, so a rootDir edit cannot ru
   const bun = testStep({ isBun: true, testFiles: [] }).find((s) => s.args[0] === 'test');
   assert.ok(bun, 'the bun branch runs no `test` step at all');
   const suites = bun.args;
-  assert.ok(suites.includes(emitted.split(sep).join('/')), `testStep runs ${suites}, but ngc emits into ${emitted}`);
+  assert.ok(suites.includes(toPosix(emitted)), `testStep runs ${suites}, but ngc emits into ${emitted}`);
 });
 
 test('testStep runs `node --test` over the discovered files under node', () => {

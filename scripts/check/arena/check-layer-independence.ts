@@ -11,6 +11,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join, basename, relative, extname, dirname, resolve } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
@@ -91,7 +92,7 @@ export function escapingSpecifiers(text: string, filePath: string, layer: string
   const found = [];
   for (const spec of referencesIn(text, extname(filePath))) {
     if (!spec || !spec.startsWith('.')) continue;
-    const target = relative(root, resolve(dirname(filePath), spec)).replace(/\\/g, '/');
+    const target = relative(root, resolve(dirname(filePath), toPosix(spec)));
     if (!foreign.some((other) => target.startsWith(`frameworks/${other}/`))) continue;
     found.push(target);
   }
@@ -112,7 +113,7 @@ export function collect() {
     const layerDir = join(root, 'frameworks', layer);
     const tokens = foreignTokens(layer);
     for (const path of layerFiles(layerDir)) {
-      const rel = relative(root, path).replace(/\\/g, '/');
+      const rel = relative(root, toPosix(path));
       const text = readFileSync(path, 'utf8');
       scanned += 1;
 

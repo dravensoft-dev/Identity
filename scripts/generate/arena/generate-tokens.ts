@@ -1,9 +1,10 @@
 import StyleDictionary from 'style-dictionary';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { camel } from '../../utils/case.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { serialize } from '../../lib/core/serialize-token.ts';
-import { serializeScript, scriptName } from '../../lib/core/serialize-script.ts';
+import { serializeScript } from '../../lib/core/serialize-script.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { childEntries, isStamped, isToken } from '../../lib/core/dtcg-shapes.ts';
 import type { DtcgNode, DtcgToken, StampedToken } from '../../lib/core/dtcg-shapes.ts';
@@ -86,7 +87,7 @@ export async function collectScriptTokens() {
       if (!isTokenItem(item) || !isScript(item.token)) continue;
       out.push({
         cssName: item.token.name,
-        jsName: scriptName(item.token.name),
+        jsName: camel(item.token.name),
         value: serializeScript(item.token),
         $description: item.token.$description,
         groups: item.groups,

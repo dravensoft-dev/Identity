@@ -9,7 +9,8 @@
  * fails. Use `<Name>` for a metavariable: an `X.prompt.md` reads as a claim. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { basename, dirname, join, relative, sep } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
@@ -50,7 +51,7 @@ export function pathPattern(roots: string[]) {
 }
 
 const entrySkip = (base: string) => (name: string, path: string) =>
-  skips(name, relative(base, dirname(path)).split(sep).join('/'));
+  skips(name, toPosix(relative(base, dirname(path))));
 
 export function documents(base = root) {
   return walkFiles(base, { skip: entrySkip(base) }).filter((path) => path.endsWith('.md'));

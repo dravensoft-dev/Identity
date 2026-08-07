@@ -7,7 +7,8 @@
  * Removing either term reopens one case silently, since the gate only fails on clip. * A DsCard is what a page's first line declares, and a Measured is what the browser
  * answered about it. */
 import { readFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
@@ -150,7 +151,7 @@ export function parseDsCard(html: string): DsCard | null {
 export function findCardPages(root: string) {
   return walkFiles(root, { skip: (name) => name.startsWith('.') || SKIP_DIRS.has(name) })
     .filter((path) => path.endsWith('.html') && parseDsCard(readFileSync(path, 'utf8')))
-    .map((path) => relative(root, path).split(sep).join('/'))
+    .map((path) => toPosix(relative(root, path)))
     .sort();
 }
 

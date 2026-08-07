@@ -11,7 +11,7 @@ import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
 } from '../../lib/arena/behaviour-contracts.ts';
 import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const SUITE_DIRS = [

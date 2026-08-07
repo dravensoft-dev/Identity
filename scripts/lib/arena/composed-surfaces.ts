@@ -7,7 +7,8 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import { LAYERS, pascal } from './layers.ts';
+import { pascal } from '../../utils/case.ts';
+import { LAYERS } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
 import { captured } from '../../utils/captures.ts';
 

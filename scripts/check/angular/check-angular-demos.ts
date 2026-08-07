@@ -8,7 +8,8 @@
 import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { readIfExists } from '../../utils/read-file.ts';
-import { pascal, readLayer } from '../../lib/arena/layers.ts';
+import { pascal } from '../../utils/case.ts';
+import { readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { captured } from '../../utils/captures.ts';
 

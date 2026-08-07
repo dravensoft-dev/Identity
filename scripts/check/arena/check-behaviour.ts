@@ -8,7 +8,7 @@ import {
   crossLayerAgrees, bindingCases, PATTERN_DIR,
 } from '../../lib/arena/behaviour-contracts.ts';
 import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
-import { pascal, kebab } from '../../lib/arena/layers.ts';
+import { pascal, kebab } from '../../utils/case.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export function describeBinding(binding: BehaviourBinding) {

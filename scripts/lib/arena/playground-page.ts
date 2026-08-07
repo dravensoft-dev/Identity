@@ -8,7 +8,7 @@
 import { HAND_DRAWN, categoryOf, manifestFor } from '../tailwind/manifest-surfaces.ts';
 import { PREFLIGHT, sheetPath } from '../../build/tailwind/build-tailwind.ts';
 import { composedBy, composedGraph } from './composed-surfaces.ts';
-import { kebab } from './layers.ts';
+import { kebab } from '../../utils/case.ts';
 import type { PlaygroundModel } from './playground-model.ts';
 
 export const UP = '../../../../../';

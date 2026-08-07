@@ -9,7 +9,3 @@ export function serializeScript(token: DtcgToken) {
   if (token.$type === 'number') return token.$value;
   return token.$value.value;
 }
-
-export function scriptName(kebab: string) {
-  return kebab.replace(/-([a-z0-9])/g, (_: string, c: string) => c.toUpperCase());
-}

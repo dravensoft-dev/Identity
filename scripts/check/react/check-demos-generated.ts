@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
@@ -37,7 +38,7 @@ async function main() {
 
   for (const treeRoot of ROOTS) {
     for (const absPath of findJsFiles(join(root, treeRoot))) {
-      const outRel = relative(root, absPath).split(sep).join('/');
+      const outRel = toPosix(relative(root, absPath));
       if (built.has(outRel)) continue;
       let content;
       try {

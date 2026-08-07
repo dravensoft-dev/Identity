@@ -5,7 +5,9 @@
 
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { globToRegExp } from '../../utils/text.ts';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { findComments } from '../../lib/arena/comments.ts';
@@ -118,7 +120,7 @@ export const UNTRACKED = {
 function walk(dir: string, root: string): string[] {
   return walkFiles(dir, { skip: (name) => name.startsWith('.') || SKIPPED_DIRECTORIES.has(name) })
     .filter((full) => SCANNED_EXTENSIONS.some((e) => full.endsWith(e)))
-    .map((full) => relative(root, full).split(sep).join('/'));
+    .map((full) => toPosix(relative(root, full)));
 }
 
 function startsFile(source: string, comment: { text: string }) {
@@ -170,10 +172,7 @@ export function trackingProblems(root = ROOT, run = gitRun) {
 }
 
 export function matches(pattern: string, path: string) {
-  const rx = pattern
-    .split('**/').map((part) => part.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*'))
-    .join('(?:.*/)?');
-  return new RegExp(`^${rx}$`).test(path);
+  return globToRegExp(pattern).test(path);
 }
 
 function gitRun(args: string[], cwd: string) {

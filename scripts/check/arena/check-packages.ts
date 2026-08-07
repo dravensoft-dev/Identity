@@ -10,7 +10,9 @@
  * the build green. dist/ is git-ignored, so all but the first are skipped on a fresh clone. */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, dirname, basename, relative, sep } from 'node:path';
+import { join, dirname, basename, relative } from 'node:path';
+import { globToRegExp } from '../../utils/text.ts';
+import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
@@ -116,10 +118,10 @@ function exportTargets(exports: unknown) {
 
 export function globMatches(target: string, dir: string) {
   const rel = target.replace(/^\.\//, '');
-  const pattern = new RegExp(`^${rel.split('*').map((p: string) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
+  const pattern = globToRegExp(rel);
   if (!existsSync(dir)) return [];
   return walkFiles(dir)
-    .map((path) => relative(dir, path).split(sep).join('/'))
+    .map((path) => toPosix(relative(dir, path)))
     .filter((path) => pattern.test(path));
 }
 
@@ -198,7 +200,7 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
     const full = join(dir, from);
     if (!existsSync(full)) continue;
     for (const specifier of importsIn(readFileSync(full, 'utf8'))) {
-      const target = join(dirname(from), specifier ?? '').split(sep).join('/');
+      const target = toPosix(join(dirname(from), specifier ?? ''));
       if (existsSync(join(dir, target))) queue.push(target);
       else problems.push(`${pkg.name}: ${from} imports ${specifier}, which was never emitted`);
     }

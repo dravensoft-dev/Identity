@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { serializeScript, scriptName } from './serialize-script.ts';
+import { serializeScript } from './serialize-script.ts';
 
 test('a dimension yields its bare number, unit dropped', () => {
   assert.equal(serializeScript({ $type: 'dimension', $value: { value: 280, unit: 'px' } }), 280);
@@ -30,8 +30,3 @@ test('a type whose value is not a number is refused', () => {
   );
 });
 
-test('scriptName camelCases a kebab token name', () => {
-  assert.equal(scriptName('chart-pad-left'), 'chartPadLeft');
-  assert.equal(scriptName('chart-height'), 'chartHeight');
-  assert.equal(scriptName('sp-4'), 'sp4');
-});

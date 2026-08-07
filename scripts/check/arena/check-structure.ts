@@ -2,7 +2,8 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
+import { LAYERS, readLayer } from '../../lib/arena/layers.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
