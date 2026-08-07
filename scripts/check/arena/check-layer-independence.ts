@@ -9,9 +9,10 @@
  * case-sensitively so a gate or script name (check:angular, test:react, build:tailwind) is
  * not mistaken for a citation of the layer itself. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, relative, extname, dirname, resolve } from 'node:path';
+import { join, basename, relative, extname, dirname, resolve } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -59,15 +60,9 @@ export const MODULE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs']);
 export const REFERENCE_EXT = new Set([...MODULE_EXT, '.html']);
 const SKIP_DIRS = new Set(['node_modules', 'vendor', 'build', 'dist']);
 
-export function* layerFiles(layerDir: string): Generator<string> {
-  for (const entry of readdirSync(layerDir).sort()) {
-    if (SKIP_DIRS.has(entry)) continue;
-    const path = join(layerDir, entry);
-    if (statSync(path).isDirectory()) { yield* layerFiles(path); continue; }
-    if (!SCAN_EXT.has(extname(entry))) continue;
-    if (entry.includes('.generated.')) continue;
-    yield path;
-  }
+export function layerFiles(layerDir: string): string[] {
+  return walkFiles(layerDir, { skip: (name) => SKIP_DIRS.has(name) })
+    .filter((path) => SCAN_EXT.has(extname(path)) && !basename(path).includes('.generated.'));
 }
 
 export function foreignTokens(layer: string) {

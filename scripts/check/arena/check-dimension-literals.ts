@@ -3,9 +3,10 @@
  * Two blind spots are known and unfixed: a kebab-case SVG attribute, and Angular's [style.x]
  * binding form, which sits outside all four of the scanners below. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../lib/arena/captures.ts';
@@ -446,16 +447,10 @@ export function stalePassthrough(seenComponents: Set<string>) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
-export function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir).sort()) {
-    if (entry === 'dist') continue;
-    const p = join(dir, entry);
-    if (p === emittedTree()) continue;
-    if (statSync(p).isDirectory()) { yield* sourceFiles(p); continue; }
-
-    if (entry.endsWith('.d.ts')) continue;
-    if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
-  }
+export function sourceFiles(dir: string): string[] {
+  const emitted = emittedTree();
+  return walkFiles(dir, { skip: (name, p) => name === 'dist' || p === emitted })
+    .filter((p) => !p.endsWith('.d.ts') && EXTENSIONS.some((e) => p.endsWith(e)));
 }
 
 export function staleExemptions(matchedKeys: Set<string>) {

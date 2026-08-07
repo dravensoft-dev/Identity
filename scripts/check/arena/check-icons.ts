@@ -7,6 +7,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
 export const PHOSPHOR = 'node_modules/@phosphor-icons/web/src';
@@ -79,18 +80,12 @@ export function tokenProblems(text: string, where: string, weights: Map<string, 
 }
 
 export function scannedFiles(root = ROOT) {
+  const skip = (name: string) => name.startsWith('.') || SKIPPED_DIRECTORIES.has(name);
   const found: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name.startsWith('.') || SKIPPED_DIRECTORIES.has(entry.name)) continue;
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (SCANNED_EXTENSIONS.some((e) => entry.name.endsWith(e))) found.push(full);
-    }
-  };
   for (const name of SCANNED_ROOTS) {
     const dir = join(root, name);
-    if (existsSync(dir) && statSync(dir).isDirectory()) walk(dir);
+    if (!existsSync(dir) || !statSync(dir).isDirectory()) continue;
+    found.push(...walkFiles(dir, { skip }).filter((p) => SCANNED_EXTENSIONS.some((e) => p.endsWith(e))));
   }
   return found;
 }

@@ -6,9 +6,10 @@
  * script writes into every layer cannot drift between them, and the gate that holds it equal to
  * its single source is the one that would notice if it did. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, extname, relative } from 'node:path';
+import { join, basename, extname, relative } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../lib/arena/captures.ts';
@@ -48,18 +49,16 @@ export function numericConstants(source: string) {
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-export function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
-    const path = join(dir, entry);
-    if (path === emittedTree()) continue;
-    if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
-    if (!SCAN_EXT.has(extname(entry))) continue;
-    if (entry.includes('.generated.')) continue;
+const SKIP_DIRS = new Set(['node_modules', 'vendor', 'dist']);
 
-    if (extname(entry) === '.js' && readdirSync(dir).includes(`${entry.slice(0, -3)}.jsx`)) continue;
-    yield path;
-  }
+export function sourceFiles(dir: string): string[] {
+  const emitted = emittedTree();
+  return walkFiles(dir, { skip: (name, path) => SKIP_DIRS.has(name) || path === emitted })
+    .filter((path) => {
+      const name = basename(path);
+      if (!SCAN_EXT.has(extname(name)) || name.includes('.generated.')) return false;
+      return !(extname(name) === '.js' && existsSync(path.replace(/\.js$/, '.jsx')));
+    });
 }
 
 function collect() {

@@ -3,9 +3,10 @@
  * module level, and the names it imported rather than declared, which is how a constant
  * that merely re-exports a token is told from one that shadows it. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, extname, relative } from 'node:path';
+import { join, basename, extname, relative } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { buildScriptModules, collectScriptTokens, SCRIPT_TARGETS } from '../../generate/arena/generate-tokens.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
@@ -96,16 +97,12 @@ export function cssDiscoveryProblems(existingProblems: string[], cssFileCount: n
 
 const SCAN_EXT = new Set(['.js', '.jsx', '.ts', '.tsx']);
 
-export function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir)) {
-    if (entry === 'node_modules' || entry === 'vendor' || entry === 'dist') continue;
-    const path = join(dir, entry);
-    if (path === emittedTree()) continue;
-    if (statSync(path).isDirectory()) { yield* sourceFiles(path); continue; }
-    if (!SCAN_EXT.has(extname(entry))) continue;
-    if (/^tokens\.generated\./i.test(entry)) continue;
-    yield path;
-  }
+const SKIP_DIRS = new Set(['node_modules', 'vendor', 'dist']);
+
+export function sourceFiles(dir: string): string[] {
+  const emitted = emittedTree();
+  return walkFiles(dir, { skip: (name, path) => SKIP_DIRS.has(name) || path === emitted })
+    .filter((path) => SCAN_EXT.has(extname(path)) && !/^tokens\.generated\./i.test(basename(path)));
 }
 
 async function main() {

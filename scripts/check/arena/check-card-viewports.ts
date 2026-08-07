@@ -6,9 +6,10 @@
  * because the harness gives body bottom padding -- but never the out-of-flow overlay.
  * Removing either term reopens one case silently, since the gate only fails on clip. * A DsCard is what a page's first line declares, and a Measured is what the browser
  * answered about it. */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
@@ -147,19 +148,10 @@ export function parseDsCard(html: string): DsCard | null {
 }
 
 export function findCardPages(root: string) {
-  const found: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) continue;
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.html') && parseDsCard(readFileSync(path, 'utf8'))) {
-        found.push(relative(root, path).split(sep).join('/'));
-      }
-    }
-  };
-  walk(root);
-  return found.sort();
+  return walkFiles(root, { skip: (name) => name.startsWith('.') || SKIP_DIRS.has(name) })
+    .filter((path) => path.endsWith('.html') && parseDsCard(readFileSync(path, 'utf8')))
+    .map((path) => relative(root, path).split(sep).join('/'))
+    .sort();
 }
 
 export function classify({ file, declared, measured }: {

@@ -3,9 +3,10 @@
  * tree a suite was found under, never from its text. No pattern is excluded: `grid`
  * components were, on a memory measurement that no longer holds. */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, basename } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
 } from '../../lib/arena/behaviour-contracts.ts';
@@ -253,17 +254,8 @@ function collectBindings() {
 }
 
 export function walkSuites(dir: string) {
-  const out: string[] = [];
-  if (!existsSync(dir)) return out;
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      out.push(...walkSuites(path));
-    } else if (/\.test\.(jsx|tsx|ts|mjs)$/.test(entry.name)) {
-      out.push(path);
-    }
-  }
-  return out;
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir).filter((path) => /\.test\.(jsx|tsx|ts|mjs)$/.test(basename(path)));
 }
 
 export function collectSuites(dirs = SUITE_DIRS) {

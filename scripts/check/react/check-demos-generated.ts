@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
@@ -13,16 +14,7 @@ function skip(reason: string) {
 }
 
 function findJsFiles(dir: string) {
-  const found: string[] = [];
-  const walk = (d: string) => {
-    for (const entry of readdirSync(d, { withFileTypes: true })) {
-      const path = join(d, entry.name);
-      if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.generated.js')) found.push(path);
-    }
-  };
-  walk(dir);
-  return found;
+  return walkFiles(dir).filter((path) => path.endsWith('.generated.js'));
 }
 
 async function main() {
