@@ -7,9 +7,9 @@
  * whose globs match nothing compiles nothing and reports clean, so this counts what the
  * project actually reached against what is on disk rather than trusting the globs. */
 
-import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { typecheck, projectFiles, zeroProjectProblems } from '../../lib/arena/typecheck.ts';
 
@@ -21,13 +21,7 @@ export const PROJECTS = [
 export const CHECKED_EXTENSIONS = ['.ts', '.mjs'];
 
 export function sourcesUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) { found.push(...sourcesUnder(full)); continue; }
-    if (CHECKED_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) found.push(full);
-  }
-  return found;
+  return walkFiles(dir).filter((full) => CHECKED_EXTENSIONS.some((ext) => full.endsWith(ext)));
 }
 
 export function unreachedProblems(onDisk: string[], included: string[], root = repoRoot) {
@@ -72,4 +66,4 @@ function main() {
   console.log(`check-script-types: ${PROJECTS.length} project(s) typecheck, reaching every source under scripts/`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

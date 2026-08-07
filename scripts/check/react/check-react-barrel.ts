@@ -5,8 +5,8 @@
  * export. Pure node, no Bun API. */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { buildBarrel, ROOT_PRIVATE } from '../../build/react/build-react-barrel.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -49,4 +49,4 @@ function main() {
   console.log(`check-react-barrel: the barrel is in sync over ${count} component(s)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

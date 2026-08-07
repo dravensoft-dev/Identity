@@ -2,12 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
 import {
   EXCLUDED_NAMES, EXCLUDED_PATTERNS, CSS_CHAIN, arenaCssHeader, excluded,
   collectFiles, reset, write, copyTree, copyCli, CLI_BINS, baseManifest, version, componentSheets, writeCssChain,
   writeComponentMap,
 } from './package-assembly.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { MAP_FILE } from './component-map.ts';
 import { repoRoot } from './repo-root.ts';
 
@@ -170,8 +172,8 @@ test('what a command ships reaches nothing outside bin/, because scripts/ is not
 
 test('each package carries the map its own layer derives, under the one name the command reads', () => {
   const to = mkdtempSync(join(tmpdir(), 'arena-assembly-map-'));
-  const angular = JSON.parse(readFileSync(writeComponentMap(to, 'angular', repoRoot), 'utf8'));
-  const react = JSON.parse(readFileSync(writeComponentMap(join(to, 'react'), 'react', repoRoot), 'utf8'));
+  const angular = readJson(writeComponentMap(to, 'angular', repoRoot));
+  const react = readJson(writeComponentMap(join(to, 'react'), 'react', repoRoot));
   assert.equal(existsSync(join(to, MAP_FILE)), true);
   assert.equal(angular.match, 'selector');
   assert.equal(react.match, 'symbol');
@@ -217,9 +219,9 @@ const importsIn = (css: string) => [...css.matchAll(/@import\s+'([^']+)'/g)].map
 test('every import the component barrel writes resolves to a sheet the same call emits', () => {
   const root = tailwindTree(['tag', 'button']);
   const sheets = componentSheets('', () => ({ base: '' }), root);
-  const emitted = new Set(sheets.map((s) => s.to.split(sep).join('/')));
+  const emitted = new Set(sheets.map((s) => toPosix(s.to)));
 
-  const barrel = sheets.find((s) => s.to.split(sep).join('/') === 'css/components.css');
+  const barrel = sheets.find((s) => toPosix(s.to) === 'css/components.css');
   assert.ok(barrel, 'the barrel is emitted');
   const links = importsIn(barrel.content);
   assert.deepEqual(links, ['./components/button.css', './components/tag.css']);

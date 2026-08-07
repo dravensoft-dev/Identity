@@ -9,8 +9,10 @@
  * fails. Use `<Name>` for a metavariable: an `X.prompt.md` reads as a claim. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const SKIPPED_ANYWHERE = new Set(['node_modules', '.git']);
@@ -48,18 +50,11 @@ export function pathPattern(roots: string[]) {
   );
 }
 
+const entrySkip = (base: string) => (name: string, path: string) =>
+  skips(name, toPosix(relative(base, dirname(path))));
+
 export function documents(base = root) {
-  const found: string[] = [];
-  const walk = (dir: string, relative: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (skips(entry.name, relative)) continue;
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) walk(path, relative ? `${relative}/${entry.name}` : entry.name);
-      else if (entry.name.endsWith('.md')) found.push(path);
-    }
-  };
-  walk(base, '');
-  return found;
+  return walkFiles(base, { skip: entrySkip(base) }).filter((path) => path.endsWith('.md'));
 }
 
 export function namesAFile(cited: string) {
@@ -69,16 +64,7 @@ export function namesAFile(cited: string) {
 export const BARE_DOCUMENT = /(?<![A-Za-z0-9._/-])[A-Za-z][A-Za-z0-9-]*(?:\.[a-z0-9-]+)*\.md\b/g;
 
 export function basenames(base = root) {
-  const found = new Set();
-  const walk = (dir: string, relative: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (skips(entry.name, relative)) continue;
-      if (entry.isDirectory()) walk(join(dir, entry.name), relative ? `${relative}/${entry.name}` : entry.name);
-      else found.add(entry.name);
-    }
-  };
-  walk(base, '');
-  return found;
+  return new Set(walkFiles(base, { skip: entrySkip(base) }).map((path) => basename(path)));
 }
 
 export function bareDocumentProblems(base = root, files = documents(base), names = basenames(base)) {
@@ -160,4 +146,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

@@ -3,11 +3,14 @@
  * `arena` because it reads two framework layers and the repository root. Nothing here
  * compiles anything; each layer's own builder does that with its own toolchain. */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, rmSync, existsSync, statSync } from 'node:fs';
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript';
-import { join, dirname, relative, sep, basename } from 'node:path';
+import { join, dirname, relative, basename } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from './repo-root.ts';
-import { kebab } from './layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { componentMap, MAP_FILE } from './component-map.ts';
 import { manifestFiles } from '../tailwind/tailwind-compile.ts';
 import { CONSUME, sheetPath } from '../../build/tailwind/build-tailwind.ts';
@@ -52,17 +55,8 @@ export function excluded(name: string) {
 }
 
 export function collectFiles(dir: string, keep: (path: string) => boolean = () => true) {
-  const found: string[] = [];
-  const walk = (current: string) => {
-    for (const entry of readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (excluded(entry.name) || entry.name.startsWith('.')) continue;
-      const full = join(current, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (keep(full)) found.push(full);
-    }
-  };
-  if (existsSync(dir)) walk(dir);
-  return found;
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir, { skip: (name) => excluded(name) || name.startsWith('.') }).filter(keep);
 }
 
 export function reset(dir: string) {
@@ -100,7 +94,7 @@ export function writeCssChain(dir: string, name: string, extra: CssChainEntry[] 
   }
   const imports = chain
     .filter(({ linked }) => linked !== false)
-    .map(({ to }) => `@import './${to.split(sep).join('/')}';`);
+    .map(({ to }) => `@import './${toPosix(to)}';`);
   write(dir, 'arena.css', `${arenaCssHeader(name)}\n${imports.join('\n')}\n`);
   return chain.map((c) => c.to);
 }
@@ -162,7 +156,7 @@ export function copyCli(dir: string, root = repoRoot) {
   for (const name of Object.keys(CLI_BINS)) {
     const from = join(root, 'scripts', 'generate', 'core', name);
     const copied = collectFiles(from, (file) => !excluded(basename(file))).map((file) => {
-      const to = join('bin', relative(from, file).split(sep).join('/'));
+      const to = join('bin', toPosix(relative(from, file)));
       if (!file.endsWith('.ts')) { copy(file, dir, to); return `./${to}`; }
       write(dir, to.replace(/\.ts$/, '.mjs'), emitCli(readFileSync(file, 'utf8')));
       return `./${to.replace(/\.ts$/, '.mjs')}`;
@@ -195,11 +189,11 @@ export function writeComponentMap(dir: string, layer: string, root = repoRoot) {
 }
 
 export function version(root = repoRoot) {
-  return JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')).version;
+  return readJson(join(root, '.claude-plugin', 'plugin.json')).version;
 }
 
 export function baseManifest(root = repoRoot) {
-  const plugin = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
+  const plugin = readJson(join(root, '.claude-plugin', 'plugin.json'));
   return {
     version: plugin.version,
     license: plugin.license,

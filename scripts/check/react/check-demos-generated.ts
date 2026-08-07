@@ -1,6 +1,8 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative, sep } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
@@ -13,16 +15,7 @@ function skip(reason: string) {
 }
 
 function findJsFiles(dir: string) {
-  const found: string[] = [];
-  const walk = (d: string) => {
-    for (const entry of readdirSync(d, { withFileTypes: true })) {
-      const path = join(d, entry.name);
-      if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.generated.js')) found.push(path);
-    }
-  };
-  walk(dir);
-  return found;
+  return walkFiles(dir).filter((path) => path.endsWith('.generated.js'));
 }
 
 async function main() {
@@ -45,7 +38,7 @@ async function main() {
 
   for (const treeRoot of ROOTS) {
     for (const absPath of findJsFiles(join(root, treeRoot))) {
-      const outRel = relative(root, absPath).split(sep).join('/');
+      const outRel = toPosix(relative(root, absPath));
       if (built.has(outRel)) continue;
       let content;
       try {
@@ -66,4 +59,4 @@ async function main() {
   console.log(`check-demos-generated: ${built.size} file(s) in sync`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

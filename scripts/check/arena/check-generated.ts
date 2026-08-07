@@ -3,10 +3,13 @@
  * is read as hand-written by check:docs, and a payload file caught by an ignore pattern
  * ships a tag whose intro/styles.css @imports resolve to nothing, with no error. */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { globToRegExp } from '../../utils/text.ts';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { findComments } from '../../lib/arena/comments.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
@@ -115,18 +118,9 @@ export const UNTRACKED = {
 };
 
 function walk(dir: string, root: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.')) continue;
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (SKIPPED_DIRECTORIES.has(entry.name)) continue;
-      found.push(...walk(full, root));
-    } else if (SCANNED_EXTENSIONS.some((e) => entry.name.endsWith(e))) {
-      found.push(relative(root, full).split(sep).join('/'));
-    }
-  }
-  return found;
+  return walkFiles(dir, { skip: (name) => name.startsWith('.') || SKIPPED_DIRECTORIES.has(name) })
+    .filter((full) => SCANNED_EXTENSIONS.some((e) => full.endsWith(e)))
+    .map((full) => toPosix(relative(root, full)));
 }
 
 function startsFile(source: string, comment: { text: string }) {
@@ -178,10 +172,7 @@ export function trackingProblems(root = ROOT, run = gitRun) {
 }
 
 export function matches(pattern: string, path: string) {
-  const rx = pattern
-    .split('**/').map((part) => part.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*'))
-    .join('(?:.*/)?');
-  return new RegExp(`^${rx}$`).test(path);
+  return globToRegExp(pattern).test(path);
 }
 
 function gitRun(args: string[], cwd: string) {
@@ -209,4 +200,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

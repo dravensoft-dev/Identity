@@ -9,9 +9,11 @@
  * case-sensitively so a gate or script name (check:angular, test:react, build:tailwind) is
  * not mistaken for a citation of the layer itself. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative, extname, dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join, basename, relative, extname, dirname, resolve } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -59,15 +61,9 @@ export const MODULE_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs']);
 export const REFERENCE_EXT = new Set([...MODULE_EXT, '.html']);
 const SKIP_DIRS = new Set(['node_modules', 'vendor', 'build', 'dist']);
 
-export function* layerFiles(layerDir: string): Generator<string> {
-  for (const entry of readdirSync(layerDir).sort()) {
-    if (SKIP_DIRS.has(entry)) continue;
-    const path = join(layerDir, entry);
-    if (statSync(path).isDirectory()) { yield* layerFiles(path); continue; }
-    if (!SCAN_EXT.has(extname(entry))) continue;
-    if (entry.includes('.generated.')) continue;
-    yield path;
-  }
+export function layerFiles(layerDir: string): string[] {
+  return walkFiles(layerDir, { skip: (name) => SKIP_DIRS.has(name) })
+    .filter((path) => SCAN_EXT.has(extname(path)) && !basename(path).includes('.generated.'));
 }
 
 export function foreignTokens(layer: string) {
@@ -96,7 +92,7 @@ export function escapingSpecifiers(text: string, filePath: string, layer: string
   const found = [];
   for (const spec of referencesIn(text, extname(filePath))) {
     if (!spec || !spec.startsWith('.')) continue;
-    const target = relative(root, resolve(dirname(filePath), spec)).replace(/\\/g, '/');
+    const target = relative(root, resolve(dirname(filePath), toPosix(spec)));
     if (!foreign.some((other) => target.startsWith(`frameworks/${other}/`))) continue;
     found.push(target);
   }
@@ -117,7 +113,7 @@ export function collect() {
     const layerDir = join(root, 'frameworks', layer);
     const tokens = foreignTokens(layer);
     for (const path of layerFiles(layerDir)) {
-      const rel = relative(root, path).replace(/\\/g, '/');
+      const rel = relative(root, toPosix(path));
       const text = readFileSync(path, 'utf8');
       scanned += 1;
 
@@ -223,4 +219,4 @@ function main() {
     + `and ${ALLOWED_SPECIFIERS.size} reference pattern(s) authorised on the record`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

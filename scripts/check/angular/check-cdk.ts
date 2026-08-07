@@ -5,12 +5,12 @@
  * What it still cannot check is whether the override is the RIGHT value for that class. */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaTokenNames, referencedTokens } from '../../lib/core/arena-tokens.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');
@@ -92,4 +92,4 @@ function main() {
   console.log(`check-cdk: ${n} overridden CDK class${n === 1 ? ' exists' : 'es exist'}, every Arena token resolves, every @import resolves`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

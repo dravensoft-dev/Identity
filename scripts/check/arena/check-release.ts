@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 const read = (p: string) => readFileSync(join(root, p), 'utf8');
-const readJSON = (p: string) => JSON.parse(read(p));
+const readJSON = (p: string) => readJson(join(root, p));
 
 function git(...args: string[]) {
   try {

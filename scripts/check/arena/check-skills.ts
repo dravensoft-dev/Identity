@@ -5,10 +5,10 @@
  * assert because check:generated scans no .md and the ignore pattern over frameworks/ reaches
  * only a .generated. name, so nothing else would notice one falling out of the index. */
 
-import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { renderTarget, SKILL_TARGETS, loadCategories } from '../../generate/arena/generate-skills.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -73,4 +73,4 @@ function main() {
   console.log(`check-skills: ${emitted} index page(s) match a fresh emit over ${declared} declared component(s)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

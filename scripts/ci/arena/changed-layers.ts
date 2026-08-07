@@ -5,7 +5,7 @@
  * compiles modules emitted into its own tree from it, and those are gitignored, so a
  * manifest edit changes what React builds while nothing tracked under it moves. */
 
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
 
 export const SHARED = {
@@ -73,4 +73,4 @@ async function main() {
   console.error(`changed-layers: ${paths.length} path(s) -> ${renderOutputs(changed).replace(/\n/g, ' ')}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

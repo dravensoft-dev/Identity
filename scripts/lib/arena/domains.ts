@@ -6,7 +6,8 @@
  * here, not in each of the four scanners, because a suffix one stops recognising is a file
  * that quietly leaves its scope. A suite is TypeScript and can earn no exception, nothing
  * loading one. A script may be JavaScript only if STAYS_JAVASCRIPT names it, and it is
- * still scanned, since those two have specifiers that must resolve like any other's. */
+ * still scanned, since those two have specifiers that must resolve like any other's. A util
+ * sits under no phase and is arena, the domain that already means no one layer. */
 
 export const DOMAINS = ['core', 'react', 'angular', 'tailwind', 'arena'];
 
@@ -34,6 +35,7 @@ function classify(segments: string[], i: number) {
   if (segments[i] === 'scripts' && PHASES.includes(segments[i + 1] ?? '') && DOMAINS.includes(segments[i + 2] ?? '')) {
     return segments[i + 2];
   }
+  if (segments[i] === 'scripts' && segments[i + 1] === 'utils') return 'arena';
   if (segments[i] === 'frameworks' && DOMAINS.includes(segments[i + 1] ?? '')) return segments[i + 1];
   return null;
 }

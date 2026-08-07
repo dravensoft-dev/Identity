@@ -4,15 +4,16 @@
  * rest. check-api.ts then holds every block equal to its contract, so the copy cannot rot. */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { docComment } from './generate-api-types.ts';
 import { normaliseDoc } from '../../lib/arena/api-surface.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const MEMBER_START: Record<string, RegExp> = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
@@ -131,7 +132,7 @@ async function main() {
 
   const dir = join(root, 'contracts/api/components');
   const contracts = readdirSync(dir).filter((f) => f.endsWith('.json')).sort()
-    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
+    .map((f) => readJson(join(dir, f)));
 
   const sources = componentSources(
     resolveReactImplementations, resolveAngularImplementations, readLayer,
@@ -142,4 +143,4 @@ async function main() {
   console.log(`generate-member-docs: ${written.length} source(s) updated`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

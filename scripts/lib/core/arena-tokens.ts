@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecls } from '../arena/css-decls.ts';
 import { repoRoot } from '../arena/repo-root.ts';
-import { captured } from '../arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 const GENERATED = ['palette.generated.css', 'typography.generated.css', 'spacing.generated.css', 'effects.generated.css'];
 

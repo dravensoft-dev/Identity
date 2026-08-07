@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import {
   cssCounterpart, importedNames, catSlotEnumProblems, zeroGeneratedCssProblems, cssDiscoveryProblems,
   shadowedTokenProblems, staleShadowExemptions, SHADOW_EXEMPT, sourceFiles,
@@ -87,7 +88,7 @@ test('the committed ArenaCatSlot matches the ramp the tokens are built from', as
   const modules = await buildScriptModules();
   const body = modules.get('frameworks/react/Tokens.generated.js');
   const catSlots = Number(/^export const catSlots = (\d+);$/m.exec(body ?? '')?.[1]);
-  const catSlot = JSON.parse(readFileSync(join(root, 'contracts/api/types/arena-cat-slot.json'), 'utf8'));
+  const catSlot = readJson(join(root, 'contracts/api/types/arena-cat-slot.json'));
   assert.deepEqual(catSlotEnumProblems(catSlots, catSlot.values), []);
 });
 

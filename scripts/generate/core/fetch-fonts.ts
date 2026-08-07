@@ -5,6 +5,7 @@
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { fontWeights, googleFontsUrl } from '../../lib/core/arena-config.ts';
 import { childEntries } from '../../lib/core/dtcg-shapes.ts';
@@ -19,7 +20,7 @@ export const UA =
   '(KHTML, like Gecko) Chrome/120.0 Safari/537.36';
 
 export function families(root: string) {
-  const src = JSON.parse(readFileSync(join(root, 'contracts/design/typography.json'), 'utf8'));
+  const src = readJson(join(root, 'contracts/design/typography.json'));
   const weights = fontWeights(root);
   return childEntries(src.font)
     .map(([, token]) => {
@@ -114,7 +115,7 @@ export function facesFromDisk(root: string): Face[] {
   const present = new Set(readdirSync(join(root, 'assets', 'fonts')));
   let recorded;
   try {
-    recorded = JSON.parse(readFileSync(join(root, FONTS), 'utf8'));
+    recorded = readJson(join(root, FONTS));
   } catch {
     recorded = {};
   }

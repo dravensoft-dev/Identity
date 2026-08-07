@@ -10,9 +10,10 @@
  * Read the args here, never reconstruct them. */
 
 import { spawnSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
 
@@ -60,6 +61,7 @@ export const GATES = [
   { name: 'check:react-barrel', file: 'react/check-react-barrel.ts' },
   { name: 'check:react-types', file: 'react/check-react-types.ts' },
   { name: 'check:script-types', file: 'arena/check-script-types.ts' },
+  { name: 'check:script-reach', file: 'arena/check-script-reach.ts' },
   { name: 'check:cards', file: 'arena/check-card-viewports.ts' },
   { name: 'check:focus-trap', file: 'arena/check-focus-trap.ts' },
   { name: 'check:shared-arithmetic', file: 'arena/check-shared-arithmetic.ts' },
@@ -138,13 +140,7 @@ function runStep(name: string, args: string[]) {
 }
 
 export function testFilesUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...testFilesUnder(full));
-    else if (isSuite(entry.name)) found.push(full);
-  }
-  return found;
+  return walkFiles(dir).filter((full) => isSuite(basename(full)));
 }
 
 function main() {
@@ -178,4 +174,4 @@ function main() {
   process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

@@ -1,7 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, relative } from 'node:path';
+import { walkFiles } from '../../utils/walk-files.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../arena/repo-root.ts';
 import type { ManifestClassSource, Manifests } from './manifest-shapes.ts';
 
@@ -25,16 +27,7 @@ export function escapeClass(cls: string) {
 }
 
 export function manifestFiles(componentsDir: string) {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (e.name.endsWith('.manifest.json')) out.push(p);
-    }
-  };
-  walk(componentsDir);
-  return out.sort();
+  return walkFiles(componentsDir).filter((p) => p.endsWith('.manifest.json')).sort();
 }
 
 export function entryStylesheet(preset: string, components: string, extra?: string) {
@@ -62,7 +55,7 @@ export function layerManifests(root = repoRoot): Manifests {
   const components = join(root, 'frameworks/tailwind/components');
   const manifests: Manifests = new Map();
   for (const p of manifestFiles(components))
-    manifests.set(relative(root, p), JSON.parse(readFileSync(p, 'utf8')));
+    manifests.set(relative(root, p), readJson(p));
   return manifests;
 }
 

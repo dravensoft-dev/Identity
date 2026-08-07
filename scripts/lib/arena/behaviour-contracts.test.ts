@@ -6,7 +6,7 @@ import {
   validatePattern, loadPatterns, validateBinding, reactComponents, angularPrimitives,
   angularBindingPath, reactBindingPath, crossLayerAgrees, loadBinding, bindingCases,
 } from './behaviour-contracts.ts';
-import { pascal } from './layers.ts';
+import { pascal } from '../../utils/case.ts';
 import type { BehaviourBinding } from './behaviour-contracts.ts';
 
 const ok = {

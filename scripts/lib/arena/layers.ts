@@ -21,14 +21,6 @@ export const NON_LAYERS = new Map([
 
 export const emittedTree = (root = repoRoot) => join(root, 'frameworks', 'angular', 'build');
 
-export function kebab(name: string) {
-  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-export function pascal(dir: string) {
-  return dir.replace(/(^|-)([a-z0-9])/g, (_, _sep, c) => c.toUpperCase());
-}
-
 export type ComponentTree = Record<string, string[]>;
 
 export function readLayer(layer: string): ComponentTree {

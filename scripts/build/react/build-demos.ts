@@ -3,8 +3,10 @@
  * entries, and the layer-root helpers in ROOT_MODULES. One left out is a module that 404s
  * on the page with every suite still green, because a suite imports the source. */
 
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { basename, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const BANNER =
@@ -32,17 +34,10 @@ export function loaderFor(path: string) {
 }
 
 export function findSourceFiles(dir: string) {
-  const found: string[] = [];
-  const walk = (d: string) => {
-    for (const entry of readdirSync(d, { withFileTypes: true })) {
-      const path = join(d, entry.name);
-      if (entry.isDirectory()) walk(path);
-      else if (COMPILED_EXTENSIONS.some((e) => entry.name.endsWith(e))
-        && !entry.name.includes('.test.') && !entry.name.endsWith('.d.ts')) found.push(path);
-    }
-  };
-  walk(dir);
-  return found.sort();
+  return walkFiles(dir)
+    .filter((path) => COMPILED_EXTENSIONS.some((e) => path.endsWith(e)))
+    .filter((path) => !basename(path).includes('.test.') && !path.endsWith('.d.ts'))
+    .sort();
 }
 
 export function rewriteRelativeSourceImports(code: string) {
@@ -72,7 +67,7 @@ export async function buildDemos(opts: { root?: string } = {}) {
       if (!transpiler) throw new Error(`build-demos: no transpiler is configured for ${absPath}`);
       const compiled = transpiler.transformSync(source);
       const rewritten = rewriteRelativeSourceImports(compiled);
-      const outRel = outputPathFor(relative(root, absPath)).split(sep).join('/');
+      const outRel = toPosix(outputPathFor(relative(root, absPath)));
       if (files.has(outRel))
         throw new Error(`build-demos: ${outRel} is written by two sources at once; a .jsx and a .tsx `
           + 'of the same stem compile to one sibling and the second would overwrite the first');

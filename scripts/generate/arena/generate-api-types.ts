@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { fieldEntries } from '../../lib/arena/contract-shapes.ts';
 import type { MemberCandidate, TypeContract } from '../../lib/arena/contract-shapes.ts';
@@ -25,7 +26,7 @@ export function loadTypes(dir = join(root, 'contracts/api/types')) {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .sort()
-    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
+    .map((f) => readJson(join(dir, f)));
 }
 
 export function docComment(text: string, indent = '') {
@@ -82,4 +83,4 @@ function main() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

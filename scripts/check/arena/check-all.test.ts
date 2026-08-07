@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.ts';
@@ -15,10 +17,10 @@ const CI_JOBS = {
 };
 
 test('GATES lists every check gate', () => {
-  assert.equal(GATES.length, 47);
+  assert.equal(GATES.length, 48);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:skills', 'check:prompts', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:component-css', 'check:style-parity', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:citations', 'check:agents', 'check:icons', 'check:fonts', 'check:intro', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:script-types', 'check:cards', 'check:focus-trap', 'check:shared-arithmetic', 'check:packages', 'check:consumer', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:generated', 'check:skills', 'check:prompts', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:component-css', 'check:style-parity', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:citations', 'check:agents', 'check:icons', 'check:fonts', 'check:intro', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:script-types', 'check:script-reach', 'check:cards', 'check:focus-trap', 'check:shared-arithmetic', 'check:packages', 'check:consumer', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 
@@ -39,7 +41,7 @@ test('the domain table in scripts/check/AGENTS.md counts what GATES holds, or it
 });
 
 test('every gate in the array is also an npm script -- a gate a reader cannot invoke by name is the shape check:text-contrast shipped in', () => {
-  const scripts = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')).scripts;
+  const scripts = readJson(join(repoRoot, 'package.json')).scripts;
   for (const { name } of GATES) {
     assert.ok(name in scripts, `${name} is in the gate array and not in package.json, so \`bun run ${name}\` answers "Script not found"`);
   }
@@ -150,7 +152,7 @@ test('bun is pointed at the tree ngc actually emits, so a rootDir edit cannot ru
   const bun = testStep({ isBun: true, testFiles: [] }).find((s) => s.args[0] === 'test');
   assert.ok(bun, 'the bun branch runs no `test` step at all');
   const suites = bun.args;
-  assert.ok(suites.includes(emitted.split(sep).join('/')), `testStep runs ${suites}, but ngc emits into ${emitted}`);
+  assert.ok(suites.includes(toPosix(emitted)), `testStep runs ${suites}, but ngc emits into ${emitted}`);
 });
 
 test('testStep runs `node --test` over the discovered files under node', () => {

@@ -1,15 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, cpSync, rmSync, symlinkSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, cpSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { PROJECTS, typecheck } from './check-angular.ts';
 
 const BUILD_ONLY_OPTIONS = ['outDir', 'sourceMap', 'incremental', 'tsBuildInfoFile'];
 
 test('the emit project covers the test directory and relaxes nothing', () => {
-  const emit = JSON.parse(readFileSync(join(repoRoot, 'frameworks/angular/tsconfig.test.json'), 'utf8'));
+  const emit = readJson(join(repoRoot, 'frameworks/angular/tsconfig.test.json'));
   assert.equal(emit.extends, './tsconfig.check.json',
     'the emit project must inherit the layer project rather than restate its strictness');
   assert.ok(Array.isArray(emit.include) && emit.include.some((p: string) => p.startsWith('./test/')),
@@ -25,7 +26,7 @@ test('the emit project covers the test directory and relaxes nothing', () => {
 });
 
 test('the demo project reaches the page entries and relaxes nothing either', () => {
-  const demo = JSON.parse(readFileSync(join(repoRoot, 'frameworks/angular/tsconfig.demo.json'), 'utf8'));
+  const demo = readJson(join(repoRoot, 'frameworks/angular/tsconfig.demo.json'));
   assert.equal(demo.extends, './tsconfig.check.json',
     'the demo project must inherit the layer project rather than restate its strictness');
   assert.equal(demo.angularCompilerOptions, undefined,
@@ -45,7 +46,7 @@ test('check:angular typechecks both projects, because no barrel reaches a page e
 });
 
 test('the layer project still names the barrel alone, so check:angular keeps its own subject', () => {
-  const layer = JSON.parse(readFileSync(join(repoRoot, 'frameworks/angular/tsconfig.check.json'), 'utf8'));
+  const layer = readJson(join(repoRoot, 'frameworks/angular/tsconfig.check.json'));
   assert.deepEqual(layer.files, ['./index.ts'],
     'the shipped surface is the barrel; folding the tests into it would report a test error as a broken layer');
 });

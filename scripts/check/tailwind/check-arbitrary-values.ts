@@ -4,13 +4,14 @@
  * as TypeScript nothing under dist/ matched, so this walk read 414 generated copies and
  * nobody noticed; what it holds is the hand-written tree. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { UNMODELLED_UNITS } from '../arena/check-dimension-literals.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const SKIPPED_NAMES = new Set(['node_modules', 'dist', 'vendor']);
 
@@ -106,17 +107,9 @@ export function scanFile(relPath: string, text: string) {
   return errs;
 }
 
-export function* walk(dir: string, emitted = emittedTree()): Generator<string> {
-  for (const entry of readdirSync(dir).sort()) {
-    const p = join(dir, entry);
-    if (statSync(p).isDirectory()) {
-      if (SKIPPED_NAMES.has(entry) || p === emitted) continue;
-      yield* walk(p, emitted);
-    }
-
-    else if (entry.endsWith('.manifest.generated.ts')) continue;
-    else if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
-  }
+export function walk(dir: string, emitted = emittedTree()): string[] {
+  return walkFiles(dir, { skip: (name, p) => SKIPPED_NAMES.has(name) || p === emitted })
+    .filter((p) => !p.endsWith('.manifest.generated.ts') && EXTENSIONS.some((e) => p.endsWith(e)));
 }
 
 function main() {
@@ -136,4 +129,4 @@ function main() {
   console.log(`check-arbitrary-values: ${scanned} file(s) scanned, none`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

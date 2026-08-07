@@ -1,8 +1,8 @@
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export function themeKeys(css: string) {
   const out = new Map();
@@ -54,4 +54,4 @@ function main() {
   console.log(`check-tailwind: ${manifests.size} manifest(s), ${classes} class(es), ${themeKeys(css).size} theme key(s) — all resolve to Arena tokens`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

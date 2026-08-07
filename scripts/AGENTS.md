@@ -6,6 +6,7 @@ phase** the script belongs to, and **what it is allowed to know about**.
 ```
 scripts/
   serve.ts   the dev server; neither a phase nor a library
+  utils/      pure functions that name nothing of Arena: a directory walk, a JSON read
   lib/        shared modules, and every test that covers one, beside it
   build/      compiles: JSX to JS, TypeScript to ESM, a CSS layer, a vendor bundle
   generate/   emits source from data: DTCG JSON to CSS, contracts to types, fonts
@@ -14,7 +15,7 @@ scripts/
 ```
 
 Each phase has its own `AGENTS.md`, and each `<phase>/<domain>/` that holds scripts has a table
-saying why every file in it exists.
+saying why every file in it exists. `utils/` has one too, and no domain directories under it.
 
 - [`build/AGENTS.md`](./build/AGENTS.md): **and how to compile Arena for the first time.**
   A fresh clone must build before `bun run demos` or `bun run check` mean anything.
@@ -22,10 +23,12 @@ saying why every file in it exists.
 - [`check/AGENTS.md`](./check/AGENTS.md): the shape of a gate, and the SKIP protocol.
 - [`ci/AGENTS.md`](./ci/AGENTS.md): what a runner asks, and why the answers carry suites.
 - [`lib/AGENTS.md`](./lib/AGENTS.md): the bottom of the graph, and how a module is placed.
+- [`utils/AGENTS.md`](./utils/AGENTS.md): what a util is, and the import boundary keeping it one.
 
 `lib/` and the four phases all hold the same five domains, and **all five exist even when
 empty**: a `.gitkeep` marks a combination nothing occupies yet, so the shape stays legible
-rather than implied:
+rather than implied. `utils/` is outside that grid and is flat, because a domain is a statement
+about the vocabulary a module speaks and a util speaks none:
 
 | domain | what a script there is allowed to read and write |
 | --- | --- |
@@ -47,6 +50,13 @@ requirement keys. What is left over is `arena`, meaning the parsers, the browser
 and `repo-root.ts`, because it belongs to no layer in particular. Never place a library by
 **who imports it**: `behaviour-compliance.ts` is read from both framework layers' harnesses
 and is still `core`.
+
+**A module that speaks no vocabulary at all is not a library, it is a util**, and it goes in
+flat `utils/`. `walkFiles` takes a directory and a predicate, `readJson` takes a path, and
+neither names a layer, a contract, a token, a phase or a repository. The test is what the module
+would have to import: a util imports `node:` builtins and another util and nothing else, so one
+reaching for `repo-root.ts` or `layers.ts` is a `lib/` module in the wrong directory.
+`check/arena/script-imports.test.ts` holds that boundary over every file there, suites included.
 
 **An npm script's prefix names its phase directory.** `bun run generate:tokens` runs something
 under `generate/`, `bun run build:demos` something under `build/`. The reverse does not hold:

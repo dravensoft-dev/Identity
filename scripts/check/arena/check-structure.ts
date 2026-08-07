@@ -1,8 +1,9 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { LAYERS, kebab, readLayer } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
+import { LAYERS, readLayer } from '../../lib/arena/layers.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
 
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -69,7 +70,7 @@ export function zeroLayerProblems(layers: Record<string, ComponentTree>) {
 }
 
 function main() {
-  const categories = JSON.parse(readFileSync(join(repoRoot, 'frameworks/Components.json'), 'utf8'));
+  const categories = readJson(join(repoRoot, 'frameworks/Components.json'));
   const layers = Object.fromEntries(LAYERS.map((l) => [l, readLayer(l)]));
 
   const complete = true;
@@ -94,4 +95,4 @@ function main() {
   console.log('  (A green run says the layers agree with one declaration, never that the categories are well chosen.)');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

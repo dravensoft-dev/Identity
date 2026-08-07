@@ -8,13 +8,14 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { PROJECTS, CHECKED_EXTENSIONS, sourcesUnder, unreachedProblems } from './check-script-types.ts';
 
-const project = () => JSON.parse(readFileSync(join(repoRoot, PROJECTS[0]?.project ?? ''), 'utf8'));
+const project = () => readJson(join(repoRoot, PROJECTS[0]?.project ?? ''));
 
 test('the gate names a project that exists', () => {
   for (const { project: path } of PROJECTS)

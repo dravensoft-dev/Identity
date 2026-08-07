@@ -8,9 +8,11 @@
  * states the entry declaration twice, in exports and at the root, because a consumer on
  * moduleResolution node reads no exports and npm's registry page reads only the root field. */
 
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative, dirname, sep } from 'node:path';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join, relative, dirname } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { childOutput } from '../../lib/arena/child-output.ts';
 import { tscBin } from '../../lib/arena/typecheck.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
@@ -20,7 +22,7 @@ import {
   writeComponentMap,
 } from '../../lib/arena/package-assembly.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
@@ -33,14 +35,9 @@ export function isSource(path: string) {
   return (path.endsWith('.ts') || path.endsWith('.tsx')) && !path.endsWith('.d.ts');
 }
 
-export function distFiles(dir: string, keep: (path: string) => boolean, found: string[] = []) {
-  if (!existsSync(dir)) return found;
-  for (const entry of readdirSync(dir).sort()) {
-    const p = join(dir, entry);
-    if (statSync(p).isDirectory()) { distFiles(p, keep, found); continue; }
-    if (keep(p)) found.push(p);
-  }
-  return found;
+export function distFiles(dir: string, keep: (path: string) => boolean) {
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir).filter(keep);
 }
 
 export function emitDeclarations(root: string, outDir: string) {
@@ -100,7 +97,7 @@ export function assembleModules(root: string, dir: string) {
   };
 
   for (const source of sources) {
-    const rel = join('components', relative(join(layer, 'components'), source)).split(sep).join('/');
+    const rel = toPosix(join('components', relative(join(layer, 'components'), source)));
     emit(source, rel.replace(/\.tsx?$/, '.js'));
   }
   for (const name of ROOT_TS) {
@@ -189,4 +186,4 @@ async function main() {
   console.log(`build-react-package: ${sources} source(s) compiled, ${carried} declaration(s) emitted`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

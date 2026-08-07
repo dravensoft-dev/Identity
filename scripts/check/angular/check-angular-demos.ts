@@ -5,12 +5,13 @@
  * component has a page: the inventory is the component tree, so a page cannot go missing
  * and a list cannot go stale. Whether a page RENDERS is check:playgrounds', with a browser. */
 
-import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { pascal, readLayer } from '../../lib/arena/layers.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readIfExists } from '../../utils/read-file.ts';
+import { pascal } from '../../utils/case.ts';
+import { readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const BUNDLE_DIR = 'build/demo/js';
 
@@ -89,10 +90,7 @@ export function pageProblems(tree: Record<string, string[]>, read: (path: string
 }
 
 function main() {
-  const read = (rel: string) => {
-    const path = join(repoRoot, rel);
-    return existsSync(path) ? readFileSync(path, 'utf8') : null;
-  };
+  const read = (rel: string) => readIfExists(join(repoRoot, rel));
   const { problems, pages } = pageProblems(readLayer('angular'), read);
   if (problems.length) {
     console.error(`check-angular-demos: ${problems.length} problem(s)\n`);
@@ -102,4 +100,4 @@ function main() {
   console.log(`check-angular-demos: ${pages} page(s) mount a zoneless app from ${BUNDLE_DIR}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import type { DtcgNode } from '../../lib/core/dtcg-shapes.ts';
 
@@ -110,7 +111,7 @@ function main() {
   const zero = zeroSourceProblems(files.length);
   if (zero.length) { for (const z of zero) console.error(`check-dtcg: ${z}`); process.exit(1); }
   let errs: string[] = [];
-  for (const f of files) errs = errs.concat(validateTree(JSON.parse(readFileSync(join(src, f), 'utf8')), f));
+  for (const f of files) errs = errs.concat(validateTree(readJson(join(src, f)), f));
   if (errs.length) {
     console.error(`check-dtcg: ${errs.length} violation(s) of DTCG 2025.10\n`);
     for (const e of errs) console.error(`  ${e}`);
@@ -119,4 +120,4 @@ function main() {
   console.log(`check-dtcg: ${files.length} file(s) valid DTCG 2025.10 — ${files.join(', ')}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

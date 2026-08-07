@@ -1,15 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import {
   arenaClassesFor, classBase, classesFor, slotClass,
 } from '../../lib/tailwind/component-css.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 
-const tag = JSON.parse(readFileSync(join(repoRoot, 'frameworks/tailwind/components/display/arena-tag/ArenaTag.manifest.json'), 'utf8'));
+const tag = readJson(join(repoRoot, 'frameworks/tailwind/components/display/arena-tag/ArenaTag.manifest.json'));
 
 test('the default variants apply when nothing is chosen', () => {
   const { root = '', dot = '' } = classesFor(tag);

@@ -8,8 +8,10 @@
 
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { join, relative, sep, posix } from 'node:path';
+import { join, relative, posix } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
 import {
@@ -93,7 +95,7 @@ function stage(root: string) {
   let variants = 0;
   let annotated = 0;
   for (const file of collectFiles(layer, (p) => !p.endsWith('.card.html') && !p.includes('/playground/'))) {
-    const rel = relative(layer, file).split(sep).join('/');
+    const rel = toPosix(relative(layer, file));
     const source = readFileSync(file, 'utf8');
     if (!rel.endsWith(VARIANTS)) { staged.push(write(dir, rel, source)); continue; }
     const pure = annotatePure(source);
@@ -151,7 +153,7 @@ export function buildAngularPackage(root = repoRoot) {
   written.push(copy(join(root, LAYER, 'PACKAGE.md'), dist, 'README.md'));
   written.push(copy(join(root, 'LICENSE'), dist, 'LICENSE'));
 
-  const emitted = JSON.parse(readFileSync(join(dist, 'package.json'), 'utf8'));
+  const emitted = readJson(join(dist, 'package.json'));
   write(dist, 'package.json', `${JSON.stringify(withAssets(emitted), null, 2)}\n`);
 
   return { dir: dist, written, staged: staged.length, log: result.stdout };
@@ -184,4 +186,4 @@ function main() {
   console.log(`build-angular-package: ${staged} source(s) staged and compiled by ng-packagr`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

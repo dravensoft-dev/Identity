@@ -1,21 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { basename, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { DOMAINS, SCRIPT_EXTENSIONS, SUITE_EXTENSIONS, STAYS_JAVASCRIPT,
   domainOfTestPath, isScript, isSuite } from './domains.ts';
 import { LAYERS } from './layers.ts';
 import { repoRoot } from './repo-root.ts';
 
-function suitesUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...suitesUnder(full));
-    else if (isSuite(entry.name)) found.push(full);
-  }
-  return found;
-}
+const suitesUnder = (dir: string) => walkFiles(dir).filter((full) => isSuite(basename(full)));
 
 test('the five domains are the grid the repository is sorted by, and every layer is one of them', () => {
   assert.deepEqual(DOMAINS, ['core', 'react', 'angular', 'tailwind', 'arena']);
@@ -28,6 +21,17 @@ test('a script suite is classified by the domain directory it sits in, whatever 
   assert.equal(domainOfTestPath('scripts/build/react/build-demos.test.ts'), 'react');
   assert.equal(domainOfTestPath('scripts/generate/core/fetch-fonts.test.ts'), 'core');
   assert.equal(domainOfTestPath('scripts/ci/arena/summarize-tests.test.ts'), 'arena');
+});
+
+test('a util sits under no phase and is arena, which is what belongs to no one layer means', () => {
+  assert.equal(domainOfTestPath('scripts/utils/walk-files.test.ts'), 'arena');
+  assert.equal(domainOfTestPath('scripts/utils/read-file.test.ts'), 'arena');
+  assert.equal(domainOfTestPath('/runner/work/Identity/Identity/scripts/utils/walk-files.test.ts'), 'arena',
+    'a junit report names the file a runner wrote, and it may name it absolutely');
+  assert.equal(DOMAINS.includes('utils'), false,
+    'utils is a directory and not a sixth domain: a domain states the vocabulary a module speaks '
+    + 'and a util speaks none, which is why it carries no grid and lands in the one domain that '
+    + 'already means it belongs to no layer in particular');
 });
 
 test('a framework suite is classified by its layer, DOM split and category depth included', () => {
@@ -102,19 +106,11 @@ test('a .ts path classifies by its directory, so the domain survives the rename'
   assert.equal(domainOfTestPath('scripts/lib/arena/domains.test.ts'), 'arena');
 });
 
-function mjsUnder(dir: string): string[] {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...mjsUnder(full));
-    else if (entry.name.endsWith('.mjs')) found.push(full);
-  }
-  return found;
-}
+const mjsUnder = (dir: string) => walkFiles(dir).filter((full) => full.endsWith('.mjs'));
 
 test('every JavaScript left under scripts/ is one of the four on the record', () => {
   const left = mjsUnder(join(repoRoot, 'scripts'))
-    .map((p) => relative(repoRoot, p).split(sep).join('/'))
+    .map((p) => toPosix(relative(repoRoot, p)))
     .sort();
   assert.deepEqual(left, [...STAYS_JAVASCRIPT.keys()].sort(),
     'a .mjs here is either a file the migration missed or a fifth exception nobody argued for; '

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateStructure, zeroLayerProblems } from './check-structure.ts';
-import { kebab, pascal, LAYERS, NON_LAYERS } from '../../lib/arena/layers.ts';
+import { kebab, pascal } from '../../utils/case.ts';
+import { LAYERS, NON_LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 const categories = { display: ['ArenaBadge', 'ArenaTag'], forms: ['ArenaButton'] };

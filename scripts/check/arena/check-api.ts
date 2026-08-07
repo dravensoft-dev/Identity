@@ -4,15 +4,17 @@
  * asserts, and neither is a fact about source text -- contracts/api/AGENTS.md states why. */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { buildApiModules } from '../../generate/arena/generate-api-types.ts';
 import { PREFIX } from './check-structure.ts';
 import {
   reactSurface, angularSurface, reactImplementation, defaultProblems, normaliseDoc, UnrecognisedShape,
   bindingName,
 } from '../../lib/arena/api-surface.ts';
-import { pascal, readLayer } from '../../lib/arena/layers.ts';
+import { pascal } from '../../utils/case.ts';
+import { readLayer } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ContractCandidate, TypeContract } from '../../lib/arena/contract-shapes.ts';
@@ -317,8 +319,6 @@ export function compareSurface(
   return problems;
 }
 
-const read = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
-
 export const REACT_SURFACE_EXTENSIONS = ['.tsx', '.d.ts'];
 
 export function resolveReactImplementations(tree: Record<string, string[]>, exists: (path: string) => boolean) {
@@ -444,7 +444,7 @@ function main() {
   }
 
   const typeDir = join(root, 'contracts/api/types');
-  const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => read(join(typeDir, f)));
+  const types = readdirSync(typeDir).filter((f) => f.endsWith('.json')).sort().map((f) => readJson(join(typeDir, f)));
   problems.push(...validateTypes(types));
   const typeNames = new Map(types.map((t) => [t.name, t.kind]));
 
@@ -461,7 +461,7 @@ function main() {
   let layersChecked = 0;
 
   for (const file of files) {
-    const contract = read(join(contractDir, file));
+    const contract = readJson(join(contractDir, file));
     problems.push(...validateContract(contract, typeNames));
 
     const react = reactLayer.implementations.get(contract.component) ?? null;
@@ -502,4 +502,4 @@ function main() {
   console.log(`check-api: ${files.length} contract(s) and ${types.length} type(s) hold across ${layersChecked} layer implementation(s)`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

@@ -6,11 +6,13 @@
  * runs a build, and they carry no frontmatter: a nested file is reached by link rather than
  * registered, and the plugin root's SKILL.md is the one that is a skill. */
 
-import { fileURLToPath } from 'node:url';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
-import { LAYERS, kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
+import { LAYERS } from '../../lib/arena/layers.ts';
 import { bindingCases } from '../../lib/arena/behaviour-contracts.ts';
 import { memberEntries } from '../../lib/arena/contract-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
@@ -97,13 +99,13 @@ ${LAYER_IDIOM[layer]}
 }
 
 export function loadCategories(base = root) {
-  return JSON.parse(readFileSync(join(base, 'frameworks/Components.json'), 'utf8'));
+  return readJson(join(base, 'frameworks/Components.json'));
 }
 
 export function loadContract(component: string, base = root) {
   const path = join(base, 'contracts/api/components', `${component}.json`);
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, 'utf8'));
+  return readJson(path);
 }
 
 export function componentDir(layer: string, category: string, component: string) {
@@ -131,7 +133,7 @@ export function patternsFor(category: string, component: string, layers: string[
   for (const layer of layers) {
     const path = join(base, componentDir(layer, category, component), `${component}.behaviour.json`);
     if (!existsSync(path)) continue;
-    const binding = JSON.parse(readFileSync(path, 'utf8'));
+    const binding = readJson(path);
     for (const one of bindingCases(binding)) {
       if (!found.has(one.pattern)) found.set(one.pattern, new Set());
       found.get(one.pattern).add(layer);
@@ -265,4 +267,4 @@ function main() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

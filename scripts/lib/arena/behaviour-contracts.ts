@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
-import { pascal } from './layers.ts';
+import { readJson } from '../../utils/read-file.ts';
+import { pascal } from '../../utils/case.ts';
 
 export const PATTERN_DIR = 'contracts/behaviour';
 
@@ -34,13 +35,13 @@ export function loadPatterns(root: string) {
   for (const entry of readdirSync(dir).sort()) {
     if (extname(entry) !== '.json') continue;
     const stem = basename(entry, '.json');
-    out.set(stem, JSON.parse(readFileSync(join(dir, entry), 'utf8')));
+    out.set(stem, readJson(join(dir, entry)));
   }
   return out;
 }
 
 export function loadBinding(absPath: string) {
-  return JSON.parse(readFileSync(absPath, 'utf8'));
+  return readJson(absPath);
 }
 
 export type BindingException = { requirement: string; reason?: string };

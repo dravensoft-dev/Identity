@@ -7,9 +7,9 @@
  * rather than listed here, so a new one joins without an edit. */
 
 import { playgroundPage, sheetLinks } from '../arena/playground-page.ts';
-import { kebab } from '../arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { placeOf, SUBJECT } from '../arena/playground-model.ts';
-import { captured } from '../arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 import type { MemberSpec } from '../arena/contract-shapes.ts';
 import type { FixtureNode, Knob, Place, Places, PlaygroundEvent, PlaygroundModel }
   from '../arena/playground-model.ts';

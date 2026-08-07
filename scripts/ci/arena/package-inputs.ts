@@ -7,7 +7,7 @@
  * every diff and leave "nothing this package carries has moved" an answer nothing could
  * reach. A number is what a release moves; it is not a reason to republish a tree. */
 
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from '../../utils/main-module.ts';
 import { CSS_CHAIN } from '../../lib/arena/package-assembly.ts';
 
 export const SHARED_INPUTS = {
@@ -61,4 +61,4 @@ function main() {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

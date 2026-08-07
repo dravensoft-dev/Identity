@@ -2,9 +2,9 @@
  * Deliberately that one class: it is the only utility in a cleared --radius-*
  * namespace that still resolves without an Arena token behind it. */
 
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { classStringsBySlot } from '../arena/check-manifest-states.ts';
@@ -33,7 +33,7 @@ export function zeroManifestProblem(files: string[]) {
 export function collect(files = manifestFiles(COMPONENTS_DIR)) {
   const findings = [];
   for (const p of files) {
-    const manifest = JSON.parse(readFileSync(p, 'utf8'));
+    const manifest = readJson(p);
     findings.push(...evaluateManifest(manifest));
   }
   return findings;
@@ -55,4 +55,4 @@ function main() {
   console.log(`check-radius-tokens: 0 rounded-full usage(s) -- every radius traces to an Arena token`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

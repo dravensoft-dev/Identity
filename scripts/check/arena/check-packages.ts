@@ -10,8 +10,12 @@
  * the build green. dist/ is git-ignored, so all but the first are skipped on a fresh clone. */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, dirname, basename, sep } from 'node:path';
+import { join, dirname, basename, relative } from 'node:path';
+import { globToRegExp } from '../../utils/text.ts';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
+import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { arenaConfig } from '../../lib/core/arena-config.ts';
@@ -114,18 +118,11 @@ function exportTargets(exports: unknown) {
 
 export function globMatches(target: string, dir: string) {
   const rel = target.replace(/^\.\//, '');
-  const pattern = new RegExp(`^${rel.split('*').map((p: string) => p.replace(/[.+^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`);
-  const found: string[] = [];
-  const walk = (at: string, prefix: string) => {
-    if (!existsSync(at)) return;
-    for (const entry of readdirSync(at, { withFileTypes: true })) {
-      const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(join(at, entry.name), path);
-      else if (pattern.test(path)) found.push(path);
-    }
-  };
-  walk(dir, '');
-  return found;
+  const pattern = globToRegExp(rel);
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir)
+    .map((path) => toPosix(relative(dir, path)))
+    .filter((path) => pattern.test(path));
 }
 
 export function exportProblems(pkg: { layer: string; name: string }, manifest: PackageManifest, dir: string) {
@@ -161,7 +158,7 @@ export function componentMapProblems(pkg: { layer: string; name: string }, dir: 
   }
   let map;
   try {
-    map = JSON.parse(readFileSync(at, 'utf8'));
+    map = readJson(at);
   } catch (error) {
     return [`${pkg.name}: ${MAP_FILE} does not parse: ${(error as Error).message}`];
   }
@@ -203,7 +200,7 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
     const full = join(dir, from);
     if (!existsSync(full)) continue;
     for (const specifier of importsIn(readFileSync(full, 'utf8'))) {
-      const target = join(dirname(from), specifier ?? '').split(sep).join('/');
+      const target = toPosix(join(dirname(from), specifier ?? ''));
       if (existsSync(join(dir, target))) queue.push(target);
       else problems.push(`${pkg.name}: ${from} imports ${specifier}, which was never emitted`);
     }
@@ -217,7 +214,7 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
 }
 
 export function collect(base = root) {
-  const version = JSON.parse(readFileSync(join(base, '.claude-plugin/plugin.json'), 'utf8')).version;
+  const version = readJson(join(base, '.claude-plugin/plugin.json')).version;
   const problems = [];
 
   const cli = themeCss(arenaConfig(base), { importHeader: false });
@@ -231,7 +228,7 @@ export function collect(base = root) {
     const manifestPath = join(dir, 'package.json');
     if (!existsSync(manifestPath)) continue;
     assembled.push(pkg.name);
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    const manifest = readJson(manifestPath);
     problems.push(...manifestProblems(pkg, manifest, version));
     problems.push(...exportProblems(pkg, manifest, dir));
     problems.push(...componentMapProblems(pkg, dir));
@@ -256,4 +253,4 @@ function main() {
   console.log(`check-packages: arena-to-prod matches ${GENERATED_PALETTE} across ${compared} declaration(s); ${built}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

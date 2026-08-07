@@ -6,9 +6,11 @@
  * holding contributor documents but no AGENTS.md is the failure this exists for: it reads as a
  * level nobody wrote rather than as one that does not need one. */
 
-import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { basename, dirname, join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const ROUTER = 'AGENTS.md';
@@ -32,13 +34,11 @@ export function skips(name: string, relativeDirectory: string) {
   return SKIPPED_UNDER_FRAMEWORKS.has(name) && relativeDirectory.startsWith('frameworks');
 }
 
-export function* markdownFiles(base = root, dir = base, relative = ''): Generator<string> {
-  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    if (skips(entry.name, relative)) continue;
-    const next = relative ? `${relative}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) yield* markdownFiles(base, join(dir, entry.name), next);
-    else if (entry.name.endsWith('.md')) yield next;
-  }
+export function markdownFiles(base = root): string[] {
+  const posix = (path: string) => toPosix(relative(base, path));
+  return walkFiles(base, { skip: (name, path) => skips(name, posix(dirname(path))) })
+    .filter((path) => path.endsWith('.md'))
+    .map(posix);
 }
 
 export function declaredTargets(base = root) {
@@ -110,4 +110,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

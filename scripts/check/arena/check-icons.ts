@@ -5,8 +5,10 @@
  * empty and is meant to stay that way: a name Phosphor does not have is a typo, not a case. */
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
+import { toPosix } from '../../utils/posix-path.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
 export const PHOSPHOR = 'node_modules/@phosphor-icons/web/src';
@@ -79,18 +81,12 @@ export function tokenProblems(text: string, where: string, weights: Map<string, 
 }
 
 export function scannedFiles(root = ROOT) {
+  const skip = (name: string) => name.startsWith('.') || SKIPPED_DIRECTORIES.has(name);
   const found: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name.startsWith('.') || SKIPPED_DIRECTORIES.has(entry.name)) continue;
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) { walk(full); continue; }
-      if (SCANNED_EXTENSIONS.some((e) => entry.name.endsWith(e))) found.push(full);
-    }
-  };
   for (const name of SCANNED_ROOTS) {
     const dir = join(root, name);
-    if (existsSync(dir) && statSync(dir).isDirectory()) walk(dir);
+    if (!existsSync(dir) || !statSync(dir).isDirectory()) continue;
+    found.push(...walkFiles(dir, { skip }).filter((p) => SCANNED_EXTENSIONS.some((e) => p.endsWith(e))));
   }
   return found;
 }
@@ -112,7 +108,7 @@ export function collect(root = ROOT) {
     const text = readFileSync(file, 'utf8');
     if (!text.includes('ph-')) continue;
     scanned += 1;
-    const where = relative(root, file).split(sep).join('/');
+    const where = toPosix(relative(root, file));
     problems.push(...tokenProblems(text, where, weights));
     for (const [token] of text.matchAll(ICON_TOKEN)) seen.add(token);
   }
@@ -133,4 +129,4 @@ function main() {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

@@ -9,7 +9,8 @@
  * :not([tabindex="-1"]) on every clause because a selector list is OR'd, and writing it
  * loose once made this gate call a correct combobox a broken trap. */
 
-import { fileURLToPath } from 'node:url';
+import { withTimeout } from '../../utils/with-timeout.ts';
+import { isMainModule } from '../../utils/main-module.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
@@ -74,12 +75,6 @@ export function walkProblems(name: string, walk: TrapWalk) {
   if (!walk.wrapsForward) problems.push(`${name}: Tab from the last focusable did not return to the first`);
   if (!walk.wrapsBackward) problems.push(`${name}: Shift+Tab from the first focusable did not reach the last`);
   return problems;
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
-  let timer: ReturnType<typeof setTimeout>;
-  const bound = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); });
-  return Promise.race([promise, bound]).finally(() => clearTimeout(timer));
 }
 
 async function walkTrap(cdp: Cdp, url: string) {
@@ -176,4 +171,4 @@ async function main() {
   console.log(`check-focus-trap: ${TRAPS.length} trap(s) walked with real Tab presses — focus stayed inside, reached every control and wrapped both ways`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) await main();
+if (isMainModule(import.meta.url)) await main();

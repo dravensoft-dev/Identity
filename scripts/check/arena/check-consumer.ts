@@ -13,14 +13,15 @@ import { spawnSync } from 'node:child_process';
 import {
   mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, symlinkSync,
 } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { readJson, readIfExists } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { PACKAGES, distDir } from './check-packages.ts';
 import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const CLI = 'bin/arena-to-prod.mjs';
 export const GLYPH = 'ph-bell';
@@ -76,7 +77,7 @@ export function fixture(
   layer: string, files: Record<string, string>, stylesheet: Record<string, unknown>, base = root,
 ) {
   const dir = mkdtempSync(join(tmpdir(), `arena-consumer-${layer}-`));
-  const example = JSON.parse(readFileSync(join(distDir(layer, base), 'arena.config.example.json'), 'utf8'));
+  const example = readJson(join(distDir(layer, base), 'arena.config.example.json'));
   writeFileSync(join(dir, 'arena.config.json'), JSON.stringify({ ...example, stylesheet }, null, 2));
   for (const [rel, body] of Object.entries(files) as [string, string][]) {
     mkdirSync(join(dir, rel, '..'), { recursive: true });
@@ -99,7 +100,7 @@ export function runCli(layer: string, dir: string, base = root) {
     { cwd: dir, encoding: 'utf8' });
   const read = (name: string) => {
     const at = join(dir, 'out', name);
-    return existsSync(at) ? readFileSync(at, 'utf8') : null;
+    return readIfExists(at);
   };
   return { status: run.status, stderr: run.stderr ?? '', theme: read(THEME_SHEET), icons: read(ICONS_SHEET) };
 }
@@ -236,4 +237,4 @@ function main() {
     + `a consumer's sources name${built ? ', after assembling what was missing' : ''}`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

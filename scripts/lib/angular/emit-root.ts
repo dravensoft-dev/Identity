@@ -8,15 +8,15 @@
  * nothing. The configs are parsed as strict JSON: tsconfig permits comments, these carry
  * none, and one added later throws here rather than resolving to a different tree. */
 
-import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 
 export function declaredOption(configPath: string, option: string) {
   const seen = new Set();
   let current = resolve(configPath);
   while (!seen.has(current)) {
     seen.add(current);
-    const config = JSON.parse(readFileSync(current, 'utf8'));
+    const config = readJson(current);
     const value = config.compilerOptions?.[option];
     if (value !== undefined) return { value, dir: dirname(current) };
     if (!config.extends) break;

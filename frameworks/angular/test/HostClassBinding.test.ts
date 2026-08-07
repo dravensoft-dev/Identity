@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { useTestEnvironment } from './TestbedEnv';
-import { ANGULAR_COMPONENTS, LIB, TAILWIND_COMPONENTS } from './Compliance';
+import { ANGULAR_COMPONENTS, LIB, TAILWIND_COMPONENTS, UTILS } from './Compliance';
 import { ArenaActivityFeed } from '../components/display/arena-activity-feed/ArenaActivityFeed';
 import { arenaActivityFeedStyles } from '../components/display/arena-activity-feed/ArenaActivityFeed.variants';
 import { ArenaAppLogo } from '../components/brand/arena-app-logo/ArenaAppLogo';
@@ -764,7 +764,7 @@ const DISPLAY_UTILITY =
   /(?:^|\s)(?:block|inline-block|inline|flex|inline-flex|grid|inline-grid|table|inline-table|table-[a-z-]+|flow-root|contents|list-item|hidden)(?=\s|$)/;
 
 const { pascal: kebabToPascal } = await import(
-  pathToFileURL(join(LIB, 'arena', 'layers.ts')).href
+  pathToFileURL(join(UTILS, 'case.ts')).href
 ) as { pascal: (dirName: string) => string };
 
 const { manifestFiles } = await import(pathToFileURL(join(LIB, 'tailwind', 'tailwind-compile.ts')).href);

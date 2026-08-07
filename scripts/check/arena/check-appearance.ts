@@ -7,12 +7,13 @@
  * literal reached through an unannotated lookup table, and Angular's [style.x]="<literal>",
  * which is the blind spot check-dimension-literals already declares in its own header. */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { join, relative } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
+import { basename, join, relative } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { blankComments, expressionLeaves, readValue, skipString } from './check-dimension-literals.ts';
 import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind/manifest-surfaces.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const EXEMPT = new Map<string, string>([]);
@@ -132,19 +133,11 @@ export function literalStyleProblems(rawText: string, path: string) {
   return problems;
 }
 
-export function sourceFiles(dir: string, found: string[] = []) {
-  if (!existsSync(dir)) return found;
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (!SKIPPED_DIRECTORIES.has(entry.name)) sourceFiles(path, found);
-      continue;
-    }
-    if (!SOURCE_EXTENSIONS.some((e) => entry.name.endsWith(e))) continue;
-    if (SKIPPED_INFIXES.some((i) => entry.name.includes(i))) continue;
-    found.push(path);
-  }
-  return found;
+export function sourceFiles(dir: string) {
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir, { skip: (name) => SKIPPED_DIRECTORIES.has(name) })
+    .filter((path) => SOURCE_EXTENSIONS.some((e) => path.endsWith(e)))
+    .filter((path) => !SKIPPED_INFIXES.some((i) => basename(path).includes(i)));
 }
 
 export function reactSource(name: string) {
@@ -262,4 +255,4 @@ function main() {
     + `${found.walked} React source(s) read for a literal`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

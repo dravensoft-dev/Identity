@@ -3,12 +3,15 @@
  * Two blind spots are known and unfixed: a kebab-case SVG attribute, and Angular's [style.x]
  * binding form, which sits outside all four of the scanners below. */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { camel } from '../../utils/case.ts';
+import { lineOf } from '../../utils/text.ts';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
@@ -254,10 +257,6 @@ function scanLeaf(prop: string, leaf: string) {
   return [];
 }
 
-function lineOf(text: string, index: number) {
-  return text.slice(0, index).split('\n').length;
-}
-
 const COLON_STOP = new Set([',', '}']);
 
 const PROP_COLON = /(?<![\w.-])([a-zA-Z]+)\s*:\s*/g;
@@ -323,10 +322,6 @@ function scanDataflow(text: string) {
           out.push({ prop, raw: hit.raw, reason: hit.reason, line });
   }
   return out;
-}
-
-function camel(prop: string) {
-  return prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
 function stringLiteralRuns(text: string) {
@@ -446,16 +441,10 @@ export function stalePassthrough(seenComponents: Set<string>) {
   return [...PASSTHROUGH.keys()].filter((k) => !seenComponents.has(k));
 }
 
-export function* sourceFiles(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir).sort()) {
-    if (entry === 'dist') continue;
-    const p = join(dir, entry);
-    if (p === emittedTree()) continue;
-    if (statSync(p).isDirectory()) { yield* sourceFiles(p); continue; }
-
-    if (entry.endsWith('.d.ts')) continue;
-    if (EXTENSIONS.some((e) => entry.endsWith(e))) yield p;
-  }
+export function sourceFiles(dir: string): string[] {
+  const emitted = emittedTree();
+  return walkFiles(dir, { skip: (name, p) => name === 'dist' || p === emitted })
+    .filter((p) => !p.endsWith('.d.ts') && EXTENSIONS.some((e) => p.endsWith(e)));
 }
 
 export function staleExemptions(matchedKeys: Set<string>) {
@@ -550,4 +539,4 @@ function main() {
   console.log('check-dimension-literals: no bare literals under frameworks/, no stale exemptions');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

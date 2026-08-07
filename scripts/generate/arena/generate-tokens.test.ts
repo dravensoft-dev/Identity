@@ -6,6 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { readJson } from '../../utils/read-file.ts';
 import { FILES, RESOLVES_AGAINST } from './generate-tokens.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
@@ -19,7 +20,7 @@ function referencedGroups(source: string) {
 }
 
 function topLevelGroups(source: string) {
-  return Object.keys(JSON.parse(readFileSync(join(DESIGN, source), 'utf8')));
+  return Object.keys(readJson(join(DESIGN, source)));
 }
 
 test('every key and value in RESOLVES_AGAINST is a source this build actually reads', () => {

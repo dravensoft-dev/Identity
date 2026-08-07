@@ -7,8 +7,8 @@
  * for whitespace, and DIVERGENT carries the ones that legitimately differ with the reason. */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const PAIRED = [
@@ -139,4 +139,4 @@ function main() {
     + `function they share, ${DIVERGENT.size} declared with a reason`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

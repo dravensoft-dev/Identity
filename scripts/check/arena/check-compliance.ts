@@ -3,14 +3,15 @@
  * tree a suite was found under, never from its text. No pattern is excluded: `grid`
  * components were, on a memory measurement that no longer holds. */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
+import { walkFiles } from '../../utils/walk-files.ts';
 import {
   reactComponents, reactBindingPath, angularPrimitives, angularBindingPath, loadBinding, bindingCases,
 } from '../../lib/arena/behaviour-contracts.ts';
 import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
-import { kebab } from '../../lib/arena/layers.ts';
+import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const SUITE_DIRS = [
@@ -253,17 +254,8 @@ function collectBindings() {
 }
 
 export function walkSuites(dir: string) {
-  const out: string[] = [];
-  if (!existsSync(dir)) return out;
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      out.push(...walkSuites(path));
-    } else if (/\.test\.(jsx|tsx|ts|mjs)$/.test(entry.name)) {
-      out.push(path);
-    }
-  }
-  return out;
+  if (!existsSync(dir)) return [];
+  return walkFiles(dir).filter((path) => /\.test\.(jsx|tsx|ts|mjs)$/.test(basename(path)));
 }
 
 export function collectSuites(dirs = SUITE_DIRS) {
@@ -301,4 +293,4 @@ function main() {
   console.log('  (A green run says the declarations are honest, never that the components are accessible.)');
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();

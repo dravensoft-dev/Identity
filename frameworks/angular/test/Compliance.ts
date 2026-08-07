@@ -24,6 +24,7 @@ export const REPO = findRepoRoot(here);
 
 export const SCRIPTS = join(REPO, 'scripts');
 export const LIB = join(SCRIPTS, 'lib');
+export const UTILS = join(SCRIPTS, 'utils');
 export const CHECKS = join(SCRIPTS, 'check');
 const { comparePattern, isFocusable } = await import(pathToFileURL(join(LIB, 'core', 'behaviour-compliance.ts')).href);
 const { loadBinding, loadPatterns, bindingCases } = await import(pathToFileURL(join(LIB, 'arena', 'behaviour-contracts.ts')).href);

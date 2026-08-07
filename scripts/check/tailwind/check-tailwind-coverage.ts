@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { isMainModule } from '../../utils/main-module.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { captured } from '../../lib/arena/captures.ts';
+import { captured } from '../../utils/captures.ts';
 
 export const EXCLUDED = new Map([
   ['sp-0', 'p-0 compiles to a literal 0px in v4 regardless of the theme'],
@@ -108,4 +108,4 @@ function main() {
   console.log(`check-tailwind-coverage: ${tokens.size} token(s) — ${exposed.size} exposed, ${EXCLUDED.size} excluded on the record`);
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main();
+if (isMainModule(import.meta.url)) main();
