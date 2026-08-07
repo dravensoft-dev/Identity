@@ -1,38 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
-  arenaResolveColors, arenaCatColor, arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
-  ARENA_CHART_HEIGHT,
+  arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter, ARENA_CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
+import { arenaWarnOnce } from '../../../WarnOnce.ts';
 import {
-  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaValuesDomain, arenaNearestPointIndex,
+  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaNearestPointIndex,
 } from '../ChartScales.ts';
 import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
-import { arenaChartTable } from '../ChartSeries.ts';
+import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated.js';
 
-import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
-
-export type { ArenaSeriesTone };
+import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 
 export interface ArenaLineChartProps {
 
-  /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
+  /** One label per point, in the same order as every series' `values`. A label with no value in a series ends that series' line there rather than dropping to zero. */
   labels: readonly string[];
 
-  /** The plotted data, in order. One point per entry. A negative value plots below the zero line, which the axis places on a tick rather than at the plot's foot, and an area fill crosses it rather than stopping there. */
-  values: readonly number[];
+  /** The plotted series, drawn as one polyline each over the same ordered sequence. One series is the common case and draws exactly what it drew before. The area fill is refused past one series, because two fills occlude each other and the reader cannot tell which value either edge belongs to. */
+  series: readonly ArenaSeries[];
 
-  /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
-  seriesLabel: string;
-
-  /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */
-  slot?: number;
-
-  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. */
-  tone?: ArenaSeriesTone;
+  /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
+  label: string;
 
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   area?: boolean;
@@ -55,18 +47,18 @@ export interface ArenaLineChartProps {
 
 
 export function ArenaLineChart({
-  labels, values, seriesLabel, slot, tone, area = false, valueSuffix, valuePrefix, valueFormat,
+  labels, series, label, area = false, valueSuffix, valuePrefix, valueFormat,
   height = ARENA_CHART_HEIGHT, minPointSpacing,
 }: ArenaLineChartProps) {
-  if (!seriesLabel) throw new Error('ArenaLineChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
+  if (!label) throw new Error('ArenaLineChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaLineChart: `labels` is required');
-  if (!values) throw new Error('ArenaLineChart: `values` is required');
+  if (!series) throw new Error('ArenaLineChart: `series` is required');
   const [ref, measured] = useArenaContainerWidth();
   const rail = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
 
   const available = measured ?? 600;
-  const n = values.length;
+  const n = arenaSeriesPointCount(series);
   const width = arenaPlotWidth(available, n, minPointSpacing);
   const scrolls = width > available;
   const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
@@ -77,26 +69,31 @@ export function ArenaLineChart({
     box.scrollLeft = box.scrollWidth - box.clientWidth;
   }, [scrolls, width]);
 
-  const [color = arenaCatColor(1)] = arenaResolveColors({ slot, tone, count: 1 });
+  if (area && series.length > 1) {
+    arenaWarnOnce('ArenaLineChart: `area` is for a single series. Two fills occlude each other and the reader cannot tell which value either edge belongs to, so none is drawn.');
+  }
+  const fills = area && series.length === 1;
 
-  const domain = arenaValuesDomain(values);
+  const domain = arenaSeriesDomain(series);
   const box = arenaPlotBox(width, height);
   const yScale = arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
   const xScale = arenaPointScale(n, box.x, box.w);
   const axis = arenaAxisModel(yScale, domain, fmt);
+  const colors = series.map((one, s) => arenaSeriesColors(one, 1, s + 1)[0] as string);
+  const table = arenaChartTable('Point', series, labels, fmt);
 
-  const plotted = values.map((v, i) => ({ x: arenaPointAt(xScale, i), y: arenaScaleValue(yScale, v) }));
-  const points = arenaLinePoints(plotted);
-  const areaPath = arenaLineAreaPath(plotted, axis.zeroY);
+  const plotted = series.map(
+    (one) => one.values.map((value, i) => ({ x: arenaPointAt(xScale, i), y: arenaScaleValue(yScale, value) })),
+  );
 
-  const name = `${seriesLabel} — line chart`;
-  const table = arenaChartTable('Point', seriesLabel, labels, values, fmt);
+  const name = `${label} — line chart`;
 
   const onMove = (e: React.MouseEvent<SVGRectElement>) => {
     if (!n) return;
-    const box = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
-    if (!box) return;
-    const index = arenaNearestPointIndex(plotted, e.clientX - box.left);
+    const svg = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+    if (!svg) return;
+    const across = Array.from({ length: n }, (_, i) => ({ x: arenaPointAt(xScale, i), y: 0 }));
+    const index = arenaNearestPointIndex(across, e.clientX - svg.left);
     if (index >= 0) setHover(index);
   };
 
@@ -115,28 +112,30 @@ export function ArenaLineChart({
         <line x1={box.x} x2={box.x + box.w} y1={axis.zeroY} y2={axis.zeroY} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {}
-        {area && n > 0 && (
-          <path d={areaPath} fill={arenaAreaFill(color)} stroke="none" />
-        )}
+        {fills && plotted.map((points, s) => points.length > 0 && (
+          <path key={s} d={arenaLineAreaPath(points, axis.zeroY)} fill={arenaAreaFill(colors[s] as string)} stroke="none" />
+        ))}
 
         {hover !== null && (
           <line x1={arenaPointAt(xScale, hover)} x2={arenaPointAt(xScale, hover)} y1={box.y} y2={box.y + box.h}
             stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
         )}
 
-        {n > 1 && <polyline points={points} fill="none" stroke={color} style={{ strokeWidth: 'var(--bw-strong)' }}
-          strokeLinejoin="round" strokeLinecap="round" />}
-
-        {plotted.map((point, i) => (
-          <circle key={i} cx={point.x} cy={point.y} r={hover === i ? chartPointRHover : chartPointR}
-            fill={color} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
+        {plotted.map((points, s) => points.length > 1 && (
+          <polyline key={s} points={arenaLinePoints(points)} fill="none" stroke={colors[s]} style={{ strokeWidth: 'var(--bw-strong)' }}
+            strokeLinejoin="round" strokeLinecap="round" />
         ))}
+
+        {plotted.map((points, s) => points.map((point, i) => (
+          <circle key={`${s}-${i}`} cx={point.x} cy={point.y} r={hover === i ? chartPointRHover : chartPointR}
+            fill={colors[s]} stroke="var(--surface-card)" style={{ strokeWidth: 'var(--bw-strong)' }} />
+        )))}
 
         {
 
 }
-        {plotted.map((point, i) => (
-          <text key={i} x={point.x} y={arenaCategoryLabelY(height)} textAnchor="middle"
+        {Array.from({ length: n }, (_, i) => (
+          <text key={i} x={arenaPointAt(xScale, i)} y={arenaCategoryLabelY(height)} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
@@ -147,15 +146,20 @@ export function ArenaLineChart({
       </svg>
       </div>
 
-      {hover !== null && values[hover] !== undefined && (
+      {hover !== null && hover < n && (
         <div style={{
           position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
-          ...arenaTooltipAnchor(arenaPointAt(xScale, hover), arenaScaleValue(yScale, values[hover])),
+          ...arenaTooltipAnchor(arenaPointAt(xScale, hover),
+            Math.min(...series.map((one) => arenaScaleValue(yScale, one.values[hover] ?? 0)))),
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>
+          {series.map((one, s) => one.values[hover] !== undefined && (
+            <div key={s} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>
+              {series.length > 1 ? `${one.label}: ` : ''}{fmt(one.values[hover] as number)}
+            </div>
+          ))}
         </div>
       )}
 

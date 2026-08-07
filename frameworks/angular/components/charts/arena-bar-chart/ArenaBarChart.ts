@@ -4,18 +4,18 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaPlotWidth, arenaResolveColors, arenaValueWriter,
+  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaPlotWidth, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleValue, arenaValuesDomain,
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandSubBand, arenaScaleValue,
 } from '../ChartScales';
 import { arenaBarPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
-import { arenaChartTable } from '../ChartSeries';
+import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries';
 import { arenaTooltipAnchor } from '../ChartTooltip';
 import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
-import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
-import { chartBarGap, chartBarRadius } from '../../../Tokens.generated';
+import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
+import { chartBarGap, chartSeriesGap, chartBarRadius } from '../../../Tokens.generated';
 
 const BAR_RADIUS = chartBarRadius;
 
@@ -59,9 +59,11 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
 
       @for (bar of bars(); track bar.index) {
         <g>
-          <path [attr.d]="bar.path" [attr.fill]="bar.color"
-                [attr.opacity]="hover() === null || hover() === bar.index ? 1 : 0.55"
-                [style]="barStyle" />
+          @for (mark of bar.marks; track mark.key) {
+            <path [attr.d]="mark.path" [attr.fill]="mark.color"
+                  [attr.opacity]="hover() === null || hover() === bar.index ? 1 : 0.55"
+                  [style]="barStyle" />
+          }
           <rect [attr.x]="bar.hitX" [attr.y]="plotTop()" [attr.width]="step()" [attr.height]="innerHeight()"
                 fill="transparent" (mouseenter)="hover.set(bar.index)" />
         </g>
@@ -78,7 +80,9 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
     @if (active(); as point) {
       <div [style]="tooltipStyle" [style.left.px]="point.anchor.left" [style.top]="point.anchor.top">
         <div [style]="tooltipLabelStyle">{{ point.label }}</div>
-        <div [style]="tooltipValueStyle">{{ point.value }}</div>
+        @for (mark of point.marks; track mark.key) {
+          <div [style]="tooltipValueStyle">{{ mark.name }}{{ mark.value }}</div>
+        }
       </div>
     }
 
@@ -94,18 +98,12 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
   `,
 })
 export class ArenaBarChart {
-  /** One label per bar, in the same order as `values`. A label with no value at its index is dropped. */
+  /** One label per category, in the same order as every series' `values`. A category with no value in a series is drawn for the series that do have one. */
   readonly labels = input.required<readonly string[]>();
-  /** The plotted data. One bar per entry. A negative value grows downward from the zero line, which the axis places on a tick rather than at the plot's foot; the rounded end of a bar is always its data end. */
-  readonly values = input.required<readonly number[]>();
-  /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
-  readonly seriesLabel = input.required<string>();
-  /** One identity colour from the categorical ramp for the whole series. 1-based, clamped to the ramp, never cycled. */
-  readonly slot = input<number>();
-  /** Per-bar identity override, one ramp slot each. Wins over `slot`. */
-  readonly slots = input<readonly number[]>();
-  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot/slots; passing both warns in development and tone wins. */
-  readonly tone = input<ArenaSeriesTone>();
+  /** The plotted series, drawn as one group of bars per category. One series is the common case and draws exactly what it drew before; two or more share each category's band, so the bars of one category stand side by side and the reader compares within a category before comparing across. The ramp clamps at its last slot rather than cycling, so a ninth series folds into "Other" upstream, never into a colour already spent. */
+  readonly series = input.required<readonly ArenaSeries[]>();
+  /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
+  readonly label = input.required<string>();
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
@@ -139,7 +137,7 @@ export class ArenaBarChart {
   private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
   protected readonly width = computed(
-    () => arenaPlotWidth(this.available(), this.values().length, this.minPointSpacing()),
+    () => arenaPlotWidth(this.available(), this.points(), this.minPointSpacing()),
   );
 
   protected readonly scrolls = computed(() => this.width() > this.available());
@@ -147,11 +145,11 @@ export class ArenaBarChart {
   private readonly rail = viewChild<ElementRef<HTMLElement>>('rail');
 
   protected readonly name = computed(() => {
-    const series = this.seriesLabel();
-    return `${series} — bar chart`;
+    return `${this.label()} — bar chart`;
   });
 
-  private readonly domain = computed(() => arenaValuesDomain(this.values()));
+  private readonly domain = computed(() => arenaSeriesDomain(this.series()));
+  private readonly points = computed(() => arenaSeriesPointCount(this.series()));
   private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
   protected readonly plotLeft = computed(() => this.box().x);
   protected readonly plotRight = computed(() => this.box().x + this.box().w);
@@ -166,7 +164,7 @@ export class ArenaBarChart {
 
   private readonly bands = computed(() => {
     const box = this.box();
-    return arenaBandScale(this.values().length, box.x, box.w, chartBarGap);
+    return arenaBandScale(this.points(), box.x, box.w, chartBarGap);
   });
 
   protected readonly step = computed(() => this.bands().step);
@@ -177,35 +175,44 @@ export class ArenaBarChart {
   protected readonly gridLines = computed(() => this.axis().ticks);
 
   protected readonly bars = computed(() => {
-    const values = this.values();
-    const colors = arenaResolveColors({ slot: this.slot(), slots: this.slots(), tone: this.tone(), count: values.length });
+    const series = this.series();
     const bands = this.bands();
     const yScale = this.yScale();
     const zeroY = this.zeroY();
     const write = this.write();
-    return values.map((value, index) => {
-      const y = arenaScaleValue(yScale, value);
-      return {
-        index,
-        hitX: arenaBandStart(bands, index),
-        midX: arenaBandCenter(bands, index),
-        y,
-        anchor: arenaTooltipAnchor(arenaBandCenter(bands, index), y),
-        path: arenaBarPath(arenaBandMark(bands, index), bands.band, y, zeroY, BAR_RADIUS),
-        color: colors[index],
-        label: this.labels()[index] ?? '',
-        value: write(value),
-      };
-    });
+    const labels = this.labels();
+    return Array.from({ length: this.points() }, (_, index) => ({
+      index,
+      hitX: arenaBandStart(bands, index),
+      midX: arenaBandCenter(bands, index),
+      label: labels[index] ?? '',
+      marks: series.flatMap((one, s) => {
+        const value = one.values[index];
+        if (value === undefined) return [];
+        const y = arenaScaleValue(yScale, value);
+        const sub = arenaBandSubBand(bands, index, series.length, s, chartSeriesGap);
+        return [{
+          key: s,
+          y,
+          name: series.length > 1 ? `${one.label}: ` : '',
+          path: arenaBarPath(sub.x, sub.width, y, zeroY, BAR_RADIUS),
+          color: arenaSeriesColors(one, this.points(), s + 1)[index],
+          value: write(value),
+        }];
+      }),
+    }));
   });
 
   protected readonly table = computed(() => arenaChartTable(
-    'Category', this.seriesLabel(), this.labels(), this.values(), this.write(),
+    'Category', this.series(), this.labels(), this.write(),
   ));
 
   protected readonly active = computed(() => {
     const index = this.hover();
-    return index === null ? null : this.bars()[index] ?? null;
+    const bar = index === null ? null : this.bars()[index] ?? null;
+    if (!bar || bar.marks.length === 0) return null;
+    const top = Math.min(...bar.marks.map((mark) => mark.y));
+    return { ...bar, anchor: arenaTooltipAnchor(bar.midX, top) };
   });
 
   constructor() {

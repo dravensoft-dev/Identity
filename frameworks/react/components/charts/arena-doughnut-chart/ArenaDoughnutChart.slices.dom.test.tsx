@@ -36,9 +36,9 @@ function widths<T>(width: number, body: () => T): T {
 
 function render(options: { seen?: number[]; legendLayout?: ArenaChartLegendLayout } = {}) {
   return mount(
-    <ArenaDoughnutChart labels={LABELS} values={VALUES} seriesLabel="Revenue by channel"
-      legendLayout={options.legendLayout}
-      onSliceActivate={(index) => options.seen?.push(index)} />,
+    <ArenaDoughnutChart labels={LABELS} series={[{ label: 'Revenue by channel', values: VALUES }]} label="Revenue by channel"
+ legendLayout={options.legendLayout}
+ onSliceActivate={(index) => options.seen?.push(index)} />,
   );
 }
 

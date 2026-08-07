@@ -26,10 +26,6 @@ export const PAIRED = [
 ];
 
 export const DIVERGENT = new Map([
-  ['DataVisuals.ts:arenaResolveColors',
-   'the same precedence, tone over slots over slot, with the same warning when a chart is given '
-   + 'both. One destructures its options in the signature and the other declares the object inline, '
-   + 'because one layer\'s callers hold an interface the other has no reason to export.'],
   ['components/display/arena-calendar/CalendarInternals.ts:arenaAddDays',
    'the same UTC day step; one hands arenaIsoDateOf a date and the other the full parts shape its own '
    + 'arenaIsoDateOf takes, which is why the zero hour and minute appear on one side only.'],

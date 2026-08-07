@@ -1,32 +1,29 @@
 import React, { useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
-import { arenaResolveColors, arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
+import { arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
 import { arenaDoughnutSlices } from '../ChartScales.ts';
 import { arenaArcPath } from '../ChartMarks.ts';
 import { arenaDoughnutRadii } from '../ChartAxis.ts';
 import { arenaLegendPlotWidth, arenaLegendStacked } from '../ChartLegend.ts';
-import { arenaChartTable } from '../ChartSeries.ts';
+import { arenaChartTable, arenaOneSeries, arenaSeriesColors } from '../ChartSeries.ts';
 
-import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
+import type { ArenaChartLegendLayout, ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 
 export interface ArenaDoughnutChartProps {
 
-  /** One label per slice, in the same order as `values`. A label with no value at its index is dropped. */
+  /** One label per slice, in the same order as the series' `values`. A label with no value at its index is dropped. */
   labels: readonly string[];
 
-  /** The parts, which are read as shares of their own total. A negative value floors at zero; a total of zero paints nothing. */
-  values: readonly number[];
+  /** The parts, as one series whose values are read as shares of their own total. Exactly one series: a ring of two series is a sunburst, which is a different chart and not this one, so a second warns in development and is ignored. Per-slice identity goes in that series' `slots`. */
+  series: readonly ArenaSeries[];
 
-  /** Names the chart for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a chart is about is editorial, the same reason ArenaTable.label is required. */
-  seriesLabel: string;
-
-  /** Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point. */
-  slots?: readonly number[];
+  /** Names the chart for its accessible name and for the caption of its data table. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
+  label: string;
 
   /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
   legendLayout?: ArenaChartLegendLayout;
 
-  /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
+  /** A slice was activated by pointer, carrying its index in the series' `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
   onSliceActivate?: (index: number) => void;
 
   /** Appended verbatim to every number the chart draws: the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
@@ -41,20 +38,24 @@ export interface ArenaDoughnutChartProps {
 
 
 export function ArenaDoughnutChart({
-  labels, values, seriesLabel, slots, valueSuffix, valuePrefix, valueFormat,
+  labels, series, label, valueSuffix, valuePrefix, valueFormat,
   legendLayout = 'auto', onSliceActivate,
 }: ArenaDoughnutChartProps) {
-  if (!seriesLabel) throw new Error('ArenaDoughnutChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
+  if (!label) throw new Error('ArenaDoughnutChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaDoughnutChart: `labels` is required');
-  if (!values) throw new Error('ArenaDoughnutChart: `values` is required');
+  if (!series) throw new Error('ArenaDoughnutChart: `series` is required');
   const [ref, measured] = useArenaContainerWidth();
   const [hover, setHover] = useState<number | null>(null);
 
   const width = measured ?? 600;
   const height = ARENA_CHART_HEIGHT;
+  const only = arenaOneSeries(series, 'ArenaDoughnutChart');
+  const values = only.values;
   const n = values.length;
   const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
-  const colors = arenaResolveColors({ slots: slots ?? Array.from({ length: n }, (_, i) => i + 1), count: n });
+  const colors = arenaSeriesColors(
+    { ...only, slots: only.slots ?? Array.from({ length: n }, (_, i) => i + 1) }, n, 1,
+  );
 
   const stacked = arenaLegendStacked(legendLayout, width);
   const plotW = arenaLegendPlotWidth(width);
@@ -62,8 +63,8 @@ export function ArenaDoughnutChart({
   const cy = height / 2;
   const { outer: rOuter, inner: rInner } = arenaDoughnutRadii(plotW, height);
 
-  const name = `${seriesLabel} — doughnut chart`;
-  const table = arenaChartTable('Category', seriesLabel, labels, values, fmt);
+  const name = `${label} — doughnut chart`;
+  const table = arenaChartTable('Category', series.slice(0, 1), labels, fmt);
 
   const segments = arenaDoughnutSlices(values);
 

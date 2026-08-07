@@ -1,48 +1,188 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { arenaChartTable } from './ChartSeries';
+import { ARENA_CAT_SLOTS } from '../../DataVisuals';
+import { forgetArenaWarnings } from '../../WarnOnce';
+import {
+  arenaChartTable, arenaOneSeries, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount,
+} from './ChartSeries';
+import type { ArenaSeries } from '../../Api.generated';
+import type { ArenaSeriesTone } from '../../Api.generated';
 
 const write = (value: number) => `${value} ms`;
 
-test('the table names the category column and then the series, in that order', () => {
-  const table = arenaChartTable('Category', 'Revenue', ['Jan', 'Feb'], [1, 2], write);
-  assert.deepEqual(table.columns, ['Category', 'Revenue']);
+function series(fields: Partial<ArenaSeries> = {}): ArenaSeries {
+  return { label: 'One', values: [], ...fields };
+}
+
+function captureWarnings(body: () => void): string[] {
+  const captured: string[] = [];
+  const original = console.warn;
+  console.warn = (...args: unknown[]) => { captured.push(args.map(String).join(' ')); };
+  try { body(); } finally { console.warn = original; }
+  return captured;
+}
+
+test('arenaSeriesColors always returns exactly `count` colours', () => {
+  for (const count of [0, 1, 3, 25]) {
+    assert.equal(arenaSeriesColors(series(), count, 1).length, count);
+    assert.equal(arenaSeriesColors(series({ slot: 3 }), count, 1).length, count);
+    assert.equal(arenaSeriesColors(series({ slots: [1, 2] }), count, 1).length, count);
+    assert.equal(arenaSeriesColors(series({ tone: 'danger' }), count, 1).length, count);
+  }
 });
 
-test('one row per value, its label as the row header and the written number beside it', () => {
-  const table = arenaChartTable('Point', 'Latency', ['Jan', 'Feb'], [12, 47], write);
-  assert.deepEqual(table.rows, [
-    { header: 'Jan', cells: ['12 ms'] },
-    { header: 'Feb', cells: ['47 ms'] },
+test('a series with no identity of its own takes the slot its POSITION gives it', () => {
+
+  assert.deepEqual(arenaSeriesColors(series(), 2, 1), ['var(--color-cat-1)', 'var(--color-cat-1)']);
+  assert.deepEqual(arenaSeriesColors(series(), 2, 3), ['var(--color-cat-3)', 'var(--color-cat-3)']);
+});
+
+test('`slot` paints the whole series one identity colour, whatever its position', () => {
+  assert.deepEqual(arenaSeriesColors(series({ slot: 4 }), 2, 7), ['var(--color-cat-4)', 'var(--color-cat-4)']);
+});
+
+test('`slots` maps per mark, falling back to the mark index where it runs short', () => {
+
+  assert.deepEqual(arenaSeriesColors(series({ slots: [5, 2] }), 4, 1), [
+    'var(--color-cat-5)', 'var(--color-cat-2)', 'var(--color-cat-3)', 'var(--color-cat-4)',
   ]);
+});
+
+test('`slots` shorter than `count` still never cycles past the ramp', () => {
+  const colours = arenaSeriesColors(series({ slots: [] }), 12, 1);
+  assert.equal(colours[11], `var(--color-cat-${ARENA_CAT_SLOTS})`);
+  assert.equal(new Set(colours).size, ARENA_CAT_SLOTS, 'the ramp clamps rather than wrapping');
+});
+
+test('`tone` paints the whole series the semantic colour', () => {
+  assert.deepEqual(arenaSeriesColors(series({ tone: 'warning' }), 2, 1), ['var(--warning)', 'var(--warning)']);
+});
+
+test('`tone` wins over `slot` and over `slots`, and passing both warns', () => {
+  forgetArenaWarnings();
+  const warnings = captureWarnings(() => {
+    assert.deepEqual(arenaSeriesColors(series({ tone: 'danger', slot: 3 }), 1, 1), ['var(--danger)']);
+    assert.deepEqual(arenaSeriesColors(series({ tone: 'danger', slots: [3] }), 1, 1), ['var(--danger)']);
+  });
+  assert.ok(warnings.length <= 1, 'arenaWarnOnce must not warn twice for one message');
+  forgetArenaWarnings();
+});
+
+test('the mutually-exclusive warning fires once, and only when both are passed', () => {
+  forgetArenaWarnings();
+  const clean = captureWarnings(() => {
+    arenaSeriesColors(series({ tone: 'danger' }), 1, 1);
+    arenaSeriesColors(series({ slot: 2 }), 1, 1);
+    arenaSeriesColors(series(), 1, 1);
+  });
+  assert.deepEqual(clean, [], 'identity alone and meaning alone are both legal, and silent');
+
+  const warnings = captureWarnings(() => {
+    arenaSeriesColors(series({ tone: 'danger', slot: 3 }), 1, 1);
+    arenaSeriesColors(series({ tone: 'info', slots: [2] }), 1, 1);
+  });
+  assert.equal(warnings.length, 1, 'warned once for the two offending calls');
+  assert.match(warnings[0] as string, /^\[arena\] chart:/);
+  assert.match(warnings[0] as string, /mutually exclusive/);
+  forgetArenaWarnings();
+});
+
+test('a tone outside the union falls back to slot 1 instead of yielding undefined', () => {
+
+  const rogue = 'critical' as unknown as ArenaSeriesTone;
+  assert.deepEqual(arenaSeriesColors(series({ tone: rogue }), 2, 4), ['var(--color-cat-1)', 'var(--color-cat-1)']);
+});
+
+test('`slot: 0` is still an identity, not an absent one', () => {
+
+  assert.deepEqual(arenaSeriesColors(series({ slot: 0 }), 1, 5), ['var(--color-cat-1)']);
+});
+
+test('the point count is the longest series, so a short one does not truncate the axis', () => {
+
+  assert.equal(arenaSeriesPointCount([series({ values: [1, 2] }), series({ values: [1, 2, 3, 4] })]), 4);
+  assert.equal(arenaSeriesPointCount([]), 0);
+});
+
+test('the domain spans every series at once, so two series share one axis', () => {
+
+  const domain = arenaSeriesDomain([series({ values: [10, 20] }), series({ values: [90] })]);
+  assert.ok(domain.max >= 90, `the axis stopped at ${domain.max}, below the tallest series`);
+  assert.equal(domain.min, 0);
+});
+
+test('the domain reaches below zero when any series does', () => {
+  const domain = arenaSeriesDomain([series({ values: [10] }), series({ values: [-40] })]);
+  assert.ok(domain.min <= -40, `the axis stopped at ${domain.min}`);
+});
+
+test('arenaOneSeries takes the first and warns about the rest, rather than drawing a sunburst', () => {
+
+  forgetArenaWarnings();
+  const warnings = captureWarnings(() => {
+    const only = arenaOneSeries([series({ label: 'A' }), series({ label: 'B' })], 'ArenaDoughnutChart');
+    assert.equal(only.label, 'A');
+  });
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0] as string, /sunburst/);
+  forgetArenaWarnings();
+});
+
+test('arenaOneSeries is silent for one series, and returns an empty one for none', () => {
+  forgetArenaWarnings();
+  const warnings = captureWarnings(() => {
+    assert.equal(arenaOneSeries([series({ label: 'A' })], 'ArenaDoughnutChart').label, 'A');
+    assert.deepEqual(arenaOneSeries([], 'ArenaDoughnutChart').values, []);
+  });
+  assert.deepEqual(warnings, []);
+  forgetArenaWarnings();
+});
+
+test('the table names the row column and then each series by its own label', () => {
+  const table = arenaChartTable('Category', [series({ label: 'Revenue', values: [1] }), series({ label: 'Cost', values: [2] })], ['Jan'], write);
+  assert.deepEqual(table.columns, ['Category', 'Revenue', 'Cost']);
+});
+
+test('one row per point, its label as the row header and one cell per series', () => {
+  const table = arenaChartTable('Point', [series({ label: 'A', values: [12, 47] }), series({ label: 'B', values: [1, 2] })], ['Jan', 'Feb'], write);
+  assert.deepEqual(table.rows, [
+    { header: 'Jan', cells: ['12 ms', '1 ms'] },
+    { header: 'Feb', cells: ['47 ms', '2 ms'] },
+  ]);
+});
+
+test('a series shorter than the others leaves an empty cell rather than a zero', () => {
+
+  const table = arenaChartTable('Point', [series({ label: 'A', values: [1, 2] }), series({ label: 'B', values: [9] })], ['Jan', 'Feb'], write);
+  assert.deepEqual(table.rows[1]?.cells, ['2 ms', '']);
 });
 
 test('the table writes its numbers through the same writer the chart draws with', () => {
 
-  const table = arenaChartTable('Category', 'Share', ['a'], [1234.5], (value) => `$${value.toFixed(2)}`);
+  const table = arenaChartTable('Category', [series({ label: 'Share', values: [1234.5] })], ['a'], (value) => `$${value.toFixed(2)}`);
   assert.equal(table.rows[0]?.cells[0], '$1234.50');
 });
 
 test('a value with no label at its index still gets a row, headed by an empty cell', () => {
 
-  const table = arenaChartTable('Category', 'Share', ['only'], [1, 2], write);
+  const table = arenaChartTable('Category', [series({ label: 'Share', values: [1, 2] })], ['only'], write);
   assert.equal(table.rows.length, 2);
   assert.equal(table.rows[1]?.header, '');
 });
 
-test('a label with no value at its index is dropped, because the rows follow the data', () => {
-  const table = arenaChartTable('Category', 'Share', ['a', 'b', 'c'], [1], write);
+test('a label with no value is dropped, because the rows follow the data', () => {
+  const table = arenaChartTable('Category', [series({ label: 'Share', values: [1] })], ['a', 'b', 'c'], write);
   assert.deepEqual(table.rows.map((row) => row.header), ['a']);
 });
 
-test('no values produce a header row and nothing under it, rather than no table', () => {
-  const table = arenaChartTable('Category', 'Share', [], [], write);
-  assert.deepEqual(table.columns, ['Category', 'Share']);
+test('no series produce a header row and nothing under it, rather than no table', () => {
+  const table = arenaChartTable('Category', [], [], write);
+  assert.deepEqual(table.columns, ['Category']);
   assert.deepEqual(table.rows, []);
 });
 
 test('every row carries one cell per series column, so the widths agree', () => {
-  const table = arenaChartTable('Category', 'Share', ['a', 'b'], [1, 2], write);
+  const table = arenaChartTable('Category', [series({ label: 'A', values: [1, 2] }), series({ label: 'B', values: [3, 4] })], ['a', 'b'], write);
   for (const row of table.rows)
     assert.equal(row.cells.length + 1, table.columns.length, 'a row must fill every column it declares');
 });

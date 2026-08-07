@@ -18,12 +18,13 @@ const BINDING = join(ANGULAR_COMPONENTS, 'charts/arena-bar-chart/ArenaBarChart.b
 const LABELS = ['Alpha', 'Beta', 'Gamma'];
 const VALUES = [12, 30, 7];
 const SERIES = 'Deliveries';
+const CHART = 'Deliveries by region';
 
 function renderBarChart() {
   const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
-  fixture.componentRef.setInput('values', VALUES);
-  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
   fixture.detectChanges();
   return fixture;
 }
@@ -42,7 +43,7 @@ test('arena-bar-chart renders a real <table> carrying every plotted number', () 
     const pairs = rows.map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
     assert.deepEqual(pairs, LABELS.map((label, i) => [label, String(VALUES[i])]));
 
-    assert.equal((table!.querySelector('caption')?.textContent ?? '').trim(), `${SERIES} — bar chart`);
+    assert.equal((table!.querySelector('caption')?.textContent ?? '').trim(), `${CHART} — bar chart`);
     const headers = [...table!.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
     assert.deepEqual(headers, ['Category', SERIES]);
   } finally {
@@ -83,16 +84,16 @@ test('arena-bar-chart matches its figure-with-data-table binding, which excepts 
   }
 });
 
-test('arena-bar-chart REFUSES to render without a seriesLabel, where it used to name itself by type', () => {
+test('arena-bar-chart REFUSES to render without a label, where it used to name itself by type', () => {
   const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
-  fixture.componentRef.setInput('values', VALUES);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
   try {
     assert.throws(
       () => fixture.detectChanges(),
       /NG0950/,
       'a name that is only the chart TYPE satisfies roles.label mechanically and tells a reader nothing; '
-      + 'seriesLabel is input.required now, so Angular refuses the render rather than inventing one',
+      + 'label is input.required now, so Angular refuses the render rather than inventing one',
     );
   } finally {
     fixture.destroy();
@@ -101,8 +102,8 @@ test('arena-bar-chart REFUSES to render without a seriesLabel, where it used to 
 test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessible table alike', () => {
   const fixture = TestBed.createComponent(ArenaBarChart);
   fixture.componentRef.setInput('labels', LABELS);
-  fixture.componentRef.setInput('values', VALUES);
-  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
   fixture.componentRef.setInput('valueSuffix', ' ms');
   fixture.detectChanges();
   try {
@@ -121,20 +122,20 @@ test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessibl
   }
 });
 
-test('arena-doughnut-chart takes its accessible name, caption and value column from seriesLabel', () => {
+test('arena-doughnut-chart takes its accessible name and caption from label, and its column from the series', () => {
   const fixture = TestBed.createComponent(ArenaDoughnutChart);
   fixture.componentRef.setInput('labels', LABELS);
-  fixture.componentRef.setInput('values', VALUES);
-  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
   fixture.detectChanges();
   try {
     const host = fixture.nativeElement as Element;
 
     const graphic = host.querySelector('[role="img"]') as Element;
-    assert.equal(graphic.getAttribute('aria-label'), `${SERIES} — doughnut chart`);
+    assert.equal(graphic.getAttribute('aria-label'), `${CHART} — doughnut chart`);
 
     const table = host.querySelector('table') as HTMLTableElement;
-    assert.equal((table.querySelector('caption')?.textContent ?? '').trim(), `${SERIES} — doughnut chart`);
+    assert.equal((table.querySelector('caption')?.textContent ?? '').trim(), `${CHART} — doughnut chart`);
 
     const headers = [...table.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
     assert.deepEqual(headers, ['Category', SERIES]);
@@ -167,8 +168,8 @@ function assertFigure(host: Element, tail: string): void {
 test('arena-doughnut-chart matches its figure-with-data-table binding, which excepts nothing', () => {
   const fixture = TestBed.createComponent(ArenaDoughnutChart);
   fixture.componentRef.setInput('labels', LABELS);
-  fixture.componentRef.setInput('values', VALUES);
-  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
   fixture.detectChanges();
   try {
     assertFigure(fixture.nativeElement as Element, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json');
@@ -180,8 +181,8 @@ test('arena-doughnut-chart matches its figure-with-data-table binding, which exc
 test('arena-line-chart matches its figure-with-data-table binding, which excepts nothing', () => {
   const fixture = TestBed.createComponent(ArenaLineChart);
   fixture.componentRef.setInput('labels', LABELS);
-  fixture.componentRef.setInput('values', VALUES);
-  fixture.componentRef.setInput('seriesLabel', SERIES);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
   fixture.detectChanges();
   try {
     assertFigure(fixture.nativeElement as Element, 'charts/arena-line-chart/ArenaLineChart.behaviour.json');

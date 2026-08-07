@@ -32,7 +32,7 @@ const labels = Array.from({ length: 30 }, (_, i) => `d${i}`);
 const values = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const rail = (minPointSpacing?: number) => renderToStaticMarkup(
-  <ArenaLineChart labels={labels} values={values} seriesLabel="Revenue" minPointSpacing={minPointSpacing} />,
+  <ArenaLineChart labels={labels} series={[{ label: 'Revenue', values: values }]} label="Revenue" minPointSpacing={minPointSpacing} />,
 );
 
 test('a rail that does not overflow is not a scroll region, and takes no tab stop', () => {

@@ -151,6 +151,14 @@
      change and must be taken as one.
    */
   --chart-bar-radius:4px;
+  /*
+     Between two bars of the same category, when a chart draws more than one series.
+     Distinct from bar-gap, which is between categories, and deliberately smaller than it:
+     the wider gap is what tells a reader where one category ends, and if the two were equal
+     a grouped chart would read as one long row of unrelated bars. Script-readable, because
+     JS subtracts it from a sub-band width to produce an SVG x.
+   */
+  --chart-series-gap:1px;
   --chart-bar-gap:2px; /* Surface between bars. Equals --bw-strong, coincidentally. */
   --chart-point-r:4px; /* A line chart's point at rest. */
   /*

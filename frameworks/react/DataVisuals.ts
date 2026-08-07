@@ -53,25 +53,6 @@ export function arenaToneColor(tone: ArenaTone): string {
   return TONE_VARS[tone];
 }
 
-export interface ArenaResolveColorsOptions {
-  slot?: number;
-  slots?: readonly number[];
-  tone?: ArenaSeriesTone;
-  count: number;
-}
-
-export function arenaResolveColors({ slot, slots, tone, count }: ArenaResolveColorsOptions): string[] {
-  if (tone && (slot !== undefined || slots !== undefined)) {
-    arenaWarnOnce('chart: `tone` and `slot`/`slots` are mutually exclusive — a chart carries identity or meaning, never both. `tone` wins; remove the other.');
-  }
-  if (tone) {
-    const c = arenaToneColor(tone) || arenaCatColor(1);
-    return Array.from({ length: count }, () => c);
-  }
-  if (slots) return Array.from({ length: count }, (_, i) => arenaCatColor(slots[i] ?? i + 1));
-  return Array.from({ length: count }, () => arenaCatColor(slot ?? 1));
-}
-
 export interface ArenaValueWriterOptions {
   prefix?: string;
   suffix?: string;

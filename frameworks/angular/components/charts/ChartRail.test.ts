@@ -34,12 +34,14 @@ test('one point cannot be too close to anything, so nothing overflows', () => {
 @Component({
   standalone: true,
   imports: [ArenaLineChart],
-  template: `<arena-line-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
+  template: `<arena-line-chart [labels]="labels" [series]="series" label="Revenue"
                                [minPointSpacing]="spacing" />`,
 })
 class RailHost {
   labels = Array.from({ length: 30 }, (_, i) => `d${i}`);
   values = Array.from({ length: 30 }, (_, i) => i + 1);
+
+  get series() { return [{ label: 'Revenue', values: this.values }]; }
   spacing: number | undefined = undefined;
 }
 

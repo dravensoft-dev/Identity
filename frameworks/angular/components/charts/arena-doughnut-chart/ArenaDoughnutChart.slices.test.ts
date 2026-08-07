@@ -22,13 +22,14 @@ const VALUES = [40, 25, 0, 35];
   standalone: true,
   imports: [ArenaDoughnutChart],
   template: `
-    <arena-doughnut-chart [labels]="labels" [values]="values" seriesLabel="Revenue by channel"
+    <arena-doughnut-chart [labels]="labels" [series]="series" label="Revenue by channel"
                           [legendLayout]="legendLayout" (sliceActivate)="seen.push($event)" />
   `,
 })
 class DoughnutHost {
   labels = LABELS;
   values = VALUES;
+  series = [{ label: 'Revenue by channel', values: VALUES }];
   legendLayout: ArenaChartLegendLayout = 'auto';
   seen: number[] = [];
 }

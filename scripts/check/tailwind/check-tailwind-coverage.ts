@@ -37,6 +37,7 @@ export const EXCLUDED = new Map([
   ['chart-pad-left', 'script-readable: JS computes SVG positions from it, never a utility'],
   ['chart-bar-radius', 'script-readable: passed to arenaBarPath(), which builds an SVG path string'],
   ['chart-bar-gap', 'script-readable: subtracted from the per-bar step width'],
+  ['chart-series-gap', 'script-readable: subtracted from a sub-band width to place one grouped bar'],
   ['chart-point-r', 'script-readable: an SVG circle r attribute computed per point'],
   ['chart-point-r-hover', 'script-readable: an SVG circle r attribute computed per point'],
   ['chart-tooltip-offset', 'read inside a calc() beside a runtime px projection of the hovered datum, so the whole expression is inline and no utility could carry it'],

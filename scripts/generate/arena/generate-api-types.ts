@@ -42,6 +42,11 @@ export function fieldType(field: MemberCandidate) {
     return ts;
   }
   if (field.form === 'enum') return field.type;
+  if (field.form === 'array') {
+    const ts = field.of === undefined ? undefined : PRIMITIVE_TS[field.of];
+    if (!ts) throw new Error(`fieldType: a field of a predefined object may be an array of primitives, and "${field.of}" is not a primitive — R1`);
+    return `readonly ${ts}[]`;
+  }
   throw new Error(`fieldType: form "${field.form}" is not allowed inside a predefined object — R1, an object is pure data`);
 }
 

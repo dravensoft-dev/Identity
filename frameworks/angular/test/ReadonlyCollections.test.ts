@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { useTestEnvironment } from './TestbedEnv';
+import type { ArenaSeries } from '../Api.generated';
 import { ArenaActivityFeed } from '../components/display/arena-activity-feed/ArenaActivityFeed';
 import { ArenaBarChart } from '../components/charts/arena-bar-chart/ArenaBarChart';
 import { ArenaBreadcrumbs } from '../components/navigation/arena-breadcrumbs/ArenaBreadcrumbs';
@@ -48,9 +49,9 @@ const SLOTS: readonly number[] = Object.freeze([1, 2]);
     <arena-segmented-control ariaLabel="View" [options]="segments" />
     <arena-select [options]="selectOptions" />
     <arena-table label="Deployments" [columns]="columns" />
-    <arena-bar-chart seriesLabel="Deploys" [labels]="labels" [values]="values" [slots]="slots" />
-    <arena-doughnut-chart seriesLabel="Traffic" [labels]="labels" [values]="values" [slots]="slots" />
-    <arena-line-chart seriesLabel="Latency" [labels]="labels" [values]="values" />
+    <arena-bar-chart label="Deploys" [labels]="labels" [series]="series" />
+    <arena-doughnut-chart label="Traffic" [labels]="labels" [series]="series" />
+    <arena-line-chart label="Latency" [labels]="labels" [series]="series" />
   `,
 })
 class FrozenDataHost {
@@ -65,6 +66,7 @@ class FrozenDataHost {
   readonly columns: readonly ArenaTableColumn[] = Object.freeze([{ header: 'Build' }]);
   readonly labels = LABELS;
   readonly values = VALUES;
+  readonly series: readonly ArenaSeries[] = [{ label: 'One', values: VALUES, slots: SLOTS }];
   readonly slots = SLOTS;
 }
 

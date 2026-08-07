@@ -45,7 +45,7 @@ function hoverAt(overlay: Element, clientX: number) {
 }
 
 test('the pointer and the plot share the SVG origin, so a pointer on a point snaps to that point', () => {
-  const root = mount(<ArenaLineChart seriesLabel="p95" labels={LABELS} values={VALUES} />);
+  const root = mount(<ArenaLineChart label="p95" labels={LABELS} series={[{ label: 'p95', values: VALUES }]} />);
   const overlay = stubBoxes(root);
 
   for (let i = 0; i < VALUES.length; i++) {

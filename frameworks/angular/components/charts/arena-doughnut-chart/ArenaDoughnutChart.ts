@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
-import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaResolveColors, arenaValueWriter } from '../../../DataVisuals';
+import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaValueWriter } from '../../../DataVisuals';
 import { arenaDoughnutSlices } from '../ChartScales';
 import { arenaArcPath } from '../ChartMarks';
 import { arenaDoughnutRadii } from '../ChartAxis';
 import { arenaLegendPlotWidth, arenaLegendStacked } from '../ChartLegend';
-import { arenaChartTable } from '../ChartSeries';
-import type { ArenaChartLegendLayout, ArenaNumberFormat } from '../../../Api.generated';
+import { arenaChartTable, arenaOneSeries, arenaSeriesColors } from '../ChartSeries';
+import type { ArenaChartLegendLayout, ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 
 const ASSUMED_WIDTH = 600;
 
@@ -108,14 +108,12 @@ const LEGEND_VALUE_STYLE = {
   `,
 })
 export class ArenaDoughnutChart {
-  /** One label per slice, in the same order as `values`. A label with no value at its index is dropped. */
+  /** One label per slice, in the same order as the series' `values`. A label with no value at its index is dropped. */
   readonly labels = input.required<readonly string[]>();
-  /** The parts, which are read as shares of their own total. A negative value floors at zero; a total of zero paints nothing. */
-  readonly values = input.required<readonly number[]>();
-  /** Names the chart for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a chart is about is editorial, the same reason ArenaTable.label is required. */
-  readonly seriesLabel = input.required<string>();
-  /** Per-slice identity override, one ramp slot each. Absent assigns 1..N in order, which is the rule rather than a starting point. */
-  readonly slots = input<readonly number[]>();
+  /** The parts, as one series whose values are read as shares of their own total. Exactly one series: a ring of two series is a sunburst, which is a different chart and not this one, so a second warns in development and is ignored. Per-slice identity goes in that series' `slots`. */
+  readonly series = input.required<readonly ArenaSeries[]>();
+  /** Names the chart for its accessible name and for the caption of its data table. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
+  readonly label = input.required<string>();
   /** Appended verbatim to every number the chart draws: the legend value and the accessible table. Not the centre label, which is a percentage rather than a value. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
@@ -124,7 +122,7 @@ export class ArenaDoughnutChart {
   readonly valueFormat = input<ArenaNumberFormat>();
   /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
   readonly legendLayout = input<ArenaChartLegendLayout>('auto');
-  /** A slice was activated by pointer, carrying its index in `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
+  /** A slice was activated by pointer, carrying its index in the series' `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
   readonly sliceActivate = output<number>();
 
   protected readonly height = ARENA_CHART_HEIGHT;
@@ -155,21 +153,22 @@ export class ArenaDoughnutChart {
   );
 
   protected readonly name = computed(() => {
-    const series = this.seriesLabel();
-    return `${series} — doughnut chart`;
+    return `${this.label()} — doughnut chart`;
   });
 
   protected readonly arenaPlotWidth = computed(() => arenaLegendPlotWidth(this.width()));
   protected readonly centreX = computed(() => this.arenaPlotWidth() / 2);
   protected readonly centreY = computed(() => this.height / 2);
 
-  protected readonly segments = computed(() => {
-    const values = this.values();
+  private readonly only = computed(() => arenaOneSeries(this.series(), 'ArenaDoughnutChart'));
 
-    const colors = arenaResolveColors({
-      slots: this.slots() ?? values.map((_, index) => index + 1),
-      count: values.length,
-    });
+  protected readonly segments = computed(() => {
+    const only = this.only();
+    const values = only.values;
+
+    const colors = arenaSeriesColors(
+      { ...only, slots: only.slots ?? values.map((_, index) => index + 1) }, values.length, 1,
+    );
     const write = this.write();
     const centreX = this.centreX();
     const centreY = this.centreY();
@@ -184,7 +183,7 @@ export class ArenaDoughnutChart {
   });
 
   protected readonly table = computed(() => arenaChartTable(
-    'Category', this.seriesLabel(), this.labels(), this.values(), this.write(),
+    'Category', this.series().slice(0, 1), this.labels(), this.write(),
   ));
 
   protected readonly active = computed(() => {

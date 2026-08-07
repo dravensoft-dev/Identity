@@ -1,32 +1,14 @@
 {
   "component": "ArenaBarChart",
   "seed": {
-    "labels": [
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri"
+    "labels": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    "series": [
+      { "label": "Deployments", "values": [42, 51, 38, 64, 57] },
+      { "label": "Rollbacks", "values": [4, 9, 2, 11, 3] }
     ],
-    "values": [
-      42,
-      51,
-      38,
-      64,
-      57
-    ],
-    "seriesLabel": "Deployments",
-    "slots": [
-      1,
-      2,
-      3,
-      4,
-      5
-    ],
+    "label": "Release activity",
     "valueSuffix": " builds",
-    "valueFormat": {
-      "grouping": true
-    }
+    "valueFormat": { "grouping": true }
   },
-  "note": "One axis, and identity colours in ramp order."
+  "note": "Two series share each category's band, so a reader compares within a day before comparing across days."
 }

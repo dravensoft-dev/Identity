@@ -3,18 +3,19 @@ import {
   input, signal, viewChild,
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
+import { arenaWarnOnce } from '../../../WarnOnce';
 import {
-  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaPlotWidth, arenaResolveColors, arenaValueWriter,
+  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaPlotWidth, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaValuesDomain, arenaNearestPointIndex,
+  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaNearestPointIndex,
 } from '../ChartScales';
 import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
-import { arenaChartTable } from '../ChartSeries';
+import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries';
 import { arenaTooltipAnchor } from '../ChartTooltip';
 import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
-import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
+import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated';
 
 const ASSUMED_WIDTH = 600;
@@ -58,8 +59,12 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
       <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="zeroY()" [attr.y2]="zeroY()"
             stroke="var(--line-strong)" [style]="lineStyle" />
 
-      @if (area() && points().length > 0) {
-        <path [attr.d]="areaPath()" [attr.fill]="arenaAreaFill()" stroke="none" />
+      @if (fills()) {
+        @for (line of lines(); track line.key) {
+          @if (line.points.length > 0) {
+            <path [attr.d]="line.areaPath" [attr.fill]="line.areaFill" stroke="none" />
+          }
+        }
       }
 
       @if (active(); as point) {
@@ -67,18 +72,20 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
               stroke="var(--border-strong)" stroke-dasharray="3 3" [style]="lineStyle" />
       }
 
-      @if (points().length > 1) {
-        <polyline [attr.points]="polyline()" fill="none" [attr.stroke]="color()"
-                  stroke-linejoin="round" stroke-linecap="round" [style]="seriesStrokeStyle" />
+      @for (line of lines(); track line.key) {
+        @if (line.points.length > 1) {
+          <polyline [attr.points]="line.polyline" fill="none" [attr.stroke]="line.color"
+                    stroke-linejoin="round" stroke-linecap="round" [style]="seriesStrokeStyle" />
+        }
       }
 
-      @for (point of points(); track point.index) {
-        <circle [attr.cx]="point.x" [attr.cy]="point.y"
-                [attr.r]="hover() === point.index ? pointRHover : pointR"
-                [attr.fill]="color()" stroke="var(--surface-card)" [style]="seriesStrokeStyle" />
+      @for (mark of marks(); track mark.key) {
+        <circle [attr.cx]="mark.x" [attr.cy]="mark.y"
+                [attr.r]="hover() === mark.index ? pointRHover : pointR"
+                [attr.fill]="mark.color" stroke="var(--surface-card)" [style]="seriesStrokeStyle" />
       }
 
-      @for (point of points(); track point.index) {
+      @for (point of axisPoints(); track point.index) {
         <text [attr.x]="point.x" [attr.y]="pointLabelY()" text-anchor="middle"
               fill="var(--text-muted)" font-family="var(--font-body)"
               [style]="pointLabelStyle">{{ point.label }}</text>
@@ -92,7 +99,9 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
     @if (active(); as point) {
       <div [style]="tooltipStyle" [style.left.px]="point.anchor.left" [style.top]="point.anchor.top">
         <div [style]="tooltipLabelStyle">{{ point.label }}</div>
-        <div [style]="tooltipValueStyle">{{ point.formatted }}</div>
+        @for (reading of point.readings; track reading.key) {
+          <div [style]="tooltipValueStyle">{{ reading.name }}{{ reading.value }}</div>
+        }
       </div>
     }
 
@@ -108,16 +117,12 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
   `,
 })
 export class ArenaLineChart {
-  /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
+  /** One label per point, in the same order as every series' `values`. A label with no value in a series ends that series' line there rather than dropping to zero. */
   readonly labels = input.required<readonly string[]>();
-  /** The plotted data, in order. One point per entry. A negative value plots below the zero line, which the axis places on a tick rather than at the plot's foot, and an area fill crosses it rather than stopping there. */
-  readonly values = input.required<readonly number[]>();
-  /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
-  readonly seriesLabel = input.required<string>();
-  /** The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. */
-  readonly slot = input<number>();
-  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. */
-  readonly tone = input<ArenaSeriesTone>();
+  /** The plotted series, drawn as one polyline each over the same ordered sequence. One series is the common case and draws exactly what it drew before. The area fill is refused past one series, because two fills occlude each other and the reader cannot tell which value either edge belongs to. */
+  readonly series = input.required<readonly ArenaSeries[]>();
+  /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
+  readonly label = input.required<string>();
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   readonly area = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
@@ -155,23 +160,31 @@ export class ArenaLineChart {
   private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
   protected readonly width = computed(
-    () => arenaPlotWidth(this.available(), this.values().length, this.minPointSpacing()),
+    () => arenaPlotWidth(this.available(), this.pointCount(), this.minPointSpacing()),
   );
 
   protected readonly scrolls = computed(() => this.width() > this.available());
 
   private readonly rail = viewChild<ElementRef<HTMLElement>>('rail');
 
-  protected readonly color = computed(() => arenaResolveColors({ slot: this.slot(), tone: this.tone(), count: 1 })[0]);
+  protected readonly colors = computed(
+    () => this.series().map((one, index) => arenaSeriesColors(one, 1, index + 1)[0] as string),
+  );
 
-  protected readonly arenaAreaFill = computed(() => arenaAreaFill(this.color()));
-
-  protected readonly name = computed(() => {
-    const series = this.seriesLabel();
-    return `${series} — line chart`;
+  protected readonly fills = computed(() => {
+    if (this.area() && this.series().length > 1) {
+      arenaWarnOnce('ArenaLineChart: `area` is for a single series. Two fills occlude each other and the reader cannot tell which value either edge belongs to, so none is drawn.');
+      return false;
+    }
+    return this.area();
   });
 
-  private readonly domain = computed(() => arenaValuesDomain(this.values()));
+  protected readonly name = computed(() => {
+    return `${this.label()} — line chart`;
+  });
+
+  private readonly domain = computed(() => arenaSeriesDomain(this.series()));
+  protected readonly pointCount = computed(() => arenaSeriesPointCount(this.series()));
   private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
   protected readonly plotLeft = computed(() => this.box().x);
   protected readonly plotRight = computed(() => this.box().x + this.box().w);
@@ -187,7 +200,7 @@ export class ArenaLineChart {
 
   private readonly xScale = computed(() => {
     const box = this.box();
-    return arenaPointScale(this.values().length, box.x, box.w);
+    return arenaPointScale(this.pointCount(), box.x, box.w);
   });
 
   private readonly axis = computed(() => arenaAxisModel(this.yScale(), this.domain(), this.write()));
@@ -196,28 +209,59 @@ export class ArenaLineChart {
   protected readonly plotBottom = computed(() => this.box().y + this.box().h);
   protected readonly gridLines = computed(() => this.axis().ticks);
 
-  protected readonly points = computed(() => {
-    const values = this.values();
+  protected readonly lines = computed(() => {
     const yScale = this.yScale();
     const xScale = this.xScale();
-    const write = this.write();
-    return values.map((value, index) => {
-      const x = arenaPointAt(xScale, index);
-      const y = arenaScaleValue(yScale, value);
-      return { index, x, y, anchor: arenaTooltipAnchor(x, y), label: this.labels()[index] ?? '', formatted: write(value) };
+    const colors = this.colors();
+    const zeroY = this.zeroY();
+    return this.series().map((one, index) => {
+      const points = one.values.map((value, i) => ({ x: arenaPointAt(xScale, i), y: arenaScaleValue(yScale, value) }));
+      return {
+        key: index,
+        color: colors[index],
+        polyline: arenaLinePoints(points),
+        areaPath: arenaLineAreaPath(points, zeroY),
+        areaFill: arenaAreaFill(colors[index] as string),
+        points,
+      };
     });
   });
 
-  protected readonly polyline = computed(() => arenaLinePoints(this.points()));
-  protected readonly areaPath = computed(() => arenaLineAreaPath(this.points(), this.zeroY()));
+  protected readonly marks = computed(() => this.lines().flatMap(
+    (line) => line.points.map((point, index) => ({ key: `${line.key}-${index}`, index, x: point.x, y: point.y, color: line.color })),
+  ));
+
+  protected readonly axisPoints = computed(() => {
+    const xScale = this.xScale();
+    const labels = this.labels();
+    return Array.from({ length: this.pointCount() }, (_, index) => ({ index, x: arenaPointAt(xScale, index), label: labels[index] ?? '' }));
+  });
 
   protected readonly table = computed(() => arenaChartTable(
-    'Point', this.seriesLabel(), this.labels(), this.values(), this.write(),
+    'Point', this.series(), this.labels(), this.write(),
   ));
 
   protected readonly active = computed(() => {
     const index = this.hover();
-    return index === null ? null : this.points()[index] ?? null;
+    if (index === null || index >= this.pointCount()) return null;
+    const yScale = this.yScale();
+    const readings = this.series().flatMap((one, key) => {
+      const value = one.values[index];
+      return value === undefined ? [] : [{
+        key,
+        y: arenaScaleValue(yScale, value),
+        name: this.series().length > 1 ? `${one.label}: ` : '',
+        value: this.write()(value),
+      }];
+    });
+    if (readings.length === 0) return null;
+    const x = arenaPointAt(this.xScale(), index);
+    return {
+      x,
+      label: this.labels()[index] ?? '',
+      readings,
+      anchor: arenaTooltipAnchor(x, Math.min(...readings.map((one) => one.y))),
+    };
   });
 
   constructor() {
@@ -233,7 +277,9 @@ export class ArenaLineChart {
 
     const box = (event.currentTarget as SVGRectElement).ownerSVGElement?.getBoundingClientRect();
     if (!box) return;
-    const index = arenaNearestPointIndex(this.points(), event.clientX - box.left);
+    const xScale = this.xScale();
+    const across = Array.from({ length: this.pointCount() }, (_, i) => ({ x: arenaPointAt(xScale, i), y: 0 }));
+    const index = arenaNearestPointIndex(across, event.clientX - box.left);
     if (index >= 0) this.hover.set(index);
   }
 }

@@ -3,7 +3,7 @@
  * and a real <table> of the same numbers that is HIDDEN VISUALLY rather than
  * removed. `alternative.table` is BEHAVIOURAL -- no single element decides it --
  * so each verdict below is earned by reading the table against the input data.
- * What no suite can check is whether the name is a GOOD one, which is why seriesLabel is
+ * What no suite can check is whether the name is a GOOD one, which is why `label` is
  * required and guarded rather than defaulted. */
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,23 +14,27 @@ import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
 import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart.tsx';
 import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart.tsx';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
+import type { ArenaSeries } from '../../Api.generated';
 
 afterEach(cleanup);
 
 const LABELS = ['Alpha', 'Beta', 'Gamma'];
 const VALUES = [12, 30, 7];
 const SERIES = 'Deliveries';
+const CHART = 'Deliveries by region';
 
-type ChartComponent = React.ComponentType<{ labels: string[]; values: number[]; seriesLabel?: string }>;
-const CHARTS: [string, ChartComponent, string][] = [
-  ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json'],
-  ['ArenaDoughnutChart', ArenaDoughnutChart as unknown as ChartComponent, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json'],
-  ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent, 'charts/arena-line-chart/ArenaLineChart.behaviour.json'],
+type ChartComponent = React.ComponentType<{
+  labels: string[]; series: readonly ArenaSeries[]; label?: string;
+}>;
+const CHARTS: [string, ChartComponent, string, string][] = [
+  ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json', 'Category'],
+  ['ArenaDoughnutChart', ArenaDoughnutChart as unknown as ChartComponent, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json', 'Category'],
+  ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent, 'charts/arena-line-chart/ArenaLineChart.behaviour.json', 'Point'],
 ];
 
-for (const [name, Chart, tail] of CHARTS) {
+for (const [name, Chart, tail, heading] of CHARTS) {
   test(`${name} pairs a named graphic with a real table of the same numbers`, () => {
-    const root = mount(<Chart labels={LABELS} values={VALUES} seriesLabel={SERIES} />);
+    const root = mount(<Chart labels={LABELS} series={[{ label: SERIES, values: VALUES }]} label={CHART} />);
 
     const graphic = root.querySelector<HTMLElement>('[role="img"]');
     assert.ok(graphic, 'a chart with no role="img" is a decoration, not a figure');
@@ -38,6 +42,10 @@ for (const [name, Chart, tail] of CHARTS) {
 
     const table = root.querySelector<HTMLElement>('table');
     assert.ok(table, 'a chart with no data table is a picture nobody can read');
+
+    const head = [...table.querySelectorAll<HTMLElement>('thead th')].map((c) => (c.textContent ?? '').trim());
+    assert.deepEqual(head, [heading, SERIES],
+      'the head names the row column and then each series by its OWN label, not by the chart\'s');
 
     const pairs = [...table.querySelectorAll<HTMLElement>('tbody tr')]
       .map((row) => [...row.querySelectorAll<HTMLElement>('th, td')].map((c) => (c.textContent ?? '').trim()));
@@ -58,10 +66,10 @@ for (const [name, Chart, tail] of CHARTS) {
     });
   });
 
-  test(`${name} refuses to render without a seriesLabel rather than naming itself by type`, () => {
+  test(`${name} refuses to render without a label rather than naming itself by type`, () => {
     assert.throws(
-      () => mount(<Chart labels={LABELS} values={VALUES} />),
-      /`seriesLabel` is required/,
+      () => mount(<Chart labels={LABELS} series={[{ label: SERIES, values: VALUES }]} />),
+      /`label` is required/,
       'a name that is only the chart TYPE satisfies roles.label mechanically while telling a reader nothing, '
       + 'and two charts on one page then announce identically -- which is why this is guarded rather than defaulted',
     );

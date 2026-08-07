@@ -109,6 +109,11 @@ export function validateTypes(types: TypeContract[]) {
         } else if (kindByName.get(spec.type) !== 'enum') {
           problems.push(`${type.name}.${field}: "${spec.type}" is a ${kindByName.get(spec.type)}, used where an enum belongs`);
         }
+      } else if (spec.form === 'array') {
+
+        if (!isPrimitive(spec.of)) {
+          problems.push(`${type.name}.${field}: a field of a predefined object may be an array of primitives, and "${spec.of}" is not a primitive — R1, an object is pure data with known fields, and an array of objects reopens a nesting depth the reader has no bottom for`);
+        }
       } else if (spec.form === 'consumerData') {
 
         problems.push(`${type.name}.${field}: consumer data may not be a field of a predefined object — R1, an object is pure data with known fields`);

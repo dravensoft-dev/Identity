@@ -1,22 +1,12 @@
 {
   "component": "ArenaLineChart",
   "seed": {
-    "labels": [
-      "Week 1",
-      "Week 2",
-      "Week 3",
-      "Week 4"
+    "labels": ["Week 1", "Week 2", "Week 3", "Week 4"],
+    "series": [
+      { "label": "Requests per minute", "values": [120, 148, 132, 176] }
     ],
-    "values": [
-      120,
-      148,
-      132,
-      176
-    ],
-    "seriesLabel": "Requests per minute",
-    "valueFormat": {
-      "grouping": true
-    }
+    "label": "Throughput",
+    "valueFormat": { "grouping": true }
   },
-  "note": "One series, one axis."
+  "note": "One series, one axis. The area fill is for this case and refuses a second series."
 }

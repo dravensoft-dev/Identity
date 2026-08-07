@@ -79,16 +79,6 @@ export function arenaNiceDomain(min: number, max: number, count = 4): ArenaDomai
   };
 }
 
-export function arenaValuesDomain(values: readonly number[], count = 4): ArenaDomain {
-  let min = 0;
-  let max = 0;
-  for (const value of values) {
-    if (value < min) min = value;
-    if (value > max) max = value;
-  }
-  return arenaNiceDomain(min, max, count);
-}
-
 export function arenaDomainTicks(domain: ArenaDomain): number[] {
   const steps = Math.round((domain.max - domain.min) / domain.step);
   return Array.from({ length: steps + 1 }, (_, index) => domain.min + domain.step * index);
@@ -109,6 +99,17 @@ export function arenaBandMark(scale: ArenaBandScale, index: number): number {
 
 export function arenaBandCenter(scale: ArenaBandScale, index: number): number {
   return arenaBandStart(scale, index) + scale.step / 2;
+}
+
+export function arenaBandSubBand(
+  scale: ArenaBandScale, index: number, seriesCount: number, seriesIndex: number, gap: number,
+): { x: number; width: number } {
+  const lanes = Math.max(1, seriesCount);
+  const lane = scale.band / lanes;
+  return {
+    x: arenaBandMark(scale, index) + lane * seriesIndex,
+    width: Math.max(1, lane - (lanes > 1 ? gap : 0)),
+  };
 }
 
 export function arenaPointScale(count: number, start: number, span: number): ArenaPointScale {

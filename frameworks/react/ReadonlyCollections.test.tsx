@@ -38,9 +38,9 @@ test('every collection prop takes data the consumer holds as readonly, and nothi
     renderToStaticMarkup(<ArenaSegmentedControl ariaLabel="View" options={SEGMENTS} value="grid" onChange={() => {}} />),
     renderToStaticMarkup(<ArenaSelect options={OPTIONS} />),
     renderToStaticMarkup(<ArenaTable label="Deployments" columns={COLUMNS} />),
-    renderToStaticMarkup(<ArenaBarChart seriesLabel="Deploys" labels={LABELS} values={VALUES} slots={SLOTS} />),
-    renderToStaticMarkup(<ArenaDoughnutChart seriesLabel="Traffic" labels={LABELS} values={VALUES} slots={SLOTS} />),
-    renderToStaticMarkup(<ArenaLineChart seriesLabel="Latency" labels={LABELS} values={VALUES} />),
+    renderToStaticMarkup(<ArenaBarChart label="Deploys" labels={LABELS} series={[{ label: 'Deploys', values: VALUES, slots: SLOTS }]} />),
+    renderToStaticMarkup(<ArenaDoughnutChart label="Traffic" labels={LABELS} series={[{ label: 'Traffic', values: VALUES, slots: SLOTS }]} />),
+    renderToStaticMarkup(<ArenaLineChart label="Latency" labels={LABELS} series={[{ label: 'Latency', values: VALUES }]} />),
   ];
 
   for (const html of markup) assert.ok(html.length > 0, 'a component rendered nothing, so its prop proves nothing');

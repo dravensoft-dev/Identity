@@ -42,6 +42,11 @@
       "$description": "A bar's data end. Deliberately NOT --r-sm (6px): naming the value Arena\nalready renders is free, snapping to the radius scale is a visible 2px design\nchange and must be taken as one.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
+    "series-gap": {
+      "$value": { "value": 1, "unit": "px" },
+      "$description": "Between two bars of the same category, when a chart draws more than one series.\nDistinct from bar-gap, which is between categories, and deliberately smaller than it:\nthe wider gap is what tells a reader where one category ends, and if the two were equal\na grouped chart would read as one long row of unrelated bars. Script-readable, because\nJS subtracts it from a sub-band width to produce an SVG x.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
     "bar-gap": {
       "$value": { "value": 2, "unit": "px" },
       "$description": "Surface between bars. Equals --bw-strong, coincidentally.",

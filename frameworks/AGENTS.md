@@ -219,6 +219,17 @@ an Angular template cannot call a closure held in a `computed()` without rebuild
 cycle. So `arenaLinearScale(min, max, from, to)` returns a record and `arenaScaleValue(scale,
 value)` reads it. A y axis passes an inverted pixel range, bottom first, which is why "up is
 more" needs no minus sign and `arenaScaleZero(scale)` falls out of the same arithmetic.
+**A chart takes series, and a series names itself.** `ArenaSeries` replaced five loose members
+that all described ONE of them, which is why a chart that draws two had nowhere to put the
+second. Its label is not decoration: it heads that series' own column in the accessible table,
+so a reader of the table never has to work out which number belongs to which line. The
+component's own `label` is the chart's name and a different thing, and both are required and
+guarded for the reason `contracts/api/MemberForms.md` gives. A series with no identity of its
+own takes the ramp slot its POSITION gives it, so two series are never the same colour by
+accident, and the ramp still clamps rather than cycling. **A missing number is not a zero**: a
+series shorter than the others stops there, leaves an empty cell in the table, and draws no
+mark, because inventing the difference is the one thing a chart may not do.
+
 **A domain carries its own step, and that is what puts zero on a tick.** An axis that has to
 hold a negative value cannot take its step from the count alone, because the two sides of zero
 are not the same size: `arenaNiceDomain(min, max)` picks one step from the larger magnitude and

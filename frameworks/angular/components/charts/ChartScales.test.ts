@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
-import { chartBarGap } from '../../Tokens.generated';
+import { chartBarGap, chartSeriesGap } from '../../Tokens.generated';
 import {
   arenaLinearScale, arenaScaleValue, arenaScaleInvert, arenaScaleZero,
-  arenaNiceMax, arenaNiceDomain, arenaValuesDomain, arenaDomainTicks,
-  arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter,
+  arenaNiceMax, arenaNiceDomain, arenaDomainTicks,
+  arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaBandSubBand,
   arenaPointScale, arenaPointAt, arenaNearestPointIndex, arenaDoughnutSlices,
 } from './ChartScales';
 import { arenaPlotBox } from './ChartAxis';
@@ -376,15 +376,42 @@ test('an all-negative series puts zero at the top rather than inventing a positi
   assert.ok(domain.min < 0);
 });
 
-test('arenaValuesDomain always includes zero, because a bar grows from it', () => {
-  assert.equal(arenaValuesDomain([12, 47, 3]).min, 0);
-  assert.equal(arenaValuesDomain([-12, -47]).max, 0);
-});
+test('a domain built from nothing is still a real axis, which is what an empty chart draws', () => {
 
-test('no values still produce a real axis, which is what an empty chart draws', () => {
-
-  const domain = arenaValuesDomain([]);
+  const domain = arenaNiceDomain(0, 0);
   assert.equal(domain.min, 0);
   assert.equal(domain.max, 1);
   assert.deepEqual(arenaDomainTicks(domain), [0, 0.25, 0.5, 0.75, 1]);
+});
+
+test('one series takes the whole band, so a single-series chart draws what it always drew', () => {
+
+  const bands = bandsAcross(4, 600);
+  const sub = arenaBandSubBand(bands, 0, 1, 0, chartSeriesGap);
+  assert.equal(sub.x, arenaBandMark(bands, 0), 'no gap is spent where there is nothing to separate');
+  assert.equal(sub.width, bands.band);
+});
+
+test('two series split the band and each keeps the series gap out of its own width', () => {
+  const bands = bandsAcross(4, 600);
+  const first = arenaBandSubBand(bands, 0, 2, 0, chartSeriesGap);
+  const second = arenaBandSubBand(bands, 0, 2, 1, chartSeriesGap);
+  assert.equal(second.x - first.x, bands.band / 2, 'the lanes are evenly pitched across the band');
+  assert.equal(first.width, bands.band / 2 - chartSeriesGap);
+  assert.equal(first.width, second.width, 'neither series gets a wider bar than the other');
+});
+
+test('a grouped bar never collapses below 1px, however many series share one band', () => {
+  const bands = bandsAcross(40, 600);
+  for (let s = 0; s < 8; s++)
+    assert.ok(arenaBandSubBand(bands, 0, 8, s, chartSeriesGap).width >= 1, `series ${s}`);
+});
+
+test('every lane stays inside the band it belongs to', () => {
+  const bands = bandsAcross(4, 600);
+  for (let s = 0; s < 3; s++) {
+    const sub = arenaBandSubBand(bands, 2, 3, s, chartSeriesGap);
+    assert.ok(sub.x >= arenaBandStart(bands, 2), `lane ${s} starts before its band`);
+    assert.ok(sub.x + sub.width <= arenaBandStart(bands, 2) + bands.step + 1e-9, `lane ${s} runs past its band`);
+  }
 });

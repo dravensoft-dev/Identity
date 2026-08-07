@@ -2,10 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ARENA_CAT_SLOTS, ARENA_CHART_HEIGHT, ARENA_PAD, ARENA_SR_ONLY,
-  arenaCatColor, arenaCatSlotFor, arenaCatSurface, arenaAreaFill, arenaToneColor, arenaResolveColors,
+  arenaCatColor, arenaCatSlotFor, arenaCatSurface, arenaAreaFill, arenaToneColor,
 } from './DataVisuals';
 import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
-import { forgetArenaWarnings } from './WarnOnce';
 
 test('arenaCatColor reads the ramp token for an in-range slot', () => {
   for (let n = 1; n <= ARENA_CAT_SLOTS; n++) assert.equal(arenaCatColor(n), `var(--color-cat-${n})`);
@@ -70,87 +69,6 @@ test('arenaCatSurface tints from the slot colour, and the edge is the stronger o
 
 test('arenaAreaFill is the tint ArenaLineChart draws under its series', () => {
   assert.equal(arenaAreaFill('var(--success)'), 'color-mix(in oklab, var(--success) 18%, transparent)');
-});
-
-function captureWarnings(body: () => void): string[] {
-  const captured: string[] = [];
-  const original = console.warn;
-  console.warn = (...args: unknown[]) => { captured.push(args.map(String).join(' ')); };
-  try { body(); } finally { console.warn = original; }
-  return captured;
-}
-
-test('arenaResolveColors always returns exactly `count` colours', () => {
-  for (const count of [0, 1, 3, 25]) {
-    assert.equal(arenaResolveColors({ count }).length, count);
-    assert.equal(arenaResolveColors({ count, slot: 3 }).length, count);
-    assert.equal(arenaResolveColors({ count, slots: [1, 2] }).length, count);
-    assert.equal(arenaResolveColors({ count, tone: 'danger' }).length, count);
-  }
-});
-
-test('with nothing specified every series takes slot 1', () => {
-  assert.deepEqual(arenaResolveColors({ count: 3 }), Array(3).fill('var(--color-cat-1)'));
-});
-
-test('`slot` paints every series the same identity colour', () => {
-  assert.deepEqual(arenaResolveColors({ count: 2, slot: 4 }), ['var(--color-cat-4)', 'var(--color-cat-4)']);
-});
-
-test('`slots` maps per index, falling back to the index itself where it runs short', () => {
-
-  assert.deepEqual(arenaResolveColors({ count: 4, slots: [5, 2] }), [
-    'var(--color-cat-5)', 'var(--color-cat-2)', 'var(--color-cat-3)', 'var(--color-cat-4)',
-  ]);
-});
-
-test('`slots` shorter than `count` still never cycles past the ramp', () => {
-  const colours = arenaResolveColors({ count: 12, slots: [] });
-  assert.equal(colours[11], `var(--color-cat-${ARENA_CAT_SLOTS})`);
-  assert.equal(new Set(colours).size, ARENA_CAT_SLOTS, 'the ramp clamps rather than wrapping');
-});
-
-test('`tone` paints every series the semantic colour', () => {
-  assert.deepEqual(arenaResolveColors({ count: 2, tone: 'warning' }), ['var(--warning)', 'var(--warning)']);
-});
-
-test('`tone` wins over `slot` and over `slots`, and passing both warns', () => {
-  forgetArenaWarnings();
-  const warnings = captureWarnings(() => {
-    assert.deepEqual(arenaResolveColors({ count: 1, tone: 'danger', slot: 3 }), ['var(--danger)']);
-    assert.deepEqual(arenaResolveColors({ count: 1, tone: 'danger', slots: [3] }), ['var(--danger)']);
-  });
-  assert.ok(warnings.length <= 1, 'arenaWarnOnce must not warn twice for one message');
-});
-
-test('the mutually-exclusive warning fires once, and only when both are passed', () => {
-  forgetArenaWarnings();
-  const clean = captureWarnings(() => {
-    arenaResolveColors({ count: 1, tone: 'danger' });
-    arenaResolveColors({ count: 1, slot: 2 });
-    arenaResolveColors({ count: 1 });
-  });
-  assert.deepEqual(clean, [], 'identity alone and meaning alone are both legal, and silent');
-
-  const warnings = captureWarnings(() => {
-    arenaResolveColors({ count: 1, tone: 'danger', slot: 3 });
-    arenaResolveColors({ count: 1, tone: 'info', slots: [2] });
-  });
-  assert.equal(warnings.length, 1, 'warned once for the two offending calls');
-  assert.match(warnings[0], /^\[arena\] chart:/);
-  assert.match(warnings[0], /mutually exclusive/);
-  forgetArenaWarnings();
-});
-
-test('a tone outside the union falls back to slot 1 instead of yielding undefined', () => {
-
-  const rogue = 'critical' as unknown as ArenaSeriesTone;
-  assert.deepEqual(arenaResolveColors({ count: 2, tone: rogue }), ['var(--color-cat-1)', 'var(--color-cat-1)']);
-});
-
-test('`slot: 0` is still an identity, not an absent one', () => {
-
-  assert.deepEqual(arenaResolveColors({ count: 1, slot: 0 }), ['var(--color-cat-1)']);
 });
 
 test('the layout constants carry the values the chart family shares', () => {
