@@ -111,18 +111,6 @@ export const arenaRailStyle: React.CSSProperties = {
   overflowX: 'auto', overflowY: 'hidden', display: 'block',
 };
 
-export function arenaNiceMax(max: number): number {
-  if (!(max > 0)) return 1;
-  const mag = Math.pow(10, Math.floor(Math.log10(max)));
-  const norm = max / mag;
-  const step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
-  return step * mag;
-}
-
-export function arenaTicks(max: number, count = 4): number[] {
-  return Array.from({ length: count + 1 }, (_, i) => (max / count) * i);
-}
-
 export const arenaSrOnly: React.CSSProperties = {
   position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
   overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0,

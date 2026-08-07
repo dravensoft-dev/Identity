@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
 import { chartBarGap } from '../../Tokens.generated';
 import {
-  arenaLinearScale, arenaScaleValue, arenaScaleInvert, arenaScaleZero, arenaValueY,
+  arenaLinearScale, arenaScaleValue, arenaScaleInvert, arenaScaleZero,
+  arenaNiceMax, arenaNiceDomain, arenaValuesDomain, arenaDomainTicks,
   arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter,
   arenaPointScale, arenaPointAt, arenaNearestPointIndex, arenaDoughnutSlices,
 } from './ChartScales';
@@ -16,30 +17,24 @@ const Y = arenaLinearScale(0, 100, BASELINE, ARENA_PAD.t);
 const TWO_PI = Math.PI * 2;
 const TWELVE_OCLOCK = -Math.PI / 2;
 
-test('arenaValueY lands zero on the baseline and the axis top on the plot ceiling', () => {
-  assert.equal(arenaValueY(Y, 0), BASELINE);
-  assert.equal(arenaValueY(Y, 100), ARENA_PAD.t);
+test('arenaScaleValue lands zero on the baseline and the axis top on the plot ceiling', () => {
+  assert.equal(arenaScaleValue(Y, 0), BASELINE);
+  assert.equal(arenaScaleValue(Y, 100), ARENA_PAD.t);
 });
 
-test('arenaValueY is linear between the two ends', () => {
-  assert.equal(arenaValueY(Y, 50), ARENA_PAD.t + IH / 2);
-  assert.equal(arenaValueY(Y, 25), ARENA_PAD.t + IH * 0.75);
+test('arenaScaleValue is linear between the two ends', () => {
+  assert.equal(arenaScaleValue(Y, 50), ARENA_PAD.t + IH / 2);
+  assert.equal(arenaScaleValue(Y, 25), ARENA_PAD.t + IH * 0.75);
 });
 
-test('arenaValueY clamps a negative value to the baseline rather than drawing below it', () => {
-
-  for (const negative of [-1, -50, -1e6])
-    assert.equal(arenaValueY(Y, negative), BASELINE, `arenaValueY(${negative})`);
-});
-
-test('arenaValueY grows upward monotonically, so a bigger value is never a shorter mark', () => {
-  const ys = [0, 1, 10, 42, 99, 100].map((v) => arenaValueY(Y, v));
+test('arenaScaleValue grows upward monotonically, so a bigger value is never a shorter mark', () => {
+  const ys = [0, 1, 10, 42, 99, 100].map((v) => arenaScaleValue(Y, v));
   for (let i = 1; i < ys.length; i++) assert.ok(ys[i] < ys[i - 1], `y[${i}] should sit above y[${i - 1}]`);
 });
 
-test('arenaValueY never leaves the plot for a value inside the axis', () => {
+test('arenaScaleValue never leaves the plot for a value inside the axis', () => {
   for (const v of [0, 3, 17, 60, 100]) {
-    const y = arenaValueY(Y, v);
+    const y = arenaScaleValue(Y, v);
     assert.ok(y >= ARENA_PAD.t && y <= BASELINE, `y=${y} for value ${v}`);
   }
 });
@@ -297,4 +292,99 @@ test('a lone slice sweeps the entire circle', () => {
   const [only] = arenaDoughnutSlices([42]);
   assert.equal(only.share, 1);
   assert.ok(Math.abs(only.to - only.from - TWO_PI) < 1e-9);
+});
+
+test('arenaNiceMax returns 1 for every input that is not a positive number', () => {
+
+  for (const bad of [0, -0, -1, -1000, Number.NaN, -Infinity])
+    assert.equal(arenaNiceMax(bad), 1, `arenaNiceMax(${bad})`);
+});
+
+test('arenaNiceMax lands on each of the five steps at its own boundary', () => {
+  assert.equal(arenaNiceMax(1), 1);
+  assert.equal(arenaNiceMax(2), 2);
+  assert.equal(arenaNiceMax(2.5), 2.5);
+  assert.equal(arenaNiceMax(5), 5);
+  assert.equal(arenaNiceMax(10), 10);
+});
+
+test('arenaNiceMax steps up the moment a boundary is crossed', () => {
+  assert.equal(arenaNiceMax(1.01), 2);
+  assert.equal(arenaNiceMax(2.01), 2.5);
+  assert.equal(arenaNiceMax(2.51), 5);
+  assert.equal(arenaNiceMax(5.01), 10);
+});
+
+test('arenaNiceMax scales the same five steps across powers of ten', () => {
+  assert.equal(arenaNiceMax(0.4), 0.5);
+  assert.equal(arenaNiceMax(23), 25);
+  assert.equal(arenaNiceMax(230), 250);
+  assert.equal(arenaNiceMax(2300), 2500);
+  assert.equal(arenaNiceMax(7), 10);
+  assert.equal(arenaNiceMax(70), 100);
+  assert.equal(arenaNiceMax(7000), 10000);
+});
+
+test('arenaNiceMax never returns an axis top below the value it must hold', () => {
+
+  for (let v = 0.01; v < 100000; v *= 1.37)
+    assert.ok(arenaNiceMax(v) >= v, `arenaNiceMax(${v}) = ${arenaNiceMax(v)} is below ${v}`);
+});
+
+test('the ticks span the domain inclusive and yield count + 1 values', () => {
+  assert.deepEqual(arenaDomainTicks(arenaNiceDomain(0, 100)), [0, 25, 50, 75, 100]);
+  assert.deepEqual(arenaDomainTicks(arenaNiceDomain(0, 10, 2)), [0, 5, 10]);
+  assert.equal(arenaDomainTicks(arenaNiceDomain(0, 7, 7)).length, 8);
+});
+
+test('arenaNiceDomain leaves an all-positive series on the axis it always had', () => {
+
+  for (const max of [1, 7, 23, 128, 2300]) {
+    const domain = arenaNiceDomain(0, max);
+    assert.equal(domain.min, 0);
+    assert.equal(domain.max, arenaNiceMax(max));
+    assert.deepEqual(arenaDomainTicks(domain), Array.from({ length: 5 }, (_, i) => (arenaNiceMax(max) / 4) * i),
+      'the old arenaTicks body, spelt out, so a positive axis is pinned to what it drew before');
+  }
+});
+
+test('a domain with a negative end puts zero exactly on a tick', () => {
+  for (const [min, max] of [[-20, 60], [-30, 0], [-100, 100], [-1, 1], [-0.5, 3]]) {
+    const ticks = arenaDomainTicks(arenaNiceDomain(min, max));
+    assert.ok(ticks.some((tick) => Math.abs(tick) < 1e-9), `no tick at zero for [${min}, ${max}]: ${ticks}`);
+  }
+});
+
+test('a domain holds every value it was built from, on both sides of zero', () => {
+  for (const [min, max] of [[-20, 60], [-30, 0], [-100, 100], [-7, 3]]) {
+    const domain = arenaNiceDomain(min, max);
+    assert.ok(domain.min <= min, `${domain.min} does not reach ${min}`);
+    assert.ok(domain.max >= max, `${domain.max} does not reach ${max}`);
+  }
+});
+
+test('the ticks are evenly spaced by the domain\'s own step', () => {
+  const ticks = arenaDomainTicks(arenaNiceDomain(-20, 60));
+  for (let i = 1; i < ticks.length; i++)
+    assert.ok(Math.abs((ticks[i] - ticks[i - 1]) - 25) < 1e-9, `interval ${i} was ${ticks[i] - ticks[i - 1]}`);
+});
+
+test('an all-negative series puts zero at the top rather than inventing a positive half', () => {
+
+  const domain = arenaNiceDomain(-30, 0);
+  assert.equal(domain.max, 0);
+  assert.ok(domain.min < 0);
+});
+
+test('arenaValuesDomain always includes zero, because a bar grows from it', () => {
+  assert.equal(arenaValuesDomain([12, 47, 3]).min, 0);
+  assert.equal(arenaValuesDomain([-12, -47]).max, 0);
+});
+
+test('no values still produce a real axis, which is what an empty chart draws', () => {
+
+  const domain = arenaValuesDomain([]);
+  assert.equal(domain.min, 0);
+  assert.equal(domain.max, 1);
+  assert.deepEqual(arenaDomainTicks(domain), [0, 0.25, 0.5, 0.75, 1]);
 });

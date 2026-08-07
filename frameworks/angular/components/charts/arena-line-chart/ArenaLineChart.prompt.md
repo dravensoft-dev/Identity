@@ -17,7 +17,7 @@ and `tone` wins, because a chart carries identity or meaning, never both.
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `labels*` | array | `readonly string[]` |  | One label per point, in the same order as `values`. A label with no value at its index is dropped. |
-| `values*` | array | `readonly number[]` |  | The plotted data, in order. One point per entry; a negative value clamps to the baseline. |
+| `values*` | array | `readonly number[]` |  | The plotted data, in order. One point per entry. A negative value plots below the zero line, which the axis places on a tick rather than at the plot's foot, and an area fill crosses it rather than stopping there. |
 | `seriesLabel*` | primitive | `string` |  | Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. |
 | `slot` | primitive | `number` | `1` | The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. |
 | `tone` | enum | `ArenaSeriesTone` |  | Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. |

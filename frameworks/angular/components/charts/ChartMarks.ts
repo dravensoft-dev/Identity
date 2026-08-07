@@ -1,9 +1,15 @@
 import type { ArenaLinePoint } from './ChartScales';
 
-export function arenaBarPath(x: number, y: number, w: number, h: number, r: number): string {
-  const rr = Math.max(0, Math.min(r, w / 2, h));
-  return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y}`
-    + ` L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`;
+export function arenaBarPath(x: number, w: number, yValue: number, yZero: number, r: number): string {
+  const top = Math.min(yValue, yZero);
+  const bottom = Math.max(yValue, yZero);
+  const rr = Math.max(0, Math.min(r, w / 2, bottom - top));
+  if (yValue > yZero) {
+    return `M${x},${top} L${x},${bottom - rr} Q${x},${bottom} ${x + rr},${bottom}`
+      + ` L${x + w - rr},${bottom} Q${x + w},${bottom} ${x + w},${bottom - rr} L${x + w},${top} Z`;
+  }
+  return `M${x},${bottom} L${x},${top + rr} Q${x},${top} ${x + rr},${top}`
+    + ` L${x + w - rr},${top} Q${x + w},${top} ${x + w},${top + rr} L${x + w},${bottom} Z`;
 }
 
 export function arenaArcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number): string {

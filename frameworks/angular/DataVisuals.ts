@@ -117,14 +117,3 @@ export const ARENA_RAIL_STYLE = {
   overflowX: 'auto', overflowY: 'hidden', display: 'block',
 } as const satisfies Readonly<Record<string, string>>;
 
-export function arenaNiceMax(max: number): number {
-  if (!(max > 0)) return 1;
-  const mag = Math.pow(10, Math.floor(Math.log10(max)));
-  const norm = max / mag;
-  const step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
-  return step * mag;
-}
-
-export function arenaTicks(max: number, count = 4): number[] {
-  return Array.from({ length: count + 1 }, (_, i) => (max / count) * i);
-}

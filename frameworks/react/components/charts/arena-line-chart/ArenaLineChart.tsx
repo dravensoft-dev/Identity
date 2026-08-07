@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
-  arenaResolveColors, arenaCatColor, arenaNiceMax, arenaTicks, arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
+  arenaResolveColors, arenaCatColor, arenaSrOnly, arenaAreaFill, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
   ARENA_CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
 import {
-  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleZero, arenaValueY, arenaNearestPointIndex,
+  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaValuesDomain, arenaNearestPointIndex,
 } from '../ChartScales.ts';
 import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks.ts';
-import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
+import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import { arenaChartTable } from '../ChartSeries.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated.js';
@@ -22,7 +22,7 @@ export interface ArenaLineChartProps {
   /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
   labels: readonly string[];
 
-  /** The plotted data, in order. One point per entry; a negative value clamps to the baseline. */
+  /** The plotted data, in order. One point per entry. A negative value plots below the zero line, which the axis places on a tick rather than at the plot's foot, and an area fill crosses it rather than stopping there. */
   values: readonly number[];
 
   /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
@@ -79,15 +79,15 @@ export function ArenaLineChart({
 
   const [color = arenaCatColor(1)] = arenaResolveColors({ slot, tone, count: 1 });
 
-  const max = arenaNiceMax(Math.max(0, ...values));
+  const domain = arenaValuesDomain(values);
   const box = arenaPlotBox(width, height);
-  const yScale = arenaLinearScale(0, max, box.y + box.h, box.y);
+  const yScale = arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
   const xScale = arenaPointScale(n, box.x, box.w);
-  const baseline = arenaScaleZero(yScale);
+  const axis = arenaAxisModel(yScale, domain, fmt);
 
-  const plotted = values.map((v, i) => ({ x: arenaPointAt(xScale, i), y: arenaValueY(yScale, v) }));
+  const plotted = values.map((v, i) => ({ x: arenaPointAt(xScale, i), y: arenaScaleValue(yScale, v) }));
   const points = arenaLinePoints(plotted);
-  const areaPath = arenaLineAreaPath(plotted, baseline);
+  const areaPath = arenaLineAreaPath(plotted, axis.zeroY);
 
   const name = `${seriesLabel} — line chart`;
   const table = arenaChartTable('Point', seriesLabel, labels, values, fmt);
@@ -105,14 +105,14 @@ export function ArenaLineChart({
       <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
         role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
-        {arenaAxisTicks(yScale, arenaTicks(max), fmt).map((tick, i) => (
+        {axis.ticks.map((tick, i) => (
           <g key={i}>
             <line x1={box.x} x2={box.x + box.w} y1={tick.y} y2={tick.y} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
             <text x={arenaTickLabelX()} y={tick.y} textAnchor="end" dominantBaseline="middle"
               fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{tick.label}</text>
           </g>
         ))}
-        <line x1={box.x} x2={box.x + box.w} y1={baseline} y2={baseline} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
+        <line x1={box.x} x2={box.x + box.w} y1={axis.zeroY} y2={axis.zeroY} stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {}
         {area && n > 0 && (
@@ -120,7 +120,7 @@ export function ArenaLineChart({
         )}
 
         {hover !== null && (
-          <line x1={arenaPointAt(xScale, hover)} x2={arenaPointAt(xScale, hover)} y1={box.y} y2={baseline}
+          <line x1={arenaPointAt(xScale, hover)} x2={arenaPointAt(xScale, hover)} y1={box.y} y2={box.y + box.h}
             stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
         )}
 
@@ -152,7 +152,7 @@ export function ArenaLineChart({
           position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
-          ...arenaTooltipAnchor(arenaPointAt(xScale, hover), arenaValueY(yScale, values[hover])),
+          ...arenaTooltipAnchor(arenaPointAt(xScale, hover), arenaScaleValue(yScale, values[hover])),
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>

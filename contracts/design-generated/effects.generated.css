@@ -122,6 +122,12 @@
      Holds the category labels. This is a CONSEQUENCE of the type scale, not a
      chosen dimension: it is enough room for a label at --dz-text-2xs. If the type
      scale moves, revisit it; it will not fail loudly.
+     The labels stay on this edge whatever the data does, so a bar growing down from a
+     zero line above the floor runs toward them. That is deliberate: a reader looks for
+     category labels along the bottom, and moving them to follow the zero line would put
+     them somewhere different in every chart on a page. What it costs is a downward bar
+     reaching its label at the extreme of the axis, which is the price of one place to
+     look.
    */
   --chart-pad-bottom:28px;
   --chart-pad-left:44px; /* Holds the value labels. A consequence of the type scale, like pad-bottom. */

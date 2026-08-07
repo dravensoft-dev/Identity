@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import {
-  arenaResolveColors, arenaNiceMax, arenaTicks, arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
+  arenaResolveColors, arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
   ARENA_CHART_HEIGHT,
 } from '../../../DataVisuals.ts';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleZero, arenaValueY,
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleValue, arenaValuesDomain,
 } from '../ChartScales.ts';
 import { arenaBarPath } from '../ChartMarks.ts';
-import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
+import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import { arenaChartTable } from '../ChartSeries.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
 import { chartBarGap, chartBarRadius } from '../../../Tokens.generated.js';
@@ -22,7 +22,7 @@ export interface ArenaBarChartProps {
   /** One label per bar, in the same order as `values`. A label with no value at its index is dropped. */
   labels: readonly string[];
 
-  /** The plotted data. One bar per entry; a negative value clamps to the baseline. */
+  /** The plotted data. One bar per entry. A negative value grows downward from the zero line, which the axis places on a tick rather than at the plot's foot; the rounded end of a bar is always its data end. */
   values: readonly number[];
 
   /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
@@ -78,11 +78,11 @@ export function ArenaBarChart({
   }, [scrolls, width]);
   const colors = arenaResolveColors({ slot, slots, tone, count: n });
 
-  const max = arenaNiceMax(Math.max(0, ...values));
+  const domain = arenaValuesDomain(values);
   const box = arenaPlotBox(width, height);
-  const yScale = arenaLinearScale(0, max, box.y + box.h, box.y);
+  const yScale = arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
   const bands = arenaBandScale(n, box.x, box.w, chartBarGap);
-  const baseline = arenaScaleZero(yScale);
+  const axis = arenaAxisModel(yScale, domain, fmt);
 
   const name = `${seriesLabel} — bar chart`;
   const table = arenaChartTable('Category', seriesLabel, labels, values, fmt);
@@ -94,7 +94,7 @@ export function ArenaBarChart({
       <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name}
         onMouseLeave={() => setHover(null)} style={{ display: 'block', overflow: 'visible' }}>
         {}
-        {arenaAxisTicks(yScale, arenaTicks(max), fmt).map((tick, i) => (
+        {axis.ticks.map((tick, i) => (
           <g key={i}>
             <line x1={box.x} x2={box.x + box.w} y1={tick.y} y2={tick.y}
               stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
@@ -102,14 +102,14 @@ export function ArenaBarChart({
               fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{tick.label}</text>
           </g>
         ))}
-        <line x1={box.x} x2={box.x + box.w} y1={baseline} y2={baseline}
+        <line x1={box.x} x2={box.x + box.w} y1={axis.zeroY} y2={axis.zeroY}
           stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {values.map((v, i) => {
-          const y = arenaValueY(yScale, v);
+          const y = arenaScaleValue(yScale, v);
           return (
             <g key={i}>
-              <path d={arenaBarPath(arenaBandMark(bands, i), y, bands.band, baseline - y, chartBarRadius)} fill={colors[i]}
+              <path d={arenaBarPath(arenaBandMark(bands, i), bands.band, y, axis.zeroY, chartBarRadius)} fill={colors[i]}
                 opacity={hover === null || hover === i ? 1 : 0.55}
                 style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
               {
@@ -135,7 +135,7 @@ export function ArenaBarChart({
           position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
-          ...arenaTooltipAnchor(arenaBandCenter(bands, hover), arenaValueY(yScale, values[hover])),
+          ...arenaTooltipAnchor(arenaBandCenter(bands, hover), arenaScaleValue(yScale, values[hover])),
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>

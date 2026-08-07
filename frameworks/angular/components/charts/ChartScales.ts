@@ -18,6 +18,12 @@ export interface ArenaLinearScale {
   to: number;
 }
 
+export interface ArenaDomain {
+  min: number;
+  max: number;
+  step: number;
+}
+
 export interface ArenaBandScale {
   start: number;
   step: number;
@@ -52,8 +58,40 @@ export function arenaScaleZero(scale: ArenaLinearScale): number {
   return arenaScaleValue(scale, 0);
 }
 
-export function arenaValueY(scale: ArenaLinearScale, value: number): number {
-  return arenaScaleValue(scale, Math.max(0, value));
+export function arenaNiceMax(max: number): number {
+  if (!(max > 0)) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(max)));
+  const norm = max / mag;
+  const step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+  return step * mag;
+}
+
+export function arenaNiceDomain(min: number, max: number, count = 4): ArenaDomain {
+  if (min >= 0) {
+    const nice = arenaNiceMax(max);
+    return { min: 0, max: nice, step: nice / count };
+  }
+  const step = arenaNiceMax(Math.max(-min, max)) / count;
+  return {
+    min: -Math.ceil(-min / step) * step,
+    max: Math.ceil(Math.max(0, max) / step) * step,
+    step,
+  };
+}
+
+export function arenaValuesDomain(values: readonly number[], count = 4): ArenaDomain {
+  let min = 0;
+  let max = 0;
+  for (const value of values) {
+    if (value < min) min = value;
+    if (value > max) max = value;
+  }
+  return arenaNiceDomain(min, max, count);
+}
+
+export function arenaDomainTicks(domain: ArenaDomain): number[] {
+  const steps = Math.round((domain.max - domain.min) / domain.step);
+  return Array.from({ length: steps + 1 }, (_, index) => domain.min + domain.step * index);
 }
 
 export function arenaBandScale(count: number, start: number, span: number, gap: number): ArenaBandScale {

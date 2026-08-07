@@ -11,36 +11,62 @@ function controlPoints(d: string): [number, number][] {
   return [...d.matchAll(/Q(-?[\d.]+),(-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
 }
 
-test('arenaBarPath is square at the baseline and rounded only at the data end', () => {
-  const [x, y, w, h, r] = [10, 20, 30, 100, 6];
-  const d = arenaBarPath(x, y, w, h, r);
+test('arenaBarPath is square at the zero line and rounded only at the data end', () => {
+  const [x, w, yValue, yZero, r] = [10, 30, 20, 120, 6];
+  const d = arenaBarPath(x, w, yValue, yZero, r);
 
-  assert.ok(d.startsWith(`M${x},${y + h} `), `starts at the baseline: ${d}`);
-  assert.ok(d.includes(`L${x + w},${y + h} Z`), `closes along the baseline: ${d}`);
+  assert.ok(d.startsWith(`M${x},${yZero} `), `starts at the zero line: ${d}`);
+  assert.ok(d.includes(`L${x + w},${yZero} Z`), `closes along the zero line: ${d}`);
 
   const points = controlPoints(d);
   assert.equal(points.length, 2, 'exactly two rounded corners');
-  for (const [, py] of points) assert.equal(py, y, 'a curve control point is on the data end');
+  for (const [, py] of points) assert.equal(py, yValue, 'a curve control point is on the data end');
+});
+
+test('a bar below the zero line rounds its BOTTOM, because that is where its data ends', () => {
+
+  const [x, w, yZero, yValue, r] = [10, 30, 120, 200, 6];
+  const d = arenaBarPath(x, w, yValue, yZero, r);
+
+  assert.ok(d.startsWith(`M${x},${yZero} `), `starts at the zero line: ${d}`);
+  const points = controlPoints(d);
+  assert.equal(points.length, 2);
+  for (const [, py] of points) assert.equal(py, yValue, 'the curve sits on the data end, which is now the bottom');
+});
+
+test('the two directions are mirror images, so neither is the special case', () => {
+  const up = controlPoints(arenaBarPath(0, 20, 40, 100, 4)).map(([, y]) => y);
+  const down = controlPoints(arenaBarPath(0, 20, 160, 100, 4)).map(([, y]) => y);
+  assert.deepEqual(up, [40, 40]);
+  assert.deepEqual(down, [160, 160]);
+});
+
+test('a bar of no height still emits a path, so its hit target survives', () => {
+
+  const d = arenaBarPath(10, 30, 120, 120, 6);
+  assert.ok(d.startsWith('M10,120 '), d);
+  assert.ok(d.endsWith('Z'), d);
+  assert.ok(!d.includes('NaN'), d);
 });
 
 test('arenaBarPath never rounds wider than half the bar or taller than the bar', () => {
 
-  assert.equal(arenaBarPath(0, 0, 10, 100, 999), arenaBarPath(0, 0, 10, 100, 5), 'clamped to w / 2');
-  assert.equal(arenaBarPath(0, 0, 100, 3, 999), arenaBarPath(0, 0, 100, 3, 3), 'clamped to h');
+  assert.equal(arenaBarPath(0, 10, 0, 100, 999), arenaBarPath(0, 10, 0, 100, 5), 'clamped to w / 2');
+  assert.equal(arenaBarPath(0, 100, 0, 3, 999), arenaBarPath(0, 100, 0, 3, 3), 'clamped to the height');
 });
 
 test('arenaBarPath with no radius is a plain rectangle path', () => {
-  const [x, y, w, h] = [0, 0, 10, 40];
-  const d = arenaBarPath(x, y, w, h, -5);
+  const [x, w, yValue, yZero] = [0, 10, 0, 40];
+  const d = arenaBarPath(x, w, yValue, yZero, -5);
 
   const points = controlPoints(d);
   assert.equal(points.length, 2, 'exactly two corners');
-  const corners = [[x, y], [x + w, y]];
+  const corners = [[x, yValue], [x + w, yValue]];
   points.forEach(([px, py], i) => {
     assert.deepEqual([px, py], corners[i], `control point sits on the corner: ${d}`);
     assert.ok(d.includes(`${px},${py} ${px},${py}`), `endpoint collapses onto the same corner: ${d}`);
   });
-  assert.ok(d.startsWith(`M${x},${y + h} `));
+  assert.ok(d.startsWith(`M${x},${yZero} `));
 });
 
 function subpathCount(d: string): number {

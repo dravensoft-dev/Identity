@@ -19,7 +19,7 @@ Bars for comparing a value across categories. Dependency-free SVG: it reads `var
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
 | `labels*` | array | `readonly string[]` |  | One label per bar, in the same order as `values`. A label with no value at its index is dropped. |
-| `values*` | array | `readonly number[]` |  | The plotted data. One bar per entry; a negative value clamps to the baseline. |
+| `values*` | array | `readonly number[]` |  | The plotted data. One bar per entry. A negative value grows downward from the zero line, which the axis places on a tick rather than at the plot's foot; the rounded end of a bar is always its data end. |
 | `seriesLabel*` | primitive | `string` |  | Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. |
 | `slot` | primitive | `number` | `1` | One identity colour from the categorical ramp for the whole series. 1-based, clamped to the ramp, never cycled. |
 | `slots` | array | `readonly number[]` |  | Per-bar identity override, one ramp slot each. Wins over `slot`. |

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
-import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY, arenaDoughnutRadii } from './ChartAxis';
-import { arenaLinearScale } from './ChartScales';
+import { arenaPlotBox, arenaAxisTicks, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY, arenaDoughnutRadii } from './ChartAxis';
+import { arenaLinearScale, arenaNiceDomain } from './ChartScales';
 
 test('the tick label ends one label gap left of the plot, inside the left pad', () => {
   assert.equal(arenaTickLabelX(), ARENA_PAD.l - 8);
@@ -47,6 +47,28 @@ test('a tick is placed by the scale itself, never floored the way a datum is', (
 
 test('no ticks produce no lines, rather than one at the origin', () => {
   assert.deepEqual(arenaAxisTicks(arenaLinearScale(0, 100, 252, 8), [], String), []);
+});
+
+test('the axis model puts zeroY on the plot floor while the domain starts at zero', () => {
+  const domain = arenaNiceDomain(0, 128);
+  const model = arenaAxisModel(arenaLinearScale(domain.min, domain.max, 252, 8), domain, String);
+  assert.equal(model.zeroY, 252, 'the strong rule is the plot floor, which is what it always was');
+  assert.equal(model.ticks[0]?.y, 252, 'and the first tick lands on it');
+});
+
+test('the axis model lifts zeroY off the floor the moment a value goes negative', () => {
+
+  const domain = arenaNiceDomain(-20, 60);
+  const model = arenaAxisModel(arenaLinearScale(domain.min, domain.max, 252, 8), domain, String);
+  assert.ok(model.zeroY < 252 && model.zeroY > 8, `zeroY was ${model.zeroY}, not inside the plot`);
+  assert.ok(model.ticks.some((tick) => Math.abs(tick.y - model.zeroY) < 1e-9),
+    'the zero line must coincide with a tick, which is the whole point of the domain');
+});
+
+test('an all-negative domain puts zeroY at the plot ceiling', () => {
+  const domain = arenaNiceDomain(-30, 0);
+  const model = arenaAxisModel(arenaLinearScale(domain.min, domain.max, 252, 8), domain, String);
+  assert.equal(model.zeroY, 8);
 });
 
 test('the ring fits the smaller of the plot\'s two axes, inset so its stroke is not clipped', () => {

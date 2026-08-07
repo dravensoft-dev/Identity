@@ -4,14 +4,13 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
-  arenaValueWriter,
+  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaPlotWidth, arenaResolveColors, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleZero, arenaValueY,
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaScaleValue, arenaValuesDomain,
 } from '../ChartScales';
 import { arenaBarPath } from '../ChartMarks';
-import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
+import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import { arenaChartTable } from '../ChartSeries';
 import { arenaTooltipAnchor } from '../ChartTooltip';
 import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
@@ -55,7 +54,7 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
                 [style]="tickLabelStyle">{{ tick.label }}</text>
         </g>
       }
-      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="baseline()" [attr.y2]="baseline()"
+      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="zeroY()" [attr.y2]="zeroY()"
             stroke="var(--line-strong)" [style]="lineStyle" />
 
       @for (bar of bars(); track bar.index) {
@@ -97,7 +96,7 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
 export class ArenaBarChart {
   /** One label per bar, in the same order as `values`. A label with no value at its index is dropped. */
   readonly labels = input.required<readonly string[]>();
-  /** The plotted data. One bar per entry; a negative value clamps to the baseline. */
+  /** The plotted data. One bar per entry. A negative value grows downward from the zero line, which the axis places on a tick rather than at the plot's foot; the rounded end of a bar is always its data end. */
   readonly values = input.required<readonly number[]>();
   /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
   readonly seriesLabel = input.required<string>();
@@ -152,7 +151,7 @@ export class ArenaBarChart {
     return `${series} — bar chart`;
   });
 
-  private readonly max = computed(() => arenaNiceMax(Math.max(0, ...this.values())));
+  private readonly domain = computed(() => arenaValuesDomain(this.values()));
   private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
   protected readonly plotLeft = computed(() => this.box().x);
   protected readonly plotRight = computed(() => this.box().x + this.box().w);
@@ -161,7 +160,8 @@ export class ArenaBarChart {
 
   private readonly yScale = computed(() => {
     const box = this.box();
-    return arenaLinearScale(0, this.max(), box.y + box.h, box.y);
+    const domain = this.domain();
+    return arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
   });
 
   private readonly bands = computed(() => {
@@ -170,28 +170,28 @@ export class ArenaBarChart {
   });
 
   protected readonly step = computed(() => this.bands().step);
-  protected readonly baseline = computed(() => arenaScaleZero(this.yScale()));
 
-  protected readonly gridLines = computed(
-    () => arenaAxisTicks(this.yScale(), arenaTicks(this.max()), this.write()),
-  );
+  private readonly axis = computed(() => arenaAxisModel(this.yScale(), this.domain(), this.write()));
+
+  protected readonly zeroY = computed(() => this.axis().zeroY);
+  protected readonly gridLines = computed(() => this.axis().ticks);
 
   protected readonly bars = computed(() => {
     const values = this.values();
     const colors = arenaResolveColors({ slot: this.slot(), slots: this.slots(), tone: this.tone(), count: values.length });
     const bands = this.bands();
     const yScale = this.yScale();
-    const baseline = this.baseline();
+    const zeroY = this.zeroY();
     const write = this.write();
     return values.map((value, index) => {
-      const y = arenaValueY(yScale, value);
+      const y = arenaScaleValue(yScale, value);
       return {
         index,
         hitX: arenaBandStart(bands, index),
         midX: arenaBandCenter(bands, index),
         y,
         anchor: arenaTooltipAnchor(arenaBandCenter(bands, index), y),
-        path: arenaBarPath(arenaBandMark(bands, index), y, bands.band, baseline - y, BAR_RADIUS),
+        path: arenaBarPath(arenaBandMark(bands, index), bands.band, y, zeroY, BAR_RADIUS),
         color: colors[index],
         label: this.labels()[index] ?? '',
         value: write(value),

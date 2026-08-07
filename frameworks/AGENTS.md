@@ -219,6 +219,17 @@ an Angular template cannot call a closure held in a `computed()` without rebuild
 cycle. So `arenaLinearScale(min, max, from, to)` returns a record and `arenaScaleValue(scale,
 value)` reads it. A y axis passes an inverted pixel range, bottom first, which is why "up is
 more" needs no minus sign and `arenaScaleZero(scale)` falls out of the same arithmetic.
+**A domain carries its own step, and that is what puts zero on a tick.** An axis that has to
+hold a negative value cannot take its step from the count alone, because the two sides of zero
+are not the same size: `arenaNiceDomain(min, max)` picks one step from the larger magnitude and
+then rounds each end out to a whole number of steps, so zero lands exactly where a tick does and
+the strong rule has something to sit on. `arenaDomainTicks` reads the count back out of the
+domain rather than assuming four. A series with nothing below zero takes the branch that was
+always there and draws the axis it always drew, which is what pins the change to the charts that
+needed it. **`arenaScaleValue` does not clamp**: a scale maps, and where a value may not go is
+the caller's rule. The doughnut keeps its own floor, because a negative share of a whole is
+meaningless, and the bar and line charts lost theirs.
+
 **A shared appearance module is a manifest, and these charts have none by charter**, so the
 tooltip's arithmetic and its appearance part company. `ChartTooltip.ts` is paired and holds
 `arenaTooltipAnchor(x, y)`, which is where the hovered datum meets `--chart-tooltip-offset`; the

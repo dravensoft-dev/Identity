@@ -1,7 +1,7 @@
 import { ARENA_PAD } from '../../DataVisuals.ts';
 import { chartLabelGap, chartRingInset } from '../../Tokens.generated.js';
-import type { ArenaLinearScale } from './ChartScales.ts';
-import { arenaScaleValue } from './ChartScales.ts';
+import type { ArenaDomain, ArenaLinearScale } from './ChartScales.ts';
+import { arenaScaleValue, arenaScaleZero, arenaDomainTicks } from './ChartScales.ts';
 
 export interface ArenaPlotBox {
   x: number;
@@ -14,6 +14,11 @@ export interface ArenaAxisTick {
   value: number;
   y: number;
   label: string;
+}
+
+export interface ArenaAxisModel {
+  ticks: ArenaAxisTick[];
+  zeroY: number;
 }
 
 export function arenaPlotBox(width: number, height: number): ArenaPlotBox {
@@ -29,6 +34,15 @@ export function arenaAxisTicks(
   scale: ArenaLinearScale, values: readonly number[], write: (value: number) => string,
 ): ArenaAxisTick[] {
   return values.map((value) => ({ value, y: arenaScaleValue(scale, value), label: write(value) }));
+}
+
+export function arenaAxisModel(
+  scale: ArenaLinearScale, domain: ArenaDomain, write: (value: number) => string,
+): ArenaAxisModel {
+  return {
+    ticks: arenaAxisTicks(scale, arenaDomainTicks(domain), write),
+    zeroY: arenaScaleZero(scale),
+  };
 }
 
 export function arenaTickLabelX(): number {

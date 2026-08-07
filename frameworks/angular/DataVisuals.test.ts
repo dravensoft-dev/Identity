@@ -2,53 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ARENA_CAT_SLOTS, ARENA_CHART_HEIGHT, ARENA_PAD, ARENA_SR_ONLY,
-  arenaCatColor, arenaCatSlotFor, arenaCatSurface, arenaAreaFill, arenaToneColor, arenaResolveColors, arenaNiceMax, arenaTicks,
+  arenaCatColor, arenaCatSlotFor, arenaCatSurface, arenaAreaFill, arenaToneColor, arenaResolveColors,
 } from './DataVisuals';
 import type { ArenaSeriesTone, ArenaTone } from './Api.generated';
 import { forgetArenaWarnings } from './WarnOnce';
-
-test('arenaNiceMax returns 1 for every input that is not a positive number', () => {
-
-  for (const bad of [0, -0, -1, -1000, Number.NaN, -Infinity])
-    assert.equal(arenaNiceMax(bad), 1, `arenaNiceMax(${bad})`);
-});
-
-test('arenaNiceMax lands on each of the five steps at its own boundary', () => {
-  assert.equal(arenaNiceMax(1), 1);
-  assert.equal(arenaNiceMax(2), 2);
-  assert.equal(arenaNiceMax(2.5), 2.5);
-  assert.equal(arenaNiceMax(5), 5);
-  assert.equal(arenaNiceMax(10), 10);
-});
-
-test('arenaNiceMax steps up the moment a boundary is crossed', () => {
-  assert.equal(arenaNiceMax(1.01), 2);
-  assert.equal(arenaNiceMax(2.01), 2.5);
-  assert.equal(arenaNiceMax(2.51), 5);
-  assert.equal(arenaNiceMax(5.01), 10);
-});
-
-test('arenaNiceMax scales the same five steps across powers of ten', () => {
-  assert.equal(arenaNiceMax(0.4), 0.5);
-  assert.equal(arenaNiceMax(23), 25);
-  assert.equal(arenaNiceMax(230), 250);
-  assert.equal(arenaNiceMax(2300), 2500);
-  assert.equal(arenaNiceMax(7), 10);
-  assert.equal(arenaNiceMax(70), 100);
-  assert.equal(arenaNiceMax(7000), 10000);
-});
-
-test('arenaNiceMax never returns an axis top below the value it must hold', () => {
-
-  for (let v = 0.01; v < 100000; v *= 1.37)
-    assert.ok(arenaNiceMax(v) >= v, `arenaNiceMax(${v}) = ${arenaNiceMax(v)} is below ${v}`);
-});
-
-test('arenaTicks spans 0 to max inclusive and yields count + 1 values', () => {
-  assert.deepEqual(arenaTicks(100), [0, 25, 50, 75, 100]);
-  assert.deepEqual(arenaTicks(10, 2), [0, 5, 10]);
-  assert.equal(arenaTicks(7, 7).length, 8);
-});
 
 test('arenaCatColor reads the ramp token for an in-range slot', () => {
   for (let n = 1; n <= ARENA_CAT_SLOTS; n++) assert.equal(arenaCatColor(n), `var(--color-cat-${n})`);

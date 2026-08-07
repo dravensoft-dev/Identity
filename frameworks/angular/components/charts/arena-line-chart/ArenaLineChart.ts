@@ -4,14 +4,13 @@ import {
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaNiceMax, arenaPlotWidth, arenaResolveColors, arenaTicks,
-  arenaValueWriter,
+  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaAreaFill, arenaPlotWidth, arenaResolveColors, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleZero, arenaValueY, arenaNearestPointIndex,
+  arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaValuesDomain, arenaNearestPointIndex,
 } from '../ChartScales';
 import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks';
-import { arenaPlotBox, arenaAxisTicks, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
+import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import { arenaChartTable } from '../ChartSeries';
 import { arenaTooltipAnchor } from '../ChartTooltip';
 import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
@@ -56,7 +55,7 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
                 [style]="tickLabelStyle">{{ tick.label }}</text>
         </g>
       }
-      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="baseline()" [attr.y2]="baseline()"
+      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="zeroY()" [attr.y2]="zeroY()"
             stroke="var(--line-strong)" [style]="lineStyle" />
 
       @if (area() && points().length > 0) {
@@ -64,7 +63,7 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
       }
 
       @if (active(); as point) {
-        <line [attr.x1]="point.x" [attr.x2]="point.x" [attr.y1]="plotTop()" [attr.y2]="baseline()"
+        <line [attr.x1]="point.x" [attr.x2]="point.x" [attr.y1]="plotTop()" [attr.y2]="plotBottom()"
               stroke="var(--border-strong)" stroke-dasharray="3 3" [style]="lineStyle" />
       }
 
@@ -111,7 +110,7 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
 export class ArenaLineChart {
   /** One label per point, in the same order as `values`. A label with no value at its index is dropped. */
   readonly labels = input.required<readonly string[]>();
-  /** The plotted data, in order. One point per entry; a negative value clamps to the baseline. */
+  /** The plotted data, in order. One point per entry. A negative value plots below the zero line, which the axis places on a tick rather than at the plot's foot, and an area fill crosses it rather than stopping there. */
   readonly values = input.required<readonly number[]>();
   /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
   readonly seriesLabel = input.required<string>();
@@ -172,7 +171,7 @@ export class ArenaLineChart {
     return `${series} — line chart`;
   });
 
-  private readonly max = computed(() => arenaNiceMax(Math.max(0, ...this.values())));
+  private readonly domain = computed(() => arenaValuesDomain(this.values()));
   private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
   protected readonly plotLeft = computed(() => this.box().x);
   protected readonly plotRight = computed(() => this.box().x + this.box().w);
@@ -182,7 +181,8 @@ export class ArenaLineChart {
 
   private readonly yScale = computed(() => {
     const box = this.box();
-    return arenaLinearScale(0, this.max(), box.y + box.h, box.y);
+    const domain = this.domain();
+    return arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
   });
 
   private readonly xScale = computed(() => {
@@ -190,11 +190,11 @@ export class ArenaLineChart {
     return arenaPointScale(this.values().length, box.x, box.w);
   });
 
-  protected readonly baseline = computed(() => arenaScaleZero(this.yScale()));
+  private readonly axis = computed(() => arenaAxisModel(this.yScale(), this.domain(), this.write()));
 
-  protected readonly gridLines = computed(
-    () => arenaAxisTicks(this.yScale(), arenaTicks(this.max()), this.write()),
-  );
+  protected readonly zeroY = computed(() => this.axis().zeroY);
+  protected readonly plotBottom = computed(() => this.box().y + this.box().h);
+  protected readonly gridLines = computed(() => this.axis().ticks);
 
   protected readonly points = computed(() => {
     const values = this.values();
@@ -203,13 +203,13 @@ export class ArenaLineChart {
     const write = this.write();
     return values.map((value, index) => {
       const x = arenaPointAt(xScale, index);
-      const y = arenaValueY(yScale, value);
+      const y = arenaScaleValue(yScale, value);
       return { index, x, y, anchor: arenaTooltipAnchor(x, y), label: this.labels()[index] ?? '', formatted: write(value) };
     });
   });
 
   protected readonly polyline = computed(() => arenaLinePoints(this.points()));
-  protected readonly areaPath = computed(() => arenaLineAreaPath(this.points(), this.baseline()));
+  protected readonly areaPath = computed(() => arenaLineAreaPath(this.points(), this.zeroY()));
 
   protected readonly table = computed(() => arenaChartTable(
     'Point', this.seriesLabel(), this.labels(), this.values(), this.write(),
