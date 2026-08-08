@@ -68,8 +68,10 @@ if (pinned) {
 }
 
 const commit = git('rev-list', '-n1', tag);
-if (commit !== null
-  && check('tag exists', true, `${tag} -> ${commit.slice(0, 7)}`)) {
+const exists = check('tag exists', commit !== null, commit === null
+  ? `${tag} is not in this repository — git tag -a ${tag} -m "Arena ${tag}"`
+  : `${tag} -> ${commit.slice(0, 7)}`);
+if (exists && commit !== null) {
   const type = git('cat-file', '-t', git('rev-parse', tag) ?? '');
   check('tag is annotated', type === 'tag', `${type ?? 'unknown'}; the convention is annotated: git tag -a ${tag} -m "Arena ${tag}"`, false);
 

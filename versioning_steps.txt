@@ -18,7 +18,9 @@ README.md:8
 
 verify with: 
 bun scripts/check/arena/check-release.ts 
-(expected a failure with "tag exists")
+(expected: every other check PASS, and "tag exists" FAIL with the git tag -a line,
+ because the tag is the next step. A clean pass here would mean the gate is not
+ looking at the tag at all, which is a defect it has had before.)
 
 3. Generate git tag:
 
