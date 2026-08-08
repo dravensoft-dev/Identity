@@ -15,6 +15,18 @@ import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const COMPONENT_SOURCES = [
+  'frameworks/react/components/**/*.tsx', 'frameworks/angular/components/**/*.ts',
+  '!frameworks/**/*.generated.*',
+];
+
+export const node = {
+  name: 'generate:member-docs',
+  reads: ['contracts/api/components', 'frameworks/Components.json', ...COMPONENT_SOURCES],
+  writes: COMPONENT_SOURCES,
+  feeds: ['build:react-barrel', 'build:demos', 'build:angular-demo'],
+};
+
 export const MEMBER_START: Record<string, RegExp> = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
   angular: /^(\s*)(?:readonly\s+)([A-Za-z_$][\w$]*)(\s*=)/,

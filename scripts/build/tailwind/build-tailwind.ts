@@ -46,6 +46,26 @@ export const PRELUDE = `${CONSUME}/Prelude.generated.css`;
 export const BARREL = `${CONSUME}/Components.generated.css`;
 export const PREFLIGHT = `${CONSUME}/Preflight.generated.css`;
 
+export const node = {
+  name: 'build:tailwind',
+  reads: [
+    'frameworks/tailwind/Theme.css', 'frameworks/tailwind/Animations.css',
+    'frameworks/tailwind/ArenaStyles.ts', 'frameworks/tailwind/Tv.ts',
+    'frameworks/tailwind/Breakpoints.generated.css', 'contracts/design-generated',
+    'frameworks/**/*.manifest.json',
+  ],
+  writes: [
+    'frameworks/tailwind/Utilities.generated.css', PRELUDE, BARREL, PREFLIGHT,
+    `${CONSUME}/**/*.styles.generated.css`,
+    ...CONSUMING_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.manifest.generated.ts`),
+    ...CSS_CONSUMING_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.classes.generated.ts`),
+    ...CONSUMING_LAYERS.flatMap((layer) => [
+      `frameworks/${layer}/ArenaStyles.generated.ts`, `frameworks/${layer}/Tv.generated.ts`,
+    ]),
+  ],
+  feeds: ['build:react-barrel', 'build:demos', 'build:angular-demo'],
+};
+
 export function sheetPath(manifestFile: string) {
   return manifestFile
     .replace('frameworks/tailwind/components/', `${CONSUME}/components/`)

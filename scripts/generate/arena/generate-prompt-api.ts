@@ -16,6 +16,15 @@ import {
 } from './generate-skills.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const PROMPTS = CONSUMER_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.prompt.md`);
+
+export const node = {
+  name: 'generate:prompt-api',
+  reads: ['contracts/api/components', 'frameworks/Components.json', ...PROMPTS],
+  writes: PROMPTS,
+  feeds: [],
+};
+
 export const CONSUMER_DATA = 'Record<string, unknown>';
 
 export const OPEN_LINE = /^<!-- @api GENERATED from [^\n]*-->$/m;

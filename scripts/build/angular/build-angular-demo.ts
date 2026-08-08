@@ -19,6 +19,19 @@ const LAYER_ROOT = join(repoRoot, 'frameworks', 'angular');
 const EMIT_DIR = angularEmitRoot(join(repoRoot, PROJECT));
 const EMITTED = join(repoRoot, 'frameworks', 'angular', 'build');
 
+export const LAYER = 'frameworks/angular';
+
+export const node = {
+  name: 'build:angular-demo',
+  reads: [
+    `${LAYER}/components/**/*.ts`, `${LAYER}/components/**/*.html`,
+    `${LAYER}/playground/**/*.ts`,
+    `${LAYER}/*.ts`, `${LAYER}/tsconfig*.json`, 'package.json', 'bun.lock',
+  ],
+  writes: [`${LAYER}/build/demo/**`],
+  feeds: [],
+};
+
 export const ENTRY_SUFFIXES = ['.demo.entry.generated.js'];
 
 export const isEntry = (name: string, ext = '.js') => ENTRY_SUFFIXES.some((s) => name.endsWith(s.replace('.js', ext)));

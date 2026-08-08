@@ -24,10 +24,13 @@ case fails until it is argued for.
 | [`core/`](./core/AGENTS.md) | `contracts/` and `assets/`, which the design layer owns |
 | `react/`, `angular/`, `tailwind/` | empty; each layer's generated source is written by an `arena` script, because it lands in both layers at once |
 
-**Count them rather than reading a figure here**, and note the count answers a different
-question than the npm scripts do: `generate-api-types.ts` and `generate-member-docs.ts` are
-both reached by `generate:api`, so the file count exceeds the command count and neither is
-wrong. That domain's own table says which file each command runs.
+**Count them rather than reading a figure here.** The count and the npm script count agree for
+everything a run steps through, because each of those is one command and one file: `generate:api`
+is an alias that runs `generate:api-types`, `generate:member-docs` and `generate:prompt-api` in
+order, and each of those has its own entry. The alias stays because the three move together and
+a reader wants one name for that; `graph/nodes.ts:ALIASES` is where it is declared to be one, so
+`check:graph` counts the parts as nodes and the alias as neither. That domain's own table says
+which file each command runs.
 
 ```bash
 for d in angular arena core react tailwind; do

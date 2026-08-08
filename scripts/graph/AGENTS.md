@@ -7,9 +7,55 @@ judging.
 
 | module | answers |
 | --- | --- |
-| `pathspecs.ts` | what a declared spec reaches: `matchesSpec(spec, path)` and `resolveSpecs(specs, universe)` against a path list, plus `unreachedSpecs(specs, universe)`, which is how a spec matching nothing becomes a fact a caller reports. |
+| `graph.ts` | the algebra over the declared set, and nothing about where it came from: `needsOf`, `topoOrder`, `cyclePath`, `duplicateWriters`, `subscriptionProblems`, `unknownFeeds`, `selfFeeds`. Resolution is handed in, so it holds no table and imports no script. |
+| `nodes.ts` | the set itself: `collectedScripts(root)` walks the three phases and `allNodes(root)` imports each and keeps what exports a node. `NEVER_SUBSCRIBES` and `NOT_YET_SUBSCRIBED` say what is out. |
+| `pathspecs.ts` | what a declared spec reaches: `matchesSpec(spec, path)` and `resolveSpecs(specs, universe)` against a path list, plus `unreachedSpecs(specs, universe)` and `reachesNoDirectory(spec, universe)`, which is how a typo is told from a spec written ahead of the tree. |
 | `inputs.ts` | what a file is, as a fingerprint: `universe(root)` walks the tree once, `stampOf(path, previous)` filters on the stat and arbitrates on the hash, and `digestOf(paths, stamps)` folds a list into one value. |
 | `script-closure.ts` | every module under `scripts/` a script reaches: `relativeSpecifiers(source)` and `scriptClosure(entry, root)`. |
+| `graph-problems.ts` | everything `check:graph` asserts, so the gate under `check/arena/` is a print and an exit. |
+
+## A script subscribes by editing itself
+
+```ts
+export const node = {
+  name: 'generate:tokens',
+  reads:  SOURCES.map((source) => `contracts/design/${source}`),
+  writes: [...CSS_TARGETS, ...SCRIPT_TARGETS, BREAKPOINT_TARGET],
+  feeds:  ['build:tailwind', 'build:angular-demo'],
+};
+```
+
+`name` is the npm script, `reads` are the source pathspecs, `writes` are the artifacts, and
+`feeds` are the nodes that consume them. **Edges are declared downstream.** Everything reading the
+other direction goes through `graph.ts:needsOf(nodes)`, so a node is added by editing one file.
+
+**The declaration reuses the constants the script already has**, which is the whole reason it lives
+in the script and not in a table: a target list written twice drifts the first time one of them
+gains an entry. It is also why `allNodes()` imports rather than reading the text.
+
+`check:graph` joins the two halves. If B's `reads` meet A's `writes`, A lists B in `feeds`, and
+nothing else does. A `feeds` entry no artifact carries fails as well: an edge nobody maintains is
+the same defect read backwards.
+
+**`writes` meeting a node's own `reads` is the shape, not a defect.** `generate:member-docs` writes
+each contracted member's description into the component that declares it, and
+`generate:prompt-api` writes the `@api` region into the prompt it reads.
+
+**A spec opening with `!` excludes**, which is how a node claims a directory of hand-written
+sources without claiming the generated files beside them.
+
+## Two lists say what is out, and both are keyed by path
+
+A path is the key every script has and an npm name is not: `check-release.ts` and `fetch-fonts.ts`
+have none.
+
+`NEVER_SUBSCRIBES` names what will never join, each with its reason, and a key naming a directory
+covers everything under it. **Nothing in it is imported at all**, and `check-graph.ts` is why:
+collecting reaches the gate that is running, whose own guard correctly answers that it IS the
+program, so importing it makes it re-enter itself once per collection.
+
+`NOT_YET_SUBSCRIBED` names what has not joined yet. It is a count that goes to zero, and it exists
+so that a script in neither list is a decision nobody made rather than a default.
 
 ## Flat, and the reason is the opposite of `utils/`
 

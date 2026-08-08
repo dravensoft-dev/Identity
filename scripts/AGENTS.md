@@ -128,9 +128,14 @@ notices each missing piece.
 ## Adding a gate
 
 Put it in `check/<domain>/`, add it to `GATES` in `check/arena/check-all.ts` with its domain
-in the path, give it an npm script, and add a row to that domain's table.
-`check-all.test.ts` asserts every gate names one of the five domains, so a gate landing
-outside the grid fails rather than running unnoticed.
+in the path, give it an npm script, add a row to that domain's table, and either declare its
+node or name it in one of the two lists in `graph/nodes.ts`. `check-all.test.ts` asserts every
+gate names one of the five domains and `check:graph` asserts the fifth, so a gate landing
+outside the grid, or outside the graph without saying so, fails rather than running unnoticed.
+
+**A script under `build/`, `generate/` or `check/` does no work when it is imported.** The
+graph collects a node by importing the script that declares it, so the work goes in `main()`
+behind `isMainModule(import.meta.url)`; `check/arena/script-imports.test.ts` holds it.
 
 **A gate has two existences, the file and every place that invokes it, and only the second is
 worth anything.** Citing a gate as evidence means confirming it is in `GATES` first.
