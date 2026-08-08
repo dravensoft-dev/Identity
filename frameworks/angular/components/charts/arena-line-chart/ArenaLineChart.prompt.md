@@ -1,13 +1,24 @@
-Arena line chart, one series over time, hand-written SVG, every colour a token. An
-optional 18% area tint sits under the line. The crosshair snaps to the nearest point
-rather than drifting between them, and the numbers are also a real table for anyone who
-cannot see the line. Identity comes from `slot`, meaning from `tone`; passing both warns
-and `tone` wins, because a chart carries identity or meaning, never both.
+Arena line chart, a value over an ordered sequence, hand-written SVG, every colour a token.
+It takes series, one polyline each over the same sequence, and a series names itself. An
+optional 18% area tint sits under the line, for one series only. The crosshair snaps to the
+nearest point rather than drifting between them, and the numbers are also a real table for
+anyone who cannot see the line. Identity comes from a series' `slot`, meaning from its
+`tone`; passing both warns and `tone` wins, because a chart carries identity or meaning,
+never both.
+
+```ts
+readonly p95 = computed<ArenaSeries[]>(() => [{ label: 'p95 latency', values: this.latency(), slot: 3 }]);
+readonly percentiles = computed<ArenaSeries[]>(() => [
+  { label: 'p50', values: this.median() },
+  { label: 'p95', values: this.latency() },
+]);
+readonly errors = computed<ArenaSeries[]>(() => [{ label: 'Error rate', values: this.errorRate(), tone: 'danger' }]);
+```
 
 ```html
-<arena-line-chart [labels]="days" [values]="latency" seriesLabel="p95 latency" [slot]="3"
-                  [area]="true" />
-<arena-line-chart [labels]="days" [values]="errorRate" seriesLabel="Error rate" tone="danger" />
+<arena-line-chart label="Request latency" [labels]="days()" [series]="p95()" [area]="true" valueSuffix=" ms" />
+<arena-line-chart label="Request latency" [labels]="days()" [series]="percentiles()" valueSuffix=" ms" />
+<arena-line-chart label="Error budget" [labels]="days()" [series]="errors()" valueSuffix="%" />
 ```
 
 <!-- @api GENERATED from contracts/api/components/ArenaLineChart.json. Edit the contract, not this table. -->
@@ -33,7 +44,7 @@ so a unit written once appears everywhere. It is appended verbatim, write the sp
 yourself:
 
 ```html
-<arena-line-chart [labels]="days" [values]="latency" seriesLabel="p95" valueSuffix=" ms" />
+<arena-line-chart label="Request latency" [labels]="days()" [series]="p95()" valueSuffix=" ms" />
 ```
 
 `valuePrefix` is drawn before the number the same way, for a currency that precedes its
@@ -41,9 +52,9 @@ amount. Between them, `valueFormat` says how the number itself is written: the l
 fraction digits, whether thousands are grouped, whether large numbers compact to `48,2K`.
 Every field is data rather than a function, which is what keeps it a member at all, and
 `Intl.NumberFormat` does the work. Formatting the values before binding them is not an option
-and never was: what you bind is `number[]`, and the writing happens on labels Arena generates
-afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is the old
-behaviour.
+and never was: what you bind is `ArenaSeries[]`, and the writing happens on labels Arena
+generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is the
+old behaviour.
 
 The chart sizes itself to its container, give it a parent with a width (an
 `arena-chart-card` is the usual one) rather than setting a width on the chart. The host
@@ -51,21 +62,28 @@ is a block-level, positioned box: it is what gets measured, and it is what the h
 tooltip is positioned against.
 
 **Do / Don't**
-- Give `seriesLabel`, because it names the chart for a screen reader and titles the numbers
-  table underneath.
+- Give `label`, because it names the chart for a screen reader and captions the numbers
+  table underneath. Give every series its own `label` too: that one heads the series' own
+  column in the same table, and the two names are different things.
 - Use `area` for a volume or a total, not for a rate. A filled area says "this much of
   something"; a rate has nothing to fill.
 - Use `tone` only when the series genuinely *is* a state. A red line means "bad", and a
   red line that just means "the third series" makes the chart lie.
-- Don't plot two series by stacking two line charts. One axis, one series; two series
-  that share a scale need a chart Arena does not ship yet, and two that do not share one
-  are two charts.
-- Don't omit `labels` or `values`. Both are required inputs, Angular throws NG0950 on the
-  first read rather than drawing an empty box. A chart with no data is a caller bug, not a
-  state to render.
-- Don't pass more `labels` than `values`. A point is drawn per value and takes the label
-  at its own index, so a surplus label is silently dropped rather than drawn with no
-  point above it.
+- Don't plot two series by stacking two line charts. Put both in `series` and they share
+  one scale, one axis and one table. Two series that do *not* share a scale are two
+  charts, and no member will make them one.
+- Don't turn `area` on past one series. It is refused and warns in development, because
+  two fills occlude each other and the reader cannot tell which value either edge belongs to.
+- Don't omit `labels`, `series` or `label`. All three are required inputs, and Angular
+  throws NG0950 on the first read rather than drawing an empty box. A chart with no data
+  is a caller bug, not a state to render.
+- Don't pass more `labels` than a series has values. A point is drawn per value and takes
+  the label at its own index, so a surplus label is silently dropped rather than drawn with
+  no point above it. A series shorter than its neighbours ends its line there rather than
+  dropping to zero, because a missing number is not a zero.
+- Don't build the `series` array inline in the template if the data changes. A new array
+  literal on every change detection cycle is a new reference every cycle; hold it in a
+  `computed()` or a field so the chart re-reads only when the numbers actually move.
 - Don't express a condition as an attribute string. `area` carries the
   `booleanAttribute` transform, so a bare `area` and `[area]="true"` both mean true, and
   the one literal string `"false"` means false. Every *other* string is true, `"0"`,
@@ -84,8 +102,25 @@ is unreadable at any font size.
 Arena computes the minimum width from its own axis padding, so nothing outside needs to know
 what that padding is, and the rail is the chart's own box rather than the card's: an
 `arena-chart-card` around it needs no change. The rail carries `tabindex="0"` and a
-`role="group"` named after the chart, but only while it actually overflows, because a rail
-that fits is not a scroll region and a tab stop on it would be dead.
+`role="group"` named after the chart whether it overflows or not.
 
 `height` is the plot's height in px, the `--chart-height` token by default. It is a number
 rather than a length string, because the chart does arithmetic with it to place every mark.
+
+### Reading the line without a pointer
+
+The rail is one keyboard region and it is the plot's only tab stop. Inside it, Arrow Left and
+Arrow Right move a data cursor from point to point, clamping at the ends rather than wrapping,
+Home and End jump to the first and the last, and Escape clears it. The cursor drives exactly
+what hover drives: the enlarged point, the crosshair and the tooltip.
+
+Nothing inside the graphic is focusable, and that is deliberate rather than an omission. A
+`role="img"` subtree is presentational, so no ARIA on a mark inside it reaches a screen reader
+however correct it is. A screen reader gets the visually hidden table of the same numbers,
+which is already there; a sighted keyboard user gets the cursor. There is no third copy of the
+numbers for either of them to disagree with.
+
+On a touch screen the rule is tap to read, drag to scroll: a tap reads the point nearest the
+finger, a drag scrolls the rail, and a reading stays up until the next tap because a lifted
+finger has no leave event to clear it. Nothing captures the pointer and nothing calls
+`preventDefault`, so the page keeps scrolling over the chart the way it does over anything else.

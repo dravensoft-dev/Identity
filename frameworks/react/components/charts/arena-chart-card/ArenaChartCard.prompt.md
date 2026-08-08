@@ -2,11 +2,13 @@ The card a chart sits on: an uppercase muted microlabel, optional actions on the
 
 ```tsx
 <ArenaChartCard title="Deploys per day">
-  <ArenaBarChart labels={['Mon','Tue','Wed','Thu','Fri']} values={[12,19,9,22,17]} seriesLabel="Deploys" />
+  <ArenaBarChart label="Deploys per day" labels={['Mon','Tue','Wed','Thu','Fri']}
+    series={[{ label: 'Deploys', values: [12,19,9,22,17] }]} />
 </ArenaChartCard>
 
 <ArenaChartCard title="p95 latency" actions={<ArenaSelect options={ranges} value={range} onChange={setRange} />}>
-  <ArenaLineChart labels={days} values={latency} seriesLabel="ms" slot={5} area />
+  <ArenaLineChart label="p95 latency" labels={days}
+    series={[{ label: 'p95', values: latency, slot: 5 }]} area valueSuffix=" ms" />
 </ArenaChartCard>
 ```
 
@@ -23,7 +25,7 @@ The card a chart sits on: an uppercase muted microlabel, optional actions on the
 <!-- @api end -->
 
 **Do**
-- Let `title` name the series when there is only one; that is why a single-series chart draws no legend box.
+- Let `title` and the chart's own `label` say the same thing when the card holds one chart. They are not redundant: `title` is what a sighted reader sees on the tile, `label` is what a screen reader hears and what captions the numbers table, and neither is derivable from the other.
 - Keep `title` to a short uppercase microlabel, like every other label in Arena (H2/H6/H8).
 - Put the range picker or the export button in `actions`, not above the card.
 - Pass several controls as siblings, in a fragment. The head row and the actions row both

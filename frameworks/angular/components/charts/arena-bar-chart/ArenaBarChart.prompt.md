@@ -1,12 +1,24 @@
 Arena bar chart. One axis, hand-written SVG, every colour a token, so it re-themes
-with the rest of Arena and costs no dependency. Identity comes from `slot` (one colour
-for the series) or `slots` (a colour per bar, **in ramp order, never cycled**); meaning
-comes from `tone`. Passing both warns and `tone` wins, because a chart carries identity
-or meaning, never both.
+with the rest of Arena and costs no dependency. It takes series, and a series names
+itself. Identity comes from a series' `slot` (one colour for the whole series) or its
+`slots` (a colour per bar, **in ramp order, never cycled**); meaning comes from its
+`tone`. Passing both warns and `tone` wins, because a chart carries identity or meaning,
+never both. A series with no identity of its own takes the slot its position gives it,
+so two series are never the same colour by accident.
+
+```ts
+readonly deployments = computed<ArenaSeries[]>(() => [{ label: 'Deployments', values: this.counts(), slot: 1 }]);
+readonly latency = computed<ArenaSeries[]>(() => [
+  { label: 'p50', values: this.median() },
+  { label: 'p95', values: this.p95() },
+]);
+readonly health = computed<ArenaSeries[]>(() => [{ label: 'Errors', values: this.errors(), tone: 'danger' }]);
+```
 
 ```html
-<arena-bar-chart [labels]="weeks" [values]="counts" seriesLabel="Deployments" [slot]="1" />
-<arena-bar-chart [labels]="services" [values]="errors" seriesLabel="Errors" tone="danger" />
+<arena-bar-chart label="Deployments per week" [labels]="weeks()" [series]="deployments()" />
+<arena-bar-chart label="Latency by region" [labels]="regions()" [series]="latency()" valueSuffix=" ms" />
+<arena-bar-chart label="Build health" [labels]="services()" [series]="health()" />
 ```
 
 <!-- @api GENERATED from contracts/api/components/ArenaBarChart.json. Edit the contract, not this table. -->
@@ -31,7 +43,7 @@ so a unit written once appears everywhere. It is appended verbatim, write the sp
 yourself:
 
 ```html
-<arena-bar-chart [labels]="regions" [values]="latency" seriesLabel="p95" valueSuffix=" ms" />
+<arena-bar-chart label="Latency by region" [labels]="regions()" [series]="latency()" valueSuffix=" ms" />
 ```
 
 `valuePrefix` is drawn before the number the same way, for a currency that precedes its
@@ -39,9 +51,9 @@ amount. Between them, `valueFormat` says how the number itself is written: the l
 fraction digits, whether thousands are grouped, whether large numbers compact to `48,2K`.
 Every field is data rather than a function, which is what keeps it a member at all, and
 `Intl.NumberFormat` does the work. Formatting the values before binding them is not an option
-and never was: what you bind is `number[]`, and the writing happens on labels Arena generates
-afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is the old
-behaviour.
+and never was: what you bind is `ArenaSeries[]`, and the writing happens on labels Arena
+generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is the
+old behaviour.
 
 The chart sizes itself to its container, give it a parent with a width (an
 `arena-chart-card` is the usual one) rather than setting a width on the chart. The host
@@ -49,19 +61,25 @@ is a block-level, positioned box: it is what gets measured, and it is what the h
 tooltip is positioned against.
 
 **Do / Don't**
-- Give `seriesLabel`, because it names the chart for a screen reader and titles the numbers
-  table underneath.
+- Give `label`, because it names the chart for a screen reader and captions the numbers
+  table underneath. Give every series its own `label` too: that one heads the series' own
+  column in the same table, and the two names are different things.
 - Use `tone` only when the series genuinely *is* a state. A red bar means "bad", and a
   red bar that just means "the second category" makes the chart lie.
 - Don't pass a ninth `slots` entry expecting a ninth colour. The ramp is eight, in
   order; a ninth series folds into "Other" or becomes small multiples.
-- Don't add a second axis. Arena's charts are one axis, always.
-- Don't omit `labels` or `values`. Both are required inputs, Angular throws NG0950 on the
-  first read rather than drawing an empty box. A chart with no data is a caller bug, not a
-  state to render.
-- Don't pass more `labels` than `values`. A bar is drawn per value and takes the label
-  at its own index, so a surplus label is silently dropped rather than drawn without a
-  bar to sit under.
+- Don't add a second axis. Arena's charts are one axis, always. Several series on one
+  scale is what `series` is for; several that do not share a scale are several charts.
+- Don't omit `labels`, `series` or `label`. All three are required inputs, and Angular
+  throws NG0950 on the first read rather than drawing an empty box. A chart with no data
+  is a caller bug, not a state to render.
+- Don't pass more `labels` than a series has values. A bar is drawn per value and takes
+  the label at its own index, so a surplus label is silently dropped rather than drawn
+  without a bar to sit under. A series shorter than its neighbours simply stops: a
+  missing number is not a zero, so it draws no bar and leaves an empty cell in the table.
+- Don't build the `series` array inline in the template if the data changes. A new array
+  literal on every change detection cycle is a new reference every cycle; hold it in a
+  `computed()` or a field so the chart re-reads only when the numbers actually move.
 
 
 ### When the points stop fitting
@@ -75,8 +93,25 @@ is unreadable at any font size.
 Arena computes the minimum width from its own axis padding, so nothing outside needs to know
 what that padding is, and the rail is the chart's own box rather than the card's: an
 `arena-chart-card` around it needs no change. The rail carries `tabindex="0"` and a
-`role="group"` named after the chart, but only while it actually overflows, because a rail
-that fits is not a scroll region and a tab stop on it would be dead.
+`role="group"` named after the chart whether it overflows or not.
 
 `height` is the plot's height in px, the `--chart-height` token by default. It is a number
 rather than a length string, because the chart does arithmetic with it to place every mark.
+
+### Reading the bars without a pointer
+
+The rail is one keyboard region and it is the plot's only tab stop. Inside it, Arrow Left and
+Arrow Right move a data cursor from bar to bar, clamping at the ends rather than wrapping,
+Home and End jump to the first and the last, and Escape clears it. The cursor drives exactly
+what hover drives: the emphasised bar and its tooltip.
+
+Nothing inside the graphic is focusable, and that is deliberate rather than an omission. A
+`role="img"` subtree is presentational, so no ARIA on a mark inside it reaches a screen reader
+however correct it is. A screen reader gets the visually hidden table of the same numbers,
+which is already there; a sighted keyboard user gets the cursor. There is no third copy of the
+numbers for either of them to disagree with.
+
+On a touch screen the rule is tap to read, drag to scroll: a tap reads the bar under the
+finger, a drag scrolls the rail, and a reading stays up until the next tap because a lifted
+finger has no leave event to clear it. Nothing captures the pointer and nothing calls
+`preventDefault`, so the page keeps scrolling over the chart the way it does over anything else.

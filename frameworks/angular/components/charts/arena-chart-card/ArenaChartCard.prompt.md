@@ -6,7 +6,7 @@ own `role="img"`.
 ```html
 <arena-chart-card title="Deployments per week">
   <button actions mat-icon-button aria-label="Export"><i class="ph-bold ph-download-simple"></i></button>
-  <arena-bar-chart [labels]="weeks" [values]="counts" seriesLabel="Deployments" />
+  <arena-bar-chart label="Deployments per week" [labels]="weeks()" [series]="deployments()" />
 </arena-chart-card>
 ```
 
@@ -40,6 +40,10 @@ With neither, no empty row ships dead space above the chart.
   can never wrap and overflows the tile on a phone. `arena-page-head` says the same thing
   about the same slot.
 - Keep the title short and in the tile's own words. It is a label, not a sentence.
+- Let `title` and the chart's own `label` say the same thing when the card holds one chart.
+  They are not redundant: `title` is what a sighted reader sees on the tile, `label` is what
+  a screen reader hears and what captions the numbers table, and neither is derivable from
+  the other.
 - Don't put two charts in one card. A card is one question answered once.
 - Don't reach for this as a general card: that is `mat-card` wearing Arena.
 

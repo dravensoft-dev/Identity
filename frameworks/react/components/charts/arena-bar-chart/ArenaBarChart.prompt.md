@@ -2,13 +2,21 @@ Bars for comparing a value across categories. Dependency-free SVG: it reads `var
 
 ```tsx
 {/* identity: the default, one color for the whole series */}
-<ArenaBarChart labels={['Mon','Tue','Wed','Thu','Fri']} values={[12,19,9,22,17]} seriesLabel="Deploys" />
+<ArenaBarChart label="Deploys per day" labels={['Mon','Tue','Wed','Thu','Fri']}
+  series={[{ label: 'Deploys', values: [12,19,9,22,17] }]} />
 
 {/* identity: per-bar, when the bars are different things */}
-<ArenaBarChart labels={['Web','API','Worker']} values={[24,18,7]} slots={[1,2,3]} seriesLabel="Services" />
+<ArenaBarChart label="Load by service" labels={['Web','API','Worker']}
+  series={[{ label: 'Requests', values: [24,18,7], slots: [1,2,3] }]} />
+
+{/* two series: one group of bars per category, each series its own ramp slot */}
+<ArenaBarChart label="Latency by region" labels={['EU','US','APAC']}
+  series={[{ label: 'p50', values: [120,138,131] }, { label: 'p95', values: [240,262,255] }]}
+  valueSuffix=" ms" />
 
 {/* meaning: the series IS a state */}
-<ArenaBarChart labels={['Mon','Tue','Wed']} values={[2,5,1]} tone="danger" seriesLabel="Failed builds"
+<ArenaBarChart label="Build health" labels={['Mon','Tue','Wed']}
+  series={[{ label: 'Failed builds', values: [2,5,1], tone: 'danger' }]}
   valueSuffix=" builds" />
 ```
 
@@ -30,19 +38,20 @@ Bars for comparing a value across categories. Dependency-free SVG: it reads `var
 <!-- @api end -->
 
 **Do**
+- Give `label` and give every series its own `label`. They are two different names: `label` is the chart's, and it becomes the accessible name and the table caption; a series' `label` heads that series' column in the same table.
 - Default to one identity color for the series. Per-bar `slots` is for when each bar is genuinely a different thing, not for decoration.
 - Assign slots in order (1, 2, 3) and let a ninth category fold into "Other". The ramp is eight slots and is never cycled.
-- Reach for `tone` only when the series *is* a state: failed builds, error rate. That is what makes red mean red.
+- Reach for `tone` only when the series *is* a state: failed builds, error rate. That is what makes red mean red. It goes on the series, because it is that series that is a state.
 - Pass `valueSuffix` for units: the axis, the tooltip and the accessible table all carry it. It is appended verbatim, so write the space yourself: `" ms"`, but `"%"`.
 
 **Don't**
-- Don't pass `tone` together with `slot`/`slots`. A chart carries identity or meaning, never both; it warns in development and `tone` wins.
+- Don't pass `tone` together with `slot`/`slots` on one series. A chart carries identity or meaning, never both; it warns in development and `tone` wins.
 - Don't use status colors as series colors by hand. A series painted `--danger` reads as an error, and that is exactly the bug this API exists to prevent.
-- Don't reach past eight categories. Nine bars in eight slots means two of them lie about being the same.
+- Don't reach past eight categories, or past eight series. Nine bars in eight slots means two of them lie about being the same.
 - Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed.
-- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `number[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
-- Don't omit `labels` or `values`. Both are required props, `ArenaBarChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
-- Don't pass more `labels` than `values`. A bar is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn without a bar to sit under.
+- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `ArenaSeries[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
+- Don't omit `labels`, `series` or `label`. All three are required props, and `ArenaBarChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
+- Don't pass more `labels` than a series has values. A bar is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn without a bar to sit under. A series shorter than its neighbours simply stops: a missing number is not a zero, so it draws no bar and leaves an empty cell in the table.
 
 
 ### When the points stop fitting
@@ -56,8 +65,20 @@ font size.
 Arena computes the minimum width from its own axis padding, so nothing outside needs to know
 what that padding is, and the rail is the chart's own box rather than the card's: a
 `ArenaChartCard` around it needs no change. The rail takes `tabIndex={0}` and a `role="group"`
-named after the chart, but only while it actually overflows, because a rail that fits is not
-a scroll region and a tab stop on it would be dead.
+named after the chart whether it overflows or not.
 
 `height` is the plot's height in px, the `--chart-height` token by default. A number rather
 than a length string, because the chart does arithmetic with it to place every mark.
+
+### Reading the bars without a pointer
+
+The rail is one keyboard region and it is the plot's only tab stop. Inside it, Arrow Left and
+Arrow Right move a data cursor from bar to bar, clamping at the ends rather than wrapping,
+Home and End jump to the first and the last, and Escape clears it. The cursor drives exactly
+what hover drives: the emphasised bar and its tooltip.
+
+Nothing inside the graphic is focusable, and that is deliberate rather than an omission. A
+`role="img"` subtree is presentational, so no ARIA on a mark inside it reaches a screen
+reader however correct it is. A screen reader gets the visually hidden table of the same
+numbers, which is already there; a sighted keyboard user gets the cursor. There is no third
+copy of the numbers for either of them to disagree with.

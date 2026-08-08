@@ -1,15 +1,21 @@
 A line for a value over an ordered sequence, time, builds, releases. Hovering anywhere snaps a crosshair to the nearest point and shows its tooltip. Dependency-free SVG; it re-themes with the page for free.
 
 ```tsx
-<ArenaLineChart labels={days} values={[120,138,131,142,180,164,150]} seriesLabel="p95 ms" />
+<ArenaLineChart label="Request latency" labels={days}
+  series={[{ label: 'p95', values: [120,138,131,142,180,164,150] }]} valueSuffix=" ms" />
 
 {/* area: one series, a tint of the line */}
-<ArenaLineChart labels={days} values={latency} seriesLabel="p95 ms" slot={5} area
+<ArenaLineChart label="Request latency" labels={days}
+  series={[{ label: 'p95', values: latency, slot: 5 }]} area valueSuffix=" ms" />
+
+{/* two series: one polyline each over the same sequence, no area */}
+<ArenaLineChart label="Request latency" labels={days}
+  series={[{ label: 'p50', values: median }, { label: 'p95', values: latency }]}
   valueSuffix=" ms" />
 
 {/* meaning: the series IS a state */}
-<ArenaLineChart labels={days} values={errorRate} tone="danger" seriesLabel="Error rate"
-  valueSuffix="%" />
+<ArenaLineChart label="Error budget" labels={days}
+  series={[{ label: 'Error rate', values: errorRate, tone: 'danger' }]} valueSuffix="%" />
 ```
 
 <!-- @api GENERATED from contracts/api/components/ArenaLineChart.json. Edit the contract, not this table. -->
@@ -31,17 +37,18 @@ A line for a value over an ordered sequence, time, builds, releases. Hovering an
 <!-- @api end -->
 
 **Do**
+- Give `label` and give every series its own `label`. They are two different names: `label` is the chart's, and it becomes the accessible name and the table caption; a series' `label` heads that series' column in the same table.
 - Use a line for ordered data. If the categories have no order, bars compare them more honestly.
 - Turn `area` on for a single series to give the trend weight.
 - Pass `valueSuffix` so the axis, the tooltip and the accessible table all carry the unit. It is appended verbatim, so write the space yourself: `" ms"`, but `"%"`.
 
 **Don't**
-- Don't pass `tone` together with `slot`: identity or meaning, never both. It warns in development and `tone` wins.
-- Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed.
-- Don't stack `area` fills for several series, because they occlude each other and the reader cannot recover the values. Use plain lines, or small multiples.
-- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `number[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
-- Don't omit `labels` or `values`. Both are required props, `ArenaLineChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
-- Don't pass more `labels` than `values`. A point is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn with no point above it.
+- Don't pass `tone` together with `slot` on one series: identity or meaning, never both. It warns in development and `tone` wins.
+- Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed. Several series on one scale is what `series` is for; several series that do not share a scale are several charts.
+- Don't turn `area` on for more than one series. It is refused past one and warns in development, because two fills occlude each other and the reader cannot tell which value either edge belongs to. Use plain lines, or small multiples.
+- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `ArenaSeries[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
+- Don't omit `labels`, `series` or `label`. All three are required props, and `ArenaLineChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
+- Don't pass more `labels` than a series has values. A point is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn with no point above it. A series shorter than its neighbours ends its line there rather than dropping to zero, because a missing number is not a zero.
 
 
 ### When the points stop fitting
@@ -55,8 +62,20 @@ font size.
 Arena computes the minimum width from its own axis padding, so nothing outside needs to know
 what that padding is, and the rail is the chart's own box rather than the card's: a
 `ArenaChartCard` around it needs no change. The rail takes `tabIndex={0}` and a `role="group"`
-named after the chart, but only while it actually overflows, because a rail that fits is not
-a scroll region and a tab stop on it would be dead.
+named after the chart whether it overflows or not.
 
 `height` is the plot's height in px, the `--chart-height` token by default. A number rather
 than a length string, because the chart does arithmetic with it to place every mark.
+
+### Reading the line without a pointer
+
+The rail is one keyboard region and it is the plot's only tab stop. Inside it, Arrow Left and
+Arrow Right move a data cursor from point to point, clamping at the ends rather than wrapping,
+Home and End jump to the first and the last, and Escape clears it. The cursor drives exactly
+what hover drives: the enlarged point, the crosshair and the tooltip.
+
+Nothing inside the graphic is focusable, and that is deliberate rather than an omission. A
+`role="img"` subtree is presentational, so no ARIA on a mark inside it reaches a screen
+reader however correct it is. A screen reader gets the visually hidden table of the same
+numbers, which is already there; a sighted keyboard user gets the cursor. There is no third
+copy of the numbers for either of them to disagree with.
