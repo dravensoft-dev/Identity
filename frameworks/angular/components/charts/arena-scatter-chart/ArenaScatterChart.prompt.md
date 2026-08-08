@@ -17,6 +17,8 @@ readonly clouds = computed<ArenaPointSeries[]>(() => [
 | `label*` | primitive | `string` |  | Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing. |
 | `xLabel*` | primitive | `string` |  | Names the horizontal quantity, for the accessible table's column. Required, because unlike every other chart here both axes carry a quantity a reader cannot derive: a bar chart's categories name themselves through `labels` and its value axis is the one thing being measured, while a scatter measures two things and a table of bare X and Y columns says which is which to nobody. |
 | `yLabel*` | primitive | `string` |  | Names the vertical quantity, for the accessible table's column. Required for the reason xLabel is. |
+| `sizeLabel` | primitive | `string` |  | Names the quantity a series' `r` carries, for the accessible table's third column. Required as soon as any series carries one, and guarded at render rather than declared required, because a scatter with no sizes has no third quantity to name and a member that is required only sometimes cannot say so in a contract. A column headed "Size" would satisfy the table mechanically and tell a reader nothing, which is the same reason `label` is guarded. |
+| `sizeLegend` | primitive | `boolean` | `false` | Draw a key of three sample bubbles, at the smallest, middle and largest size the data carries, under the series names. Without it a reader can see that one blot is bigger and cannot say by how much, because area is the one encoding nobody reads off a scale by eye. It costs plot height, like the series strip and for the same reason, and it is off by default so a scatter with no sizes never pays for it. |
 | `valueSuffix` | primitive | `string` |  | Appended verbatim to every number the chart draws: both axes' ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. It reaches BOTH axes, so leave it off when the two quantities are not in the same unit, which on a scatter is the common case. |
 | `valuePrefix` | primitive | `string` |  | Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it, and on both axes for the same reason. |
 | `valueFormat` | object | `ArenaNumberFormat` |  | How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number. |
@@ -64,3 +66,29 @@ sequence where there are several, and a scatter has no sequence of its own.
 
 ArrowLeft and ArrowRight move it, Home and End jump to the ends, Escape clears it. The vertical
 pair does nothing and is not consumed, so the page keeps its own scroll.
+
+### A third quantity, as the size of the mark
+
+A series that carries `r` turns this into a bubble chart. It is a third parallel array, paired
+with `x` and `y` at the same index, for the reason those two are arrays and not an array of pairs.
+
+**The mapping is by area, not by radius**, and that is the whole of the member. A reader compares
+the blot, and doubling a radius quadruples the blot, so mapping the value onto the radius directly
+would show a value four times larger as sixteen times the ink. `arenaRadiusAt` interpolates the
+squared radius instead, so four times the value really is four times the area, and the suite
+asserts that ratio rather than a table of radii.
+
+`sizeLabel` becomes required the moment any series carries `r`. It is guarded at render rather
+than declared required in the contract, because a scatter with no sizes has no third quantity to
+name and a member required only sometimes cannot say so in a contract. A column headed "Size"
+would satisfy the table mechanically and tell a reader nothing, which is the reason `label` is
+guarded too.
+
+A size that is absent, at the series or at one index, leaves the mark at the plain point radius
+and its table cell empty. An unmeasured size is not a size of zero, and the mark keeps its place
+because its POSITION was measured.
+
+`sizeLegend` draws three sample bubbles under the series names, at the smallest, middle and
+largest size in the data. Reach for it whenever `r` is doing real work: area is the one encoding
+nobody reads off a scale by eye, so without a key a reader can see that one blot is bigger and
+cannot say by how much. It costs plot height, like the series strip and for the same reason.

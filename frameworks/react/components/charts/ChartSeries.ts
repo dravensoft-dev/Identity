@@ -187,18 +187,48 @@ export function arenaPointSeriesColor(series: ArenaPointSeries, fallbackSlot: nu
   return arenaCatColor(slot ?? fallbackSlot);
 }
 
+export function arenaPointSized(series: readonly ArenaPointSeries[]): boolean {
+  for (const one of series) if (one.r !== undefined && one.r.length > 0) return true;
+  return false;
+}
+
+export function arenaPointSizeRange(series: readonly ArenaPointSeries[]): { min: number; max: number } {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const one of series) {
+    if (one.r === undefined) continue;
+    const pairs = Math.min(one.x.length, one.y.length, one.r.length);
+    for (let index = 0; index < pairs; index += 1) {
+      const size = one.r[index] as number;
+      if (size < min) min = size;
+      if (size > max) max = size;
+    }
+  }
+  if (!(min <= max)) return { min: 0, max: 0 };
+  return { min, max };
+}
+
 export function arenaPointTable(
   series: readonly ArenaPointSeries[],
   xHeading: string,
   yHeading: string,
+  sizeHeading: string,
   write: (value: number) => string,
 ): ArenaChartTable {
+  const sized = arenaPointSized(series);
   const rows: ArenaChartTableRow[] = [];
   for (const one of series) {
     const pairs = Math.min(one.x.length, one.y.length);
     for (let index = 0; index < pairs; index += 1) {
-      rows.push({ header: one.label, cells: [write(one.x[index] as number), write(one.y[index] as number)] });
+      const cells = [write(one.x[index] as number), write(one.y[index] as number)];
+      if (sized) {
+        const size = one.r === undefined ? undefined : one.r[index];
+        cells.push(size === undefined ? '' : write(size));
+      }
+      rows.push({ header: one.label, cells });
     }
   }
-  return { columns: ['Series', xHeading, yHeading], rows };
+  const columns = ['Series', xHeading, yHeading];
+  if (sized) columns.push(sizeHeading);
+  return { columns, rows };
 }

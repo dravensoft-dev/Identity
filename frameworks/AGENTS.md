@@ -352,6 +352,19 @@ So the pairing is by index, which is the pairing `labels` and `values` already m
 chart, with the same rule when the two do not line up: a mark is drawn only where both arrays have
 a value, because a pair with half a coordinate is not a point.
 
+**A bubble maps its value onto AREA and never onto the radius.** A reader compares the blot, and
+doubling a radius quadruples it, so a value four times larger drawn at four times the radius shows
+as sixteen times the ink. `arenaRadiusAt` interpolates the squared radius between
+`chart.bubble-r-min` and `chart.bubble-r-max`, and its suite asserts the ratio rather than a table
+of radii, because a table of radii is what would have let the linear version pass. It is the same
+class of lie the monotone curve refuses and the mirrored pyramid axis refuses: a drawing that
+says something the numbers do not.
+
+**A member required only sometimes is guarded at render and not declared in the contract.**
+`sizeLabel` becomes required the moment any series carries `r`, and a contract has no way to say
+that. The guard throws with the reason, the way `label` does, rather than falling back to a
+heading that satisfies the table mechanically and names the quantity to nobody.
+
 **A cursor over marks with no sequence walks them in the order the table lists them.** A scatter
 has no order of its own, so the cursor goes series by series and within a series in the order
 given, which is exactly what `arenaPointTable` emits. Sorting by x was weighed and refused: it

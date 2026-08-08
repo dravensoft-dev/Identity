@@ -1,12 +1,15 @@
 import {
-  ChangeDetectionStrategy, Component, computed, input, signal,
+  ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal,
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import { ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaValueWriter } from '../../../DataVisuals';
-import { arenaLinearScale, arenaScaleValue, arenaNearestPoint } from '../ChartScales';
+import {
+  arenaLinearScale, arenaScaleValue, arenaNearestPoint, arenaRadiusScale, arenaRadiusAt,
+} from '../ChartScales';
 import { arenaPlotBox, arenaAxisModel, arenaAxisModelX, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import {
   arenaPointCount, arenaPointSeriesDomain, arenaPointSeriesColor, arenaPointTable,
+  arenaPointSized, arenaPointSizeRange,
 } from '../ChartSeries';
 import { arenaLegendStrip } from '../ChartLegend';
 import { arenaTooltipAnchor } from '../ChartTooltip';
@@ -69,7 +72,7 @@ const MARK_STYLE = {
 
       @for (mark of marks(); track mark.key) {
         <circle [attr.cx]="mark.cx" [attr.cy]="mark.cy"
-                [attr.r]="hover() === mark.key ? pointRHover : pointR"
+                [attr.r]="hover() === mark.key ? mark.r + (pointRHover - pointR) : mark.r"
                 [attr.fill]="mark.color" stroke="var(--surface-card)"
                 [attr.opacity]="hover() === null || hover() === mark.key ? 1 : 0.55"
                 [style]="markStyle" />
@@ -92,11 +95,28 @@ const MARK_STYLE = {
       </div>
     }
 
+    @if (sizeKey(); as keys) {
+      <div aria-hidden="true" [style]="legendStripStyle" [style.height.px]="sizeH()">
+        @for (key of keys; track key.index) {
+          <span [style]="legendItemStyle">
+            <svg [attr.width]="sizeH()" [attr.height]="sizeH()" style="display:block;flex-shrink:0">
+              <circle [attr.cx]="sizeH() / 2" [attr.cy]="sizeH() / 2" [attr.r]="key.r"
+                      fill="none" stroke="var(--border-strong)" [style]="lineStyle" />
+            </svg>
+            <span [style]="legendLabelStyle">{{ key.label }}</span>
+          </span>
+        }
+      </div>
+    }
+
     @if (active(); as point) {
       <div [style]="tooltipStyle" [style.left.px]="point.anchor.left" [style.top]="point.anchor.top">
         <div [style]="tooltipLabelStyle">{{ point.series }}</div>
         <div [style]="tooltipValueStyle">{{ xLabel() }}: {{ point.x }}</div>
         <div [style]="tooltipValueStyle">{{ yLabel() }}: {{ point.y }}</div>
+        @if (point.size) {
+          <div [style]="tooltipValueStyle">{{ sizeLabel() }}: {{ point.size }}</div>
+        }
       </div>
     }
 
@@ -120,6 +140,10 @@ export class ArenaScatterChart {
   readonly xLabel = input.required<string>();
   /** Names the vertical quantity, for the accessible table's column. Required for the reason xLabel is. */
   readonly yLabel = input.required<string>();
+  /** Names the quantity a series' `r` carries, for the accessible table's third column. Required as soon as any series carries one, and guarded at render rather than declared required, because a scatter with no sizes has no third quantity to name and a member that is required only sometimes cannot say so in a contract. A column headed "Size" would satisfy the table mechanically and tell a reader nothing, which is the same reason `label` is guarded. */
+  readonly sizeLabel = input<string>();
+  /** Draw a key of three sample bubbles, at the smallest, middle and largest size the data carries, under the series names. Without it a reader can see that one blot is bigger and cannot say by how much, because area is the one encoding nobody reads off a scale by eye. It costs plot height, like the series strip and for the same reason, and it is off by default so a scatter with no sizes never pays for it. */
+  readonly sizeLegend = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws: both axes' ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. It reaches BOTH axes, so leave it off when the two quantities are not in the same unit, which on a scatter is the common case. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it, and on both axes for the same reason. */
@@ -158,7 +182,24 @@ export class ArenaScatterChart {
   });
 
   private readonly domains = computed(() => arenaPointSeriesDomain(this.series()));
-  private readonly strip = computed(() => arenaLegendStrip(this.height(), this.series().length));
+  protected readonly sized = computed(() => arenaPointSized(this.series()));
+  private readonly sizes = computed(() => arenaPointSizeRange(this.series()));
+  private readonly rScale = computed(() => arenaRadiusScale(this.sizes().min, this.sizes().max));
+  protected readonly showsKey = computed(() => this.sized() && this.sizeLegend());
+  private readonly strip = computed(
+    () => arenaLegendStrip(this.height(), this.series().length, this.showsKey()),
+  );
+  protected readonly sizeH = computed(() => this.strip().sizeH);
+
+  protected readonly sizeKey = computed(() => {
+    if (!this.showsKey()) return null;
+    const scale = this.rScale();
+    const write = this.write();
+    const { min, max } = this.sizes();
+    return [min, (min + max) / 2, max].map((size, index) => ({
+      index, r: arenaRadiusAt(scale, size), label: write(size),
+    }));
+  });
   protected readonly plotH = computed(() => this.strip().plotH);
   protected readonly stripH = computed(() => this.strip().stripH);
   private readonly box = computed(() => arenaPlotBox(this.width(), this.strip().plotH));
@@ -199,22 +240,27 @@ export class ArenaScatterChart {
     const yScale = this.yScale();
     const colors = this.colors();
     const write = this.write();
+    const rScale = this.rScale();
     const out: Array<{
-      key: number; cx: number; cy: number; color: string; series: string; x: string; y: string;
+      key: number; cx: number; cy: number; r: number; color: string; series: string;
+      x: string; y: string; size: string;
     }> = [];
     this.series().forEach((one, index) => {
       const pairs = Math.min(one.x.length, one.y.length);
       for (let i = 0; i < pairs; i += 1) {
         const x = one.x[i] as number;
         const y = one.y[i] as number;
+        const size = one.r === undefined ? undefined : one.r[i];
         out.push({
           key: out.length,
           cx: arenaScaleValue(xScale, x),
           cy: arenaScaleValue(yScale, y),
+          r: size === undefined ? chartPointR : arenaRadiusAt(rScale, size),
           color: colors[index] as string,
           series: one.label,
           x: write(x),
           y: write(y),
+          size: size === undefined ? '' : write(size),
         });
       }
     });
@@ -228,7 +274,7 @@ export class ArenaScatterChart {
   });
 
   protected readonly table = computed(() => arenaPointTable(
-    this.series(), this.xLabel(), this.yLabel(), this.write(),
+    this.series(), this.xLabel(), this.yLabel(), this.sizeLabel() ?? '', this.write(),
   ));
 
   protected readonly active = computed(() => {

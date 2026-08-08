@@ -1,6 +1,6 @@
 {
   "component": "ArenaScatterChart",
-  "description": "Two quantities against each other, one mark per pair. The first chart here whose horizontal axis carries a value rather than a position, which is why it takes a series of pairs and names both of its axes. Dependency-free SVG with a visually-hidden table of the same numbers.",
+  "description": "Two quantities against each other, one mark per pair, and a third as the mark's size when a series carries one. The first chart here whose horizontal axis carries a value rather than a position, which is why it takes a series of parallel measurements and names every axis it draws. Dependency-free SVG with a visually-hidden table of the same numbers.",
   "affordances": [
     "hover"
   ],
@@ -28,6 +28,17 @@
       "type": "string",
       "required": true,
       "description": "Names the vertical quantity, for the accessible table's column. Required for the reason xLabel is."
+    },
+    "sizeLabel": {
+      "form": "primitive",
+      "type": "string",
+      "description": "Names the quantity a series' `r` carries, for the accessible table's third column. Required as soon as any series carries one, and guarded at render rather than declared required, because a scatter with no sizes has no third quantity to name and a member that is required only sometimes cannot say so in a contract. A column headed \"Size\" would satisfy the table mechanically and tell a reader nothing, which is the same reason `label` is guarded."
+    },
+    "sizeLegend": {
+      "form": "primitive",
+      "type": "boolean",
+      "default": false,
+      "description": "Draw a key of three sample bubbles, at the smallest, middle and largest size the data carries, under the series names. Without it a reader can see that one blot is bigger and cannot say by how much, because area is the one encoding nobody reads off a scale by eye. It costs plot height, like the series strip and for the same reason, and it is off by default so a scatter with no sizes never pays for it."
     },
     "valueSuffix": {
       "form": "primitive",

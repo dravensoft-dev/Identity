@@ -4,7 +4,7 @@ import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
 import { chartBarGap, chartSeriesGap } from '../../Tokens.generated';
 import {
   arenaLinearScale, arenaScaleValue, arenaScaleInvert, arenaScaleZero,
-  arenaNiceStep, arenaNiceDomain, arenaDomainTicks,
+  arenaNiceStep, arenaNiceDomain, arenaDomainTicks, arenaRadiusScale, arenaRadiusAt,
   arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaBandSubBand,
   arenaPointScale, arenaPointAt, arenaNearestPointIndex, arenaDoughnutSlices,
 } from './ChartScales';
@@ -440,4 +440,45 @@ test('every lane stays inside the band it belongs to', () => {
     assert.ok(sub.x >= arenaBandStart(bands, 2), `lane ${s} starts before its band`);
     assert.ok(sub.x + sub.width <= arenaBandStart(bands, 2) + bands.step + 1e-9, `lane ${s} runs past its band`);
   }
+});
+
+test('a bubble maps by AREA, so four times the value is four times the blot', () => {
+
+  const scale = arenaRadiusScale(0, 100);
+  const small = arenaRadiusAt(scale, 25);
+  const large = arenaRadiusAt(scale, 100);
+  const area = (r: number) => Math.PI * r * r;
+  const floor = area(scale.rMin);
+  assert.ok(Math.abs((area(large) - floor) / (area(small) - floor) - 4) < 1e-6,
+    `four times the value drew ${((area(large) - floor) / (area(small) - floor)).toFixed(2)} times the blot`);
+});
+
+test('mapping the radius linearly instead would have exaggerated the large value fourfold', () => {
+
+  const scale = arenaRadiusScale(0, 100);
+  const byArea = arenaRadiusAt(scale, 25);
+  const byRadius = scale.rMin + 0.25 * (scale.rMax - scale.rMin);
+  assert.ok(byArea > byRadius,
+    'a quarter of the value is MORE than a quarter of the way up the radius, which is the whole correction');
+});
+
+test('a bubble never leaves the range its two tokens name, whatever it is handed', () => {
+
+  const scale = arenaRadiusScale(10, 90);
+  for (const value of [-1000, 0, 10, 50, 90, 1000]) {
+    const r = arenaRadiusAt(scale, value);
+    assert.ok(r >= scale.rMin - 1e-9 && r <= scale.rMax + 1e-9, `value ${value} drew a radius of ${r}`);
+  }
+});
+
+test('one size in the data draws every bubble at the largest, rather than dividing by nothing', () => {
+
+  const scale = arenaRadiusScale(7, 7);
+  assert.equal(arenaRadiusAt(scale, 7), scale.rMax);
+});
+
+test('the ends of the range land exactly on the two tokens', () => {
+  const scale = arenaRadiusScale(2, 40);
+  assert.ok(Math.abs(arenaRadiusAt(scale, 2) - scale.rMin) < 1e-9);
+  assert.ok(Math.abs(arenaRadiusAt(scale, 40) - scale.rMax) < 1e-9);
 });

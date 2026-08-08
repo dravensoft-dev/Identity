@@ -72,6 +72,16 @@
       "$description": "Between the mark under the pointer and the tooltip's near edge. Not script-readable:\nthe chart interpolates the mark's own y into a calc() and CSS subtracts this from it, so\nthe stylesheet is what consumes the token. It settles a disagreement rather than recording\none: the bar chart offset its tooltip by --sp-2 and the line chart by 2.5 steps of --sp-1,\nwhich is 10px against 8px for the same affordance. Naming it moves the line chart's tooltip\n2px, and that is a visible design change taken deliberately, the same way chart.bar-radius\nrefuses to snap to --r-sm because doing so would be one.",
       "$extensions": { "com.dravensoft.arena": {} }
     },
+    "bubble-r-min": {
+      "$value": { "value": 4, "unit": "px" },
+      "$description": "A bubble at the smallest value it carries. Equals point-r, deliberately: a bubble\nchart with one size in it is a scatter, and it should draw like one rather than jumping to\nsome other mark size the moment a third column appears.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "bubble-r-max": {
+      "$value": { "value": 16, "unit": "px" },
+      "$description": "A bubble at the largest value it carries. The pair is a RADIUS range and the\nmapping between them is by area, not by radius: doubling a radius quadruples the blot, and a\nreader compares the blot, so a linear radius exaggerates the large value by a factor of four.\nSixteen is what fits the size key beside the series names without either crowding the other,\nand it is a chosen dimension rather than a consequence, unlike the pads.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
     "legend-min": {
       "$value": { "value": 120, "unit": "px" },
       "$description": "Doughnut legend, narrowest.",

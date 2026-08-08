@@ -1,3 +1,4 @@
+import { chartBubbleRMin, chartBubbleRMax } from '../../Tokens.generated';
 export interface ArenaLinePoint {
   x: number;
   y: number;
@@ -165,4 +166,23 @@ export function arenaNearestPoint(points: readonly ArenaLinePoint[], x: number, 
     }
   });
   return best;
+}
+
+export interface ArenaRadiusScale {
+  min: number;
+  max: number;
+  rMin: number;
+  rMax: number;
+}
+
+export function arenaRadiusScale(min: number, max: number): ArenaRadiusScale {
+  return { min, max, rMin: chartBubbleRMin, rMax: chartBubbleRMax };
+}
+
+export function arenaRadiusAt(scale: ArenaRadiusScale, value: number): number {
+  const span = scale.max - scale.min;
+  const t = span === 0 ? 1 : (value - scale.min) / span;
+  const held = t < 0 ? 0 : t > 1 ? 1 : t;
+  const area = scale.rMin * scale.rMin + held * (scale.rMax * scale.rMax - scale.rMin * scale.rMin);
+  return Math.sqrt(area);
 }

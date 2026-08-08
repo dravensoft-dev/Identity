@@ -19,6 +19,14 @@
           420,
           390,
           510
+        ],
+        "r": [
+          120,
+          340,
+          210,
+          480,
+          260,
+          610
         ]
       },
       {
@@ -36,12 +44,21 @@
           260,
           255,
           330
+        ],
+        "r": [
+          90,
+          150,
+          320,
+          200,
+          410
         ]
       }
     ],
     "label": "Latency against load",
     "xLabel": "Concurrent requests",
-    "yLabel": "p95 latency (ms)"
+    "yLabel": "p95 latency (ms)",
+    "sizeLabel": "Requests served",
+    "sizeLegend": true
   },
-  "note": "Two quantities against each other. Both axes are named, because neither one names itself the way a category does."
+  "note": "Three quantities: two on the axes and one as the size of the mark, mapped by area so the blot is comparable."
 }

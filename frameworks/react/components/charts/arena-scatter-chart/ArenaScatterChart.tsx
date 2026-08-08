@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import { arenaSrOnly, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
-import { arenaLinearScale, arenaScaleValue, arenaNearestPoint } from '../ChartScales.ts';
+import {
+  arenaLinearScale, arenaScaleValue, arenaNearestPoint, arenaRadiusScale, arenaRadiusAt,
+} from '../ChartScales.ts';
 import { arenaPlotBox, arenaAxisModel, arenaAxisModelX, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import {
   arenaPointCount, arenaPointSeriesDomain, arenaPointSeriesColor, arenaPointTable,
+  arenaPointSized, arenaPointSizeRange,
 } from '../ChartSeries.ts';
 import { arenaLegendStrip } from '../ChartLegend.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
@@ -28,6 +31,12 @@ export interface ArenaScatterChartProps {
   /** Names the vertical quantity, for the accessible table's column. Required for the reason xLabel is. */
   yLabel: string;
 
+  /** Names the quantity a series' `r` carries, for the accessible table's third column. Required as soon as any series carries one, and guarded at render rather than declared required, because a scatter with no sizes has no third quantity to name and a member that is required only sometimes cannot say so in a contract. A column headed "Size" would satisfy the table mechanically and tell a reader nothing, which is the same reason `label` is guarded. */
+  sizeLabel?: string;
+
+  /** Draw a key of three sample bubbles, at the smallest, middle and largest size the data carries, under the series names. Without it a reader can see that one blot is bigger and cannot say by how much, because area is the one encoding nobody reads off a scale by eye. It costs plot height, like the series strip and for the same reason, and it is off by default so a scatter with no sizes never pays for it. */
+  sizeLegend?: boolean;
+
   /** Appended verbatim to every number the chart draws: both axes' ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. It reaches BOTH axes, so leave it off when the two quantities are not in the same unit, which on a scatter is the common case. */
   valueSuffix?: string;
 
@@ -43,13 +52,16 @@ export interface ArenaScatterChartProps {
 
 
 export function ArenaScatterChart({
-  series, label, xLabel, yLabel, valueSuffix, valuePrefix, valueFormat,
+  series, label, xLabel, yLabel, sizeLabel, sizeLegend = false, valueSuffix, valuePrefix, valueFormat,
   height = ARENA_CHART_HEIGHT,
 }: ArenaScatterChartProps) {
   if (!label) throw new Error('ArenaScatterChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
   if (!xLabel) throw new Error('ArenaScatterChart: `xLabel` is required (both axes carry a quantity, and a table of bare X and Y columns names neither)');
   if (!yLabel) throw new Error('ArenaScatterChart: `yLabel` is required (both axes carry a quantity, and a table of bare X and Y columns names neither)');
   if (!series) throw new Error('ArenaScatterChart: `series` is required');
+  if (arenaPointSized(series) && !sizeLabel) {
+    throw new Error('ArenaScatterChart: `sizeLabel` is required once a series carries `r` (a column headed "Size" names the quantity to nobody)');
+  }
   const [ref, measured] = useArenaContainerWidth();
   const [hover, setHover] = useState<number | null>(null);
 
@@ -57,7 +69,11 @@ export function ArenaScatterChart({
   const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
 
   const domains = arenaPointSeriesDomain(series);
-  const strip = arenaLegendStrip(height, series.length);
+  const sized = arenaPointSized(series);
+  const sizes = arenaPointSizeRange(series);
+  const rScale = arenaRadiusScale(sizes.min, sizes.max);
+  const showsKey = sized && sizeLegend;
+  const strip = arenaLegendStrip(height, series.length, showsKey);
   const box = arenaPlotBox(width, strip.plotH);
   const xScale = arenaLinearScale(domains.x.min, domains.x.max, box.x, box.x + box.w);
   const yScale = arenaLinearScale(domains.y.min, domains.y.max, box.y + box.h, box.y);
@@ -65,16 +81,22 @@ export function ArenaScatterChart({
   const yAxis = arenaAxisModel(yScale, domains.y, fmt);
 
   const colors = series.map((one, s) => arenaPointSeriesColor(one, s + 1));
-  const table = arenaPointTable(series, xLabel, yLabel, fmt);
+  const table = arenaPointTable(series, xLabel, yLabel, sizeLabel ?? '', fmt);
   const n = arenaPointCount(series);
 
-  const marks: Array<{ seriesIndex: number; at: ArenaLinePoint; x: number; y: number }> = [];
+  const marks: Array<{ seriesIndex: number; at: ArenaLinePoint; x: number; y: number; r: number; size?: number }> = [];
   series.forEach((one, seriesIndex) => {
     const pairs = Math.min(one.x.length, one.y.length);
     for (let i = 0; i < pairs; i += 1) {
       const x = one.x[i] as number;
       const y = one.y[i] as number;
-      marks.push({ seriesIndex, at: { x: arenaScaleValue(xScale, x), y: arenaScaleValue(yScale, y) }, x, y });
+      const size = one.r === undefined ? undefined : one.r[i];
+      marks.push({
+        seriesIndex,
+        at: { x: arenaScaleValue(xScale, x), y: arenaScaleValue(yScale, y) },
+        x, y, size,
+        r: size === undefined ? chartPointR : arenaRadiusAt(rScale, size),
+      });
     }
   });
 
@@ -122,7 +144,7 @@ export function ArenaScatterChart({
           stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
         {marks.map((mark, i) => (
-          <circle key={i} cx={mark.at.x} cy={mark.at.y} r={hover === i ? chartPointRHover : chartPointR}
+          <circle key={i} cx={mark.at.x} cy={mark.at.y} r={hover === i ? mark.r + (chartPointRHover - chartPointR) : mark.r}
             fill={colors[mark.seriesIndex]} stroke="var(--surface-card)"
             opacity={hover === null || hover === i ? 1 : 0.55}
             style={{ strokeWidth: 'var(--bw-strong)', transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
@@ -151,6 +173,23 @@ export function ArenaScatterChart({
         </div>
       )}
 
+      {showsKey && (
+        <div aria-hidden="true" style={{
+          height: strip.sizeH, display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 4)',
+          overflow: 'hidden', whiteSpace: 'nowrap',
+        }}>
+          {[sizes.min, (sizes.min + sizes.max) / 2, sizes.max].map((size, i) => (
+            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)' }}>
+              <svg width={strip.sizeH} height={strip.sizeH} style={{ display: 'block', flexShrink: 0 }}>
+                <circle cx={strip.sizeH / 2} cy={strip.sizeH / 2} r={arenaRadiusAt(rScale, size)}
+                  fill="none" stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} />
+              </svg>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)' }}>{fmt(size)}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
       {active && (
         <div style={{
           position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
@@ -167,6 +206,11 @@ export function ArenaScatterChart({
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>
             {yLabel}: {fmt(active.y)}
           </div>
+          {active.size !== undefined && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>
+              {sizeLabel}: {fmt(active.size)}
+            </div>
+          )}
         </div>
       )}
 

@@ -1,9 +1,12 @@
-import { chartLegendMin, chartLegendMax, chartLegendGap, chartLegendStrip } from '../../Tokens.generated.js';
+import {
+  chartLegendMin, chartLegendMax, chartLegendGap, chartLegendStrip, chartLabelGap, chartBubbleRMax,
+} from '../../Tokens.generated.js';
 import type { ArenaChartLegendLayout } from '../../Api.generated';
 
 export interface ArenaLegendStrip {
   plotH: number;
   stripH: number;
+  sizeH: number;
 }
 
 export function arenaLegendColumnWidth(width: number): number {
@@ -23,7 +26,12 @@ export function arenaLegendShows(seriesCount: number): boolean {
   return seriesCount > 1;
 }
 
-export function arenaLegendStrip(height: number, seriesCount: number): ArenaLegendStrip {
+export function arenaSizeKeyHeight(shows: boolean): number {
+  return shows ? chartBubbleRMax * 2 + chartLabelGap : 0;
+}
+
+export function arenaLegendStrip(height: number, seriesCount: number, sizeKey = false): ArenaLegendStrip {
   const stripH = arenaLegendShows(seriesCount) ? chartLegendStrip : 0;
-  return { plotH: Math.max(1, height - stripH), stripH };
+  const sizeH = arenaSizeKeyHeight(sizeKey);
+  return { plotH: Math.max(1, height - stripH - sizeH), stripH, sizeH };
 }

@@ -39,6 +39,8 @@ export const EXCLUDED = new Map([
   ['chart-bar-gap', 'script-readable: subtracted from the per-bar step width'],
   ['chart-series-gap', 'script-readable: subtracted from a sub-band width to place one grouped bar'],
   ['chart-point-r', 'script-readable: an SVG circle r attribute computed per point'],
+  ['chart-bubble-r-min', 'script-readable: one end of a radius range JS interpolates by AREA to size a bubble, so no utility could carry either end alone'],
+  ['chart-bubble-r-max', 'script-readable: the other end, and the same interpolation. It also sizes the size key\'s sample circles, which are SVG r attributes computed per sample'],
   ['chart-point-r-hover', 'script-readable: an SVG circle r attribute computed per point'],
   ['chart-tooltip-offset', 'read inside a calc() beside a runtime px projection of the hovered datum, so the whole expression is inline and no utility could carry it'],
   ['chart-legend-min', 'script-readable: a clamp bound compared against a measured width'],
