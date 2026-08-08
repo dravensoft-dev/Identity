@@ -29,7 +29,7 @@ export const node = {
     ...HELPERS.map((helper) => `frameworks/react/${helper}.*`),
   ],
   writes: [BARREL_TARGET],
-  feeds: ['check:react-barrel', 'check:react-types'],
+  feeds: ['check:arbitrary', 'check:react-barrel', 'check:react-types'],
 };
 
 export const ROOT_PRIVATE = new Map([

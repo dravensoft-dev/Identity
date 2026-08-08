@@ -3,6 +3,14 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import { MANIFESTS, PRESET } from '../../build/tailwind/build-tailwind.ts';
+
+export const node = {
+  name: 'check:coverage',
+  reads: [...PRESET, MANIFESTS],
+  writes: [],
+  feeds: [],
+};
 import { captured } from '../../utils/captures.ts';
 
 export const EXCLUDED = new Map([

@@ -34,7 +34,7 @@ export const node = {
     ...CONSUMER_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.behaviour.json`),
   ],
   writes: SKILL_TARGETS,
-  feeds: [],
+  feeds: ['check:arbitrary'],
 };
 
 const GENERATED = '<!-- GENERATED from the contracts by bun run generate:skills.'

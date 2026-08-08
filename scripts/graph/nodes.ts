@@ -91,14 +91,6 @@ export const NOT_YET_SUBSCRIBED = new Set([
   'scripts/check/arena/check-script-tokens.ts',
   'scripts/check/arena/check-shared-arithmetic.ts',
   'scripts/check/arena/check-skills.ts',
-  'scripts/check/tailwind/check-arbitrary-values.ts',
-  'scripts/check/tailwind/check-component-css.ts',
-  'scripts/check/tailwind/check-radius-tokens.ts',
-  'scripts/check/tailwind/check-style-parity.ts',
-  'scripts/check/tailwind/check-surface-parity.ts',
-  'scripts/check/tailwind/check-tailwind-coverage.ts',
-  'scripts/check/tailwind/check-tailwind-generated.ts',
-  'scripts/check/tailwind/check-tailwind.ts',
 ]);
 
 export function collectedScripts(root = repoRoot) {

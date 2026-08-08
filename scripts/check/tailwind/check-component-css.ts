@@ -18,6 +18,14 @@ import { arenaTokenNames } from '../../lib/core/arena-tokens.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import { applyRules } from '../../lib/tailwind/component-css.ts';
 import { PRELUDE, sheetPath } from '../../build/tailwind/build-tailwind.ts';
+import { CONSUME, MANIFESTS } from '../../build/tailwind/build-tailwind.ts';
+
+export const node = {
+  name: 'check:component-css',
+  reads: [MANIFESTS, `${CONSUME}/**/*.css`, 'contracts/design/environment.css'],
+  writes: [],
+  feeds: [],
+};
 import type { Manifests } from '../../lib/tailwind/manifest-shapes.ts';
 
 export const THEME_NAMESPACES = [

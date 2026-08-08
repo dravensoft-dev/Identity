@@ -11,6 +11,14 @@ import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
+import { MANIFESTS as MANIFEST_SPEC } from '../../build/tailwind/build-tailwind.ts';
+
+export const node = {
+  name: 'check:surface-parity',
+  reads: [MANIFEST_SPEC],
+  writes: [],
+  feeds: [],
+};
 
 const MANIFESTS = join(root, 'frameworks/tailwind/components');
 

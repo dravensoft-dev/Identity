@@ -46,13 +46,18 @@ export const PRELUDE = `${CONSUME}/Prelude.generated.css`;
 export const BARREL = `${CONSUME}/Components.generated.css`;
 export const PREFLIGHT = `${CONSUME}/Preflight.generated.css`;
 
+export const MANIFESTS = 'frameworks/**/*.manifest.json';
+
+export const PRESET = [
+  'frameworks/tailwind/Theme.css', 'frameworks/tailwind/Animations.css',
+  'frameworks/tailwind/Breakpoints.generated.css', 'contracts/design-generated',
+];
+
 export const node = {
   name: 'build:tailwind',
   reads: [
-    'frameworks/tailwind/Theme.css', 'frameworks/tailwind/Animations.css',
+    ...PRESET, MANIFESTS,
     'frameworks/tailwind/ArenaStyles.ts', 'frameworks/tailwind/Tv.ts',
-    'frameworks/tailwind/Breakpoints.generated.css', 'contracts/design-generated',
-    'frameworks/**/*.manifest.json',
   ],
   writes: [
     'frameworks/tailwind/Utilities.generated.css', PRELUDE, BARREL, PREFLIGHT,
@@ -63,7 +68,16 @@ export const node = {
       `frameworks/${layer}/ArenaStyles.generated.ts`, `frameworks/${layer}/Tv.generated.ts`,
     ]),
   ],
-  feeds: ['build:demos', 'build:angular-demo', 'check:demos', 'check:react-types'],
+  feeds: [
+    'build:angular-demo',
+    'build:demos',
+    'check:arbitrary',
+    'check:component-css',
+    'check:demos',
+    'check:react-types',
+    'check:style-parity',
+    'check:tailwind-generated',
+  ],
 };
 
 export function sheetPath(manifestFile: string) {

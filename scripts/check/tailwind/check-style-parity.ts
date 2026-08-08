@@ -18,9 +18,16 @@ import { connect } from '../../lib/arena/cdp.ts';
 import type { Cdp } from '../../lib/arena/cdp.ts';
 import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
 import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.ts';
-import { sheetPath } from '../../build/tailwind/build-tailwind.ts';
+import { sheetPath, CONSUME, MANIFESTS } from '../../build/tailwind/build-tailwind.ts';
 
 export const PAGE = 'frameworks/tailwind/StyleParity.generated.html';
+
+export const node = {
+  name: 'check:style-parity',
+  reads: [MANIFESTS, `${CONSUME}/**/*.css`],
+  writes: [PAGE],
+  feeds: ['check:arbitrary'],
+};
 const TIMEOUT_MS = 60_000;
 
 export function sheetsFor(manifests: Map<string, any>) {

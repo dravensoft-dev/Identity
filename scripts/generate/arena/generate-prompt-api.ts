@@ -22,7 +22,7 @@ export const node = {
   name: 'generate:prompt-api',
   reads: ['contracts/api/components', 'frameworks/Components.json', ...PROMPTS],
   writes: PROMPTS,
-  feeds: [],
+  feeds: ['check:arbitrary'],
 };
 
 export const CONSUMER_DATA = 'Record<string, unknown>';

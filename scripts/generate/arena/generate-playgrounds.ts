@@ -27,7 +27,7 @@ export const node = {
     `frameworks/${layer}/components/**/*.demo.generated.html`,
     `frameworks/${layer}/components/**/*.demo.entry.generated.${layer === 'react' ? 'tsx' : 'ts'}`,
   ]),
-  feeds: ['build:demos', 'build:angular-demo', 'check:demos', 'check:react-types'],
+  feeds: ['build:angular-demo', 'build:demos', 'check:arbitrary', 'check:demos', 'check:react-types'],
 };
 
 export const CODEC_BANNER =

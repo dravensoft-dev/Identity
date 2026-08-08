@@ -24,8 +24,15 @@ export const node = {
   name: 'generate:member-docs',
   reads: ['contracts/api/components', 'frameworks/Components.json', ...COMPONENT_SOURCES],
   writes: COMPONENT_SOURCES,
-  feeds: ['build:react-barrel', 'build:demos', 'build:angular-demo', 'check:demos',
-    'check:react-barrel', 'check:react-types'],
+  feeds: [
+    'build:angular-demo',
+    'build:demos',
+    'build:react-barrel',
+    'check:arbitrary',
+    'check:demos',
+    'check:react-barrel',
+    'check:react-types',
+  ],
 };
 
 export const MEMBER_START: Record<string, RegExp> = {
