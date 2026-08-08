@@ -51,9 +51,12 @@ each contracted member's description into the component that declares it, and
 **A spec opening with `!` excludes**, which is how a node claims a directory of hand-written
 sources without claiming the generated files beside them.
 
-**A step a development loop should not pay for says so, and says why.** `releaseOnly` carries the
-reason and `bun run build` leaves the step out; `--assemble` is what puts it back, which is how
-`build:packages` and `build:release` differ from `build`. The
+**A step no build invocation should run says so, and says why.** Two fields do it, because there
+are two reasons. `releaseOnly` is cost: ng-packagr and the declaration emit are not worth a
+development loop, and `--assemble` puts those steps back, which is how `build:packages` and
+`build:release` differ from `build`. `runsBeforeSuites` is ownership: `bun run test` runs the Angular
+emit immediately before the suites that read it, so no build invocation should, `--assemble`
+included. Both carry a reason and `check:graph` refuses one that is a label. The
 phase a script sits in says what it IS, and only the node can say that building it on every
 iteration is not worth the wait: `build:react-package` and `build:angular-package` write a `dist/`
 only a release publishes. `check:graph` refuses a `releaseOnly` that is a label rather than a reason,
@@ -94,8 +97,9 @@ covers everything under it. **Nothing in it is imported at all**, and `check-gra
 collecting reaches the gate that is running, whose own guard correctly answers that it IS the
 program, so importing it makes it re-enter itself once per collection.
 
-`NOT_YET_SUBSCRIBED` names what has not joined yet. It is a count that goes to zero, and it exists
-so that a script in neither list is a decision nobody made rather than a default.
+`NOT_YET_SUBSCRIBED` names what has not joined yet. **It is empty**, and it stays because a script
+in neither list has to be a decision nobody made rather than a default: the next script added under
+`build/`, `generate/` or `check/` fails `check:graph` until it declares or is written down here.
 
 ## A failure stops its dependents and nothing else
 

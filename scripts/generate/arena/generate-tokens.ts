@@ -58,6 +58,7 @@ export const node = {
   feeds: [
     'build:angular-demo',
     'build:angular-package',
+    'build:angular-tests',
     'build:react-package',
     'build:tailwind',
     'check:angular',

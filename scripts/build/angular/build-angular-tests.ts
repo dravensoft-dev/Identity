@@ -31,6 +31,24 @@ const EXTERNAL_INPUTS = [
   fileURLToPath(import.meta.url),
 ];
 
+export const LAYER = 'frameworks/angular';
+
+export const node = {
+  name: 'build:angular-tests',
+  reads: [
+    `${LAYER}/**/*.ts`, `${LAYER}/**/*.json`, '!frameworks/angular/build/**',
+    'package.json', 'bun.lock',
+  ],
+  writes: [`${LAYER}/build/test/**`],
+  feeds: [
+    'check:generated',
+    'check:icons',
+  ],
+  runsBeforeSuites: 'bun run test and check-all\'s testStep() run it immediately before the suites '
+    + 'that read the emit, so staleness there is prevented by ordering rather than by a gate. A '
+    + 'build that emitted it would be emitting a tree no build step reads',
+};
+
 function pruneOrphans(dir: string) {
   const pruned: string[] = [];
   for (const full of walkFiles(dir)) {

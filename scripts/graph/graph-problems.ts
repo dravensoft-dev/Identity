@@ -102,9 +102,10 @@ export function writingGateProblems(nodes: GraphNode[]) {
       + 'and costs the sweep a problem it would have reported. Emit it from a build step instead');
 }
 
-export function releaseOnlyProblems(nodes: GraphNode[]) {
+export function outsideBuildProblems(nodes: GraphNode[]) {
   return nodes
-    .filter((node) => node.releaseOnly !== undefined && node.releaseOnly.length < 40)
+    .filter((node) => [node.releaseOnly, node.runsBeforeSuites]
+      .some((reason) => reason !== undefined && reason.length < 40))
     .map((node) => `${node.name} is outside bun run build and the record does not say why; a step `
       + 'a development loop skips is a decision, and a decision without its reason is worthless');
 }
@@ -137,7 +138,7 @@ export async function graphProblems(base = repoRoot) {
     ...duplicateWriters(nodes, resolve),
     ...subscriptionProblems(nodes, resolve),
     ...writingGateProblems(nodes),
-    ...releaseOnlyProblems(nodes),
+    ...outsideBuildProblems(nodes),
     ...emptySpecProblems(nodes, paths, resolve),
   ];
 

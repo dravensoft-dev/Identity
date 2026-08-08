@@ -23,8 +23,11 @@ import { decide, shortFingerprint } from './plan.ts';
 export const BUILT_BY = ['scripts/build/', 'scripts/generate/'];
 
 export const isBuildStep = (
-  declaredIn: Map<string, string>, node: { name: string; releaseOnly?: string }, assemble = false,
-) => (assemble || !node.releaseOnly)
+  declaredIn: Map<string, string>,
+  node: { name: string; releaseOnly?: string; runsBeforeSuites?: string },
+  assemble = false,
+) => !node.runsBeforeSuites
+  && (assemble || !node.releaseOnly)
   && BUILT_BY.some((phase) => (declaredIn.get(node.name) ?? '').startsWith(phase));
 
 export function parseBuildArgs(argv: string[]) {

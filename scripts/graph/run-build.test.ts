@@ -90,3 +90,14 @@ test('a blocked step is neither a pass nor a failure, and the tail counts it apa
 test('a run with nothing blocked says nothing about blocking', () => {
   assert.doesNotMatch(summarize([{ name: 'a', status: 'pass' }], 1, 0), /upstream/);
 });
+
+test('a step the suites run is out of every build invocation, assembly included', () => {
+  const declaredIn = new Map([['build:angular-tests', 'scripts/build/angular/build-angular-tests.ts']]);
+  const node = { name: 'build:angular-tests', runsBeforeSuites: 'a reason' };
+  assert.equal(isBuildStep(declaredIn, node), false);
+  assert.equal(isBuildStep(declaredIn, node, true), false,
+    '--assemble includes what a release ships, and the Angular test emit is not that: bun run test '
+    + 'and check-all run it immediately before the suites that read it');
+  assert.equal(isBuildStep(declaredIn, { name: 'build:angular-tests' }), true,
+    'without the field the phase alone would put it in, which is what it did before');
+});

@@ -27,6 +27,7 @@ export const node = {
   feeds: [
     'build:angular-demo',
     'build:angular-package',
+    'build:angular-tests',
     'build:demos',
     'build:react-barrel',
     'build:react-package',

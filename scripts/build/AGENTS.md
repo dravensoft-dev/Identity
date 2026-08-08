@@ -87,10 +87,17 @@ it is for. `bun run build` is the loop: thirteen steps, keeping what has not mov
 and a run that kept anything fails on its own. Every workflow uses the last one, and none of them
 assembles in a second step any more.
 
-`build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
-git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,
-always immediately before the suites that read it, because staleness there is prevented by
-ordering rather than by a gate.
+`build:angular-tests` is deliberately **not** part of any of the three, and its node says so through
+`runsBeforeSuites` rather than `releaseOnly`: the reason is not cost, it is that `bun run test` and
+`check-all`'s `testStep()` run it immediately before the suites that read the emit, so staleness
+there is prevented by ordering. `--assemble` leaves it out too, since a release ships no test
+surface.
+
+**It is in the graph even so**, because two gates read what it writes: `check:generated` and
+`check:icons` sweep `frameworks/` and reach the emit. Without a node those two would keep an answer
+measured against a tree the emit had moved under. Its own mtime stamp stays, and the two mechanisms
+answer different questions now rather than duplicating one: the node carries the edges, the stamp
+decides whether `bun run test` recompiles.
 
 ## The five domains
 

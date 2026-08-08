@@ -10,6 +10,7 @@ export type GraphNode = {
   writes: string[];
   feeds: string[];
   releaseOnly?: string;
+  runsBeforeSuites?: string;
 };
 
 export type Resolve = (specs: string[]) => string[];

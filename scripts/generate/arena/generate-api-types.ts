@@ -20,6 +20,7 @@ export const node = {
   feeds: [
     'build:angular-demo',
     'build:angular-package',
+    'build:angular-tests',
     'build:react-package',
     'check:angular',
     'check:api',
