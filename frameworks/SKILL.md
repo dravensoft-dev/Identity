@@ -30,7 +30,7 @@ building, and how to write one, is your own layer's index and then the component
 |---|---|---|---|---|
 | `ArenaBarChart` | Categorical bars on one axis. Dependency-free SVG that reads the token layer directly, with a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `valueSuffix` `valuePrefix` `valueFormat` `height` `minPointSpacing` | figure-with-data-table | angular, react |
 | `ArenaChartCard` | A titled card frame around a chart, with an optional actions slot in its head. | `title` `actions` `content` | none | angular, react |
-| `ArenaDoughnutChart` | Parts of one whole, as a ring with a legend beside it. Identity only: a slice is a category by definition, so there is no tone. Dependency-free SVG with a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `valueSuffix` `valuePrefix` `legendLayout` `sliceActivate` `valueFormat` | figure-with-data-table | angular, react |
+| `ArenaDoughnutChart` | Parts of one whole, as a ring with a legend beside it. Identity only: a slice is a category by definition, so there is no tone. Dependency-free SVG with a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `valueSuffix` `valuePrefix` `shape` `legendLayout` `sliceActivate` `valueFormat` | figure-with-data-table | angular, react |
 | `ArenaLineChart` | One series over an ordered sequence, on one axis. Dependency-free SVG with a crosshair that snaps to the nearest point, and a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `area` `valueSuffix` `valuePrefix` `valueFormat` `height` `minPointSpacing` | figure-with-data-table | angular, react |
 
 ## display

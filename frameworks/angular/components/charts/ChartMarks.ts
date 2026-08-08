@@ -21,6 +21,9 @@ export function arenaArcPath(cx: number, cy: number, rOuter: number, rInner: num
   const pt = (r: number, a: number): [number, number] => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
   const [x0, y0] = pt(rOuter, a0);
   const [x1, y1] = pt(rOuter, a1);
+  if (rInner <= 0) {
+    return `M${cx},${cy} L${x0},${y0} A${rOuter},${rOuter} 0 ${large} 1 ${x1},${y1} Z`;
+  }
   const [x2, y2] = pt(rInner, a1);
   const [x3, y3] = pt(rInner, a0);
   return `M${x0},${y0} A${rOuter},${rOuter} 0 ${large} 1 ${x1},${y1}`

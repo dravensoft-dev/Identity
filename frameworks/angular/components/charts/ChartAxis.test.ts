@@ -73,20 +73,20 @@ test('an all-negative domain puts zeroY at the plot ceiling', () => {
 
 test('the ring fits the smaller of the plot\'s two axes, inset so its stroke is not clipped', () => {
 
-  assert.equal(arenaDoughnutRadii(600, 280).outer, 280 / 2 - 8);
+  assert.equal(arenaDoughnutRadii(600, 280, 'doughnut').outer, 280 / 2 - 8);
 
-  assert.equal(arenaDoughnutRadii(100, 280).outer, 100 / 2 - 8);
+  assert.equal(arenaDoughnutRadii(100, 280, 'doughnut').outer, 100 / 2 - 8);
 });
 
 test('the hole is 62% of the outer radius, so it scales with the ring instead of swallowing it', () => {
-  const { outer, inner } = arenaDoughnutRadii(600, 280);
+  const { outer, inner } = arenaDoughnutRadii(600, 280, 'doughnut');
   assert.ok(Math.abs(inner / outer - 0.62) < 1e-9);
 });
 
 test('both radii stay positive in a plot too small to hold the inset', () => {
 
   for (const plot of [0, 1, 8, 16]) {
-    const { outer, inner } = arenaDoughnutRadii(plot, ARENA_CHART_HEIGHT);
+    const { outer, inner } = arenaDoughnutRadii(plot, ARENA_CHART_HEIGHT, 'doughnut');
     assert.ok(outer > 0, `outer radius was ${outer} at plot width ${plot}`);
     assert.ok(inner > 0, `inner radius was ${inner} at plot width ${plot}`);
   }
@@ -94,8 +94,24 @@ test('both radii stay positive in a plot too small to hold the inset', () => {
 
 test('the ring stays inside the plot box it is drawn in', () => {
   for (const plot of [120, 300, 600]) {
-    const { outer } = arenaDoughnutRadii(plot, ARENA_CHART_HEIGHT);
+    const { outer } = arenaDoughnutRadii(plot, ARENA_CHART_HEIGHT, 'doughnut');
+
     assert.ok(outer * 2 <= plot, `a ${outer * 2}px ring does not fit a ${plot}px plot`);
     assert.ok(outer * 2 <= ARENA_CHART_HEIGHT, `a ${outer * 2}px ring does not fit a ${ARENA_CHART_HEIGHT}px plot height`);
+  }
+});
+
+test('a pie is the same circle as the doughnut, with the hole taken to nothing', () => {
+
+  const ring = arenaDoughnutRadii(600, 280, 'doughnut');
+  const pie = arenaDoughnutRadii(600, 280, 'pie');
+  assert.equal(pie.outer, ring.outer, 'the shape decides the hole and nothing else, so the ring inset still applies');
+  assert.equal(pie.inner, 0);
+});
+
+test('the hole is the shape and never a caller-supplied ratio, so only the two shapes exist', () => {
+
+  for (const plot of [120, 300, 600]) {
+    assert.equal(arenaDoughnutRadii(plot, ARENA_CHART_HEIGHT, 'pie').inner, 0, `at plot width ${plot}`);
   }
 });

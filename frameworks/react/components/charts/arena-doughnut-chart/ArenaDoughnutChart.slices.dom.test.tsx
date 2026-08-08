@@ -102,3 +102,50 @@ test('the layout can be pinned either way, whatever the container measures', () 
     'column',
   );
 });
+
+function hover(el: Element) {
+
+  act(() => { el.dispatchEvent(new window.PointerEvent('pointerover', { bubbles: true })); });
+}
+
+function pie(options: { shape?: 'doughnut' | 'pie' } = {}) {
+  return mount(
+    <ArenaDoughnutChart labels={LABELS} series={[{ label: 'Revenue by channel', values: VALUES }]}
+      label="Revenue by channel" shape={options.shape} />,
+  );
+}
+
+test('a doughnut reads the hovered share in its hole, which is what the hole is for', () => {
+  const root = pie();
+  hover(root.querySelectorAll('path')[0]!);
+  const text = root.querySelector('text');
+  assert.ok(text, 'a ring with a hover and no centre figure has spent its hole on nothing');
+  assert.equal((text.textContent ?? '').trim(), '40%');
+});
+
+test('a pie draws no centre figure, because filling the hole is what took the place to put one', () => {
+
+  const root = pie({ shape: 'pie' });
+  hover(root.querySelectorAll('path')[0]!);
+  assert.equal(root.querySelector('text'), null,
+    'over a wedge the figure would put --bone on a --color-cat slot, a pair no gate checks because nothing drew it');
+
+  const table = root.querySelector('table');
+  assert.ok((table?.textContent ?? '').includes('40'), 'the number is not lost: the accessible table still carries it');
+});
+
+test('a pie fills to the centre and a doughnut does not, which is the whole member', () => {
+  const solid = pie({ shape: 'pie' }).querySelectorAll('path')[0]!.getAttribute('d') ?? '';
+  cleanup();
+  const ring = pie().querySelectorAll('path')[0]!.getAttribute('d') ?? '';
+  assert.match(solid, /^M[\d.]+,[\d.]+ L/, 'a wedge starts at the centre and runs out to the edge');
+  assert.equal((solid.match(/A/g) ?? []).length, 1, 'a wedge has one arc');
+  assert.equal((ring.match(/A/g) ?? []).length, 2, 'a ring has two, outer and inner');
+});
+
+test('a pie announces as one, rather than inheriting the name of the shape it is not', () => {
+  const root = pie({ shape: 'pie' });
+  assert.equal(root.querySelector('svg')?.getAttribute('aria-label'), 'Revenue by channel — pie chart');
+  assert.equal(root.querySelector('caption')?.textContent, 'Revenue by channel — pie chart');
+  assert.equal(root.querySelector('[role="group"]')?.getAttribute('aria-label'), 'Pie chart legend');
+});

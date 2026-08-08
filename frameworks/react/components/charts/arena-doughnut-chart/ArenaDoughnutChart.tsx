@@ -7,7 +7,7 @@ import { arenaDoughnutRadii } from '../ChartAxis.ts';
 import { arenaLegendPlotWidth, arenaLegendStacked } from '../ChartLegend.ts';
 import { arenaChartTable, arenaOneSeries, arenaSeriesColors } from '../ChartSeries.ts';
 
-import type { ArenaChartLegendLayout, ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
+import type { ArenaChartLegendLayout, ArenaChartShape, ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 
 export interface ArenaDoughnutChartProps {
 
@@ -19,6 +19,9 @@ export interface ArenaDoughnutChartProps {
 
   /** Names the chart for its accessible name and for the caption of its data table. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
   label: string;
+
+  /** Whether the ring keeps its hole or fills to the centre. 'pie' is the same chart with the same slices, the same legend and the same table, drawn solid. It costs the centre percentage, which has nowhere to go once the hole is gone: over a wedge it would put --bone on a --color-cat slot, a pair nothing checks for contrast because nothing had drawn it. The figure is not lost, it is in the legend row and in the accessible table, which is where every other number the chart writes already is. */
+  shape?: ArenaChartShape;
 
   /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
   legendLayout?: ArenaChartLegendLayout;
@@ -39,7 +42,7 @@ export interface ArenaDoughnutChartProps {
 
 export function ArenaDoughnutChart({
   labels, series, label, valueSuffix, valuePrefix, valueFormat,
-  legendLayout = 'auto', onSliceActivate,
+  shape = 'doughnut', legendLayout = 'auto', onSliceActivate,
 }: ArenaDoughnutChartProps) {
   if (!label) throw new Error('ArenaDoughnutChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaDoughnutChart: `labels` is required');
@@ -61,9 +64,9 @@ export function ArenaDoughnutChart({
   const plotW = arenaLegendPlotWidth(width);
   const cx = plotW / 2;
   const cy = height / 2;
-  const { outer: rOuter, inner: rInner } = arenaDoughnutRadii(plotW, height);
+  const { outer: rOuter, inner: rInner } = arenaDoughnutRadii(plotW, height, shape);
 
-  const name = `${label} — doughnut chart`;
+  const name = shape === 'pie' ? `${label} — pie chart` : `${label} — doughnut chart`;
   const table = arenaChartTable('Category', series.slice(0, 1), labels, fmt);
 
   const segments = arenaDoughnutSlices(values);
@@ -80,7 +83,7 @@ export function ArenaDoughnutChart({
             onPointerEnter={() => setHover(index)} onClick={() => onSliceActivate?.(index)}
             style={{ transition: 'opacity var(--dur-fast) var(--ease-out)', strokeWidth: 'var(--bw-strong)' }} />
         ))}
-        {hover !== null && segments[hover] && (
+        {shape !== 'pie' && hover !== null && segments[hover] && (
           <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
             fill="var(--bone)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-lg)' }}>
             {segments[hover].percent}%
@@ -91,7 +94,7 @@ export function ArenaDoughnutChart({
       {
 
 }
-      <div role="group" aria-label="Doughnut chart legend"
+      <div role="group" aria-label={shape === 'pie' ? 'Pie chart legend' : 'Doughnut chart legend'}
         style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'calc(var(--sp-1) * 1.5)', overflow: 'auto' }}>
         {values.map((_, i) => (
           <button key={i} type="button" onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)}

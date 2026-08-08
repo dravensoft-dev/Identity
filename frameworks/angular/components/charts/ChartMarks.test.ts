@@ -115,7 +115,7 @@ test('arenaArcPath places its corners on the two radii at the two angles', () =>
 test('a full-circle slice is drawn as two arcs, because one would collapse to nothing', () => {
 
   const [only] = arenaDoughnutSlices([42]);
-  const { outer, inner } = arenaDoughnutRadii(400, ARENA_CHART_HEIGHT);
+  const { outer, inner } = arenaDoughnutRadii(400, ARENA_CHART_HEIGHT, 'doughnut');
   const d = arenaArcPath(200, ARENA_CHART_HEIGHT / 2, outer, inner, only.from, only.to);
   assert.equal(subpathCount(d), 2, `a full circle must be two subpaths: "${d}"`);
   assert.ok(!d.includes('NaN'), `the path is not a real path: "${d}"`);
@@ -149,4 +149,31 @@ test('an empty series paints no area at all, rather than an M-only path', () => 
 
 test('a single point still closes into a real (zero-width) region', () => {
   assert.equal(arenaLineAreaPath([{ x: 10, y: 20 }], BASELINE), `M10,${BASELINE} L10,20 L10,${BASELINE} Z`);
+});
+
+test('a wedge with no hole runs through the centre instead of emitting a zero-radius arc', () => {
+
+  const path = arenaArcPath(100, 100, 80, 0, 0, Math.PI / 2);
+  assert.ok(path.startsWith('M100,100 L'), `a solid wedge starts at the centre, got ${path}`);
+  assert.doesNotMatch(path, /A0,0/, 'an arc of radius zero is a command that says nothing and asks a renderer to guess');
+  assert.equal((path.match(/A/g) ?? []).length, 1, 'a wedge has one arc, its outer edge');
+});
+
+test('a hole of zero closes the wedge, so a solid slice is still one filled region', () => {
+  const path = arenaArcPath(100, 100, 80, 0, 0, Math.PI / 2);
+  assert.ok(path.trimEnd().endsWith('Z'), `the path does not close, got ${path}`);
+});
+
+test('a full circle with no hole is still split in two, because one arc cannot draw 360 degrees', () => {
+
+  const path = arenaArcPath(100, 100, 80, 0, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2);
+  assert.equal((path.match(/A/g) ?? []).length, 2, 'a lone slice worth the whole total needs two half arcs');
+  assert.equal((path.match(/M100,100/g) ?? []).length, 2, 'each half is its own wedge from the centre');
+});
+
+test('a doughnut path is untouched by the branch a pie needed', () => {
+
+  const path = arenaArcPath(100, 100, 80, 50, 0, Math.PI / 2);
+  assert.ok(path.startsWith('M180,100'), `a ring still starts on its outer edge, got ${path}`);
+  assert.equal((path.match(/A/g) ?? []).length, 2, 'a ring has two arcs, outer and inner');
 });

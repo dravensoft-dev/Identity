@@ -6,7 +6,7 @@ import { arenaArcPath } from '../ChartMarks';
 import { arenaDoughnutRadii } from '../ChartAxis';
 import { arenaLegendPlotWidth, arenaLegendStacked } from '../ChartLegend';
 import { arenaChartTable, arenaOneSeries, arenaSeriesColors } from '../ChartSeries';
-import type { ArenaChartLegendLayout, ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
+import type { ArenaChartLegendLayout, ArenaChartShape, ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 
 const ASSUMED_WIDTH = 600;
 
@@ -73,14 +73,14 @@ const LEGEND_VALUE_STYLE = {
                 [style]="segmentStyle" />
         }
       }
-      @if (active(); as segment) {
+      @if (centre(); as segment) {
         <text [attr.x]="centreX()" [attr.y]="centreY()" text-anchor="middle" dominant-baseline="middle"
               fill="var(--bone)" font-family="var(--font-mono)"
               [style]="centreLabelStyle">{{ segment.percent }}%</text>
       }
     </svg>
 
-    <div [style]="legendStyle" role="group" aria-label="Doughnut chart legend">
+    <div [style]="legendStyle" role="group" [attr.aria-label]="legendName()">
       @for (segment of segments(); track segment.index) {
         <button type="button" [style]="legendRowStyle"
                 [style.opacity]="hover() === null || hover() === segment.index ? 1 : dimOpacity"
@@ -120,6 +120,8 @@ export class ArenaDoughnutChart {
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
   readonly valueFormat = input<ArenaNumberFormat>();
+  /** Whether the ring keeps its hole or fills to the centre. 'pie' is the same chart with the same slices, the same legend and the same table, drawn solid. It costs the centre percentage, which has nowhere to go once the hole is gone: over a wedge it would put --bone on a --color-cat slot, a pair nothing checks for contrast because nothing had drawn it. The figure is not lost, it is in the legend row and in the accessible table, which is where every other number the chart writes already is. */
+  readonly shape = input<ArenaChartShape>('doughnut');
   /** How each legend row arranges its label and its figure. 'inline' puts them on one line, which is what fits a wide tile; 'stacked' puts the label above the figure; 'auto' measures the legend column and stacks when the row does not give. It exists because the two do not degrade equally: on one line the figure does not yield, so the label is what gets truncated, and a legend of numbers with nothing saying what they count is the opposite of a legend. The threshold is already declared, as the chart-legend-min and chart-legend-max tokens the ring width is clamped between; what was missing was the behaviour. */
   readonly legendLayout = input<ArenaChartLegendLayout>('auto');
   /** A slice was activated, by pointer on the arc or on its legend row, or by keyboard on that row, which is a real button and answers Enter and Space without the component binding either. It carries the slice's index in the series' `values`. **In `values`, never in the drawn paths**, and that is the whole member: a slice worth zero paints nothing, so the shapes on screen and the entries in the array are two different lists, and a consumer indexing the SVG has to reproduce that omission from outside to translate one into the other. It is reverse engineering of a component's own DOM, which the next release breaks in silence. */
@@ -153,10 +155,12 @@ export class ArenaDoughnutChart {
   );
 
   protected readonly name = computed(() => {
-    return `${this.label()} — doughnut chart`;
+    return this.shape() === 'pie' ? `${this.label()} — pie chart` : `${this.label()} — doughnut chart`;
   });
 
   protected readonly arenaPlotWidth = computed(() => arenaLegendPlotWidth(this.width()));
+  protected readonly centre = computed(() => (this.shape() === 'pie' ? null : this.active()));
+  protected readonly legendName = computed(() => (this.shape() === 'pie' ? 'Pie chart legend' : 'Doughnut chart legend'));
   protected readonly centreX = computed(() => this.arenaPlotWidth() / 2);
   protected readonly centreY = computed(() => this.height / 2);
 
@@ -172,7 +176,7 @@ export class ArenaDoughnutChart {
     const write = this.write();
     const centreX = this.centreX();
     const centreY = this.centreY();
-    const { outer, inner } = arenaDoughnutRadii(this.arenaPlotWidth(), this.height);
+    const { outer, inner } = arenaDoughnutRadii(this.arenaPlotWidth(), this.height, this.shape());
     return arenaDoughnutSlices(values).map((slice) => ({
       ...slice,
       color: colors[slice.index],

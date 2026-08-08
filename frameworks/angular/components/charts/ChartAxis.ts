@@ -1,5 +1,6 @@
 import { ARENA_PAD } from '../../DataVisuals';
 import { chartLabelGap, chartRingInset } from '../../Tokens.generated';
+import type { ArenaChartShape } from '../../Api.generated';
 import type { ArenaDomain, ArenaLinearScale } from './ChartScales';
 import { arenaScaleValue, arenaScaleZero, arenaDomainTicks } from './ChartScales';
 
@@ -53,7 +54,9 @@ export function arenaCategoryLabelY(height: number): number {
   return height - chartLabelGap;
 }
 
-export function arenaDoughnutRadii(plotWidth: number, height: number): { outer: number; inner: number } {
+export function arenaDoughnutRadii(
+  plotWidth: number, height: number, shape: ArenaChartShape,
+): { outer: number; inner: number } {
   const outer = Math.max(1, Math.min(plotWidth, height) / 2 - chartRingInset);
-  return { outer, inner: outer * 0.62 };
+  return { outer, inner: shape === 'pie' ? 0 : outer * 0.62 };
 }
