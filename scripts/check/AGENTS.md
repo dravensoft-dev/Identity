@@ -68,6 +68,21 @@ That is what keeps the cache from turning exit 2 into a permanent green.
 true. That is what makes the adoption safe: `scripts/graph/nodes.ts` says which gates never will and
 why, and which have not yet.
 
+**`--release` is a full run that also compares.** It runs every selected gate, and then reports a
+gate that failed while the graph WOULD have kept it, separately from the failure count and exiting
+non-zero on its own account:
+
+```
+check-all: check:ramp failed and the graph would have kept it -- that is a defect in the declared
+graph, not only in the gate: something it reads is not something it says it reads
+```
+
+That is the only defence against a declaration that omits a file the gate opens. `check:graph` holds
+the edges between declarations and cannot see it, and `check:graph --audit` sees it only where a
+tracer can follow the gate, which is not the twelve that spawn `tsc`, `ngc`, `ng-packagr` or a
+browser. A plain failure of a gate the run would have executed anyway says nothing about the graph
+and is not reported here.
+
 `--force` runs every selected gate and rewrites what it records. `stepStatus` is untouched by any of
 this: it maps a child's exit code, and a kept gate spawns no child, so three of the four labels come
 from a process and the fourth comes from the graph.

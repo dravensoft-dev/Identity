@@ -91,16 +91,18 @@ export function parseCheckArgs(argv: string[]) {
   let domains = DOMAINS;
   let tests = true;
   let force = false;
+  let release = false;
   for (const arg of argv) {
     if (arg === '--no-tests') { tests = false; continue; }
     if (arg === '--force') { force = true; continue; }
+    if (arg === '--release') { force = true; release = true; continue; }
     if (arg.startsWith('--domain=')) {
       domains = arg.slice('--domain='.length).split(',').map((d) => d.trim()).filter(Boolean);
       continue;
     }
-    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b>, --no-tests and --force`);
+    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b>, --no-tests, --force and --release`);
   }
-  return { domains, tests, force };
+  return { domains, tests, force, release };
 }
 
 export function testStep({ isBun, testFiles }: { isBun: boolean; testFiles: string[] }) {
@@ -138,6 +140,13 @@ export function summarize(results: { name: string; status: string; note?: string
   return [...lines, '', tail].join('\n');
 }
 
+export function keptButFailed(results: { name: string; status: string }[], wouldKeep: Set<string>) {
+  return results
+    .filter((r) => r.status === 'fail' && wouldKeep.has(r.name))
+    .map((r) => `${r.name} failed and the graph would have kept it -- that is a defect in the `
+      + 'declared graph, not only in the gate: something it reads is not something it says it reads');
+}
+
 function runStep(name: string, args: string[]) {
   console.log(`\n> ${name}\n`);
   const r = spawnSync(process.execPath, args, { stdio: 'inherit', cwd: repoRoot });
@@ -167,6 +176,11 @@ async function main() {
   }
 
   const graph = await gateDecisions(gates.map((g) => g.name), selection.force);
+  const wouldKeep = new Set<string>();
+  if (selection.release) {
+    const measured = await gateDecisions(gates.map((g) => g.name), false);
+    for (const [name, decided] of measured.decisions) if (!decided.run) wouldKeep.add(name);
+  }
 
   const results = [];
   for (const { name, file } of gates) {
@@ -182,6 +196,8 @@ async function main() {
   }
   graph.flush();
 
+  const wrongKeeps = keptButFailed(results, wouldKeep);
+
   if (selection.tests) {
     const isBun = Boolean(process.versions.bun);
     const testFiles = testFilesUnder(join(repoRoot, 'scripts')).sort();
@@ -191,7 +207,9 @@ async function main() {
   console.log(`\n${'-'.repeat(60)}`);
   console.log(summarize(results));
 
-  process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
+  for (const problem of wrongKeeps) console.error(`\ncheck-all: ${problem}`);
+
+  process.exit(results.some((r) => r.status === 'fail') || wrongKeeps.length > 0 ? 1 : 0);
 }
 
 if (isMainModule(import.meta.url)) await main();

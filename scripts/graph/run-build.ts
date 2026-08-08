@@ -36,6 +36,13 @@ export function parseBuildArgs(argv: string[]) {
   return { force, assertFull };
 }
 
+export function keptButFailed(results: { name: string; status: string }[], wouldKeep: Set<string>) {
+  return results
+    .filter((r) => r.status === 'fail' && wouldKeep.has(r.name))
+    .map((r) => `${r.name} failed and the graph would have kept it -- that is a defect in the `
+      + 'declared graph, not only in the step: something it reads is not something it says it reads');
+}
+
 export function partialRunProblems(results: { name: string; status: string }[]) {
   const kept = results.filter((r) => r.status === 'cached').map((r) => r.name);
   if (kept.length === 0) return [];
@@ -84,14 +91,15 @@ async function main() {
   };
 
   const results = [];
+  const wouldKeep = new Set<string>();
   let ran = 0;
   let cached = 0;
 
   for (const node of order) {
     const before = fingerprintOne(node, measure());
-    const step = options.force
-      ? { run: true, reason: 'this is a full run' }
-      : decide(node, before, state.get(node.name), onDisk);
+    const measured = decide(node, before, state.get(node.name), onDisk);
+    if (!measured.run) wouldKeep.add(node.name);
+    const step = options.force ? { run: true, reason: 'this is a full run' } : measured;
 
     if (!step.run) {
       console.log(`\nrun-build: ${node.name} comes from the cache (${shortFingerprint(before.fingerprint)})`);
@@ -128,9 +136,10 @@ async function main() {
   console.log(summarize(results, ran, cached));
 
   const partial = options.assertFull ? partialRunProblems(results) : [];
-  for (const problem of partial) console.error(`\nrun-build: ${problem}`);
+  const wrongKeeps = options.force ? keptButFailed(results, wouldKeep) : [];
+  for (const problem of [...partial, ...wrongKeeps]) console.error(`\nrun-build: ${problem}`);
 
-  process.exit(results.some((r) => r.status === 'fail') || partial.length > 0 ? 1 : 0);
+  process.exit(results.some((r) => r.status === 'fail') || partial.length + wrongKeeps.length > 0 ? 1 : 0);
 }
 
 if (isMainModule(import.meta.url)) await main();
