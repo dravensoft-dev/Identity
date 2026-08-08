@@ -9,6 +9,13 @@ import { parseDecls } from '../../lib/arena/css-decls.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:tokens',
+  reads: ['contracts/design/*.json', 'contracts/design-generated/*.generated.css', BREAKPOINT_TARGET],
+  writes: [],
+  feeds: [],
+};
+
 export function fileDrift(name: string, css: string, committed: string | null) {
   const expected = parseDecls(css);
   if (committed === null) return [`contracts/design-generated/${name}: missing — run bun run build:tokens`];

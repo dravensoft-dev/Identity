@@ -3,6 +3,13 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
+
+export const node = {
+  name: 'check:dtcg',
+  reads: ['contracts/design/*.json'],
+  writes: [],
+  feeds: [],
+};
 import type { DtcgNode } from '../../lib/core/dtcg-shapes.ts';
 
 const RESERVED = new Set(['$value', '$type', '$description', '$extensions', '$deprecated']);

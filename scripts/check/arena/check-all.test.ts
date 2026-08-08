@@ -86,12 +86,13 @@ test('the arena domain is where the cross-layer gates are, which is why the core
 });
 
 test('with no argument every domain runs and the suite runs, which is what bun run check gets', () => {
-  assert.deepEqual(parseCheckArgs([]), { domains: DOMAINS, tests: true });
+  assert.deepEqual(parseCheckArgs([]), { domains: DOMAINS, tests: true, force: false });
 });
 
 test('a narrowed invocation names its domains and can drop the suite', () => {
-  assert.deepEqual(parseCheckArgs(['--domain=core,arena', '--no-tests']), { domains: ['core', 'arena'], tests: false });
-  assert.deepEqual(parseCheckArgs(['--domain=react']), { domains: ['react'], tests: true });
+  assert.deepEqual(parseCheckArgs(['--domain=core,arena', '--no-tests']), { domains: ['core', 'arena'], tests: false, force: false });
+  assert.deepEqual(parseCheckArgs(['--domain=react']), { domains: ['react'], tests: true, force: false });
+  assert.deepEqual(parseCheckArgs(['--force']), { domains: DOMAINS, tests: true, force: true });
 });
 
 test('an argument nobody recognises is refused, so a typo in a workflow is loud', () => {

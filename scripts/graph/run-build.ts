@@ -85,7 +85,7 @@ async function main() {
   for (const node of order) {
     const before = fingerprintOne(node, measure());
     const step = options.force
-      ? { run: true, reason: 'every node runs, because this is a full run' }
+      ? { run: true, reason: 'this is a full run' }
       : decide(node, before, state.get(node.name), onDisk);
 
     if (!step.run) {

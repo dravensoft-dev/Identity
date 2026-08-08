@@ -45,6 +45,33 @@ are rules a new gate holds to:
 When you write or move anything a gate resolves by path, the question is not "does it still
 pass" but "how many things did it look at, and is that the number I expect".
 
+## CACHED is a fourth label, and a skip is never recorded green
+
+A gate that declares a node in `scripts/graph/` is kept when nothing it reads has moved since its
+last **passing** run, and the summary says so at what fingerprint:
+
+```
+  CACHED  check:dtcg  (1c289ae16237, unchanged since the previous run)
+  PASS    check:text-contrast
+
+check-all: all 5 step(s) passed, 2 ran, 3 came from the cache
+```
+
+**The tail never collapses the count.** A run of five that did one is not a run of five, and the
+line has to make that impossible to misread.
+
+**Only a pass records.** A failure and a SKIP both delete the entry, so a gate that failed runs
+again next time, and a gate that could not run here is honest about it for ever rather than once.
+That is what keeps the cache from turning exit 2 into a permanent green.
+
+**A gate that declares no node runs every time**, and nothing has to be written down for that to be
+true. That is what makes the adoption safe: `scripts/graph/nodes.ts` says which gates never will and
+why, and which have not yet.
+
+`--force` runs every selected gate and rewrites what it records. `stepStatus` is untouched by any of
+this: it maps a child's exit code, and a kept gate spawns no child, so three of the four labels come
+from a process and the fourth comes from the graph.
+
 ## Exit 2 means SKIP, and a skip is never green
 
 **Six** gates need a runtime dependency that plain node does not have: `check:cards`,

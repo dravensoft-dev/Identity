@@ -10,6 +10,13 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export const PALETTE = 'contracts/design-generated/palette.generated.css';
 
+export const node = {
+  name: 'check:ramp',
+  reads: [PALETTE],
+  writes: [],
+  feeds: [],
+};
+
 const SLOTS = 8;
 
 export const THEMES = [

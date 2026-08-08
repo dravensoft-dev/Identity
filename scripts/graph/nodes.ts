@@ -48,6 +48,9 @@ export const NEVER_SUBSCRIBES = new Map([
   ['scripts/generate/core/fetch-fonts.ts',
    'it downloads the webfonts, so the network decides its answer and no fingerprint of this tree '
    + 'can; it is outside bun run build for the same reason'],
+  ['scripts/check/core/check-fonts-generated.ts',
+   'it asks whether the URL each declared family is served from answers, so the network decides '
+   + 'part of its answer and no fingerprint of this tree can'],
   ['scripts/check/arena/check-all.ts',
    'it is the runner rather than a step, and a runner that could come from the cache would hand '
    + 'back the whole run'],
@@ -88,11 +91,6 @@ export const NOT_YET_SUBSCRIBED = new Set([
   'scripts/check/arena/check-script-tokens.ts',
   'scripts/check/arena/check-shared-arithmetic.ts',
   'scripts/check/arena/check-skills.ts',
-  'scripts/check/core/check-dtcg.ts',
-  'scripts/check/core/check-fonts-generated.ts',
-  'scripts/check/core/check-ramp.ts',
-  'scripts/check/core/check-text-contrast.ts',
-  'scripts/check/core/check-tokens-generated.ts',
   'scripts/check/react/check-demos-generated.ts',
   'scripts/check/react/check-react-barrel.ts',
   'scripts/check/react/check-react-types.ts',

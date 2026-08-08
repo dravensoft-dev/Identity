@@ -55,7 +55,7 @@ export const node = {
   reads: [...new Set([...SOURCES, ...Object.values(RESOLVES_AGAINST).flat()])]
     .map((source) => `contracts/design/${source}`),
   writes: [...CSS_TARGETS, ...SCRIPT_TARGETS, BREAKPOINT_TARGET],
-  feeds: ['build:tailwind', 'build:angular-demo'],
+  feeds: ['build:tailwind', 'build:angular-demo', 'check:tokens', 'check:ramp', 'check:text-contrast'],
 };
 
 const BREAKPOINT_HEADER =

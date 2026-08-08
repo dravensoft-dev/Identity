@@ -16,6 +16,7 @@ import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
+import { gateDecisions, shortFingerprint } from '../../graph/gate-plan.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const checkRoot = join(here, '..');
@@ -89,15 +90,17 @@ export function gatesFor(domains: string[]) {
 export function parseCheckArgs(argv: string[]) {
   let domains = DOMAINS;
   let tests = true;
+  let force = false;
   for (const arg of argv) {
     if (arg === '--no-tests') { tests = false; continue; }
+    if (arg === '--force') { force = true; continue; }
     if (arg.startsWith('--domain=')) {
       domains = arg.slice('--domain='.length).split(',').map((d) => d.trim()).filter(Boolean);
       continue;
     }
-    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b> and --no-tests`);
+    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b>, --no-tests and --force`);
   }
-  return { domains, tests };
+  return { domains, tests, force };
 }
 
 export function testStep({ isBun, testFiles }: { isBun: boolean; testFiles: string[] }) {
@@ -119,16 +122,18 @@ export function stepStatus(code: number | null) {
   return 'fail';
 }
 
-export function summarize(results: { name: string; status: string }[]) {
-  const label: Record<string, string> = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' };
-  const lines = results.map((r) => `  ${label[r.status]}  ${r.name}`);
+export function summarize(results: { name: string; status: string; note?: string }[]) {
+  const label: Record<string, string> = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP', cached: 'CACHED' };
+  const lines = results.map((r) => `  ${label[r.status]}  ${r.name}${r.note ? `  (${r.note})` : ''}`);
   const failed = results.filter((r) => r.status === 'fail');
   const skipped = results.filter((r) => r.status === 'skip');
+  const cached = results.filter((r) => r.status === 'cached');
+  const kept = `, ${results.length - cached.length} ran, ${cached.length} came from the cache`;
 
   let tail;
-  if (failed.length) tail = `check-all: ${failed.length}/${results.length} step(s) failed`;
-  else if (skipped.length) tail = `check-all: INCOMPLETE — ${results.length - skipped.length}/${results.length} step(s) passed, ${skipped.length} could not run here (see above)`;
-  else tail = `check-all: all ${results.length} step(s) passed`;
+  if (failed.length) tail = `check-all: ${failed.length}/${results.length} step(s) failed${kept}`;
+  else if (skipped.length) tail = `check-all: INCOMPLETE — ${results.length - skipped.length}/${results.length} step(s) passed${kept}, ${skipped.length} could not run here (see above)`;
+  else tail = `check-all: all ${results.length} step(s) passed${kept}`;
 
   return [...lines, '', tail].join('\n');
 }
@@ -144,7 +149,7 @@ export function testFilesUnder(dir: string): string[] {
   return walkFiles(dir).filter((full) => isSuite(basename(full)));
 }
 
-function main() {
+async function main() {
   let selection;
   try {
     selection = parseCheckArgs(process.argv.slice(2));
@@ -161,7 +166,21 @@ function main() {
     process.exit(1);
   }
 
-  const results = gates.map(({ name, file }) => runStep(name, [join(checkRoot, file)]));
+  const graph = await gateDecisions(gates.map((g) => g.name), selection.force);
+
+  const results = [];
+  for (const { name, file } of gates) {
+    const decided = graph.decisions.get(name);
+    if (decided && !decided.run) {
+      results.push({ name, status: 'cached', note: `${shortFingerprint(decided.fingerprint)}, unchanged since the previous run` });
+      continue;
+    }
+    if (decided?.reason) console.log(`\ncheck-all: ${name} runs, because ${decided.reason}`);
+    const result = runStep(name, [join(checkRoot, file)]);
+    results.push(result);
+    graph.record(name, result.status === 'pass');
+  }
+  graph.flush();
 
   if (selection.tests) {
     const isBun = Boolean(process.versions.bun);
@@ -175,4 +194,4 @@ function main() {
   process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
 }
 
-if (isMainModule(import.meta.url)) main();
+if (isMainModule(import.meta.url)) await main();

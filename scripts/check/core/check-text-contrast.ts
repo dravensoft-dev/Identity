@@ -11,6 +11,13 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 export const PALETTE = 'contracts/design-generated/palette.generated.css';
 export const COLORS = 'contracts/design/colors.css';
 
+export const node = {
+  name: 'check:text-contrast',
+  reads: [PALETTE, COLORS],
+  writes: [],
+  feeds: [],
+};
+
 function block(css: string, selector: string, file: string) {
   const m = css.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`))?.[1];
   if (m === undefined) throw new Error(`${file}: no ${selector} block found`);
