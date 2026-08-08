@@ -1,38 +1,45 @@
 /* What a declared spec reaches. A spec naming a directory reaches everything under it, so a
- * declaration reads as prose rather than as a glob nobody checks; a trailing `**` is rewritten to
- * `**\/*` because globToRegExp expands `**\/` and leaves a bare `**` unable to cross a separator,
- * which would silently reach one level and no further. A spec opening with `!` excludes, which is
- * what lets a node claim a directory of hand-written sources without claiming the generated files
- * sitting beside them. Matching is against a path list and never the filesystem, so one universe
- * answers every node and a spec that reaches nothing is a fact the caller can report rather than
- * an empty walk nobody sees. */
+ * declaration reads as prose rather than as a glob nobody checks; a trailing `**` becomes `**\/*`
+ * because globToRegExp expands `**\/` and leaves a bare `**` unable to cross a separator, reaching
+ * one level and no further. A spec opening with `!` excludes, which lets a node claim a directory
+ * of hand-written sources without claiming the generated files beside it. Matching is against a
+ * path list and never the filesystem, so one universe answers every node. A spec compiles to a
+ * predicate once and is kept: normalising the same spec per candidate path was the whole of what
+ * check:graph spent, and one without a glob becomes a startsWith rather than a pattern. resolveSpecs
+ * takes paths already relative and posix, as universe() yields them; matchesSpec normalises one. */
 
 import { globToRegExp } from '../utils/text.ts';
 import { toPosix } from '../utils/posix-path.ts';
 
 const GLOB = /[*?]/;
 
-const compiled = new Map<string, RegExp>();
+const matchers = new Map<string, (path: string) => boolean>();
 
 export function normalizeSpec(spec: string) {
   const posix = toPosix(spec).replace(/^\.\//, '').replace(/\/+$/, '');
   return posix.endsWith('/**') ? `${posix}/*` : posix;
 }
 
-function specRegExp(spec: string) {
-  const found = compiled.get(spec);
+export function specMatcher(spec: string) {
+  const found = matchers.get(spec);
   if (found) return found;
-  const built = globToRegExp(spec);
-  compiled.set(spec, built);
-  return built;
+
+  const normal = normalizeSpec(spec);
+  let test: (path: string) => boolean;
+  if (GLOB.test(normal)) {
+    const pattern = globToRegExp(normal);
+    test = (path) => pattern.test(path);
+  } else {
+    const under = `${normal}/`;
+    test = (path) => path === normal || path.startsWith(under);
+  }
+
+  matchers.set(spec, test);
+  return test;
 }
 
-export function matchesSpec(spec: string, path: string) {
-  const normal = normalizeSpec(spec);
-  const target = toPosix(path).replace(/^\.\//, '');
-  if (!GLOB.test(normal)) return target === normal || target.startsWith(`${normal}/`);
-  return specRegExp(normal).test(target);
-}
+export const matchesSpec = (spec: string, path: string) =>
+  specMatcher(spec)(toPosix(path).replace(/^\.\//, ''));
 
 export const isExclusion = (spec: string) => spec.startsWith('!');
 
@@ -45,18 +52,24 @@ export function partition(specs: string[]) {
 
 export function resolveSpecs(specs: string[], universe: Iterable<string>) {
   const { included, excluded } = partition(specs);
+  const reaches = included.map(specMatcher);
+  const refuses = excluded.map(specMatcher);
+
   const found = [];
   for (const path of universe) {
-    if (!included.some((spec) => matchesSpec(spec, path))) continue;
-    if (excluded.some((spec) => matchesSpec(spec, path))) continue;
-    found.push(toPosix(path));
+    if (!reaches.some((test) => test(path))) continue;
+    if (refuses.some((test) => test(path))) continue;
+    found.push(path);
   }
   return found.sort();
 }
 
 export function unreachedSpecs(specs: string[], universe: Iterable<string>) {
   const paths = [...universe];
-  return specs.filter((spec) => !paths.some((path) => matchesSpec(spec.replace(/^!/, ''), path)));
+  return specs.filter((spec) => {
+    const reaches = specMatcher(spec.replace(/^!/, ''));
+    return !paths.some(reaches);
+  });
 }
 
 export function globFreePrefix(spec: string) {

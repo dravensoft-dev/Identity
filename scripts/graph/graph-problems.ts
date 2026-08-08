@@ -4,7 +4,9 @@
  * and the directory tells them apart: a spec whose directory holds nothing fails, and one whose
  * directory is there is reported and allowed, because refusing it would mean a declaration can
  * only describe today's tree and the first file of a new kind would be read by nobody. Nothing
- * here is cached: a gate judging the shape cannot read it from a fingerprint of the last shape. */
+ * here is cached: a gate judging the shape cannot read it from a fingerprint of the last shape.
+ * One question is asked of one spec list once: four of the checks below want the same node's reads
+ * or writes resolved, and resolving is what this gate spends its time on. */
 
 import { readJson } from '../utils/read-file.ts';
 import { join } from 'node:path';
@@ -15,6 +17,18 @@ import { reachesNoDirectory, resolveSpecs, unreachedSpecs } from './pathspecs.ts
 import { cyclePath, duplicateWriters, selfFeeds, subscriptionProblems, unknownFeeds } from './graph.ts';
 import type { GraphNode } from './graph.ts';
 import { ALIASES, NOT_YET_SUBSCRIBED, allNodes, collectedScripts, neverSubscribesReason } from './nodes.ts';
+
+export function remembering<T>(answer: (specs: string[]) => T) {
+  const said = new Map<string, T>();
+  return (specs: string[]) => {
+    const asked = specs.join('\n');
+    const before = said.get(asked);
+    if (before !== undefined) return before;
+    const now = answer(specs);
+    said.set(asked, now);
+    return now;
+  };
+}
 
 export function scriptNames(base = repoRoot) {
   return new Set(Object.keys(readJson(join(base, 'package.json')).scripts ?? {}));
@@ -71,14 +85,17 @@ export function missingScriptProblems(nodes: GraphNode[], declaredIn: Map<string
     .map((node) => `${node.name} names ${declaredIn.get(node.name)}, which is not there`);
 }
 
-export function emptySpecProblems(nodes: GraphNode[], paths: string[], resolve: (specs: string[]) => string[]) {
+export function emptySpecProblems(
+  nodes: GraphNode[], paths: string[], resolve: (specs: string[]) => string[],
+  unreached: (specs: string[]) => string[] = (specs) => unreachedSpecs(specs, paths),
+) {
   const problems = [];
   for (const node of nodes) {
     if (resolve(node.reads).length === 0) {
       problems.push(`${node.name} reads nothing that is there, so its fingerprint is over an empty `
         + 'list and it would come from the cache for ever');
     }
-    for (const spec of [...unreachedSpecs(node.reads, paths), ...unreachedSpecs(node.writes, paths)]) {
+    for (const spec of [...unreached(node.reads), ...unreached(node.writes)]) {
       if (!reachesNoDirectory(spec, paths)) continue;
       problems.push(`${node.name} names ${spec}, and the directory it sits in holds no file at all `
         + '-- a spec written for a tree that is not there reaches nothing however the tree grows');
@@ -87,8 +104,11 @@ export function emptySpecProblems(nodes: GraphNode[], paths: string[], resolve: 
   return problems;
 }
 
-export function unreachedSpecNotes(nodes: GraphNode[], paths: string[]) {
-  return nodes.flatMap((node) => [...unreachedSpecs(node.reads, paths), ...unreachedSpecs(node.writes, paths)]
+export function unreachedSpecNotes(
+  nodes: GraphNode[], paths: string[],
+  unreached: (specs: string[]) => string[] = (specs) => unreachedSpecs(specs, paths),
+) {
+  return nodes.flatMap((node) => [...unreached(node.reads), ...unreached(node.writes)]
     .filter((spec) => !reachesNoDirectory(spec, paths))
     .map((spec) => `${node.name} names ${spec}, which matches no file today; its directory is there, `
       + 'so this reads as an extension the node compiles and the tree does not hold yet'));
@@ -123,7 +143,8 @@ export async function graphProblems(base = repoRoot) {
   if (vacuous.length > 0) return { problems: vacuous, notes: [], nodes, edges: 0 };
 
   const paths = universe(base);
-  const resolve = (specs: string[]) => resolveSpecs(specs, paths);
+  const resolve = remembering((specs: string[]) => resolveSpecs(specs, paths));
+  const unreached = remembering((specs: string[]) => unreachedSpecs(specs, paths));
   const cycle = cyclePath(nodes);
 
   const problems = [
@@ -139,12 +160,12 @@ export async function graphProblems(base = repoRoot) {
     ...subscriptionProblems(nodes, resolve),
     ...writingGateProblems(nodes),
     ...outsideBuildProblems(nodes),
-    ...emptySpecProblems(nodes, paths, resolve),
+    ...emptySpecProblems(nodes, paths, resolve, unreached),
   ];
 
   return {
     problems,
-    notes: unreachedSpecNotes(nodes, paths),
+    notes: unreachedSpecNotes(nodes, paths, unreached),
     nodes,
     edges: nodes.reduce((n, node) => n + node.feeds.length, 0),
   };
