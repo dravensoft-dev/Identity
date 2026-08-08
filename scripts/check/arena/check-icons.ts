@@ -15,7 +15,8 @@ export const node = {
   name: 'check:icons',
   reads: [
     'contracts/**', 'frameworks/**', 'assets/**', 'intro/**',
-    '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+    '!frameworks/react/dist/**', '!frameworks/angular/dist/**', '!frameworks/angular/build/**',
+    '!frameworks/react/vendor/**',
   ],
   writes: [],
   feeds: [],

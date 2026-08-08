@@ -51,6 +51,14 @@ each contracted member's description into the component that declares it, and
 **A spec opening with `!` excludes**, which is how a node claims a directory of hand-written
 sources without claiming the generated files beside them.
 
+**A `reads` reaching nothing is judged against the tree, and a `writes` is not.** For a `reads`,
+`reachesNoDirectory` tells a typo from a spec written ahead of the tree: no directory fails, a
+directory with no matching file yet is reported and allowed. A `writes` names what the node
+CREATES, so a tree without it is the step not having run, and it is only ever reported. Judging it
+would make this gate answer one way where the step ran and another where it did not, which is
+exactly what an unbuilt CI checkout is: `build:angular-tests` writes `frameworks/angular/build/test/`,
+no build invocation runs it, and the gate must not care.
+
 **A step no build invocation should run says so, and says why.** Two fields do it, because there
 are two reasons. `releaseOnly` is cost: ng-packagr and the declaration emit are not worth a
 development loop, and `--assemble` puts those steps back, which is how `build:packages` and

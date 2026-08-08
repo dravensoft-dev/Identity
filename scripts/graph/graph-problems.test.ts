@@ -86,6 +86,23 @@ test('a spec whose directory holds no file fails, and one whose directory is the
   ]);
 });
 
+test('a spec a node writes names what that node creates, so a tree without it is not a defect', () => {
+  const resolve = (specs: string[]) => (specs.includes('contracts/design/colors.css') ? PATHS : []);
+  const emit = node('build:x', {
+    reads: ['contracts/design/colors.css'],
+    writes: ['frameworks/angular/build/test/**'],
+  });
+
+  assert.deepEqual(emptySpecProblems([emit], PATHS, resolve), [],
+    'the step has not run, and a gate judging the shape cannot answer differently depending on '
+    + 'which steps happen to have run before it');
+  assert.deepEqual(unreachedSpecNotes([emit], PATHS), [
+    'build:x writes frameworks/angular/build/test/**, and nothing here matches it; what a step '
+    + 'emits is on disk once that step has run, so this is either the tree before the run or a '
+    + 'typo, and only a full build tells them apart',
+  ]);
+});
+
 test('a run that compared nothing says so rather than passing', () => {
   assert.deepEqual(vacuousProblems([], []), ['no script was collected, so this gate compared nothing']);
   assert.deepEqual(vacuousProblems([], ['scripts/build/a.ts']), ['no script declares a node, so this gate compared nothing']);

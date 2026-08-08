@@ -1,12 +1,13 @@
 /* Everything check:graph asserts, so the gate itself is a print and an exit. Two authorities are
- * joined: the scripts, which declare, and package.json, which says what is invocable. A spec
- * reaching no file is a typo or an extension the node compiles and the tree does not hold yet,
- * and the directory tells them apart: a spec whose directory holds nothing fails, and one whose
- * directory is there is reported and allowed, because refusing it would mean a declaration can
- * only describe today's tree and the first file of a new kind would be read by nobody. Nothing
- * here is cached: a gate judging the shape cannot read it from a fingerprint of the last shape.
- * One question is asked of one spec list once: four of the checks below want the same node's reads
- * or writes resolved, and resolving is what this gate spends its time on. */
+ * joined: the scripts, which declare, and package.json, which says what is invocable. A `reads`
+ * reaching no file is a typo or a spec written ahead of the tree, and the directory tells them
+ * apart: no directory fails, a directory holding no match yet is reported and allowed, because
+ * refusing it would let a declaration describe only today's tree. A `writes` gets neither test,
+ * because it names what the node CREATES: a tree without it is the step not having run, and a gate
+ * judging the shape must not answer one way where a step ran and another where it did not. It is
+ * reported even so, so a typo has a witness once a full build has left it unreached. Nothing here
+ * is cached: a gate judging the shape cannot read it from a fingerprint of the last shape. One
+ * question is asked of one spec list once, since resolving is what this gate spends its time on. */
 
 import { readJson } from '../utils/read-file.ts';
 import { join } from 'node:path';
@@ -95,7 +96,7 @@ export function emptySpecProblems(
       problems.push(`${node.name} reads nothing that is there, so its fingerprint is over an empty `
         + 'list and it would come from the cache for ever');
     }
-    for (const spec of [...unreached(node.reads), ...unreached(node.writes)]) {
+    for (const spec of unreached(node.reads)) {
       if (!reachesNoDirectory(spec, paths)) continue;
       problems.push(`${node.name} names ${spec}, and the directory it sits in holds no file at all `
         + '-- a spec written for a tree that is not there reaches nothing however the tree grows');
@@ -108,10 +109,16 @@ export function unreachedSpecNotes(
   nodes: GraphNode[], paths: string[],
   unreached: (specs: string[]) => string[] = (specs) => unreachedSpecs(specs, paths),
 ) {
-  return nodes.flatMap((node) => [...unreached(node.reads), ...unreached(node.writes)]
-    .filter((spec) => !reachesNoDirectory(spec, paths))
-    .map((spec) => `${node.name} names ${spec}, which matches no file today; its directory is there, `
-      + 'so this reads as an extension the node compiles and the tree does not hold yet'));
+  return nodes.flatMap((node) => [
+    ...unreached(node.reads)
+      .filter((spec) => !reachesNoDirectory(spec, paths))
+      .map((spec) => `${node.name} names ${spec}, which matches no file today; its directory is `
+        + 'there, so this reads as an extension the node compiles and the tree does not hold yet'),
+    ...unreached(node.writes)
+      .map((spec) => `${node.name} writes ${spec}, and nothing here matches it; what a step emits `
+        + 'is on disk once that step has run, so this is either the tree before the run or a typo, '
+        + 'and only a full build tells them apart'),
+  ]);
 }
 
 export function writingGateProblems(nodes: GraphNode[]) {

@@ -42,7 +42,6 @@ export const node = {
     'check:duplicate-constants',
     'check:focus-trap',
     'check:generated',
-    'check:icons',
     'check:layer-independence',
     'check:script-tokens',
     'check:skills',

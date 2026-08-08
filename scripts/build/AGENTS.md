@@ -93,11 +93,15 @@ assembles in a second step any more.
 there is prevented by ordering. `--assemble` leaves it out too, since a release ships no test
 surface.
 
-**It is in the graph even so**, because two gates read what it writes: `check:generated` and
-`check:icons` sweep `frameworks/` and reach the emit. Without a node those two would keep an answer
-measured against a tree the emit had moved under. Its own mtime stamp stays, and the two mechanisms
-answer different questions now rather than duplicating one: the node carries the edges, the stamp
-decides whether `bun run test` recompiles.
+**It is in the graph even so, and it feeds nobody.** It was given a node on the claim that
+`check:generated` and `check:icons` sweep `frameworks/` and reach the emit. They do not: both walks
+skip any directory named `build`, so neither has ever opened a file under
+`frameworks/angular/build/test/`. The two `feeds` entries only ever held because the gates' broad
+`frameworks/**` overlapped the emit path on a machine where a previous `bun run test` had left it on
+disk, and on a CI checkout, where it has not, they failed. Both gates now exclude
+`frameworks/angular/build/**`, which is what their walks were already doing. What the node is worth
+is its `reads` and `writes` being written down where every other step's are; its own mtime stamp is
+what decides whether `bun run test` recompiles, and that has not changed.
 
 ## The five domains
 

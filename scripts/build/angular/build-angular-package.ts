@@ -38,8 +38,6 @@ export const node = {
     'check:angular',
     'check:arbitrary',
     'check:consumer',
-    'check:generated',
-    'check:icons',
     'check:packages',
   ],
   releaseOnly: 'ng-packagr costs more than a development loop should pay for an artefact only a release '

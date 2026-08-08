@@ -32,8 +32,6 @@ export const node = {
   feeds: [
     'check:angular-demos',
     'check:focus-trap',
-    'check:generated',
-    'check:icons',
     'check:playgrounds',
   ],
 };

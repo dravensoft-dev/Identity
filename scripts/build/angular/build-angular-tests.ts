@@ -40,10 +40,7 @@ export const node = {
     'package.json', 'bun.lock',
   ],
   writes: [`${LAYER}/build/test/**`],
-  feeds: [
-    'check:generated',
-    'check:icons',
-  ],
+  feeds: [],
   runsBeforeSuites: 'bun run test and check-all\'s testStep() run it immediately before the suites '
     + 'that read the emit, so staleness there is prevented by ordering rather than by a gate. A '
     + 'build that emitted it would be emitting a tree no build step reads',

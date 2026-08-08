@@ -18,7 +18,7 @@ export const node = {
   reads: [
     '.gitignore', 'frameworks/**', 'contracts/design/**', 'contracts/design-generated/**',
     'intro/**', 'assets/fonts/**',
-    '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+    '!frameworks/react/dist/**', '!frameworks/angular/dist/**', '!frameworks/angular/build/**',
   ],
   writes: [],
   feeds: [],
