@@ -12,9 +12,13 @@ import {
 import { arenaBarPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries';
+import { arenaLegendStrip } from '../ChartLegend';
 import { arenaTooltipAnchor } from '../ChartTooltip';
 import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer';
 import { ARENA_TOOLTIP_STYLE, ARENA_TOOLTIP_LABEL_STYLE, ARENA_TOOLTIP_VALUE_STYLE } from '../ChartTooltipStyles';
+import {
+  ARENA_LEGEND_STRIP_STYLE, ARENA_LEGEND_ITEM_STYLE, ARENA_LEGEND_SWATCH_STYLE, ARENA_LEGEND_LABEL_STYLE,
+} from '../ChartLegendStyles';
 import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 import { chartBarGap, chartSeriesGap, chartBarRadius } from '../../../Tokens.generated';
 
@@ -44,7 +48,7 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
   template: `
     <div #rail [style]="arenaRailStyle" tabindex="0" role="group" [attr.aria-label]="name()"
          (keydown)="onKey($event)">
-    <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="height()" role="img" [attr.aria-label]="name()"
+    <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="plotH()" role="img" [attr.aria-label]="name()"
          style="display:block;overflow:visible">
       @for (tick of gridLines(); track tick.value) {
         <g>
@@ -79,6 +83,17 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
       }
     </svg>
     </div>
+
+    @if (legend(); as keys) {
+      <div aria-hidden="true" [style]="legendStripStyle" [style.height.px]="stripH()">
+        @for (key of keys; track key.index) {
+          <span [style]="legendItemStyle">
+            <span [style]="legendSwatchStyle" [style.background]="key.color"></span>
+            <span [style]="legendLabelStyle">{{ key.label }}</span>
+          </span>
+        }
+      </div>
+    }
 
     @if (active(); as point) {
       <div [style]="tooltipStyle" [style.left.px]="point.anchor.left" [style.top]="point.anchor.top">
@@ -127,8 +142,12 @@ export class ArenaBarChart {
   protected readonly tooltipStyle = ARENA_TOOLTIP_STYLE;
   protected readonly tooltipLabelStyle = ARENA_TOOLTIP_LABEL_STYLE;
   protected readonly tooltipValueStyle = ARENA_TOOLTIP_VALUE_STYLE;
+  protected readonly legendStripStyle = ARENA_LEGEND_STRIP_STYLE;
+  protected readonly legendItemStyle = ARENA_LEGEND_ITEM_STYLE;
+  protected readonly legendSwatchStyle = ARENA_LEGEND_SWATCH_STYLE;
+  protected readonly legendLabelStyle = ARENA_LEGEND_LABEL_STYLE;
   protected readonly tickLabelX = arenaTickLabelX();
-  protected readonly categoryLabelY = computed(() => arenaCategoryLabelY(this.height()));
+  protected readonly categoryLabelY = computed(() => arenaCategoryLabelY(this.strip().plotH));
   protected readonly hover = signal<number | null>(null);
 
   private readonly write = computed(() => arenaValueWriter({
@@ -153,7 +172,10 @@ export class ArenaBarChart {
 
   private readonly domain = computed(() => arenaSeriesDomain(this.series()));
   private readonly points = computed(() => arenaSeriesPointCount(this.series()));
-  private readonly box = computed(() => arenaPlotBox(this.width(), this.height()));
+  private readonly strip = computed(() => arenaLegendStrip(this.height(), this.series().length));
+  protected readonly plotH = computed(() => this.strip().plotH);
+  protected readonly stripH = computed(() => this.strip().stripH);
+  private readonly box = computed(() => arenaPlotBox(this.width(), this.strip().plotH));
   protected readonly plotLeft = computed(() => this.box().x);
   protected readonly plotRight = computed(() => this.box().x + this.box().w);
   protected readonly plotTop = computed(() => this.box().y);
@@ -204,6 +226,16 @@ export class ArenaBarChart {
           value: write(value),
         }];
       }),
+    }));
+  });
+
+  protected readonly legend = computed(() => {
+    const series = this.series();
+    if (this.strip().stripH === 0) return null;
+    return series.map((one, index) => ({
+      index,
+      label: one.label,
+      color: arenaSeriesColors(one, this.points(), index + 1)[0],
     }));
   });
 

@@ -267,7 +267,27 @@ deliberately **not** in `PAIRED` because its members are constants rather than f
 `check-shared-arithmetic.ts` compares only functions. React has no counterpart on purpose:
 `check-appearance.ts` excuses a chart that draws geometry but not a loose module beside it, so
 lifting the same literals out of the JSX would ask for the manifest the charter refuses. **Do
-not add one.**
+not add one.** `ChartLegendStyles.ts` is the second file that rule produced, on the same reading
+and the same asymmetry: Angular's cartesian legend constants were about to be duplicated across
+the bar and line charts, so they sit once, unpaired; React's stay in the JSX that draws them.
+
+**A cartesian legend is a key and not a control, so it takes no focus.** It renders
+`aria-hidden="true"`, and that is the honest reading of the pattern rather than an omission:
+`contracts/behaviour/figure-with-data-table.json` already refused a hidden listbox mirroring the
+marks, because it is "a second copy of the same numbers in the same DOM", and a focusable list of
+series names is that copy, since the accessible table already heads each column with the series'
+own label. So the plot keeps its one tab stop and no chart binding gains an exception or an
+addition. The doughnut's rows are the deliberate opposite and stay `<button>`: activating one
+emits `sliceActivate`, and a ring has no sequence for a data cursor to walk, both of which its own
+binding records.
+
+**It appears at two series and not at one, and that is a consequence rather than a member.** One
+series is already named by the chart's `label` and by the only value column in its table, so a
+one-row legend restates the chart's name and buys nothing with the plot height it spends. The
+count is the whole rule, which is why the charts that shipped before it draw the same bytes they
+drew: `arenaLegendShows(count)` is the only place it is written. The strip comes OUT of the plot,
+so `--chart-height` stays the height of the whole component, the same trade the doughnut makes on
+the other axis when its legend column takes width from the ring.
 
 **`ArenaPlotBox` spells its size `w` and `h` rather than `width` and `height`**, because
 `check-dimension-literals.ts` reads a property named `width` as a CSS dimension and follows the
@@ -275,6 +295,12 @@ local it was assigned from, so a plot box would report its `Math.max(1, ...)` fl
 forever. The floor is a guard against dividing by a collapsed container, not a dimension anybody
 chose, and there is no token that could stand in for it. Renaming the field says what the record
 is; four exemptions would only say that the gate was wrong four times.
+**That is a rule and not one record's quirk**: any geometry a chart hands to a `height` or a
+`width` attribute comes back inside a record, so the site reads `strip.plotH` rather than a bare
+local. The gate follows an identifier used bare and stops at a member access, which is the whole
+difference between a floor it reports forever and a floor it never sees. `arenaLegendStrip`
+returns `{ plotH, stripH }` for that reason and for no other; a pair of numbers would have been
+shorter and would have cost an exemption per call site.
 Each is named by `PAIRED` in `scripts/check/arena/check-shared-arithmetic.ts`, which compares
 every function two copies export under one name, so **the two copies are authored byte for byte
 identical and add no `DIVERGENT` entry**. That is only reachable while they hold no layer type:

@@ -141,3 +141,56 @@ for (const [name, Chart, tail, heading] of CHARTS) {
     );
   });
 }
+
+const CARTESIAN: [string, ChartComponent][] = [
+  ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent],
+  ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent],
+];
+
+const TWO: readonly ArenaSeries[] = [
+  { label: 'Delivered', values: VALUES },
+  { label: 'Returned', values: [3, 8, 1] },
+];
+
+function strip(root: HTMLElement): HTMLElement | null {
+  return root.querySelector<HTMLElement>('[aria-hidden="true"]');
+}
+
+for (const [name, Chart] of CARTESIAN) {
+  test(`${name} draws no legend for one series, because the chart label and the table column already name it`, () => {
+    const root = mount(<Chart labels={LABELS} series={[{ label: SERIES, values: VALUES }]} label={CHART} />);
+    assert.equal(strip(root), null, 'a one-row legend restates the chart name and spends plot height on nothing');
+  });
+
+  test(`${name} draws a legend naming every series once two of them share the plot`, () => {
+    const root = mount(<Chart labels={LABELS} series={TWO} label={CHART} />);
+    const legend = strip(root);
+    assert.ok(legend, 'two series are indistinguishable without a key unless the reader points at them');
+    for (const one of TWO) {
+      assert.ok((legend.textContent ?? '').includes(one.label), `the legend does not name ${one.label}`);
+    }
+  });
+
+  test(`${name} keeps its legend out of the accessibility tree and out of the tab order`, () => {
+
+    const root = mount(<Chart labels={LABELS} series={TWO} label={CHART} />);
+    const legend = strip(root)!;
+    assert.equal(legend.getAttribute('aria-hidden'), 'true',
+      'the accessible table already heads each column with the series label, and one source per fact is the rule '
+      + 'that a second copy in the same DOM would break');
+    assert.equal(legend.querySelectorAll('button, a, [tabindex]').length, 0,
+      'a key is not a control: focusable rows would add one tab stop per series to a plot that has exactly one');
+    assert.equal(root.querySelectorAll('[tabindex="0"]').length, 1,
+      'the rail is the plot\'s only tab stop, legend or no legend');
+  });
+
+  test(`${name} takes the legend out of the plot, so the component is the height it was asked for`, () => {
+    const one = mount(<Chart labels={LABELS} series={[{ label: SERIES, values: VALUES }]} label={CHART} />);
+    const alone = one.querySelector('svg')!.getAttribute('height');
+    cleanup();
+    const two = mount(<Chart labels={LABELS} series={TWO} label={CHART} />);
+    const shared = two.querySelector('svg')!.getAttribute('height');
+    assert.equal(Number(alone) - Number(shared), 26,
+      'the strip comes out of the plot rather than being added to the box, so --chart-height stays the whole component');
+  });
+}

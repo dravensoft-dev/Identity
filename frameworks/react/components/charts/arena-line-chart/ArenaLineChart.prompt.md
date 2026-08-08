@@ -79,3 +79,20 @@ Nothing inside the graphic is focusable, and that is deliberate rather than an o
 reader however correct it is. A screen reader gets the visually hidden table of the same
 numbers, which is already there; a sighted keyboard user gets the cursor. There is no third
 copy of the numbers for either of them to disagree with.
+
+### The legend, and when there is one
+
+A chart of two or more series draws a row of keys below the plot, one swatch and one series name
+each, in the order the series were given. A chart of one series draws none: `label` already names
+the chart, the table's single value column is already headed by that series' own name, and a
+one-row legend would restate both while spending plot height to do it. There is no member for
+this; the number of series is the whole rule.
+
+The strip comes out of the plot rather than being added to the box, so `height` stays the height
+of the whole component whether a legend is drawn or not. That is what keeps a grid of tiles
+aligned when one of them gains a second series.
+
+It is `aria-hidden`, deliberately. It is a key for a reader who can see the colours, and those
+same names are already the column headers of the numbers table, so a focusable copy of them would
+be a second source for one fact. Its rows take no focus, and the plot still has exactly one tab
+stop.

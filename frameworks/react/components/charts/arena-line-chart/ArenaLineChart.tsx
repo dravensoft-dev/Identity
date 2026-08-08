@@ -10,6 +10,7 @@ import {
 import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries.ts';
+import { arenaLegendStrip } from '../ChartLegend.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
 import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer.ts';
 import { chartPointR, chartPointRHover } from '../../../Tokens.generated.js';
@@ -76,7 +77,8 @@ export function ArenaLineChart({
   const fills = area && series.length === 1;
 
   const domain = arenaSeriesDomain(series);
-  const box = arenaPlotBox(width, height);
+  const strip = arenaLegendStrip(height, series.length);
+  const box = arenaPlotBox(width, strip.plotH);
   const yScale = arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
   const xScale = arenaPointScale(n, box.x, box.w);
   const axis = arenaAxisModel(yScale, domain, fmt);
@@ -107,7 +109,7 @@ export function ArenaLineChart({
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
       <div ref={rail} style={arenaRailStyle} tabIndex={0} role="group" aria-label={name} onKeyDown={onKeyDown}>
-      <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
+      <svg width={scrolls ? width : '100%'} height={strip.plotH} role="img" aria-label={name} style={{ display: 'block', overflow: 'visible' }}>
         {axis.ticks.map((tick, i) => (
           <g key={i}>
             <line x1={box.x} x2={box.x + box.w} y1={tick.y} y2={tick.y} stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
@@ -141,7 +143,7 @@ export function ArenaLineChart({
 
 }
         {Array.from({ length: n }, (_, i) => (
-          <text key={i} x={arenaPointAt(xScale, i)} y={arenaCategoryLabelY(height)} textAnchor="middle"
+          <text key={i} x={arenaPointAt(xScale, i)} y={arenaCategoryLabelY(strip.plotH)} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
 
@@ -153,6 +155,22 @@ export function ArenaLineChart({
           onPointerCancel={() => setHover(null)} />
       </svg>
       </div>
+
+      {strip.stripH > 0 && (
+        <div aria-hidden="true" style={{
+          height: strip.stripH, display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 4)',
+          overflow: 'hidden', whiteSpace: 'nowrap',
+        }}>
+          {series.map((one, s) => (
+            <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', minWidth: 0 }}>
+              <span style={{ width: 'calc(var(--sp-1) * 2.5)', height: 'calc(var(--sp-1) * 2.5)',
+                borderRadius: 'var(--r-xs)', background: colors[s], flexShrink: 0 }} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)' }}>{one.label}</span>
+            </span>
+          ))}
+        </div>
+      )}
 
       {hover !== null && hover < n && (
         <div style={{
