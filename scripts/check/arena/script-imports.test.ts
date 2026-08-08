@@ -18,9 +18,8 @@ import { toPosix } from '../../utils/posix-path.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { literalRanges, insideLiteral } from '../../lib/arena/comments.ts';
 import { isScript, isSuite } from '../../lib/arena/domains.ts';
+import { relativeSpecifiers, isInterpolated } from '../../graph/script-closure.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
-
-const SPECIFIER = /(?:from|import)\s*\(?\s*['"](\.[^'"]*)['"]/g;
 
 const ANY_SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
 
@@ -73,7 +72,7 @@ export function importTimeEffects(path: string) {
   return found;
 }
 
-export const isInterpolated = (specifier: string) => specifier.includes('${');
+export { isInterpolated };
 
 export function reachesOutOfUtils(path: string) {
   const source = readFileSync(path, 'utf8');
@@ -91,13 +90,8 @@ export function reachesOutOfUtils(path: string) {
 }
 
 export function unresolvedSpecifiers(path: string) {
-  const source = readFileSync(path, 'utf8');
-  const literals = literalRanges(source);
   const bad = [];
-  for (const m of source.matchAll(SPECIFIER)) {
-    const spec = m[1] ?? '';
-    if (isInterpolated(spec)) continue;
-    if (insideLiteral(literals, m.index)) continue;
+  for (const spec of relativeSpecifiers(readFileSync(path, 'utf8'))) {
     if (!existsSync(join(dirname(path), spec))) bad.push(spec);
   }
   return bad;

@@ -12,23 +12,31 @@ scripts/
   generate/   emits source from data: DTCG JSON to CSS, contracts to types, fonts
   check/      the gates
   ci/         what a runner asks: what to run, what the suite reported, what to publish
+  graph/      what decides whether a step runs at all
 ```
 
 Each phase has its own `AGENTS.md`, and each `<phase>/<domain>/` that holds scripts has a table
-saying why every file in it exists. `utils/` has one too, and no domain directories under it.
+saying why every file in it exists. `utils/` and `graph/` have one too, and no domain
+directories under either.
 
 - [`build/AGENTS.md`](./build/AGENTS.md): **and how to compile Arena for the first time.**
   A fresh clone must build before `bun run demos` or `bun run check` mean anything.
 - [`generate/AGENTS.md`](./generate/AGENTS.md): why generate is not build.
 - [`check/AGENTS.md`](./check/AGENTS.md): the shape of a gate, and the SKIP protocol.
 - [`ci/AGENTS.md`](./ci/AGENTS.md): what a runner asks, and why the answers carry suites.
+- [`graph/AGENTS.md`](./graph/AGENTS.md): what decides whether a step runs, and how a file is fingerprinted.
 - [`lib/AGENTS.md`](./lib/AGENTS.md): the bottom of the graph, and how a module is placed.
 - [`utils/AGENTS.md`](./utils/AGENTS.md): what a util is, and the import boundary keeping it one.
 
-`lib/` and the four phases all hold the same five domains, and **all five exist even when
-empty**: a `.gitkeep` marks a combination nothing occupies yet, so the shape stays legible
-rather than implied. `utils/` is outside that grid and is flat, because a domain is a statement
-about the vocabulary a module speaks and a util speaks none:
+`lib/` and the phases holding domain directories all hold the same five, and **all five exist
+even when empty**: a `.gitkeep` marks a combination nothing occupies yet, so the shape stays
+legible rather than implied. Two directories sit outside that grid and are flat, for opposite
+reasons. `utils/`, because a domain states the vocabulary a module speaks and a util speaks
+none. `graph/`, because a graph module speaks every one at once: what a node reads is
+`contracts/`, both framework layers, the Tailwind preset and the repository root together, so
+its domain would be `arena` throughout and the directory would say nothing. Both reasons are
+written where they apply, because an exception with no argument beside it is how a grid stops
+meaning anything:
 
 | domain | what a script there is allowed to read and write |
 | --- | --- |

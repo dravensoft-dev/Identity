@@ -1,17 +1,19 @@
-/* How scripts/ names its own parts: the five domains it sorts by, which of them a test
- * file belongs to, and what counts as a script or a suite. It opens no file, so a caller
- * can classify a path absent from this machine: a junit report names files a runner wrote.
- * A report may name them absolutely, so the anchor is searched for and the LAST one wins,
- * or a checkout under a directory called scripts decides every path. The extensions live
- * here, not in each of the four scanners, because a suffix one stops recognising is a file
- * that quietly leaves its scope. A suite is TypeScript and can earn no exception, nothing
- * loading one. A script may be JavaScript only if STAYS_JAVASCRIPT names it, and it is
- * still scanned, since those two have specifiers that must resolve like any other's. A util
- * sits under no phase and is arena, the domain that already means no one layer. */
+/* How scripts/ names its own parts: the five domains it sorts by, which of them a test file
+ * belongs to, and what counts as a script or a suite. It opens no file, so a caller can classify
+ * a path absent from this machine: a junit report names files a runner wrote, and may name them
+ * absolutely, so the anchor is searched for and the LAST one wins, or a checkout under a directory
+ * called scripts decides every path. The extensions live here and not in each scanner, because a
+ * suffix one stops recognising is a file that quietly leaves its scope. A suite is TypeScript and
+ * can earn no exception, nothing loading one; a script may be JavaScript only if STAYS_JAVASCRIPT
+ * names it, and is still scanned, since those have specifiers that must resolve like any other's.
+ * FLAT is its own list and not PHASES inverted, because graph/ is a phase and utils/ is not; both
+ * are arena, a util speaking no vocabulary and a graph module naming every layer at once. */
 
 export const DOMAINS = ['core', 'react', 'angular', 'tailwind', 'arena'];
 
-const PHASES = ['build', 'generate', 'check', 'lib', 'ci'];
+const PHASES = ['build', 'generate', 'check', 'lib', 'ci', 'graph'];
+
+const FLAT = ['utils', 'graph'];
 
 export const SUITE_EXTENSIONS = ['.ts'];
 
@@ -35,7 +37,7 @@ function classify(segments: string[], i: number) {
   if (segments[i] === 'scripts' && PHASES.includes(segments[i + 1] ?? '') && DOMAINS.includes(segments[i + 2] ?? '')) {
     return segments[i + 2];
   }
-  if (segments[i] === 'scripts' && segments[i + 1] === 'utils') return 'arena';
+  if (segments[i] === 'scripts' && FLAT.includes(segments[i + 1] ?? '')) return 'arena';
   if (segments[i] === 'frameworks' && DOMAINS.includes(segments[i + 1] ?? '')) return segments[i + 1];
   return null;
 }
