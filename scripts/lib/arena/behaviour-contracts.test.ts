@@ -173,7 +173,7 @@ test('an angular binding that names its counterpart is valid', () => {
 
 test('the React inventory finds every component, no category and no loose file', () => {
   const found = reactComponents('.');
-  assert.equal(found.length, 56);
+  assert.equal(found.length, 57);
   assert.ok(found.includes('ArenaDialog'));
   assert.ok(found.includes('ArenaCalendarEvent'));
   assert.ok(found.includes('ArenaTableRow'));
@@ -193,7 +193,7 @@ test('the React inventory finds every component, no category and no loose file',
 
 test('the Angular inventory finds every component, no category and no bare module', () => {
   const found = angularPrimitives('.');
-  assert.equal(found.length, 56);
+  assert.equal(found.length, 57);
   assert.ok(found.includes('arena-tag'));
   assert.ok(found.includes('arena-bar-chart'));
   assert.ok(found.includes('arena-button'));

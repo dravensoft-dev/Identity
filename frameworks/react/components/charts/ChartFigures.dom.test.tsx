@@ -15,6 +15,7 @@ import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart.tsx';
 import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart.tsx';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
 import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart.tsx';
+import { ArenaPyramidChart } from './arena-pyramid-chart/ArenaPyramidChart.tsx';
 import type { ArenaSeries } from '../../Api.generated';
 
 afterEach(cleanup);
@@ -52,6 +53,7 @@ const CURSOR_KEYS = ['focus.roving', 'keyboard.ArrowLeft', 'keyboard.ArrowRight'
 
 const ACROSS: Record<string, [string, string]> = {
   ArenaHorizontalBarChart: ['ArrowDown', 'ArrowUp'],
+  ArenaPyramidChart: ['ArrowDown', 'ArrowUp'],
 };
 
 function unusedPair(axis: [string, string]): string[] {
@@ -214,3 +216,53 @@ for (const [name, Chart] of CARTESIAN) {
       'the strip comes out of the plot rather than being added to the box, so --chart-height stays the whole component');
   });
 }
+
+test('a pyramid mirrors two counts about one centre line, and the table keeps both unsigned', () => {
+
+  const root = mount(<ArenaPyramidChart labels={LABELS} label={CHART}
+    series={[{ label: 'Women', values: VALUES }, { label: 'Men', values: [9, 27, 11] }]} />);
+
+  const paths = [...root.querySelectorAll('path')].map((p) => p.getAttribute('d') ?? '');
+  assert.equal(paths.length, 6, 'two sides per band, three bands');
+
+  const starts = paths.map((d) => Number(/^M([\d.]+),/.exec(d)?.[1]));
+  const centre = starts[0]!;
+  assert.ok(starts.every((x) => Math.abs(x - centre) < 1e-9),
+    `every bar leaves the same centre line, got ${starts.join(', ')}`);
+
+  const reaches = paths.map((d) => Number(/L([\d.]+),/.exec(d)?.[1]));
+  assert.ok(reaches.some((x) => x < centre), 'the first series runs left of the centre');
+  assert.ok(reaches.some((x) => x > centre), 'the second runs right of it');
+
+  const cells = [...root.querySelectorAll('tbody td')].map((c) => (c.textContent ?? '').trim());
+  assert.ok(cells.every((c) => !c.startsWith('-')),
+    'the left side is negated when it is DRAWN and never in the table, which reads the counts that were passed');
+});
+
+test('a pyramid writes its axis in magnitudes, because both sides count up from the centre', () => {
+  const root = mount(<ArenaPyramidChart labels={LABELS} label={CHART}
+    series={[{ label: 'Women', values: VALUES }, { label: 'Men', values: [9, 27, 11] }]} />);
+  const ticks = [...root.querySelectorAll('text')].map((t) => (t.textContent ?? '').trim());
+  assert.ok(ticks.some((t) => /^\d/.test(t)), 'the axis is written at all');
+  assert.ok(!ticks.some((t) => t.startsWith('-')),
+    'a tick reading -20 would say the left side is a debt rather than a count');
+});
+
+test('ArenaPyramidChart matches its binding, whose cursor walks bands and not bars', () => {
+  const root = mount(<ArenaPyramidChart labels={LABELS} label={CHART}
+    series={[{ label: 'Women', values: VALUES }, { label: 'Men', values: [9, 27, 11] }]} />);
+
+  const graphic = root.querySelector<HTMLElement>('[role="img"]');
+  assert.ok(graphic, 'a chart with no role="img" is a decoration, not a figure');
+
+  const table = root.querySelector<HTMLElement>('table');
+  const head = [...table!.querySelectorAll<HTMLElement>('thead th')].map((c) => (c.textContent ?? '').trim());
+  assert.deepEqual(head, ['Category', 'Women', 'Men'], 'each side heads its own column under its own name');
+
+  assertPattern({
+    root,
+    bindingPath: join(REACT_COMPONENTS, 'charts/arena-pyramid-chart/ArenaPyramidChart.behaviour.json'),
+    subjects: { default: graphic },
+    behavioural: { 'alternative.table': true, ...cursorVerdicts(root, 'ArenaPyramidChart') },
+  });
+});

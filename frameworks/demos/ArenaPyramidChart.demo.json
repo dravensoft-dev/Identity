@@ -1,0 +1,36 @@
+{
+  "component": "ArenaPyramidChart",
+  "seed": {
+    "labels": [
+      "65+",
+      "45-64",
+      "30-44",
+      "18-29",
+      "0-17"
+    ],
+    "series": [
+      {
+        "label": "Women",
+        "values": [
+          312,
+          604,
+          731,
+          688,
+          542
+        ]
+      },
+      {
+        "label": "Men",
+        "values": [
+          268,
+          581,
+          742,
+          705,
+          561
+        ]
+      }
+    ],
+    "label": "Population by age band"
+  },
+  "note": "Both sides carry counts. The left one is negated when it is drawn and never in the table."
+}

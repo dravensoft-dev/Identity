@@ -4,7 +4,7 @@ import { ARENA_CAT_SLOTS } from '../../DataVisuals';
 import { forgetArenaWarnings } from '../../WarnOnce';
 import {
   arenaChartTable, arenaOneSeries, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount,
-  arenaStackSegments, arenaStackDomain,
+  arenaStackSegments, arenaStackDomain, arenaMirrorDomain, arenaTwoSeries,
 } from './ChartSeries';
 import type { ArenaSeries } from '../../Api.generated';
 import type { ArenaSeriesTone } from '../../Api.generated';
@@ -272,4 +272,48 @@ test('a stack of one series is the domain that series always had', () => {
 test('no series stacks to nothing rather than throwing', () => {
   assert.deepEqual(arenaStackSegments([], 0), []);
   assert.equal(arenaStackDomain([]).max, arenaSeriesDomain([]).max);
+});
+
+test('a mirrored domain reaches the same distance on both sides, or the two halves are not comparable', () => {
+
+  const sides: ArenaSeries[] = [
+    { label: 'Women', values: [40, 30, 12] },
+    { label: 'Men', values: [38, 33, 9] },
+  ];
+  const domain = arenaMirrorDomain(sides);
+  assert.equal(domain.min, -domain.max, `got ${domain.min} and ${domain.max}`);
+  assert.ok(domain.max >= 40, 'the widest bar on either side has to fit');
+});
+
+test('the mirror measures the larger side, so one lopsided category does not squash the other half', () => {
+
+  const lopsided: ArenaSeries[] = [
+    { label: 'Left', values: [10, 10] },
+    { label: 'Right', values: [10, 90] },
+  ];
+  const domain = arenaMirrorDomain(lopsided);
+  assert.equal(domain.min, -domain.max);
+  assert.ok(domain.max >= 90, `got ${domain.max}`);
+});
+
+test('a mirrored domain still puts zero on a tick, which is the centre line the two sides share', () => {
+  const domain = arenaMirrorDomain([{ label: 'a', values: [37] }, { label: 'b', values: [23] }]);
+  assert.ok(Math.abs(domain.max / domain.step - Math.round(domain.max / domain.step)) < 1e-9,
+    'the reach must be a whole number of steps from zero, or the centre is not a gridline');
+});
+
+test('two series are what a pyramid reads, and anything else warns rather than drawing a lie', () => {
+
+  forgetArenaWarnings();
+  const warnings: string[] = [];
+  const real = console.warn;
+  console.warn = (message: string) => { warnings.push(message); };
+  try {
+    const pair = arenaTwoSeries([{ label: 'only', values: [1] }], 'ArenaPyramidChart');
+    assert.equal(pair.length, 2, 'the missing side is empty rather than absent, so the chart still lays out');
+    assert.equal(pair[1]?.values.length, 0);
+    assert.ok(warnings.some((w) => w.includes('two series')), `no warning, got ${JSON.stringify(warnings)}`);
+  } finally {
+    console.warn = real;
+  }
 });

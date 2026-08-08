@@ -13,6 +13,7 @@ import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart';
 import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
 import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart';
+import { ArenaPyramidChart } from './arena-pyramid-chart/ArenaPyramidChart';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
 const BINDING = join(ANGULAR_COMPONENTS, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json');
 
@@ -281,6 +282,35 @@ test('arena-horizontal-bar-chart matches its binding, whose cursor answers the v
     const host = fixture.nativeElement as Element;
     assertFigure(host, 'charts/arena-horizontal-bar-chart/ArenaHorizontalBarChart.behaviour.json',
       cursorVerdicts(fixture, host, 'down'));
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('arena-pyramid-chart matches its binding, and keeps both sides unsigned in the table', () => {
+  const fixture = TestBed.createComponent(ArenaPyramidChart);
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('series', [
+    { label: 'Women', values: VALUES },
+    { label: 'Men', values: [9, 27, 11] },
+  ]);
+  fixture.componentRef.setInput('label', CHART);
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+    const head = [...host.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
+    assert.deepEqual(head, ['Category', 'Women', 'Men'], 'each side heads its own column under its own name');
+
+    const cells = [...host.querySelectorAll('tbody td')].map((c) => (c.textContent ?? '').trim());
+    assert.ok(cells.every((c) => !c.startsWith('-')),
+      'the left side is negated when it is DRAWN and never in the table');
+
+    assertPattern({
+      root: host,
+      bindingPath: join(ANGULAR_COMPONENTS, 'charts/arena-pyramid-chart/ArenaPyramidChart.behaviour.json'),
+      subjects: { default: host.querySelector('[role="img"]') },
+      behavioural: { 'alternative.table': true, ...cursorVerdicts(fixture, host, 'down') },
+    });
   } finally {
     fixture.destroy();
   }

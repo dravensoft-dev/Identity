@@ -62,6 +62,7 @@ export const MANIFEST_COVERS = new Map([
 ]);
 
 export const HAND_DRAWN = new Map([
+  ['ArenaPyramidChart', 'draws geometry rather than a surface, like every chart that plots data: the two mirrored runs of bars are positioned from the data\'s own reach against a measured inner width, so a class string cannot describe a shape whose coordinates ARE the data.'],
   ['ArenaHorizontalBarChart', 'draws geometry rather than a surface, for the same reason ArenaBarChart does: the bar rectangles are positioned from the data\'s own range against a measured inner width, so a class string cannot describe a shape whose coordinates ARE the data. It carries no manifest and writes its own appearance.'],
   ['ArenaBarChart', 'draws geometry rather than a surface: bar rectangles positioned from the data\'s '
     + 'own range against a measured inner height. A class string cannot describe a shape whose '

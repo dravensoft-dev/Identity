@@ -119,3 +119,21 @@ export function arenaStackDomain(series: readonly ArenaSeries[], count = 4): Are
   }
   return arenaNiceDomain(min, max, count);
 }
+
+export function arenaTwoSeries(series: readonly ArenaSeries[], chart: string): ArenaSeries[] {
+  if (series.length !== 2) {
+    arenaWarnOnce(`${chart}: reads two series, one for each side of the centre line, and was given ${series.length}. A pyramid with one side is a bar chart and a pyramid with three has nowhere to put the third; the rest are ignored.`);
+  }
+  return [series[0] ?? { label: '', values: [] }, series[1] ?? { label: '', values: [] }];
+}
+
+export function arenaMirrorDomain(series: readonly ArenaSeries[], count = 4): ArenaDomain {
+  let reach = 0;
+  for (const one of series) {
+    for (const value of one.values) {
+      const size = Math.abs(value);
+      if (size > reach) reach = size;
+    }
+  }
+  return arenaNiceDomain(-reach, reach, count);
+}
