@@ -63,7 +63,7 @@ export const node = {
       `frameworks/${layer}/ArenaStyles.generated.ts`, `frameworks/${layer}/Tv.generated.ts`,
     ]),
   ],
-  feeds: ['build:demos', 'build:angular-demo'],
+  feeds: ['build:demos', 'build:angular-demo', 'check:demos', 'check:react-types'],
 };
 
 export function sheetPath(manifestFile: string) {

@@ -17,14 +17,15 @@ import { captured } from '../../utils/captures.ts';
 
 export const COMPONENT_SOURCES = [
   'frameworks/react/components/**/*.tsx', 'frameworks/angular/components/**/*.ts',
-  '!frameworks/**/*.generated.*',
+  '!frameworks/**/*.generated.*', '!frameworks/**/*.test.*',
 ];
 
 export const node = {
   name: 'generate:member-docs',
   reads: ['contracts/api/components', 'frameworks/Components.json', ...COMPONENT_SOURCES],
   writes: COMPONENT_SOURCES,
-  feeds: ['build:react-barrel', 'build:demos', 'build:angular-demo'],
+  feeds: ['build:react-barrel', 'build:demos', 'build:angular-demo', 'check:demos',
+    'check:react-barrel', 'check:react-types'],
 };
 
 export const MEMBER_START: Record<string, RegExp> = {

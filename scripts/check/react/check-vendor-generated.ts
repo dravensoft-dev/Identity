@@ -3,6 +3,14 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
+import { node as vendorNode } from '../../build/react/build-vendor.ts';
+
+export const node = {
+  name: 'check:vendor',
+  reads: [...vendorNode.reads, ...vendorNode.writes],
+  writes: [],
+  feeds: [],
+};
 
 function skip(reason: string) {
   const code = skipExitCode();

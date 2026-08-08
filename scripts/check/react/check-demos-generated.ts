@@ -7,6 +7,16 @@ import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 
+export const node = {
+  name: 'check:demos',
+  reads: [
+    ...ROOTS.flatMap((root) => ['tsx', 'jsx', 'ts'].map((ext) => `${root}/**/*.${ext}`)),
+    ...ROOTS.map((root) => `${root}/**/*.generated.js`),
+  ],
+  writes: [],
+  feeds: [],
+};
+
 function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-demos-generated: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);

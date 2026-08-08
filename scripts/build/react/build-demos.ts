@@ -36,7 +36,7 @@ export const node = {
     ...ROOT_MODULES,
   ],
   writes: ROOTS.map((root) => `${root}/**/*.generated.js`),
-  feeds: [],
+  feeds: ['check:demos'],
 };
 
 export function loaderFor(path: string) {
