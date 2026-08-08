@@ -1,0 +1,19 @@
+{
+  "pattern": "figure-with-data-table",
+  "exceptions": [
+    {
+      "requirement": "keyboard.ArrowUp",
+      "reason": "The axes close a circle, so the cursor walks them with ArrowLeft and ArrowRight and leaves the vertical pair to the page. Going around IS a sequence, unlike a ring of slices, which is why this chart takes a cursor where the doughnut refuses one. A chart that consumed ArrowUp would take the page scroll away from a keyboard reader who only wanted to pass through."
+    },
+    {
+      "requirement": "keyboard.ArrowDown",
+      "reason": "The axes close a circle, so the cursor walks them with ArrowLeft and ArrowRight and leaves the vertical pair to the page. Going around IS a sequence, unlike a ring of slices, which is why this chart takes a cursor where the doughnut refuses one. A chart that consumed ArrowUp would take the page scroll away from a keyboard reader who only wanted to pass through."
+    }
+  ],
+  "additions": [
+    {
+      "provides": "keyboard.data-cursor",
+      "reason": "The plot is one keyboard region and the data cursor rides inside it: the group carries tabindex=\"0\", role=\"group\" and the chart name, and ArrowLeft, ArrowRight, Home, End and Escape move a cursor that drives exactly what hover drives. The cursor walks AXES rather than points, so one press reads every series on that axis at once, which is the comparison the shape is for."
+    }
+  ]
+}

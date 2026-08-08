@@ -8,7 +8,8 @@
     "ArenaDoughnutChart",
     "ArenaHorizontalBarChart",
     "ArenaLineChart",
-    "ArenaPyramidChart"
+    "ArenaPyramidChart",
+    "ArenaRadarChart"
   ],
   "display": [
     "ArenaActivityFeed",

@@ -16,6 +16,7 @@ import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart.ts
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
 import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart.tsx';
 import { ArenaPyramidChart } from './arena-pyramid-chart/ArenaPyramidChart.tsx';
+import { ArenaRadarChart } from './arena-radar-chart/ArenaRadarChart.tsx';
 import type { ArenaSeries } from '../../Api.generated';
 
 afterEach(cleanup);
@@ -33,6 +34,7 @@ const CHARTS: [string, ChartComponent, string, string][] = [
   ['ArenaDoughnutChart', ArenaDoughnutChart as unknown as ChartComponent, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json', 'Category'],
   ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent, 'charts/arena-line-chart/ArenaLineChart.behaviour.json', 'Point'],
   ['ArenaHorizontalBarChart', ArenaHorizontalBarChart as unknown as ChartComponent, 'charts/arena-horizontal-bar-chart/ArenaHorizontalBarChart.behaviour.json', 'Category'],
+  ['ArenaRadarChart', ArenaRadarChart as unknown as ChartComponent, 'charts/arena-radar-chart/ArenaRadarChart.behaviour.json', 'Axis'],
 ];
 
 function press(region: HTMLElement, key: string) {
@@ -167,6 +169,7 @@ const CARTESIAN: [string, ChartComponent][] = [
   ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent],
   ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent],
   ['ArenaHorizontalBarChart', ArenaHorizontalBarChart as unknown as ChartComponent],
+  ['ArenaRadarChart', ArenaRadarChart as unknown as ChartComponent],
 ];
 
 const TWO: readonly ArenaSeries[] = [

@@ -4,3 +4,4 @@ export * from './arena-doughnut-chart';
 export * from './arena-horizontal-bar-chart';
 export * from './arena-line-chart';
 export * from './arena-pyramid-chart';
+export * from './arena-radar-chart';

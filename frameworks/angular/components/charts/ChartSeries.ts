@@ -137,3 +137,13 @@ export function arenaMirrorDomain(series: readonly ArenaSeries[], count = 4): Ar
   }
   return arenaNiceDomain(-reach, reach, count);
 }
+
+export function arenaRadarDomain(series: readonly ArenaSeries[], count = 4): ArenaDomain {
+  let max = 0;
+  for (const one of series) {
+    for (const value of one.values) {
+      if (value > max) max = value;
+    }
+  }
+  return arenaNiceDomain(0, max, count);
+}

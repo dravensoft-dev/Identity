@@ -235,9 +235,9 @@ test('an emission of nothing is a failure rather than a clean pass', () => {
 
 test('the smoke phase walks every emitted page, in both layers', () => {
   const pages = pagePaths(root);
-  assert.equal(pages.length, 114);
-  assert.equal(pages.filter((p) => p.startsWith('frameworks/react/')).length, 57);
-  assert.equal(pages.filter((p) => p.startsWith('frameworks/angular/')).length, 57);
+  assert.equal(pages.length, 116);
+  assert.equal(pages.filter((p) => p.startsWith('frameworks/react/')).length, 58);
+  assert.equal(pages.filter((p) => p.startsWith('frameworks/angular/')).length, 58);
 });
 
 test('a page that mounts nothing is named with the command that builds what it loads', () => {

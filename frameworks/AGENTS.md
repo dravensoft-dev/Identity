@@ -331,6 +331,18 @@ that axis is what the data grows along. `chart.pad-category` is its own token ra
 gutter for the longest category name anybody might write would spend it on every vertical chart in
 the library.
 
+**A polar grid keeps its own floor at the centre, and its labels ride outside it.** A radius
+cannot be negative, so a value below zero is drawn at the centre rather than on the opposite axis,
+where it would land as a different datum entirely. That floor is the chart's, not the scale's,
+which is the same division `arenaScaleValue` already states and the doughnut already uses. The
+label ring is `arenaRadarRadius` plus one label gap, and the grid is inset by `chart.pad-bottom`
+to leave room for it: a grid that reached the edge of its box put every axis label under the
+vertex of a full-value polygon, which is what a screenshot showed and no gate could. The labels
+anchor by the side they point to, `start` on the right half and `end` on the left, because a
+centred label on a horizontal axis reaches back over the shape it names. `ChartPolar.ts` starts at
+12 o'clock and runs clockwise, the same as `arenaDoughnutSlices`, so two radial charts on one page
+never begin in different places.
+
 **A pyramid negates its first series when it DRAWS it and nowhere else.** Both sides carry counts,
 the accessible table reads the numbers that were passed, and the axis is written in magnitudes,
 because a tick reading a minus would say one side is a debt rather than a count. A negative value

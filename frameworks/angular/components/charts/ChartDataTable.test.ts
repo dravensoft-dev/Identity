@@ -14,6 +14,7 @@ import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
 import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart';
 import { ArenaPyramidChart } from './arena-pyramid-chart/ArenaPyramidChart';
+import { ArenaRadarChart } from './arena-radar-chart/ArenaRadarChart';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
 const BINDING = join(ANGULAR_COMPONENTS, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json');
 
@@ -311,6 +312,20 @@ test('arena-pyramid-chart matches its binding, and keeps both sides unsigned in 
       subjects: { default: host.querySelector('[role="img"]') },
       behavioural: { 'alternative.table': true, ...cursorVerdicts(fixture, host, 'down') },
     });
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('arena-radar-chart matches its binding, and its cursor walks the axes round the circle', () => {
+  const fixture = TestBed.createComponent(ArenaRadarChart);
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+    assertFigure(host, 'charts/arena-radar-chart/ArenaRadarChart.behaviour.json', cursorVerdicts(fixture, host));
   } finally {
     fixture.destroy();
   }
