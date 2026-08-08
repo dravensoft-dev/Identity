@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, computed, input, signal,
+  ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, booleanAttribute, computed, input, signal,
   viewChild,
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
@@ -7,11 +7,14 @@ import {
   ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaPlotWidth, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandIndex, arenaBandSubBand, arenaScaleValue,
+  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandIndex, arenaBandMark, arenaBandSubBand,
+  arenaScaleValue,
 } from '../ChartScales';
 import { arenaBarPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
-import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries';
+import {
+  arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount, arenaStackSegments, arenaStackDomain,
+} from '../ChartSeries';
 import { arenaLegendStrip } from '../ChartLegend';
 import { arenaTooltipAnchor } from '../ChartTooltip';
 import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer';
@@ -122,6 +125,8 @@ export class ArenaBarChart {
   readonly series = input.required<readonly ArenaSeries[]>();
   /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
   readonly label = input.required<string>();
+  /** Sit each series on the one below it inside a single band per category, rather than standing them side by side. Stack when the series are parts of one total and that total is the thing being read; leave it off when the comparison is between the series, because a segment that does not start at zero is one a reader cannot measure against its neighbours. Positive and negative values stack on their own runs, so a category holding both grows in both directions from the zero line and the axis is sized from the two sums rather than from the largest single value. A series with no value at a category contributes no segment, and the segment above it sits on the one below rather than floating over a gap: a missing number is not a zero here either. Only the outermost segment of each direction is rounded, so the joints inside a bar stay square and read as joints. */
+  readonly stack = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
@@ -170,7 +175,9 @@ export class ArenaBarChart {
     return `${this.label()} — bar chart`;
   });
 
-  private readonly domain = computed(() => arenaSeriesDomain(this.series()));
+  private readonly domain = computed(
+    () => (this.stack() ? arenaStackDomain(this.series()) : arenaSeriesDomain(this.series())),
+  );
   private readonly points = computed(() => arenaSeriesPointCount(this.series()));
   private readonly strip = computed(() => arenaLegendStrip(this.height(), this.series().length));
   protected readonly plotH = computed(() => this.strip().plotH);
@@ -207,25 +214,40 @@ export class ArenaBarChart {
     const zeroY = this.zeroY();
     const write = this.write();
     const labels = this.labels();
+    const stacked = this.stack();
     return Array.from({ length: this.points() }, (_, index) => ({
       index,
       hitX: arenaBandStart(bands, index),
       midX: arenaBandCenter(bands, index),
       label: labels[index] ?? '',
-      marks: series.flatMap((one, s) => {
-        const value = one.values[index];
-        if (value === undefined) return [];
-        const y = arenaScaleValue(yScale, value);
-        const sub = arenaBandSubBand(bands, index, series.length, s, chartSeriesGap);
-        return [{
-          key: s,
-          y,
-          name: series.length > 1 ? `${one.label}: ` : '',
-          path: arenaBarPath(sub.x, sub.width, y, zeroY, BAR_RADIUS),
-          color: arenaSeriesColors(one, this.points(), s + 1)[index],
-          value: write(value),
-        }];
-      }),
+      marks: stacked
+        ? arenaStackSegments(series, index).map((segment) => {
+          const one = series[segment.seriesIndex] as ArenaSeries;
+          return {
+            key: segment.seriesIndex,
+            y: arenaScaleValue(yScale, segment.to),
+            name: series.length > 1 ? `${one.label}: ` : '',
+            path: arenaBarPath(arenaBandMark(bands, index), bands.band,
+              arenaScaleValue(yScale, segment.to), arenaScaleValue(yScale, segment.from),
+              segment.outer ? BAR_RADIUS : 0),
+            color: arenaSeriesColors(one, this.points(), segment.seriesIndex + 1)[index],
+            value: write(one.values[index] as number),
+          };
+        })
+        : series.flatMap((one, s) => {
+          const value = one.values[index];
+          if (value === undefined) return [];
+          const y = arenaScaleValue(yScale, value);
+          const sub = arenaBandSubBand(bands, index, series.length, s, chartSeriesGap);
+          return [{
+            key: s,
+            y,
+            name: series.length > 1 ? `${one.label}: ` : '',
+            path: arenaBarPath(sub.x, sub.width, y, zeroY, BAR_RADIUS),
+            color: arenaSeriesColors(one, this.points(), s + 1)[index],
+            value: write(value),
+          }];
+        }),
     }));
   });
 

@@ -30,6 +30,7 @@ readonly health = computed<ArenaSeries[]>(() => [{ label: 'Errors', values: this
 | `labels*` | array | `readonly string[]` |  | One label per category, in the same order as every series' `values`. A category with no value in a series is drawn for the series that do have one. |
 | `series*` | array | `readonly ArenaSeries[]` |  | The plotted series, drawn as one group of bars per category. One series is the common case and draws exactly what it drew before; two or more share each category's band, so the bars of one category stand side by side and the reader compares within a category before comparing across. The ramp clamps at its last slot rather than cycling, so a ninth series folds into "Other" upstream, never into a colour already spent. |
 | `label*` | primitive | `string` |  | Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. |
+| `stack` | primitive | `boolean` | `false` | Sit each series on the one below it inside a single band per category, rather than standing them side by side. Stack when the series are parts of one total and that total is the thing being read; leave it off when the comparison is between the series, because a segment that does not start at zero is one a reader cannot measure against its neighbours. Positive and negative values stack on their own runs, so a category holding both grows in both directions from the zero line and the axis is sized from the two sums rather than from the largest single value. A series with no value at a category contributes no segment, and the segment above it sits on the one below rather than floating over a gap: a missing number is not a zero here either. Only the outermost segment of each direction is rounded, so the joints inside a bar stay square and read as joints. |
 | `valueSuffix` | primitive | `string` |  | Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. |
 | `valuePrefix` | primitive | `string` |  | Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. |
 | `valueFormat` | object | `ArenaNumberFormat` |  | How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. |
@@ -132,3 +133,23 @@ It is `aria-hidden`, deliberately. It is a key for a reader who can see the colo
 same names are already the column headers of the numbers table, so a focusable copy of them would
 be a second source for one fact. Its rows take no focus, and the plot still has exactly one tab
 stop.
+
+### Grouped or stacked
+
+`stack` puts the series inside one band per category, each sitting on the one below it, instead of
+standing them side by side. Reach for it when the series are parts of one total and the total is
+what the reader is there for. Leave it off when the comparison is between the series: only the
+first segment starts at the zero line, so every one above it is a length a reader has to measure
+against a moving base, which is the thing bar charts are good at and stacks are not.
+
+Positive and negative values stack on their own runs, so a category holding both grows in both
+directions from the zero line and the axis is sized from the two sums rather than from the largest
+single value. That is the same divergent axis a grouped chart already had; a stack just gives it
+more to hold.
+
+A series with no value at a category contributes no segment, and the segment above it sits on the
+one below rather than floating over a gap. A missing number is not a zero here either, so a hole
+shortens the total instead of pretending the category was measured.
+
+Only the outermost segment of each direction is rounded. The joints inside a bar stay square,
+because a rounded joint reads as the end of something.

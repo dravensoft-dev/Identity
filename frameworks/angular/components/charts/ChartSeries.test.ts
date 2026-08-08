@@ -4,6 +4,7 @@ import { ARENA_CAT_SLOTS } from '../../DataVisuals';
 import { forgetArenaWarnings } from '../../WarnOnce';
 import {
   arenaChartTable, arenaOneSeries, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount,
+  arenaStackSegments, arenaStackDomain,
 } from './ChartSeries';
 import type { ArenaSeries } from '../../Api.generated';
 import type { ArenaSeriesTone } from '../../Api.generated';
@@ -185,4 +186,90 @@ test('every row carries one cell per series column, so the widths agree', () => 
   const table = arenaChartTable('Category', [series({ label: 'A', values: [1, 2] }), series({ label: 'B', values: [3, 4] })], ['a', 'b'], write);
   for (const row of table.rows)
     assert.equal(row.cells.length + 1, table.columns.length, 'a row must fill every column it declares');
+});
+
+const STACK: ArenaSeries[] = [
+  { label: 'Web', values: [10, 5, -4] },
+  { label: 'API', values: [20, -8, -6] },
+  { label: 'Jobs', values: [30, 2, 1] },
+];
+
+test('a stack sits each segment on the one below it, so the tip of the last is the total', () => {
+  const segments = arenaStackSegments(STACK, 0);
+  assert.deepEqual(segments.map((s) => [s.from, s.to]), [[0, 10], [10, 30], [30, 60]]);
+});
+
+test('negatives stack downward on their own run, so a mixed category grows both ways from zero', () => {
+
+  const segments = arenaStackSegments(STACK, 1);
+  assert.deepEqual(segments.map((s) => [s.seriesIndex, s.from, s.to]), [
+    [0, 0, 5],
+    [1, 0, -8],
+    [2, 5, 7],
+  ]);
+});
+
+test('only the last segment of each direction is the outer one, because that is where a radius belongs', () => {
+
+  const segments = arenaStackSegments(STACK, 1);
+  assert.deepEqual(segments.map((s) => s.outer), [false, true, true]);
+});
+
+test('an all-positive category rounds one end and leaves every joint square', () => {
+  assert.deepEqual(arenaStackSegments(STACK, 0).map((s) => s.outer), [false, false, true]);
+});
+
+test('a missing value adds no segment, so the stack is the sum of the numbers that exist', () => {
+
+  const holed: ArenaSeries[] = [
+    { label: 'Web', values: [10, 5] },
+    { label: 'API', values: [20] },
+    { label: 'Jobs', values: [30, 7] },
+  ];
+  const segments = arenaStackSegments(holed, 1);
+  assert.deepEqual(segments.map((s) => s.seriesIndex), [0, 2], 'the short series contributes nothing, not a zero');
+  assert.deepEqual(segments.map((s) => [s.from, s.to]), [[0, 5], [5, 12]],
+    'the segment above a hole sits on the one below it rather than floating over a gap');
+});
+
+test('a zero-valued series takes no room and does not steal the rounded end from the real top', () => {
+
+  const flat: ArenaSeries[] = [
+    { label: 'Web', values: [10] },
+    { label: 'API', values: [0] },
+  ];
+  const segments = arenaStackSegments(flat, 0);
+  assert.deepEqual(segments.map((s) => s.outer), [true, false],
+    'a segment of no height carrying the radius would leave the visible top square');
+});
+
+test('a stacked domain measures totals, where a grouped one measures the largest single value', () => {
+
+  assert.ok(arenaStackDomain(STACK).max > arenaSeriesDomain(STACK).max,
+    'a stack is as tall as its total, where grouped bars are as tall as the tallest single value');
+  assert.ok(arenaStackDomain(STACK).max >= 60, 'the tallest category totals 60 and the axis has to hold it');
+});
+
+test('a stacked domain sums each direction on its own, so a mixed category does not cancel out', () => {
+
+  const domain = arenaStackDomain(STACK);
+  assert.ok(domain.min <= -14, `a category summing to -14 downward needs room for it, got ${domain.min}`);
+  assert.ok(domain.max >= 60, `got ${domain.max}`);
+});
+
+test('a stacked domain still puts zero on a tick, which is what makes the two directions readable', () => {
+
+  const domain = arenaStackDomain(STACK);
+  assert.ok(Math.abs(domain.min / domain.step - Math.round(domain.min / domain.step)) < 1e-9,
+    'the floor must be a whole number of steps from zero');
+});
+
+test('a stack of one series is the domain that series always had', () => {
+  const one: ArenaSeries[] = [{ label: 'Web', values: [10, 20, 30] }];
+  assert.deepEqual(arenaStackDomain(one), arenaSeriesDomain(one));
+});
+
+test('no series stacks to nothing rather than throwing', () => {
+  assert.deepEqual(arenaStackSegments([], 0), []);
+  assert.equal(arenaStackDomain([]).max, arenaSeriesDomain([]).max);
 });

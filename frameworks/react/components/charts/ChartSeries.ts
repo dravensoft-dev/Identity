@@ -14,6 +14,13 @@ export interface ArenaChartTable {
   rows: ArenaChartTableRow[];
 }
 
+export interface ArenaStackSegment {
+  seriesIndex: number;
+  from: number;
+  to: number;
+  outer: boolean;
+}
+
 export function arenaSeriesColors(series: ArenaSeries, count: number, fallbackSlot: number): string[] {
   const { slot, slots, tone } = series;
   if (tone && (slot !== undefined || slots !== undefined)) {
@@ -66,4 +73,49 @@ export function arenaChartTable(
       cells: series.map((one) => (index < one.values.length ? write(one.values[index] as number) : '')),
     })),
   };
+}
+
+export function arenaStackSegments(series: readonly ArenaSeries[], index: number): ArenaStackSegment[] {
+  const segments: ArenaStackSegment[] = [];
+  let up = 0;
+  let down = 0;
+  let lastUp = -1;
+  let lastDown = -1;
+  series.forEach((one, seriesIndex) => {
+    const value = one.values[index];
+    if (value === undefined) return;
+    const from = value < 0 ? down : up;
+    const to = from + value;
+    if (value > 0) {
+      up = to;
+      lastUp = segments.length;
+    } else if (value < 0) {
+      down = to;
+      lastDown = segments.length;
+    }
+    segments.push({ seriesIndex, from, to, outer: false });
+  });
+  const top = segments[lastUp];
+  if (top) top.outer = true;
+  const bottom = segments[lastDown];
+  if (bottom) bottom.outer = true;
+  return segments;
+}
+
+export function arenaStackDomain(series: readonly ArenaSeries[], count = 4): ArenaDomain {
+  let min = 0;
+  let max = 0;
+  for (let index = 0; index < arenaSeriesPointCount(series); index += 1) {
+    let up = 0;
+    let down = 0;
+    for (const one of series) {
+      const value = one.values[index];
+      if (value === undefined) continue;
+      if (value < 0) down += value;
+      else up += value;
+    }
+    if (down < min) min = down;
+    if (up > max) max = up;
+  }
+  return arenaNiceDomain(min, max, count);
 }

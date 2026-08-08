@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
 import { arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandCenter, arenaBandIndex, arenaBandSubBand, arenaScaleValue,
+  arenaLinearScale, arenaBandScale, arenaBandCenter, arenaBandIndex, arenaBandMark, arenaBandSubBand, arenaScaleValue,
 } from '../ChartScales.ts';
 import { arenaBarPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
-import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries.ts';
+import {
+  arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount, arenaStackSegments, arenaStackDomain,
+} from '../ChartSeries.ts';
 import { arenaLegendStrip } from '../ChartLegend.ts';
 import { arenaTooltipAnchor } from '../ChartTooltip.ts';
 import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer.ts';
@@ -24,6 +26,9 @@ export interface ArenaBarChartProps {
 
   /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
   label: string;
+
+  /** Sit each series on the one below it inside a single band per category, rather than standing them side by side. Stack when the series are parts of one total and that total is the thing being read; leave it off when the comparison is between the series, because a segment that does not start at zero is one a reader cannot measure against its neighbours. Positive and negative values stack on their own runs, so a category holding both grows in both directions from the zero line and the axis is sized from the two sums rather than from the largest single value. A series with no value at a category contributes no segment, and the segment above it sits on the one below rather than floating over a gap: a missing number is not a zero here either. Only the outermost segment of each direction is rounded, so the joints inside a bar stay square and read as joints. */
+  stack?: boolean;
 
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   valueSuffix?: string;
@@ -43,7 +48,7 @@ export interface ArenaBarChartProps {
 
 
 export function ArenaBarChart({
-  labels, series, label, valueSuffix, valuePrefix, valueFormat,
+  labels, series, label, stack = false, valueSuffix, valuePrefix, valueFormat,
   height = ARENA_CHART_HEIGHT, minPointSpacing,
 }: ArenaBarChartProps) {
   if (!label) throw new Error('ArenaBarChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
@@ -65,7 +70,7 @@ export function ArenaBarChart({
     box.scrollLeft = box.scrollWidth - box.clientWidth;
   }, [scrolls, width]);
 
-  const domain = arenaSeriesDomain(series);
+  const domain = stack ? arenaStackDomain(series) : arenaSeriesDomain(series);
   const strip = arenaLegendStrip(height, series.length);
   const box = arenaPlotBox(width, strip.plotH);
   const yScale = arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
@@ -109,7 +114,14 @@ export function ArenaBarChart({
 
         {Array.from({ length: n }, (_, i) => (
           <g key={i}>
-            {series.map((one, s) => {
+            {stack ? arenaStackSegments(series, i).map((segment) => (
+              <path key={segment.seriesIndex}
+                d={arenaBarPath(arenaBandMark(bands, i), bands.band, arenaScaleValue(yScale, segment.to),
+                  arenaScaleValue(yScale, segment.from), segment.outer ? chartBarRadius : 0)}
+                fill={colors[segment.seriesIndex]?.[i]}
+                opacity={hover === null || hover === i ? 1 : 0.55}
+                style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
+            )) : series.map((one, s) => {
               const value = one.values[i];
               if (value === undefined) return null;
               const y = arenaScaleValue(yScale, value);
@@ -162,7 +174,9 @@ export function ArenaBarChart({
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
           ...arenaTooltipAnchor(arenaBandCenter(bands, hover),
-            Math.min(...series.map((one) => arenaScaleValue(yScale, one.values[hover] ?? 0)))),
+            Math.min(...(stack
+              ? arenaStackSegments(series, hover).map((segment) => arenaScaleValue(yScale, segment.to))
+              : series.map((one) => arenaScaleValue(yScale, one.values[hover] ?? 0))))),
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
           {series.map((one, s) => one.values[hover] !== undefined && (
