@@ -29,7 +29,13 @@ export const node = {
     `${LAYER}/*.ts`, `${LAYER}/tsconfig*.json`, 'package.json', 'bun.lock',
   ],
   writes: [`${LAYER}/build/demo/**`],
-  feeds: ['check:angular-demos'],
+  feeds: [
+    'check:angular-demos',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:playgrounds',
+  ],
 };
 
 export const ENTRY_SUFFIXES = ['.demo.entry.generated.js'];

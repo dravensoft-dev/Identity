@@ -15,6 +15,18 @@ import { emittedTree } from '../../lib/arena/layers.ts';
 import { numericConstants } from './check-duplicate-constants.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const node = {
+  name: 'check:script-tokens',
+  reads: [
+    'contracts/design/**', 'contracts/design-generated/**', 'contracts/api/types',
+    'frameworks/react/**', 'frameworks/angular/**',
+    '!frameworks/angular/build/**', '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const LAYERS_WITH_MODULES = ['react', 'angular'];
 
 export function cssCounterpart(value: string) {

@@ -1,12 +1,12 @@
-/* Runs a node under the tracer and reports what FILES it opened and does not declare. A directory
- * it listed is not one of them: a digest is over the sorted list of path and hash pairs, so a file
- * appearing under a directory a spec reaches already moves the fingerprint, and the listing needs
- * no row of its own. This answers the
- * question check:graph cannot: that gate holds the edges BETWEEN declarations, so it finds a reader
- * nobody subscribed, and a `reads` that is too narrow leaves no disagreement to find. A file no node
- * claims is a file every declaration agrees is nobody's business, and only a run is a witness.
- * A spawned process is invisible to the tracer, so a node that spawns one is reported unaudited and
- * never clean: measuring nothing and finding nothing have to read differently. */
+/* Runs a node under the tracer and reports what FILES it opened and does not declare, answering
+ * what check:graph cannot: that gate holds the edges BETWEEN declarations, so a `reads` that is too
+ * narrow leaves no disagreement to find, and only a run is a witness. A directory it listed is not
+ * counted, because the digest is over a sorted list and a file appearing under a spec already moves
+ * it. Neither is a probe on a path that is not there, and that is the one place two rules here
+ * disagree: it IS a dependency, and check:graph refuses a spec whose directory holds nothing, so it
+ * cannot be written down; the day the tree exists the read becomes real and this reports it.
+ * A node that spawns a process is reported unaudited and never clean, because measuring nothing and
+ * finding nothing have to read differently. */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, statSync } from 'node:fs';
@@ -41,8 +41,12 @@ export const isDirectory = (root: string, rel: string) => {
   try { return statSync(join(root, rel)).isDirectory(); } catch { return false; }
 };
 
-export function undeclaredReads(node: GraphNode, opened: string[], root = repoRoot) {
+export function undeclaredReads(
+  node: GraphNode, opened: string[], root = repoRoot,
+  onDisk = (rel: string) => existsSync(join(root, rel)),
+) {
   return opened
+    .filter(onDisk)
     .filter((rel) => !isDirectory(root, rel))
     .filter((rel) => !NOT_AN_INPUT.some((spec) => matchesSpec(spec, rel)))
     .filter((rel) => ![...node.reads, ...node.writes]

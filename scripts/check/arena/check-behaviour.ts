@@ -11,6 +11,18 @@ import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 import { pascal, kebab } from '../../utils/case.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:behaviour',
+  reads: [
+    'contracts/behaviour', 'frameworks/Components.json',
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/angular/BehaviourDelegated.json',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export function describeBinding(binding: BehaviourBinding) {
   return bindingCases(binding)
     .map((c) => (c.name ? `${c.name}:${c.pattern}` : c.pattern))

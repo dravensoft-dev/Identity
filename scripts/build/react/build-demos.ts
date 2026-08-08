@@ -36,7 +36,24 @@ export const node = {
     ...ROOT_MODULES,
   ],
   writes: ROOTS.map((root) => `${root}/**/*.generated.js`),
-  feeds: ['check:demos'],
+  feeds: [
+    'check:appearance',
+    'check:behaviour',
+    'check:cards',
+    'check:compliance',
+    'check:demos',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:playgrounds',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+    'check:states',
+  ],
 };
 
 export function loaderFor(path: string) {

@@ -1,14 +1,12 @@
-/* Runs the build in the order the graph derives, so the sequence is a consequence of what each step
- * declares rather than prose in package.json that nothing tests. It aborts on the first failing
- * step, which the `&&` chain it replaces did too and gates deliberately do not: a step compiled
- * against an upstream that failed reports a second, misleading error over the real one. The
- * fingerprint RECORDED is measured after the step, never the one that decided it: two generators
- * write into the files they read, so a value measured before would be stale the instant they
- * succeed, and one measured after is the converged one their next run recomputes exactly.
- * --assert-full fails a run that kept anything, which is what stops a workflow proving the build
- * idempotent over a build that did nothing. It runs the steps under build/ and generate/ and never
- * a gate: every node is in one graph, and which phase declared a node is what says whether a build
- * is the thing that runs it. */
+/* Runs the build in the order the graph derives, so the sequence follows what each step declares
+ * rather than prose in package.json that nothing tests. It runs the steps under build/ and
+ * generate/ and never a gate: every node is in one graph, and the phase that declared one says
+ * whether a build is what runs it. It aborts on the first failure, which the `&&` chain it replaces
+ * did and gates deliberately do not, because a step compiled against a failed upstream reports a
+ * second error over the real one. The fingerprint RECORDED is measured after the step: two
+ * generators write into what they read, so a value taken before is stale the instant they succeed.
+ * --assert-full fails a run that kept anything, which stops a workflow proving the build idempotent
+ * over a build that did nothing. */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';

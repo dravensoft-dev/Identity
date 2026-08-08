@@ -12,6 +12,18 @@ import { isMainModule } from '../../utils/main-module.ts';
 import { renderTarget, SKILL_TARGETS, loadCategories } from '../../generate/arena/generate-skills.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:skills',
+  reads: [
+    'contracts/api/components', 'frameworks/Components.json', 'frameworks/SKILL.md',
+    'frameworks/react/**', 'frameworks/angular/**',
+    '!frameworks/angular/build/**', '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export function trackingProblems(target: string, tracked: boolean) {
   return tracked
     ? []

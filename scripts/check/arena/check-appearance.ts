@@ -16,6 +16,18 @@ import { HAND_DRAWN, categoryOf, inScope, manifestFor } from '../../lib/tailwind
 import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:appearance',
+  reads: [
+    'frameworks/Components.json',
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/tailwind/components/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const EXEMPT = new Map<string, string>([]);
 
 const REACT_COMPONENTS = join(repoRoot, 'frameworks/react/components');

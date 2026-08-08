@@ -20,6 +20,18 @@ import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contr
 import type { ContractCandidate, TypeContract } from '../../lib/arena/contract-shapes.ts';
 import type { SurfaceMember } from '../../lib/arena/api-surface.ts';
 
+export const node = {
+  name: 'check:api',
+  reads: [
+    'contracts/api', 'frameworks/Components.json',
+    'frameworks/react/components/**/*.tsx', 'frameworks/angular/components/**/*.ts',
+    'frameworks/react/Api.generated.ts', 'frameworks/angular/Api.generated.ts',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 

@@ -14,6 +14,17 @@ import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const node = {
+  name: 'check:duplicate-constants',
+  reads: [
+    'frameworks/react/**', 'frameworks/angular/**',
+    '!frameworks/angular/build/**', '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const EXEMPT = new Map([
   ['SSR_VIEWPORT_H',
    'Not a design value and so not a token: it stands in for window.innerHeight where there is no '

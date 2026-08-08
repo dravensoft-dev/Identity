@@ -36,7 +36,17 @@ export const node = {
   name: 'build:vendor',
   reads: ['package.json', 'bun.lock'],
   writes: ENTRIES.map((entry) => `${VENDOR_DIR}/${entry.out}`),
-  feeds: ['check:vendor'],
+  feeds: [
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:script-tokens',
+    'check:skills',
+    'check:vendor',
+  ],
 };
 
 function realExportNames(root: string, real: string) {

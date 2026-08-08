@@ -13,6 +13,17 @@ import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const node = {
+  name: 'check:dimensions',
+  reads: [
+    'frameworks/react/**', 'frameworks/angular/**', 'frameworks/tailwind/**', 'frameworks/demos/**',
+    '!frameworks/angular/build/**', '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
 const PROPS = new Set([

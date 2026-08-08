@@ -62,17 +62,17 @@ test('a trace file is named for its node, and a colon is not a filename', () => 
 
 test('what a node declares is what excuses a read, in either direction', () => {
   const opened = ['contracts/design/colors.css', 'frameworks/react/Index.generated.ts'];
-  assert.deepEqual(undeclaredReads(node({ reads: ['contracts/design/*.css'] }), opened, '/nowhere'),
+  assert.deepEqual(undeclaredReads(node({ reads: ['contracts/design/*.css'] }), opened, '/nowhere', () => true),
     ['frameworks/react/Index.generated.ts']);
   assert.deepEqual(undeclaredReads(
     node({ reads: ['contracts/design/*.css'], writes: ['frameworks/react/Index.generated.ts'] }),
-    opened, '/nowhere',
+    opened, '/nowhere', () => true,
   ), [], 'a gate comparing against its own output opens what it writes, and that is declared');
 });
 
 test('the trees a node never declares are not counted against it', () => {
   assert.deepEqual(
-    undeclaredReads(node(), ['node_modules/react/index.js', '.git/HEAD', 'scripts/lib/arena/layers.ts'], '/nowhere'),
+    undeclaredReads(node(), ['node_modules/react/index.js', '.git/HEAD', 'scripts/lib/arena/layers.ts'], '/nowhere', () => true),
     [],
     'scripts/ is in the closure rather than in reads, and the other two are outside the walk');
   assert.ok(NOT_AN_INPUT.length > 0);

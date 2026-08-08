@@ -12,6 +12,14 @@ import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 
+export const node = {
+  name: 'check:intro',
+  reads: ['intro/**'],
+  writes: [],
+  feeds: [],
+};
+
+
 function skip(reason: string) {
   const code = skipExitCode();
   console.error(`check-intro-generated: ${code === 1 ? 'FAILED (strict)' : 'SKIPPED'} — ${reason}`);

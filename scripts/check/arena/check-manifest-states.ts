@@ -21,6 +21,17 @@ import { repoRoot } from '../../lib/arena/repo-root.ts';
 import type { ComponentManifest, ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
 import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 
+export const node = {
+  name: 'check:states',
+  reads: [
+    'contracts/api/components', 'frameworks/Components.json',
+    'frameworks/react/components/**', 'frameworks/tailwind/components/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export { HAND_DRAWN, MANIFEST_COVERS, coveredContracts };
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');

@@ -11,6 +11,17 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:shared-arithmetic',
+  reads: [
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/react/*.ts', 'frameworks/angular/*.ts',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const PAIRED = [
   'AnchorActivation.ts',
   'WarnOnce.ts',

@@ -13,6 +13,18 @@ import { walkFiles } from '../../utils/walk-files.ts';
 import { findComments } from '../../lib/arena/comments.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:generated',
+  reads: [
+    '.gitignore', 'frameworks/**', 'contracts/design/**', 'contracts/design-generated/**',
+    'intro/**', 'assets/fonts/**',
+    '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const SCANNED_EXTENSIONS = ['.mjs', '.jsx', '.tsx', '.ts', '.js', '.css'];
 const SKIPPED_DIRECTORIES = new Set(['node_modules', '.git', 'build', 'dist', '.cache']);
 

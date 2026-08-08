@@ -17,7 +17,21 @@ export const node = {
   name: 'generate:api-types',
   reads: [TYPES_DIR],
   writes: API_TARGETS,
-  feeds: ['build:angular-demo', 'check:angular', 'check:arbitrary', 'check:react-types'],
+  feeds: [
+    'build:angular-demo',
+    'check:angular',
+    'check:api',
+    'check:arbitrary',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:react-types',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+  ],
 };
 
 const HEADER =

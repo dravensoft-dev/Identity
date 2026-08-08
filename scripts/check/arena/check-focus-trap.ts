@@ -18,6 +18,18 @@ import type { Cdp } from '../../lib/arena/cdp.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:focus-trap',
+  reads: [
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/tailwind/consume/**', 'frameworks/react/vendor/**',
+    'frameworks/react/playground/**', 'frameworks/angular/build/demo/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const NAVIGATE_TIMEOUT_MS = 30_000;
 const SETTLE_MS = 1_100;
 const STEP_MS = 60;

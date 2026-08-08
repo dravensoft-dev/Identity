@@ -22,7 +22,25 @@ export const node = {
   name: 'generate:prompt-api',
   reads: ['contracts/api/components', 'frameworks/Components.json', ...PROMPTS],
   writes: PROMPTS,
-  feeds: ['check:arbitrary'],
+  feeds: [
+    'check:appearance',
+    'check:arbitrary',
+    'check:behaviour',
+    'check:cards',
+    'check:compliance',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:playgrounds',
+    'check:prompts',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+    'check:states',
+  ],
 };
 
 export const CONSUMER_DATA = 'Record<string, unknown>';

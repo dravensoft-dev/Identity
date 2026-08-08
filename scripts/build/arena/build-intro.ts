@@ -22,7 +22,11 @@ export const node = {
   name: 'build:intro',
   reads: [`${PAGE_DIR}/*.html`, `${PAGE_DIR}/*.js`, `!${PAGE_DIR}/*${GENERATED_SUFFIX}`],
   writes: [`${PAGE_DIR}/*${GENERATED_SUFFIX}`],
-  feeds: [],
+  feeds: [
+    'check:generated',
+    'check:icons',
+    'check:intro',
+  ],
 };
 
 const MODULE_ENTRY = /<script[^>]*\stype="module"[^>]*\ssrc="([^"]+)"/g;

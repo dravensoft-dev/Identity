@@ -14,6 +14,17 @@ import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:compliance',
+  reads: [
+    'contracts/behaviour', 'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/react/test/**', 'frameworks/angular/test/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const SUITE_DIRS = [
   { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'components') },
   { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'test') },

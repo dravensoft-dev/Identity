@@ -17,6 +17,17 @@ import { walkFiles } from '../../utils/walk-files.ts';
 import { LAYERS } from '../../lib/arena/layers.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:layer-independence',
+  reads: [
+    'frameworks/react/**', 'frameworks/angular/**', 'frameworks/tailwind/**',
+    '!frameworks/angular/build/**', '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const LAYER_TOKENS: Record<string, [string, RegExp][]> = {
   react: [
     ['React', /\bReact\b/],

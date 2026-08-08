@@ -11,6 +11,14 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:contracts',
+  reads: ['contracts/**'],
+  writes: [],
+  feeds: [],
+};
+
+
 export const LEVELS = ['api', 'behaviour', 'design'];
 export const GENERATED = 'design-generated';
 

@@ -22,6 +22,18 @@ import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { themeCss } from '../../generate/core/arena-to-prod/theme-css.ts';
 import { MAP_FILE } from '../../lib/arena/component-map.ts';
 
+export const node = {
+  name: 'check:packages',
+  reads: [
+    'frameworks/react/dist/**', 'frameworks/angular/dist/**', 'frameworks/Components.json',
+    '.claude-plugin/plugin.json', 'contracts/design/palette.*.json',
+    'contracts/design-generated/palette.generated.css',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export type PackageManifest = {
   name?: string;
   version?: string;

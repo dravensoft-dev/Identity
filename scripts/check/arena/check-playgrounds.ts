@@ -28,6 +28,19 @@ import type { ComponentContract, MemberSpec, TypeContract } from '../../lib/aren
 import type { Fixture, FixtureChild } from '../../lib/arena/playground-model.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const node = {
+  name: 'check:playgrounds',
+  reads: [
+    'contracts/api', 'frameworks/demos/**', 'frameworks/Components.json',
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/tailwind/components/**', 'frameworks/tailwind/consume/**',
+    'frameworks/angular/build/demo/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 type Contracts = Map<string, ComponentContract>;
 type Types = Map<string, TypeContract>;
 

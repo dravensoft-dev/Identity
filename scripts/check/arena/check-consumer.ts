@@ -23,6 +23,14 @@ import { CLI_BINS } from '../../lib/arena/package-assembly.ts';
 import { THEME_SHEET, ICONS_SHEET } from '../../generate/core/arena-to-prod/arena-to-prod.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const node = {
+  name: 'check:consumer',
+  reads: ['frameworks/react/dist/**', 'frameworks/angular/dist/**'],
+  writes: [],
+  feeds: [],
+};
+
+
 export const CLI = 'bin/arena-to-prod.mjs';
 export const GLYPH = 'ph-bell';
 

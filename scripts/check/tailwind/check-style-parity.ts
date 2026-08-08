@@ -26,7 +26,13 @@ export const node = {
   name: 'check:style-parity',
   reads: [MANIFESTS, `${CONSUME}/**/*.css`],
   writes: [PAGE],
-  feeds: ['check:arbitrary'],
+  feeds: [
+    'check:arbitrary',
+    'check:dimensions',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+  ],
 };
 const TIMEOUT_MS = 60_000;
 
