@@ -19,14 +19,13 @@ bun install
 bun run build
 ```
 
-That runs the steps below in order, the token layer first, because the Tailwind preset compiles
-against the token CSS. The chain is the one `package.json`'s `build` script declares, and
-reading it there is how the count is derived rather than remembered:
-
-```
-generate:tokens → generate:api → generate:playgrounds → generate:skills → build:react-barrel →
-build:tailwind → build:vendor → build:demos → build:angular-demo
-```
+**The order is derived, not written down.** `scripts/graph/run-build.ts` sorts the steps by what
+each declares in its own `node`, so `generate:tokens` runs before `build:tailwind` because the
+Tailwind preset reads the token CSS and the edge says so, rather than because a chain in
+`package.json` happens to list it first. Ties fall in the order the scripts are collected, so the
+sequence is stable. Read the order off a run, which prints every step and why it ran; there is no
+second copy of it to go stale. `scripts/graph/AGENTS.md` carries how a step declares itself, and
+`check:graph` refuses a step whose declaration and edges disagree.
 
 **Until it has run once, part of the tree does not exist.** These are git-ignored, so a fresh
 clone has none of them:
@@ -54,6 +53,11 @@ builds first for exactly this reason.
 `bun run build` is idempotent: running it on a clean tree leaves `git status` empty. If it does
 not, a generator and a committed file disagree, which is what `check:tokens` and `check:fonts`
 exist to say out loud.
+
+**Every step runs on every invocation.** The run measures what each step would have kept from the
+cache and prints it, and keeps nothing: a fingerprint is worth believing only after a run where
+being wrong could not have skipped anything. `--obey` is what asks it to act on the measurement,
+and `--force` is what refuses to measure at all.
 
 `build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
 git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,

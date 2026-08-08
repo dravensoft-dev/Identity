@@ -30,7 +30,7 @@
   },
   "scripts": {
     "demos": "bun run build && bun scripts/serve.ts",
-    "build": "bun run generate:tokens && bun run generate:api && bun run generate:playgrounds && bun run generate:skills && bun run build:react-barrel && bun run build:tailwind && bun run build:vendor && bun run build:intro && bun run build:demos && bun run build:angular-demo",
+    "build": "bun scripts/graph/run-build.ts",
     "generate:tokens": "bun scripts/generate/arena/generate-tokens.ts",
     "generate:api": "bun run generate:api-types && bun run generate:member-docs && bun run generate:prompt-api",
     "generate:api-types": "bun scripts/generate/arena/generate-api-types.ts",

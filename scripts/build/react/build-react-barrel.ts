@@ -25,10 +25,7 @@ export const node = {
   name: 'build:react-barrel',
   reads: [
     'frameworks/react/components/**/*.tsx', 'frameworks/react/components/**/*.ts',
-    '!frameworks/react/components/**/*.demo.entry.generated.tsx',
-    'frameworks/react/Api.generated.ts',
-    'frameworks/react/ArenaStyles.generated.ts',
-    'frameworks/react/Tv.generated.ts',
+    '!frameworks/react/components/**/*.generated.*',
     ...HELPERS.map((helper) => `frameworks/react/${helper}.*`),
   ],
   writes: [BARREL_TARGET],

@@ -12,6 +12,10 @@ judging.
 | `pathspecs.ts` | what a declared spec reaches: `matchesSpec(spec, path)` and `resolveSpecs(specs, universe)` against a path list, plus `unreachedSpecs(specs, universe)` and `reachesNoDirectory(spec, universe)`, which is how a typo is told from a spec written ahead of the tree. |
 | `inputs.ts` | what a file is, as a fingerprint: `universe(root)` walks the tree once, `stampOf(path, previous)` filters on the stat and arbitrates on the hash, and `digestOf(paths, stamps)` folds a list into one value. |
 | `script-closure.ts` | every module under `scripts/` a script reaches: `relativeSpecifiers(source)` and `scriptClosure(entry, root)`. |
+| `fingerprint.ts` | what a node is worth comparing: `fingerprintOne(node, measure)` and `fingerprintNodes(...)` over the whole set, in dependency order. |
+| `state.ts` | what the last green run left behind, under `.cache/`: `readFiles`, `writeFiles`, `readState`, `writeState`, `recordGreen`, `forget`. |
+| `plan.ts` | whether a node runs and the sentence saying why: `decide(node, current, previous, onDisk)`. |
+| `run-build.ts` | the build, in the order the graph derives. |
 | `graph-problems.ts` | everything `check:graph` asserts, so the gate under `check/arena/` is a print and an exit. |
 
 ## A script subscribes by editing itself
@@ -56,6 +60,42 @@ program, so importing it makes it re-enter itself once per collection.
 
 `NOT_YET_SUBSCRIBED` names what has not joined yet. It is a count that goes to zero, and it exists
 so that a script in neither list is a decision nobody made rather than a default.
+
+## The fingerprint recorded is measured after the step, never the one that decided it
+
+`generate:member-docs` writes each contracted member's description into the component that
+declares it, and `generate:prompt-api` writes the `@api` region into the prompt it reads. Their
+`writes` meet their `reads`, so a value measured before the step is stale the instant it succeeds
+and the node would never be kept. The value measured after is the converged one, and the next run
+recomputes exactly it.
+
+The rule is applied to every node, not to those two. For a node whose writes miss its reads, before
+and after are the same value and nothing changes. It works because those generators converge, which
+is what the `git diff --exit-code` in every verify workflow already proves; one that did not
+converge would run every time, which is what the build did before any of this and not a wrong
+answer kept.
+
+## Only a green run writes an entry
+
+Every other outcome deletes it. A SKIP recorded as green is a node that never runs again, and a node
+with no entry cannot be kept, so a machine that cannot run a step is honest about it for ever rather
+than once. The entry is written after each node, so a run that stops halfway keeps the greens before
+the failure.
+
+## What a run prints
+
+Every step says whether it ran and why, or that it was kept and at what fingerprint. A skipped step
+is the one thing a reader cannot see happening, so the reason is not decoration:
+
+```
+run-build: generate:tokens runs, because its sources have moved since the last green run
+run-build: build:tailwind runs, because generate:tokens ran, so what it reads was rewritten under it
+run-build: generate:skills comes from the cache (595efd571d07)
+
+run-build: all 12 step(s) passed, 4 ran, 8 came from the cache
+```
+
+The tail never collapses the count, so a cheap run cannot be read as a whole one.
 
 ## Flat, and the reason is the opposite of `utils/`
 
