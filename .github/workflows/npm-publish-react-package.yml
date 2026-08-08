@@ -132,11 +132,8 @@ jobs:
       - name: the tag exists and the plugin.json it serves hands out this version
         run: bun scripts/check/arena/check-release.ts
 
-      - name: build the sources the package is assembled from
+      - name: build the sources and assemble the package
         run: bun run build:release
-
-      - name: assemble
-        run: bun run build:packages
 
       - name: hold the manifests and the CLI
         run: bun run check:packages

@@ -31,7 +31,7 @@
   "scripts": {
     "demos": "bun run build && bun scripts/serve.ts",
     "build": "bun scripts/graph/run-build.ts",
-    "build:release": "bun scripts/graph/run-build.ts --force --assert-full",
+    "build:release": "bun scripts/graph/run-build.ts --assemble --force --assert-full",
     "generate:tokens": "bun scripts/generate/arena/generate-tokens.ts",
     "generate:api": "bun run generate:api-types && bun run generate:member-docs && bun run generate:prompt-api",
     "generate:api-types": "bun scripts/generate/arena/generate-api-types.ts",
@@ -49,7 +49,7 @@
     "build:angular-demo": "bun scripts/build/angular/build-angular-demo.ts",
     "build:react-package": "bun scripts/build/react/build-react-package.ts",
     "build:angular-package": "bun scripts/build/angular/build-angular-package.ts",
-    "build:packages": "bun run build:react-barrel && bun run build:react-package && bun run build:angular-package",
+    "build:packages": "bun scripts/graph/run-build.ts --assemble",
     "check:dtcg": "bun scripts/check/core/check-dtcg.ts",
     "check:tokens": "bun scripts/check/core/check-tokens-generated.ts",
     "check:fonts": "bun scripts/check/core/check-fonts-generated.ts",

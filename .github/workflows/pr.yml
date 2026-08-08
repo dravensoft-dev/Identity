@@ -51,14 +51,11 @@ jobs:
           restore-keys: bun-cache-${{ runner.os }}-
       - run: bun install --frozen-lockfile
 
-      - name: build
+      - name: build and assemble, every step run
         run: bun run build:release
 
       - name: the build is idempotent, so a tracked file it rewrote is a generator out of step
         run: git diff --exit-code
-
-      - name: assemble both packages, so check:packages reads two manifests rather than none
-        run: bun run build:packages
 
       - uses: actions/cache/save@v6
         with:

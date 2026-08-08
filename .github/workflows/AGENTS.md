@@ -19,7 +19,7 @@ Two stages, `build` then `test`, and the fan-out is in the second one.
 ```
 changes            which layers this diff reaches
    |
-build              bun run build, then build:packages, then one cache entry
+build              bun run build:release, which assembles too, then one cache entry
    |
    +-- test-core       always            the core and arena gates + the suites under scripts/
    +-- test-react      if react          the react gates + the two React invocations
@@ -100,10 +100,11 @@ request is pushed to repeatedly and its four test jobs each need the one build; 
 job that runs once per merge, where the cache saves a fraction of a run it would also have to be
 kept honest across.
 
-**`build:packages` stays.** Dropping it would not skip package work: `check:packages` reads no
-manifest and passes while saying so, which is a quieter green rather than a faster one, and
-`check:consumer` assembles a missing `dist/` itself. Assembling nothing is not publishing
-nothing, and nothing here publishes.
+**Assembling stays, and it is no longer a step of its own.** `bun run build:release` passes
+`--assemble`, so the two packages are part of the run the workflow already makes. Dropping the
+assembly would not skip package work: `check:packages` reads no manifest and passes while saying so,
+which is a quieter green rather than a faster one, and `check:consumer` assembles a missing `dist/`
+itself. Assembling nothing is not publishing nothing, and nothing here publishes.
 
 ## Publish arena-react, Publish arena-angular
 

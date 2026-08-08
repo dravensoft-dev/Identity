@@ -79,8 +79,13 @@ is the one way this whole arrangement could turn a real failure green.
 `build:react-package` and `build:angular-package` are **not** part of `bun run build` either, and
 each says so in its own node through `releaseOnly`, with the reason: ng-packagr and the declaration
 emit cost more than a development loop should pay for an artefact only a release ships.
-`bun run build:packages` runs them. They are still in the graph, so a change to a layer invalidates
-that layer's package and the gates that read `dist/`.
+
+**`--assemble` is what includes them**, so there are three ways to run this graph and each says what
+it is for. `bun run build` is the loop: thirteen steps, keeping what has not moved.
+`bun run build:packages` is the same plus the two packages, still keeping what has not moved.
+`bun run build:release` is `--assemble --force --assert-full`: fifteen steps, every one of them run,
+and a run that kept anything fails on its own. Every workflow uses the last one, and none of them
+assembles in a second step any more.
 
 `build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
 git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,

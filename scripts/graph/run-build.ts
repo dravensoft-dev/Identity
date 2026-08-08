@@ -22,18 +22,22 @@ import { decide, shortFingerprint } from './plan.ts';
 
 export const BUILT_BY = ['scripts/build/', 'scripts/generate/'];
 
-export const isBuildStep = (declaredIn: Map<string, string>, node: { name: string; releaseOnly?: string }) =>
-  !node.releaseOnly && BUILT_BY.some((phase) => (declaredIn.get(node.name) ?? '').startsWith(phase));
+export const isBuildStep = (
+  declaredIn: Map<string, string>, node: { name: string; releaseOnly?: string }, assemble = false,
+) => (assemble || !node.releaseOnly)
+  && BUILT_BY.some((phase) => (declaredIn.get(node.name) ?? '').startsWith(phase));
 
 export function parseBuildArgs(argv: string[]) {
   let force = false;
   let assertFull = false;
+  let assemble = false;
   for (const arg of argv) {
     if (arg === '--force') { force = true; continue; }
     if (arg === '--assert-full') { assertFull = true; continue; }
-    throw new Error(`run-build: unrecognised argument "${arg}"; it takes --force and --assert-full`);
+    if (arg === '--assemble') { assemble = true; continue; }
+    throw new Error(`run-build: unrecognised argument "${arg}"; it takes --force, --assert-full and --assemble`);
   }
-  return { force, assertFull };
+  return { force, assertFull, assemble };
 }
 
 export function keptButFailed(results: { name: string; status: string }[], wouldKeep: Set<string>) {
@@ -79,7 +83,8 @@ async function main() {
   }
 
   const collected = await allNodes(repoRoot);
-  const order = topoOrder(collected.nodes).filter((node) => isBuildStep(collected.declaredIn, node));
+  const order = topoOrder(collected.nodes)
+    .filter((node) => isBuildStep(collected.declaredIn, node, options.assemble));
   const needs = needsOf(collected.nodes);
   const state = readState(repoRoot);
   const upstream = new Map<string, string>();

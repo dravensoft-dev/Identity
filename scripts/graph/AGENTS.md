@@ -52,7 +52,8 @@ each contracted member's description into the component that declares it, and
 sources without claiming the generated files beside them.
 
 **A step a development loop should not pay for says so, and says why.** `releaseOnly` carries the
-reason, `bun run build` leaves the step out, and the npm alias that wants it runs it by name. The
+reason and `bun run build` leaves the step out; `--assemble` is what puts it back, which is how
+`build:packages` and `build:release` differ from `build`. The
 phase a script sits in says what it IS, and only the node can say that building it on every
 iteration is not worth the wait: `build:react-package` and `build:angular-package` write a `dist/`
 only a release publishes. `check:graph` refuses a `releaseOnly` that is a label rather than a reason,

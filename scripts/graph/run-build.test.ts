@@ -2,11 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { isBuildStep, parseBuildArgs, partialRunProblems, summarize } from './run-build.ts';
 
-test('the runner takes two flags and refuses anything else', () => {
-  assert.deepEqual(parseBuildArgs([]), { force: false, assertFull: false });
-  assert.deepEqual(parseBuildArgs(['--force']), { force: true, assertFull: false });
-  assert.deepEqual(parseBuildArgs(['--force', '--assert-full']), { force: true, assertFull: true });
+test('the runner takes three flags and refuses anything else', () => {
+  assert.deepEqual(parseBuildArgs([]), { force: false, assertFull: false, assemble: false });
+  assert.deepEqual(parseBuildArgs(['--force']), { force: true, assertFull: false, assemble: false });
+  assert.deepEqual(parseBuildArgs(['--assemble', '--force', '--assert-full']),
+    { force: true, assertFull: true, assemble: true });
   assert.throws(() => parseBuildArgs(['--forse']), /unrecognised argument/);
+});
+
+test('the three flags are what tells the three commands apart', () => {
+  assert.deepEqual(parseBuildArgs(['--assemble']), { force: false, assertFull: false, assemble: true },
+    'bun run build:packages assembles and still keeps what has not moved, for iterating on packaging');
+  assert.deepEqual(parseBuildArgs([]), { force: false, assertFull: false, assemble: false },
+    'bun run build is the loop, and leaves out what only a release ships');
+  assert.deepEqual(parseBuildArgs(['--assemble', '--force', '--assert-full']),
+    { force: true, assertFull: true, assemble: true },
+    'bun run build:release is every step, run, with a kept step failing the run on its own');
 });
 
 test('the tail never collapses the count, so a cheap run cannot read as a whole one', () => {
