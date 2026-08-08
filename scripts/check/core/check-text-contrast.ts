@@ -1,10 +1,15 @@
+/* Reads both sheets from disk inside main() and not at module top level, because the graph
+ * collects a node's declaration by importing the script that carries it. A gate doing its work
+ * where an import reaches it cannot be collected, and this one exits the process outright. */
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { contrast } from '../../lib/core/validate-palette.mjs';
+import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
-const palette = readFileSync(join(root, 'contracts/design-generated/palette.generated.css'), 'utf8');
-const colors = readFileSync(join(root, 'contracts/design/colors.css'), 'utf8');
+export const PALETTE = 'contracts/design-generated/palette.generated.css';
+export const COLORS = 'contracts/design/colors.css';
 
 function block(css: string, selector: string, file: string) {
   const m = css.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`))?.[1];
@@ -22,9 +27,9 @@ function tryHex(body: string, name: string) {
 }
 const MISSING = 'not declared in contracts/design-generated/palette.generated.css — every theme block must define it';
 
-const structure = block(colors, ':root,\\s*\\.arena-light', 'colors.css');
+export const structureOf = (colors: string) => block(colors, ':root,\\s*\\.arena-light', 'colors.css');
 
-function resolvePercent(name: string, seen = new Set()) {
+export function resolvePercent(structure: string, name: string, seen = new Set()): number | null {
   if (seen.has(name)) throw new Error(`colors.css: --${name} is a circular reference`);
   seen.add(name);
   const m = structure.match(new RegExp(`--${name}\\s*:\\s*([^;]+);`))?.[1];
@@ -34,7 +39,7 @@ function resolvePercent(name: string, seen = new Set()) {
   const mix = value.match(/^color-mix\(\s*in oklab\s*,\s*var\(\s*--color-base-content\s*\)\s*([\d.]+)%\s*,\s*transparent\s*\)$/);
   if (mix?.[1]) return Number(mix[1]);
   const alias = value.match(/^var\(\s*--([\w-]+)\s*\)$/);
-  if (alias?.[1]) return resolvePercent(alias[1], seen);
+  if (alias?.[1]) return resolvePercent(structure, alias[1], seen);
   throw new Error(`colors.css: --${name} resolves to "${value}", which is neither base-content, a color-mix of it, nor a var() alias`);
 }
 
@@ -108,104 +113,110 @@ const ON_SURFACE = [
   { token: 'secondary', gate: null, note: 'REPORTED, NOT GATED — gold as text/focus ring; brand value, see header' },
 ];
 
-const REMOVED = [
+export const REMOVED = [
   { token: 'mute-2', use: '--mute (--text-muted)' },
   { token: 'text-faint', use: '--text-muted' },
 ];
 
-const THEMES = [
+export const THEMES = [
   { name: 'dark', selector: ':root' },
   { name: 'light', selector: '\\.arena-light' },
 ];
 
-let ok = true;
+function main() {
+  const palette = readFileSync(join(root, PALETTE), 'utf8');
+  const structure = structureOf(readFileSync(join(root, COLORS), 'utf8'));
+  let ok = true;
 
-for (const { token, use } of REMOVED) {
-  if (resolvePercent(token) === null) continue;
-  ok = false;
-  console.log(`\n[FAIL] --${token} is declared in contracts/design/colors.css. It is not a token Arena has; use ${use}.`);
-}
-for (const t of THEMES) {
-  const body = block(palette, t.selector, 'palette.generated.css');
-  const content = readHex(body, 'color-base-content');
-  const surfaces: [string, string][] = [
-    ['base-100', readHex(body, 'color-base-100')],
-    ['base-200', readHex(body, 'color-base-200')],
-  ];
-  console.log(`\n${t.name} — --color-base-content ${content} over ${surfaces.map(([n, h]) => `${n} ${h}`).join(', ')}`);
-  for (const { token, gate, note } of LEVELS) {
-    const percent = resolvePercent(token);
-    if (percent === null) {
-      ok = false;
-      console.log(`  [FAIL] --${token.padEnd(16)} not declared in contracts/design/colors.css`);
-      continue;
-    }
-    const ratios: [string, number][] = surfaces.map(([n, hex]) => [n, contrast(composite(content, hex, percent), hex)]);
-    const failed = gate !== null && ratios.some(([, r]) => r < gate);
-    if (failed) ok = false;
-    const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
-    const detail = ratios.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join('  ');
-    const bar = gate === null ? 'not gated' : `gate ${gate}:1`;
-    console.log(`  [${glyph}] --${token.padEnd(16)} ${String(percent).padStart(3)}%  ${detail}  ${bar}`);
-    console.log(`         ${note}`);
+  for (const { token, use } of REMOVED) {
+    if (resolvePercent(structure, token) === null) continue;
+    ok = false;
+    console.log(`\n[FAIL] --${token} is declared in contracts/design/colors.css. It is not a token Arena has; use ${use}.`);
   }
-
-  console.log(`\n${t.name} — fill/content pairs`);
-  for (const { fill, content, gate, deriveFrom, keep, note } of PAIRS) {
-    let fillHex = tryHex(body, `color-${fill}`);
-    let source = 'pinned';
-
-    if (!fillHex && deriveFrom) {
-      const base = tryHex(body, `color-${deriveFrom}`);
-      if (base) { fillHex = darkenOklab(base, keep); source = `derived from --color-${deriveFrom}`; }
-    }
-    const contentHex = tryHex(body, `color-${content}`);
-    if (!fillHex || !contentHex) {
-      ok = false;
-      console.log(`  [FAIL] --color-${(!fillHex ? fill : content).padEnd(18)} ${MISSING}`);
+  for (const t of THEMES) {
+    const body = block(palette, t.selector, 'palette.generated.css');
+    const content = readHex(body, 'color-base-content');
+    const surfaces: [string, string][] = [
+      ['base-100', readHex(body, 'color-base-100')],
+      ['base-200', readHex(body, 'color-base-200')],
+    ];
+    console.log(`\n${t.name} — --color-base-content ${content} over ${surfaces.map(([n, h]) => `${n} ${h}`).join(', ')}`);
+    for (const { token, gate, note } of LEVELS) {
+      const percent = resolvePercent(structure, token);
+      if (percent === null) {
+        ok = false;
+        console.log(`  [FAIL] --${token.padEnd(16)} not declared in contracts/design/colors.css`);
+        continue;
+      }
+      const ratios: [string, number][] = surfaces.map(([n, hex]) => [n, contrast(composite(content, hex, percent), hex)]);
+      const failed = gate !== null && ratios.some(([, r]) => r < gate);
+      if (failed) ok = false;
+      const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
+      const detail = ratios.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join('  ');
+      const bar = gate === null ? 'not gated' : `gate ${gate}:1`;
+      console.log(`  [${glyph}] --${token.padEnd(16)} ${String(percent).padStart(3)}%  ${detail}  ${bar}`);
       console.log(`         ${note}`);
-      continue;
     }
-    const ratio = contrast(fillHex, contentHex);
-    const failed = gate !== null && ratio < gate;
-    if (failed) ok = false;
-    const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
-    const bar = gate === null ? 'not gated' : `gate ${gate}:1`;
-    console.log(`  [${glyph}] --color-${content.padEnd(18)} ${contentHex} on ${fillHex} (${source})  ${ratio.toFixed(2)}:1  ${bar}`);
-    console.log(`         ${note}`);
-  }
 
-  console.log(`\n${t.name} — accents on the base surfaces (no fill of their own)`);
-  for (const { token, gate, note } of ON_SURFACE) {
-    const hex = tryHex(body, `color-${token}`);
-    if (!hex) {
-      ok = false;
-      console.log(`  [FAIL] --color-${token.padEnd(18)} ${MISSING}`);
+    console.log(`\n${t.name} — fill/content pairs`);
+    for (const { fill, content, gate, deriveFrom, keep, note } of PAIRS) {
+      let fillHex = tryHex(body, `color-${fill}`);
+      let source = 'pinned';
+
+      if (!fillHex && deriveFrom) {
+        const base = tryHex(body, `color-${deriveFrom}`);
+        if (base) { fillHex = darkenOklab(base, keep); source = `derived from --color-${deriveFrom}`; }
+      }
+      const contentHex = tryHex(body, `color-${content}`);
+      if (!fillHex || !contentHex) {
+        ok = false;
+        console.log(`  [FAIL] --color-${(!fillHex ? fill : content).padEnd(18)} ${MISSING}`);
+        console.log(`         ${note}`);
+        continue;
+      }
+      const ratio = contrast(fillHex, contentHex);
+      const failed = gate !== null && ratio < gate;
+      if (failed) ok = false;
+      const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
+      const bar = gate === null ? 'not gated' : `gate ${gate}:1`;
+      console.log(`  [${glyph}] --color-${content.padEnd(18)} ${contentHex} on ${fillHex} (${source})  ${ratio.toFixed(2)}:1  ${bar}`);
       console.log(`         ${note}`);
-      continue;
     }
-    const ratios: [string, number][] = surfaces.map(([n, s]) => [n, contrast(hex, s)]);
-    const failed = gate !== null && ratios.some(([, r]) => r < gate);
-    if (failed) ok = false;
-    const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
-    const bar = gate === null ? 'not gated' : `gate ${gate}:1`;
-    const detail = ratios.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join('  ');
-    console.log(`  [${glyph}] --color-${token.padEnd(18)} ${hex}  ${detail}  ${bar}`);
-    console.log(`         ${note}`);
+
+    console.log(`\n${t.name} — accents on the base surfaces (no fill of their own)`);
+    for (const { token, gate, note } of ON_SURFACE) {
+      const hex = tryHex(body, `color-${token}`);
+      if (!hex) {
+        ok = false;
+        console.log(`  [FAIL] --color-${token.padEnd(18)} ${MISSING}`);
+        console.log(`         ${note}`);
+        continue;
+      }
+      const ratios: [string, number][] = surfaces.map(([n, s]) => [n, contrast(hex, s)]);
+      const failed = gate !== null && ratios.some(([, r]) => r < gate);
+      if (failed) ok = false;
+      const glyph = gate === null ? 'INFO' : failed ? 'FAIL' : 'PASS';
+      const bar = gate === null ? 'not gated' : `gate ${gate}:1`;
+      const detail = ratios.map(([n, r]) => `${n} ${r.toFixed(2)}:1`).join('  ');
+      console.log(`  [${glyph}] --color-${token.padEnd(18)} ${hex}  ${detail}  ${bar}`);
+      console.log(`         ${note}`);
+    }
+
+    const errHex = tryHex(body, 'color-error');
+    const errContent = tryHex(body, 'color-error-content');
+    if (errHex && errContent) {
+      const derived = darkenOklab(errHex, FILL_FALLBACK_KEEP);
+      const ratio = contrast(derived, errContent);
+      const failed = ratio < 4.5;
+      if (failed) ok = false;
+      console.log(`\n${t.name} — --danger-fill fallback (used when a skin omits --color-error-fill)`);
+      console.log(`  [${failed ? 'FAIL' : 'PASS'}] color-mix 85%      ${errContent} on ${derived}  ${ratio.toFixed(2)}:1  gate 4.5:1`);
+      console.log(`         derived from --color-error ${errHex} by darkening in oklab`);
+    }
   }
 
-  const errHex = tryHex(body, 'color-error');
-  const errContent = tryHex(body, 'color-error-content');
-  if (errHex && errContent) {
-    const derived = darkenOklab(errHex, FILL_FALLBACK_KEEP);
-    const ratio = contrast(derived, errContent);
-    const failed = ratio < 4.5;
-    if (failed) ok = false;
-    console.log(`\n${t.name} — --danger-fill fallback (used when a skin omits --color-error-fill)`);
-    console.log(`  [${failed ? 'FAIL' : 'PASS'}] color-mix 85%      ${errContent} on ${derived}  ${ratio.toFixed(2)}:1  gate 4.5:1`);
-    console.log(`         derived from --color-error ${errHex} by darkening in oklab`);
-  }
+  console.log(ok ? '\nText contrast OK — every gated level clears its bar in both themes.\n' : '\nText contrast FAILED — fix the marked levels.\n');
+  process.exit(ok ? 0 : 1);
 }
 
-console.log(ok ? '\nText contrast OK — every gated level clears its bar in both themes.\n' : '\nText contrast FAILED — fix the marked levels.\n');
-process.exit(ok ? 0 : 1);
+if (isMainModule(import.meta.url)) main();
