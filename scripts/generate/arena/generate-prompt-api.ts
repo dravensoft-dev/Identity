@@ -23,6 +23,8 @@ export const node = {
   reads: ['contracts/api/components', 'frameworks/Components.json', ...PROMPTS],
   writes: PROMPTS,
   feeds: [
+    'build:angular-package',
+    'build:react-package',
     'check:appearance',
     'check:arbitrary',
     'check:behaviour',

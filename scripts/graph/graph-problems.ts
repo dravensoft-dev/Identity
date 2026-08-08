@@ -102,6 +102,13 @@ export function writingGateProblems(nodes: GraphNode[]) {
       + 'and costs the sweep a problem it would have reported. Emit it from a build step instead');
 }
 
+export function releaseOnlyProblems(nodes: GraphNode[]) {
+  return nodes
+    .filter((node) => node.releaseOnly !== undefined && node.releaseOnly.length < 40)
+    .map((node) => `${node.name} is outside bun run build and the record does not say why; a step `
+      + 'a development loop skips is a decision, and a decision without its reason is worthless');
+}
+
 export function vacuousProblems(nodes: GraphNode[], scripts: string[]) {
   if (scripts.length === 0) return ['no script was collected, so this gate compared nothing'];
   if (nodes.length === 0) return ['no script declares a node, so this gate compared nothing'];
@@ -130,6 +137,7 @@ export async function graphProblems(base = repoRoot) {
     ...duplicateWriters(nodes, resolve),
     ...subscriptionProblems(nodes, resolve),
     ...writingGateProblems(nodes),
+    ...releaseOnlyProblems(nodes),
     ...emptySpecProblems(nodes, paths, resolve),
   ];
 

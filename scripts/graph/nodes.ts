@@ -63,9 +63,7 @@ export const neverSubscribesReason = (path: string) =>
   [...NEVER_SUBSCRIBES].find(([spec]) => matchesSpec(spec, path))?.[1] ?? null;
 
 export const NOT_YET_SUBSCRIBED = new Set([
-  'scripts/build/angular/build-angular-package.ts',
   'scripts/build/angular/build-angular-tests.ts',
-  'scripts/build/react/build-react-package.ts',
 ]);
 
 export function collectedScripts(root = repoRoot) {

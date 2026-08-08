@@ -57,6 +57,8 @@ export const node = {
   writes: [...CSS_TARGETS, ...SCRIPT_TARGETS, BREAKPOINT_TARGET],
   feeds: [
     'build:angular-demo',
+    'build:angular-package',
+    'build:react-package',
     'build:tailwind',
     'check:angular',
     'check:arbitrary',

@@ -9,6 +9,7 @@ export type GraphNode = {
   reads: string[];
   writes: string[];
   feeds: string[];
+  releaseOnly?: string;
 };
 
 export type Resolve = (specs: string[]) => string[];

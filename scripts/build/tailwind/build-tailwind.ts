@@ -70,7 +70,9 @@ export const node = {
   ],
   feeds: [
     'build:angular-demo',
+    'build:angular-package',
     'build:demos',
+    'build:react-package',
     'build:style-parity-page',
     'check:angular',
     'check:api',

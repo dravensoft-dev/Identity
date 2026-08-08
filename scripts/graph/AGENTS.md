@@ -51,6 +51,13 @@ each contracted member's description into the component that declares it, and
 **A spec opening with `!` excludes**, which is how a node claims a directory of hand-written
 sources without claiming the generated files beside them.
 
+**A step a development loop should not pay for says so, and says why.** `releaseOnly` carries the
+reason, `bun run build` leaves the step out, and the npm alias that wants it runs it by name. The
+phase a script sits in says what it IS, and only the node can say that building it on every
+iteration is not worth the wait: `build:react-package` and `build:angular-package` write a `dist/`
+only a release publishes. `check:graph` refuses a `releaseOnly` that is a label rather than a reason,
+the same way it refuses one in `NEVER_SUBSCRIBES`.
+
 ## `check:graph --audit` answers what `check:graph` cannot
 
 The gate holds the edges **between** declarations, so it finds a reader nobody subscribed. It cannot

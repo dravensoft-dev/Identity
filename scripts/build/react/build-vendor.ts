@@ -37,6 +37,7 @@ export const node = {
   reads: ['package.json', 'bun.lock'],
   writes: ENTRIES.map((entry) => `${VENDOR_DIR}/${entry.out}`),
   feeds: [
+    'build:react-package',
     'check:dimensions',
     'check:duplicate-constants',
     'check:focus-trap',

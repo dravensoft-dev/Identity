@@ -19,6 +19,8 @@ export const node = {
   writes: API_TARGETS,
   feeds: [
     'build:angular-demo',
+    'build:angular-package',
+    'build:react-package',
     'check:angular',
     'check:api',
     'check:arbitrary',

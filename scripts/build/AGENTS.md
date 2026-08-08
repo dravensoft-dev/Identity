@@ -76,6 +76,12 @@ not belt and braces. The step after the build in each workflow proves it idempot
 `git diff --exit-code`, and a build that skipped everything satisfies that by doing nothing, which
 is the one way this whole arrangement could turn a real failure green.
 
+`build:react-package` and `build:angular-package` are **not** part of `bun run build` either, and
+each says so in its own node through `releaseOnly`, with the reason: ng-packagr and the declaration
+emit cost more than a development loop should pay for an artefact only a release ships.
+`bun run build:packages` runs them. They are still in the graph, so a change to a layer invalidates
+that layer's package and the gates that read `dist/`.
+
 `build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
 git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,
 always immediately before the suites that read it, because staleness there is prevented by

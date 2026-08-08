@@ -26,8 +26,10 @@ export const node = {
   writes: COMPONENT_SOURCES,
   feeds: [
     'build:angular-demo',
+    'build:angular-package',
     'build:demos',
     'build:react-barrel',
+    'build:react-package',
     'check:angular',
     'check:api',
     'check:appearance',

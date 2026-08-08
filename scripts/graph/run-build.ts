@@ -22,8 +22,8 @@ import { decide, shortFingerprint } from './plan.ts';
 
 export const BUILT_BY = ['scripts/build/', 'scripts/generate/'];
 
-export const isBuildStep = (declaredIn: Map<string, string>, name: string) =>
-  BUILT_BY.some((phase) => (declaredIn.get(name) ?? '').startsWith(phase));
+export const isBuildStep = (declaredIn: Map<string, string>, node: { name: string; releaseOnly?: string }) =>
+  !node.releaseOnly && BUILT_BY.some((phase) => (declaredIn.get(node.name) ?? '').startsWith(phase));
 
 export function parseBuildArgs(argv: string[]) {
   let force = false;
@@ -79,7 +79,7 @@ async function main() {
   }
 
   const collected = await allNodes(repoRoot);
-  const order = topoOrder(collected.nodes).filter((node) => isBuildStep(collected.declaredIn, node.name));
+  const order = topoOrder(collected.nodes).filter((node) => isBuildStep(collected.declaredIn, node));
   const needs = needsOf(collected.nodes);
   const state = readState(repoRoot);
   const upstream = new Map<string, string>();

@@ -30,6 +30,7 @@ export const node = {
   ],
   writes: [BARREL_TARGET],
   feeds: [
+    'build:react-package',
     'check:arbitrary',
     'check:dimensions',
     'check:duplicate-constants',

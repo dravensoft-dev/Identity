@@ -35,6 +35,8 @@ export const node = {
   ],
   writes: SKILL_TARGETS,
   feeds: [
+    'build:angular-package',
+    'build:react-package',
     'check:arbitrary',
     'check:dimensions',
     'check:duplicate-constants',

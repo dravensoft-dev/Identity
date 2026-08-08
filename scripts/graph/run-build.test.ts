@@ -47,12 +47,21 @@ test('a build runs what build/ and generate/ declared, and never a gate', () => 
     ['build:tailwind', 'scripts/build/tailwind/build-tailwind.ts'],
     ['check:dtcg', 'scripts/check/core/check-dtcg.ts'],
   ]);
-  assert.equal(isBuildStep(declaredIn, 'generate:tokens'), true);
-  assert.equal(isBuildStep(declaredIn, 'build:tailwind'), true);
-  assert.equal(isBuildStep(declaredIn, 'check:dtcg'), false,
+  assert.equal(isBuildStep(declaredIn, { name: 'generate:tokens' }), true);
+  assert.equal(isBuildStep(declaredIn, { name: 'build:tailwind' }), true);
+  assert.equal(isBuildStep(declaredIn, { name: 'check:dtcg' }), false,
     'every node is in one graph, and the phase that declared a node is what says whether a build '
     + 'is the thing that runs it. Without this, subscribing a gate quietly adds it to bun run build');
-  assert.equal(isBuildStep(declaredIn, 'check:nothing'), false);
+  assert.equal(isBuildStep(declaredIn, { name: 'check:nothing' }), false);
+});
+
+test('a step that says it is release-only stays out of the development build', () => {
+  const declaredIn = new Map([['build:react-package', 'scripts/build/react/build-react-package.ts']]);
+  assert.equal(isBuildStep(declaredIn, { name: 'build:react-package' }), true,
+    'it is under build/, so the phase alone would put it in');
+  assert.equal(isBuildStep(declaredIn, { name: 'build:react-package', releaseOnly: 'a reason' }), false,
+    'the phase says what a script is; only the node can say that a development loop should not pay '
+    + 'for it, so the node says it and carries the why');
 });
 
 test('a blocked step is neither a pass nor a failure, and the tail counts it apart', () => {

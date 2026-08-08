@@ -37,7 +37,9 @@ export const node = {
   ]),
   feeds: [
     'build:angular-demo',
+    'build:angular-package',
     'build:demos',
+    'build:react-package',
     'check:angular',
     'check:angular-demos',
     'check:api',

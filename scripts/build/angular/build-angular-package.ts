@@ -19,10 +19,31 @@ import {
   writeComponentMap, CLI_BINS,
 } from '../../lib/arena/package-assembly.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
+import { CONSUME } from '../tailwind/build-tailwind.ts';
 
 export const NAME = '@dravensoft/arena-angular';
 export const LAYER = 'frameworks/angular';
 export const STAGING = 'frameworks/angular/build/package';
+
+export const node = {
+  name: 'build:angular-package',
+  reads: [
+    `${LAYER}/**`, '!frameworks/angular/dist/**', '!frameworks/angular/build/**',
+    'frameworks/tailwind/Utilities.generated.css', `${CONSUME}/**/*.css`,
+    'frameworks/Components.json', '.claude-plugin/plugin.json', 'LICENSE',
+  ],
+  writes: [`${LAYER}/dist/**`, `${STAGING}/**`],
+  feeds: [
+    'check:angular',
+    'check:arbitrary',
+    'check:consumer',
+    'check:generated',
+    'check:icons',
+    'check:packages',
+  ],
+  releaseOnly: 'ng-packagr costs more than a development loop should pay for an artefact only a release '
+    + 'ships, so bun run build leaves it out and bun run build:packages runs it',
+};
 
 export function manifest(root = repoRoot) {
   return {
