@@ -1,6 +1,14 @@
 {
-  "brand": ["ArenaAppLogo"],
-  "charts": ["ArenaBarChart", "ArenaChartCard", "ArenaDoughnutChart", "ArenaLineChart"],
+  "brand": [
+    "ArenaAppLogo"
+  ],
+  "charts": [
+    "ArenaBarChart",
+    "ArenaChartCard",
+    "ArenaDoughnutChart",
+    "ArenaHorizontalBarChart",
+    "ArenaLineChart"
+  ],
   "display": [
     "ArenaActivityFeed",
     "ArenaAvatar",
@@ -41,7 +49,9 @@
     "ArenaSwitch",
     "ArenaTextarea"
   ],
-  "layout": ["ArenaGrid"],
+  "layout": [
+    "ArenaGrid"
+  ],
   "navigation": [
     "ArenaBottomNav",
     "ArenaBottomNavItem",

@@ -1,5 +1,5 @@
-/* One suite for the three charts, because `figure-with-data-table` is Arena's own
- * pattern and all three answer it identically: a role="img" graphic with a name,
+/* One suite for the four charts, because `figure-with-data-table` is Arena's own
+ * pattern and all four answer it identically: a role="img" graphic with a name,
  * and a real <table> of the same numbers that is HIDDEN VISUALLY rather than
  * removed. `alternative.table` is BEHAVIOURAL -- no single element decides it --
  * so each verdict below is earned by reading the table against the input data.
@@ -14,6 +14,7 @@ import { assertPattern, REACT_COMPONENTS } from '../../test/AssertPattern.tsx';
 import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart.tsx';
 import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart.tsx';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
+import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart.tsx';
 import type { ArenaSeries } from '../../Api.generated';
 
 afterEach(cleanup);
@@ -30,6 +31,7 @@ const CHARTS: [string, ChartComponent, string, string][] = [
   ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json', 'Category'],
   ['ArenaDoughnutChart', ArenaDoughnutChart as unknown as ChartComponent, 'charts/arena-doughnut-chart/ArenaDoughnutChart.behaviour.json', 'Category'],
   ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent, 'charts/arena-line-chart/ArenaLineChart.behaviour.json', 'Point'],
+  ['ArenaHorizontalBarChart', ArenaHorizontalBarChart as unknown as ChartComponent, 'charts/arena-horizontal-bar-chart/ArenaHorizontalBarChart.behaviour.json', 'Category'],
 ];
 
 function press(region: HTMLElement, key: string) {
@@ -46,7 +48,16 @@ function reading(root: HTMLElement): string | null {
 }
 
 const CURSOR_KEYS = ['focus.roving', 'keyboard.ArrowLeft', 'keyboard.ArrowRight',
-  'keyboard.Home', 'keyboard.End', 'keyboard.Escape'] as const;
+  'keyboard.ArrowUp', 'keyboard.ArrowDown', 'keyboard.Home', 'keyboard.End', 'keyboard.Escape'] as const;
+
+const ACROSS: Record<string, [string, string]> = {
+  ArenaHorizontalBarChart: ['ArrowDown', 'ArrowUp'],
+};
+
+function unusedPair(axis: [string, string]): string[] {
+  return axis[0] === 'ArrowDown' ? ['keyboard.ArrowLeft', 'keyboard.ArrowRight']
+    : ['keyboard.ArrowUp', 'keyboard.ArrowDown'];
+}
 
 function noCursor(root: HTMLElement): Record<string, boolean> {
 
@@ -66,6 +77,7 @@ function noCursor(root: HTMLElement): Record<string, boolean> {
 function cursorVerdicts(root: HTMLElement, name: string): Record<string, boolean> {
 
   if (name === 'ArenaDoughnutChart') return noCursor(root);
+  const [forward, backward] = ACROSS[name] ?? ['ArrowRight', 'ArrowLeft'];
   const region = root.querySelector<HTMLElement>('[role="group"]');
   assert.ok(region, 'the plot must be one keyboard region');
   assert.equal(root.querySelectorAll('[tabindex="0"]').length, 1,
@@ -73,17 +85,17 @@ function cursorVerdicts(root: HTMLElement, name: string): Record<string, boolean
 
   assert.equal(reading(root), null, 'a chart at rest reads nothing');
 
-  press(region, 'ArrowRight');
+  press(region, forward);
   const first = reading(root);
-  assert.ok(first?.includes(LABELS[0]!), `ArrowRight from rest must land on the first point, got ${first}`);
+  assert.ok(first?.includes(LABELS[0]!), `${forward} from rest must land on the first point, got ${first}`);
 
-  press(region, 'ArrowRight');
-  assert.ok(reading(root)?.includes(LABELS[1]!), 'ArrowRight steps forward');
+  press(region, forward);
+  assert.ok(reading(root)?.includes(LABELS[1]!), `${forward} steps forward`);
 
-  press(region, 'ArrowLeft');
-  assert.ok(reading(root)?.includes(LABELS[0]!), 'ArrowLeft steps back');
+  press(region, backward);
+  assert.ok(reading(root)?.includes(LABELS[0]!), `${backward} steps back`);
 
-  press(region, 'ArrowLeft');
+  press(region, backward);
   assert.ok(reading(root)?.includes(LABELS[0]!), 'and CLAMPS at the first, because an axis has ends');
 
   press(region, 'End');
@@ -92,10 +104,17 @@ function cursorVerdicts(root: HTMLElement, name: string): Record<string, boolean
   press(region, 'Home');
   assert.ok(reading(root)?.includes(LABELS[0]!), 'Home jumps to the first');
 
+  const idle = unusedPair([forward, backward]);
+  for (const key of idle) {
+    press(region, key.replace('keyboard.', ''));
+  }
+  assert.ok(reading(root)?.includes(LABELS[0]!),
+    `${idle.join(' and ')} must not move a cursor this chart has no sequence for, and must leave the page its scroll`);
+
   press(region, 'Escape');
   assert.equal(reading(root), null, 'Escape clears the cursor');
 
-  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, true]));
+  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, !idle.includes(key)]));
 }
 
 for (const [name, Chart, tail, heading] of CHARTS) {
@@ -145,6 +164,7 @@ for (const [name, Chart, tail, heading] of CHARTS) {
 const CARTESIAN: [string, ChartComponent][] = [
   ['ArenaBarChart', ArenaBarChart as unknown as ChartComponent],
   ['ArenaLineChart', ArenaLineChart as unknown as ChartComponent],
+  ['ArenaHorizontalBarChart', ArenaHorizontalBarChart as unknown as ChartComponent],
 ];
 
 const TWO: readonly ArenaSeries[] = [

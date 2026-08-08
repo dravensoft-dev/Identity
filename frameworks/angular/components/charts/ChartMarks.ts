@@ -12,6 +12,18 @@ export function arenaBarPath(x: number, w: number, yValue: number, yZero: number
     + ` L${x + w - rr},${top} Q${x + w},${top} ${x + w},${top + rr} L${x + w},${bottom} Z`;
 }
 
+export function arenaBarPathH(y: number, h: number, xValue: number, xZero: number, r: number): string {
+  const left = Math.min(xValue, xZero);
+  const right = Math.max(xValue, xZero);
+  const rr = Math.max(0, Math.min(r, h / 2, right - left));
+  if (xValue > xZero) {
+    return `M${left},${y} L${right - rr},${y} Q${right},${y} ${right},${y + rr}`
+      + ` L${right},${y + h - rr} Q${right},${y + h} ${right - rr},${y + h} L${left},${y + h} Z`;
+  }
+  return `M${right},${y} L${left + rr},${y} Q${left},${y} ${left},${y + rr}`
+    + ` L${left},${y + h - rr} Q${left},${y + h} ${left + rr},${y + h} L${right},${y + h} Z`;
+}
+
 export function arenaArcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number): string {
   if (a1 - a0 >= Math.PI * 2 - 1e-6) {
     const mid = a0 + Math.PI;

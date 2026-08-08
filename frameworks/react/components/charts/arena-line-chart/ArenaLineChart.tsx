@@ -104,9 +104,9 @@ export function ArenaLineChart({
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!arenaCursorHandles(e.key)) return;
+    if (!arenaCursorHandles(e.key, 'x')) return;
     e.preventDefault();
-    setHover(arenaCursorStep(hover, e.key, n));
+    setHover(arenaCursorStep(hover, e.key, n, 'x'));
   };
 
   return (

@@ -12,6 +12,7 @@ import { TestBed } from '@angular/core/testing';
 import { ArenaBarChart } from './arena-bar-chart/ArenaBarChart';
 import { ArenaDoughnutChart } from './arena-doughnut-chart/ArenaDoughnutChart';
 import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
+import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
 const BINDING = join(ANGULAR_COMPONENTS, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json');
 
@@ -145,7 +146,14 @@ test('arena-doughnut-chart takes its accessible name and caption from label, and
 });
 
 const CURSOR_KEYS = ['focus.roving', 'keyboard.ArrowLeft', 'keyboard.ArrowRight',
-  'keyboard.Home', 'keyboard.End', 'keyboard.Escape'] as const;
+  'keyboard.ArrowUp', 'keyboard.ArrowDown', 'keyboard.Home', 'keyboard.End', 'keyboard.Escape'] as const;
+
+const ACROSS: Record<string, [string, string]> = { down: ['ArrowDown', 'ArrowUp'] };
+
+function unusedPair(forward: string): string[] {
+  return forward === 'ArrowDown' ? ['keyboard.ArrowLeft', 'keyboard.ArrowRight']
+    : ['keyboard.ArrowUp', 'keyboard.ArrowDown'];
+}
 
 function press(fixture: { detectChanges: () => void }, region: Element, key: string): void {
   region.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
@@ -159,7 +167,8 @@ function reading(host: Element): string | null {
   return tooltip ? (tooltip.textContent ?? '').trim() : null;
 }
 
-function cursorVerdicts(fixture: { detectChanges: () => void }, host: Element): Record<string, boolean> {
+function cursorVerdicts(fixture: { detectChanges: () => void }, host: Element, axis = 'across'): Record<string, boolean> {
+  const [forward, backward] = ACROSS[axis] ?? ['ArrowRight', 'ArrowLeft'];
 
   const region = host.querySelector('[role="group"]') as HTMLElement;
   assert.notEqual(region, null, 'the plot must be one keyboard region');
@@ -168,16 +177,16 @@ function cursorVerdicts(fixture: { detectChanges: () => void }, host: Element): 
 
   assert.equal(reading(host), null, 'a chart at rest reads nothing');
 
-  press(fixture, region, 'ArrowRight');
-  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'ArrowRight from rest lands on the first point');
+  press(fixture, region, forward);
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), `${forward} from rest lands on the first point`);
 
-  press(fixture, region, 'ArrowRight');
-  assert.match(reading(host) ?? '', new RegExp(LABELS[1] as string), 'ArrowRight steps forward');
+  press(fixture, region, forward);
+  assert.match(reading(host) ?? '', new RegExp(LABELS[1] as string), `${forward} steps forward`);
 
-  press(fixture, region, 'ArrowLeft');
-  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'ArrowLeft steps back');
+  press(fixture, region, backward);
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), `${backward} steps back`);
 
-  press(fixture, region, 'ArrowLeft');
+  press(fixture, region, backward);
   assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'and CLAMPS at the first, because an axis has ends');
 
   press(fixture, region, 'End');
@@ -186,10 +195,15 @@ function cursorVerdicts(fixture: { detectChanges: () => void }, host: Element): 
   press(fixture, region, 'Home');
   assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string), 'Home jumps to the first');
 
+  const idle = unusedPair(forward);
+  for (const key of idle) press(fixture, region, key.replace('keyboard.', ''));
+  assert.match(reading(host) ?? '', new RegExp(LABELS[0] as string),
+    'the pair this chart has no sequence for must move nothing, and must leave the page its own scroll');
+
   press(fixture, region, 'Escape');
   assert.equal(reading(host), null, 'Escape clears the cursor');
 
-  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, true]));
+  return Object.fromEntries(CURSOR_KEYS.map((key) => [key, !idle.includes(key)]));
 }
 
 function noCursorVerdicts(fixture: { detectChanges: () => void }, host: Element): Record<string, boolean> {
@@ -252,6 +266,21 @@ test('arena-line-chart matches its figure-with-data-table binding, which excepts
   try {
     const host = fixture.nativeElement as Element;
     assertFigure(host, 'charts/arena-line-chart/ArenaLineChart.behaviour.json', cursorVerdicts(fixture, host));
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('arena-horizontal-bar-chart matches its binding, whose cursor answers the vertical arrows', () => {
+  const fixture = TestBed.createComponent(ArenaHorizontalBarChart);
+  fixture.componentRef.setInput('labels', LABELS);
+  fixture.componentRef.setInput('series', [{ label: SERIES, values: VALUES }]);
+  fixture.componentRef.setInput('label', CHART);
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+    assertFigure(host, 'charts/arena-horizontal-bar-chart/ArenaHorizontalBarChart.behaviour.json',
+      cursorVerdicts(fixture, host, 'down'));
   } finally {
     fixture.destroy();
   }

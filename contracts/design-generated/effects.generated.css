@@ -130,6 +130,16 @@
      look.
    */
   --chart-pad-bottom:28px;
+  /*
+     Holds the category names down the left edge of a horizontal bar chart, where
+     pad-left holds value labels on a vertical one. A separate token rather than a wider
+     pad-left, because the two hold different things and sizing every chart's value gutter for
+     the longest category name anyone might write would waste 52px on every vertical chart in
+     the library. A CONSEQUENCE of the type scale like pad-bottom, and a soft one: a name longer
+     than it fits is truncated rather than overrunning the plot, so this is the width at which a
+     reader stops needing the tooltip to read a label, not a limit on what may be passed.
+   */
+  --chart-pad-category:96px;
   --chart-pad-left:44px; /* Holds the value labels. A consequence of the type scale, like pad-bottom. */
   /*
      Between an axis label and the plot it labels: a y-axis tick label ends this far

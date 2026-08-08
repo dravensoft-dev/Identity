@@ -1,7 +1,16 @@
 {
   "component": "ArenaLineChart",
   "pattern": "figure-with-data-table",
-  "exceptions": [],
+  "exceptions": [
+    {
+      "requirement": "keyboard.ArrowUp",
+      "reason": "This chart's points run across the plot, so the cursor answers ArrowLeft and ArrowRight and leaves the vertical pair to the page. A chart that consumed ArrowUp would take the page scroll away from a keyboard reader who only wanted to leave it, which is the same reasoning that keeps touch-action off the rail."
+    },
+    {
+      "requirement": "keyboard.ArrowDown",
+      "reason": "This chart's points run across the plot, so the cursor answers ArrowLeft and ArrowRight and leaves the vertical pair to the page. A chart that consumed ArrowUp would take the page scroll away from a keyboard reader who only wanted to leave it, which is the same reasoning that keeps touch-action off the rail."
+    }
+  ],
   "additions": [
     {
       "provides": "keyboard.data-cursor",

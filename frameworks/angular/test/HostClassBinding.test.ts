@@ -777,7 +777,7 @@ function findManifestFile(componentsDir: string, filename: string): string | und
   return paths.find((p) => basename(p) === filename);
 }
 
-const NO_MANIFEST = new Set(['arena-bar-chart', 'arena-line-chart', 'arena-doughnut-chart']);
+const NO_MANIFEST = new Set(['arena-bar-chart', 'arena-line-chart', 'arena-doughnut-chart', 'arena-horizontal-bar-chart']);
 
 const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
   'arena-bottom-nav-item': { manifest: 'ArenaBottomNav.manifest.json', slot: 'item' },

@@ -1,17 +1,15 @@
 import {
-  ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, booleanAttribute, computed, input, signal,
-  viewChild,
+  ChangeDetectionStrategy, Component, booleanAttribute, computed, input, signal,
 } from '@angular/core';
 import { arenaContainerWidth } from '../../../ContainerSize';
 import {
-  ARENA_CHART_HEIGHT, ARENA_RAIL_STYLE, ARENA_SR_ONLY, arenaPlotWidth, arenaValueWriter,
+  ARENA_CHART_HEIGHT, ARENA_SR_ONLY, arenaValueWriter,
 } from '../../../DataVisuals';
 import {
-  arenaLinearScale, arenaBandScale, arenaBandStart, arenaBandCenter, arenaBandIndex, arenaBandMark, arenaBandSubBand,
-  arenaScaleValue,
+  arenaLinearScale, arenaBandScale, arenaBandCenter, arenaBandIndex, arenaBandMark, arenaBandSubBand, arenaScaleValue,
 } from '../ChartScales';
-import { arenaBarPath } from '../ChartMarks';
-import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
+import { arenaBarPathH } from '../ChartMarks';
+import { arenaPlotBoxH, arenaAxisModelX, arenaCategoryLabelX, arenaTickLabelY } from '../ChartAxis';
 import {
   arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount, arenaStackSegments, arenaStackDomain,
 } from '../ChartSeries';
@@ -29,6 +27,8 @@ const BAR_RADIUS = chartBarRadius;
 
 const ASSUMED_WIDTH = 600;
 
+const REGION_STYLE = { display: 'block', outlineOffset: 'var(--focus-offset)' } as const satisfies Readonly<Record<string, string>>;
+
 const LINE_STYLE = { strokeWidth: 'var(--bw)' } as const satisfies Readonly<Record<string, string>>;
 
 const TICK_LABEL_STYLE = { fontSize: 'var(--dz-text-2xs)' } as const satisfies Readonly<Record<string, string>>;
@@ -41,7 +41,7 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
 
 
 @Component({
-  selector: 'arena-bar-chart',
+  selector: 'arena-horizontal-bar-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -49,20 +49,20 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
     '[style.height.px]': 'height()',
   },
   template: `
-    <div #rail [style]="arenaRailStyle" tabindex="0" role="group" [attr.aria-label]="name()"
+    <div [style]="regionStyle" tabindex="0" role="group" [attr.aria-label]="name()"
          (keydown)="onKey($event)">
-    <svg [attr.width]="scrolls() ? width() : '100%'" [attr.height]="plotH()" role="img" [attr.aria-label]="name()"
+    <svg width="100%" [attr.height]="plotH()" role="img" [attr.aria-label]="name()"
          style="display:block;overflow:visible">
       @for (tick of gridLines(); track tick.value) {
         <g>
-          <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="tick.y" [attr.y2]="tick.y"
+          <line [attr.x1]="tick.x" [attr.x2]="tick.x" [attr.y1]="plotTop()" [attr.y2]="plotBottom()"
                 stroke="var(--border)" [style]="lineStyle" />
-          <text [attr.x]="tickLabelX" [attr.y]="tick.y" text-anchor="end" dominant-baseline="middle"
+          <text [attr.x]="tick.x" [attr.y]="tickLabelY()" text-anchor="middle"
                 fill="var(--text-muted)" font-family="var(--font-mono)"
                 [style]="tickLabelStyle">{{ tick.label }}</text>
         </g>
       }
-      <line [attr.x1]="plotLeft()" [attr.x2]="plotRight()" [attr.y1]="zeroY()" [attr.y2]="zeroY()"
+      <line [attr.x1]="zeroX()" [attr.x2]="zeroX()" [attr.y1]="plotTop()" [attr.y2]="plotBottom()"
             stroke="var(--line-strong)" [style]="lineStyle" />
 
       @for (bar of bars(); track bar.index) {
@@ -75,15 +75,15 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
         </g>
       }
 
-      <rect [attr.x]="plotLeft()" [attr.y]="plotTop()" [attr.width]="innerWidth()" [attr.height]="innerHeight()"
-            fill="transparent" (pointermove)="onPointer($event, 'move')" (pointerdown)="onPointer($event, 'down')"
-            (pointerleave)="onPointerLeave($event)" (pointercancel)="hover.set(null)" />
-
       @for (bar of bars(); track bar.index) {
-        <text [attr.x]="bar.midX" [attr.y]="categoryLabelY()" text-anchor="middle"
+        <text [attr.x]="categoryLabelX" [attr.y]="bar.midY" text-anchor="end" dominant-baseline="middle"
               fill="var(--text-muted)" font-family="var(--font-body)"
               [style]="categoryLabelStyle">{{ bar.label }}</text>
       }
+
+      <rect [attr.x]="plotLeft()" [attr.y]="plotTop()" [attr.width]="innerWidth()" [attr.height]="innerHeight()"
+            fill="transparent" (pointermove)="onPointer($event, 'move')" (pointerdown)="onPointer($event, 'down')"
+            (pointerleave)="onPointerLeave($event)" (pointercancel)="hover.set(null)" />
     </svg>
     </div>
 
@@ -118,14 +118,14 @@ const BAR_STYLE = { transition: 'opacity var(--dur-fast) var(--ease-out)' } as c
     </table>
   `,
 })
-export class ArenaBarChart {
-  /** One label per category, in the same order as every series' `values`. A category with no value in a series is drawn for the series that do have one. */
+export class ArenaHorizontalBarChart {
+  /** One label per category, in the same order as every series' `values`. They run down the left edge, in the gutter chart.pad-category holds, and a name longer than that gutter is truncated rather than pushed into the plot. */
   readonly labels = input.required<readonly string[]>();
-  /** The plotted series, drawn as one group of bars per category. One series is the common case and draws exactly what it drew before; two or more share each category's band, so the bars of one category stand side by side and the reader compares within a category before comparing across. The ramp clamps at its last slot rather than cycling, so a ninth series folds into "Other" upstream, never into a colour already spent. */
+  /** The plotted series, drawn as one group of bars per category. One series is the common case; two or more share each category's band, so the bars of one category stand one above the other and the reader compares within a category before comparing across. The ramp clamps at its last slot rather than cycling, so a ninth series folds into "Other" upstream, never into a colour already spent. */
   readonly series = input.required<readonly ArenaSeries[]>();
   /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
   readonly label = input.required<string>();
-  /** Sit each series on the one below it inside a single band per category, rather than standing them side by side. Stack when the series are parts of one total and that total is the thing being read; leave it off when the comparison is between the series, because a segment that does not start at zero is one a reader cannot measure against its neighbours. Positive and negative values stack on their own runs, so a category holding both grows in both directions from the zero line and the axis is sized from the two sums rather than from the largest single value. A series with no value at a category contributes no segment, and the segment above it sits on the one below rather than floating over a gap: a missing number is not a zero here either. Only the outermost segment of each direction is rounded, so the joints inside a bar stay square and read as joints. */
+  /** Sit each series on the one before it inside a single band per category, rather than standing them one above the other. Stack when the series are parts of one total and that total is the thing being read; leave it off when the comparison is between the series, because a segment that does not start at zero is one a reader cannot measure against its neighbours. Positive and negative values stack on their own runs, so a category holding both grows in both directions from the zero line. */
   readonly stack = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
@@ -133,13 +133,11 @@ export class ArenaBarChart {
   readonly valuePrefix = input<string>();
   /** How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. */
   readonly valueFormat = input<ArenaNumberFormat>();
-  /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
+  /** The plot's height in px, the --chart-height token by default. On this chart it is the axis the categories run down, so a chart of many categories wants more of it: pass the room the data needs rather than letting the bands thin out. There is no scrolling rail here on purpose, because a vertical scroll region nested in a page takes the page's own scroll away from the reader, which is the reasoning that already keeps touch-action off the horizontal one. A number rather than a dimension string, because the chart does arithmetic with it to place every mark. */
   readonly height = input<number>(ARENA_CHART_HEIGHT);
-  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is the same region the data cursor lives in, and it is keyboard-reachable whether it overflows or not. */
-  readonly minPointSpacing = input<number>();
 
   protected readonly arenaSrOnly = ARENA_SR_ONLY;
-  protected readonly arenaRailStyle = ARENA_RAIL_STYLE;
+  protected readonly regionStyle = REGION_STYLE;
   protected readonly lineStyle = LINE_STYLE;
   protected readonly tickLabelStyle = TICK_LABEL_STYLE;
   protected readonly categoryLabelStyle = CATEGORY_LABEL_STYLE;
@@ -151,8 +149,7 @@ export class ArenaBarChart {
   protected readonly legendItemStyle = ARENA_LEGEND_ITEM_STYLE;
   protected readonly legendSwatchStyle = ARENA_LEGEND_SWATCH_STYLE;
   protected readonly legendLabelStyle = ARENA_LEGEND_LABEL_STYLE;
-  protected readonly tickLabelX = arenaTickLabelX();
-  protected readonly categoryLabelY = computed(() => arenaCategoryLabelY(this.strip().plotH));
+  protected readonly categoryLabelX = arenaCategoryLabelX();
   protected readonly hover = signal<number | null>(null);
 
   private readonly write = computed(() => arenaValueWriter({
@@ -161,74 +158,65 @@ export class ArenaBarChart {
 
   private readonly measured = arenaContainerWidth();
 
-  private readonly available = computed(() => this.measured() ?? ASSUMED_WIDTH);
-
-  protected readonly width = computed(
-    () => arenaPlotWidth(this.available(), this.points(), this.minPointSpacing()),
-  );
-
-  protected readonly scrolls = computed(() => this.width() > this.available());
-
-  private readonly rail = viewChild<ElementRef<HTMLElement>>('rail');
+  private readonly width = computed(() => this.measured() ?? ASSUMED_WIDTH);
 
   protected readonly name = computed(() => {
-    return `${this.label()} — bar chart`;
+    return `${this.label()} — horizontal bar chart`;
   });
 
   private readonly domain = computed(
     () => (this.stack() ? arenaStackDomain(this.series()) : arenaSeriesDomain(this.series())),
   );
+
   private readonly points = computed(() => arenaSeriesPointCount(this.series()));
   private readonly strip = computed(() => arenaLegendStrip(this.height(), this.series().length));
   protected readonly plotH = computed(() => this.strip().plotH);
   protected readonly stripH = computed(() => this.strip().stripH);
-  private readonly box = computed(() => arenaPlotBox(this.width(), this.strip().plotH));
+  private readonly box = computed(() => arenaPlotBoxH(this.width(), this.strip().plotH));
   protected readonly plotLeft = computed(() => this.box().x);
-  protected readonly plotRight = computed(() => this.box().x + this.box().w);
   protected readonly plotTop = computed(() => this.box().y);
+  protected readonly plotBottom = computed(() => this.box().y + this.box().h);
   protected readonly innerWidth = computed(() => this.box().w);
   protected readonly innerHeight = computed(() => this.box().h);
+  protected readonly tickLabelY = computed(() => arenaTickLabelY(this.strip().plotH));
 
-  private readonly yScale = computed(() => {
+  private readonly xScale = computed(() => {
     const box = this.box();
     const domain = this.domain();
-    return arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
+    return arenaLinearScale(domain.min, domain.max, box.x, box.x + box.w);
   });
 
   private readonly bands = computed(() => {
     const box = this.box();
-    return arenaBandScale(this.points(), box.x, box.w, chartBarGap);
+    return arenaBandScale(this.points(), box.y, box.h, chartBarGap);
   });
 
-  protected readonly step = computed(() => this.bands().step);
+  private readonly axis = computed(() => arenaAxisModelX(this.xScale(), this.domain(), this.write()));
 
-  private readonly axis = computed(() => arenaAxisModel(this.yScale(), this.domain(), this.write()));
-
-  protected readonly zeroY = computed(() => this.axis().zeroY);
+  protected readonly zeroX = computed(() => this.axis().zeroX);
   protected readonly gridLines = computed(() => this.axis().ticks);
 
   protected readonly bars = computed(() => {
     const series = this.series();
     const bands = this.bands();
-    const yScale = this.yScale();
-    const zeroY = this.zeroY();
+    const xScale = this.xScale();
+    const zeroX = this.zeroX();
     const write = this.write();
     const labels = this.labels();
     const stacked = this.stack();
     return Array.from({ length: this.points() }, (_, index) => ({
       index,
-      hitX: arenaBandStart(bands, index),
-      midX: arenaBandCenter(bands, index),
+      midY: arenaBandCenter(bands, index),
       label: labels[index] ?? '',
       marks: stacked
         ? arenaStackSegments(series, index).map((segment) => {
           const one = series[segment.seriesIndex] as ArenaSeries;
           return {
             key: segment.seriesIndex,
-            y: arenaScaleValue(yScale, segment.to),
+            x: arenaScaleValue(xScale, segment.to),
             name: series.length > 1 ? `${one.label}: ` : '',
-            path: arenaBarPath(arenaBandMark(bands, index), bands.band,
-              arenaScaleValue(yScale, segment.to), arenaScaleValue(yScale, segment.from),
+            path: arenaBarPathH(arenaBandMark(bands, index), bands.band,
+              arenaScaleValue(xScale, segment.to), arenaScaleValue(xScale, segment.from),
               segment.outer ? BAR_RADIUS : 0),
             color: arenaSeriesColors(one, this.points(), segment.seriesIndex + 1)[index],
             value: write(one.values[index] as number),
@@ -237,13 +225,13 @@ export class ArenaBarChart {
         : series.flatMap((one, s) => {
           const value = one.values[index];
           if (value === undefined) return [];
-          const y = arenaScaleValue(yScale, value);
+          const x = arenaScaleValue(xScale, value);
           const sub = arenaBandSubBand(bands, index, series.length, s, chartSeriesGap);
           return [{
             key: s,
-            y,
+            x,
             name: series.length > 1 ? `${one.label}: ` : '',
-            path: arenaBarPath(sub.x, sub.width, y, zeroY, BAR_RADIUS),
+            path: arenaBarPathH(sub.x, sub.width, x, zeroX, BAR_RADIUS),
             color: arenaSeriesColors(one, this.points(), s + 1)[index],
             value: write(value),
           }];
@@ -269,15 +257,15 @@ export class ArenaBarChart {
     const index = this.hover();
     const bar = index === null ? null : this.bars()[index] ?? null;
     if (!bar || bar.marks.length === 0) return null;
-    const top = Math.min(...bar.marks.map((mark) => mark.y));
-    return { ...bar, anchor: arenaTooltipAnchor(bar.midX, top) };
+    const tip = Math.max(...bar.marks.map((mark) => mark.x));
+    return { ...bar, anchor: arenaTooltipAnchor(tip, bar.midY) };
   });
 
   protected onPointer(event: PointerEvent, phase: string): void {
     if (!arenaPointerUpdates(event.pointerType, phase)) return;
     const box = (event.currentTarget as SVGRectElement).ownerSVGElement?.getBoundingClientRect();
     if (!box) return;
-    const index = arenaBandIndex(this.bands(), event.clientX - box.left);
+    const index = arenaBandIndex(this.bands(), event.clientY - box.top);
     if (index >= 0) this.hover.set(index);
   }
 
@@ -286,17 +274,8 @@ export class ArenaBarChart {
   }
 
   protected onKey(event: KeyboardEvent): void {
-    if (!arenaCursorHandles(event.key, 'x')) return;
+    if (!arenaCursorHandles(event.key, 'y')) return;
     event.preventDefault();
-    this.hover.set(arenaCursorStep(this.hover(), event.key, this.points(), 'x'));
-  }
-
-  constructor() {
-
-    afterRenderEffect(() => {
-      const rail = this.rail()?.nativeElement;
-      if (!rail || !this.scrolls()) return;
-      rail.scrollLeft = rail.scrollWidth - rail.clientWidth;
-    });
+    this.hover.set(arenaCursorStep(this.hover(), event.key, this.points(), 'y'));
   }
 }

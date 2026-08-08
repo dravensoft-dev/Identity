@@ -31,6 +31,7 @@ building, and how to write one, is your own layer's index and then the component
 | `ArenaBarChart` | Categorical bars on one axis. Dependency-free SVG that reads the token layer directly, with a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `stack` `valueSuffix` `valuePrefix` `valueFormat` `height` `minPointSpacing` | figure-with-data-table | angular, react |
 | `ArenaChartCard` | A titled card frame around a chart, with an optional actions slot in its head. | `title` `actions` `content` | none | angular, react |
 | `ArenaDoughnutChart` | Parts of one whole, as a ring with a legend beside it. Identity only: a slice is a category by definition, so there is no tone. Dependency-free SVG with a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `valueSuffix` `valuePrefix` `shape` `legendLayout` `sliceActivate` `valueFormat` | figure-with-data-table | angular, react |
+| `ArenaHorizontalBarChart` | Categorical bars running across the plot, with the categories down its left edge. The same data and the same table as ArenaBarChart with the axes transposed, which is a different component rather than an orientation flag because transposing changes what four of its members mean: the cursor answers the vertical arrows, the category gutter is its own token, height becomes the axis the data grows along, and there is no scrolling rail. | `labels*` `series*` `label*` `stack` `valueSuffix` `valuePrefix` `valueFormat` `height` | figure-with-data-table | angular, react |
 | `ArenaLineChart` | One series over an ordered sequence, on one axis. Dependency-free SVG with a crosshair that snaps to the nearest point, and a visually-hidden table of the same numbers. | `labels*` `series*` `label*` `area` `curve` `valueSuffix` `valuePrefix` `valueFormat` `height` `minPointSpacing` | figure-with-data-table | angular, react |
 
 ## display
@@ -108,4 +109,4 @@ building, and how to write one, is your own layer's index and then the component
 | `ArenaTab` | One tab in an ArenaTabs strip, and the panel it shows. ArenaTab draws the button; its content fills the tabpanel ArenaTabs renders beside the tablist. | `value*` `label*` `content` | none | angular, react |
 | `ArenaTabs` | A row of tabs and the one panel they switch between. Write one `ArenaTab` per view; ArenaTabs renders the tablist, the panel, and the keyboard. | `content` `value` `defaultValue` `change` | tabs | angular, react |
 
-55 components across 7 categories.
+56 components across 7 categories.

@@ -22,6 +22,11 @@
       "$description": "Holds the category labels. This is a CONSEQUENCE of the type scale, not a\nchosen dimension: it is enough room for a label at --dz-text-2xs. If the type\nscale moves, revisit it; it will not fail loudly.\nThe labels stay on this edge whatever the data does, so a bar growing down from a\nzero line above the floor runs toward them. That is deliberate: a reader looks for\ncategory labels along the bottom, and moving them to follow the zero line would put\nthem somewhere different in every chart on a page. What it costs is a downward bar\nreaching its label at the extreme of the axis, which is the price of one place to\nlook.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
+    "pad-category": {
+      "$value": { "value": 96, "unit": "px" },
+      "$description": "Holds the category names down the left edge of a horizontal bar chart, where\npad-left holds value labels on a vertical one. A separate token rather than a wider\npad-left, because the two hold different things and sizing every chart's value gutter for\nthe longest category name anyone might write would waste 52px on every vertical chart in\nthe library. A CONSEQUENCE of the type scale like pad-bottom, and a soft one: a name longer\nthan it fits is truncated rather than overrunning the plot, so this is the width at which a\nreader stops needing the tooltip to read a label, not a limit on what may be passed.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
     "pad-left": {
       "$value": { "value": 44, "unit": "px" },
       "$description": "Holds the value labels. A consequence of the type scale, like pad-bottom.",

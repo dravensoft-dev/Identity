@@ -328,8 +328,8 @@ export class ArenaLineChart {
   }
 
   protected onKey(event: KeyboardEvent): void {
-    if (!arenaCursorHandles(event.key)) return;
+    if (!arenaCursorHandles(event.key, 'x')) return;
     event.preventDefault();
-    this.hover.set(arenaCursorStep(this.hover(), event.key, this.pointCount()));
+    this.hover.set(arenaCursorStep(this.hover(), event.key, this.pointCount(), 'x'));
   }
 }
