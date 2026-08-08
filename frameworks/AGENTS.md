@@ -261,12 +261,22 @@ mark, because inventing the difference is the one thing a chart may not do.
 
 **A domain carries its own step, and that is what puts zero on a tick.** An axis that has to
 hold a negative value cannot take its step from the count alone, because the two sides of zero
-are not the same size: `arenaNiceDomain(min, max)` picks one step from the larger magnitude and
-then rounds each end out to a whole number of steps, so zero lands exactly where a tick does and
-the strong rule has something to sit on. `arenaDomainTicks` reads the count back out of the
-domain rather than assuming four. A series with nothing below zero takes the branch that was
-always there and draws the axis it always drew, which is what pins the change to the charts that
-needed it. **`arenaScaleValue` does not clamp**: a scale maps, and where a value may not go is
+are not the same size: `arenaNiceDomain(min, max)` rounds ONE step to a nice number and then
+rounds each end out to a whole number of steps, so zero lands exactly where a tick does and the
+strong rule has something to sit on. `arenaDomainTicks` reads the count back out of the domain
+rather than assuming four, and it has to: the step is what is nice, so the count is what gives.
+
+**The nice number is the STEP and never the ceiling, and getting that backwards costs half the
+plot.** `arenaNiceStep` snaps a rough step up to 1, 2, 2.5, 5 or 10 times its magnitude, and it
+is handed the range divided by the tick count. It used to be handed the range itself, whose nice
+value was then quartered: a maximum of 510 snapped to 1000 before anything was divided, so
+forty-nine percent of the plot drew nothing, and a maximum of 22 produced ticks at 6.25. Across
+every whole-number maximum to two thousand, the worst axis now spends a third of itself on
+nothing rather than a half, and four of them draw a fractional step where ninety did. Its own
+suite asserts those two as sweeps rather than pinning a table of values, because a table of
+values is what let the old shape sit unquestioned. The name says `Step` for the same reason: it
+was called `arenaNiceMax` while being used on a maximum, and the name was the bug's best
+disguise. **`arenaScaleValue` does not clamp**: a scale maps, and where a value may not go is
 the caller's rule. The doughnut keeps its own floor, because a negative share of a whole is
 meaningless, and the bar and line charts lost theirs.
 

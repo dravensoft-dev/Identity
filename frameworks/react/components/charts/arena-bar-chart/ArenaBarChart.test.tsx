@@ -12,8 +12,10 @@ test('ArenaBarChart appends valueSuffix to the axis ticks and to the accessible 
     <ArenaBarChart labels={LABELS} series={[{ label: 'Deploys', values: VALUES }]} label="Deploys" valueSuffix=" ms" />
   );
 
-  assert.match(html, />12\.5 ms</, 'the axis tick carries the suffix');
-  assert.match(html, />37\.5 ms</, 'the axis tick carries the suffix');
+  const ticks = [...html.matchAll(/dz-text-2xs\)">([^<]*)</g)].map((m) => m[1] as string);
+  assert.ok(ticks.length >= 2, `no axis ticks were drawn: ${JSON.stringify(ticks)}`);
+  assert.ok(ticks.every((tick) => tick.endsWith(' ms')),
+    `a tick was written without the suffix: ${JSON.stringify(ticks)}`);
 
   for (const v of VALUES) assert.match(html, new RegExp(`<td>${v} ms</td>`), `the ${v} row carries the suffix`);
 });

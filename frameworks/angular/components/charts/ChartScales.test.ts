@@ -4,7 +4,7 @@ import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
 import { chartBarGap, chartSeriesGap } from '../../Tokens.generated';
 import {
   arenaLinearScale, arenaScaleValue, arenaScaleInvert, arenaScaleZero,
-  arenaNiceMax, arenaNiceDomain, arenaDomainTicks,
+  arenaNiceStep, arenaNiceDomain, arenaDomainTicks,
   arenaBandScale, arenaBandStart, arenaBandMark, arenaBandCenter, arenaBandSubBand,
   arenaPointScale, arenaPointAt, arenaNearestPointIndex, arenaDoughnutSlices,
 } from './ChartScales';
@@ -294,58 +294,82 @@ test('a lone slice sweeps the entire circle', () => {
   assert.ok(Math.abs(only.to - only.from - TWO_PI) < 1e-9);
 });
 
-test('arenaNiceMax returns 1 for every input that is not a positive number', () => {
+test('arenaNiceStep returns 1 for every input that is not a positive number', () => {
 
   for (const bad of [0, -0, -1, -1000, Number.NaN, -Infinity])
-    assert.equal(arenaNiceMax(bad), 1, `arenaNiceMax(${bad})`);
+    assert.equal(arenaNiceStep(bad), 1, `arenaNiceStep(${bad})`);
 });
 
-test('arenaNiceMax lands on each of the five steps at its own boundary', () => {
-  assert.equal(arenaNiceMax(1), 1);
-  assert.equal(arenaNiceMax(2), 2);
-  assert.equal(arenaNiceMax(2.5), 2.5);
-  assert.equal(arenaNiceMax(5), 5);
-  assert.equal(arenaNiceMax(10), 10);
+test('arenaNiceStep lands on each of the five steps at its own boundary', () => {
+  assert.equal(arenaNiceStep(1), 1);
+  assert.equal(arenaNiceStep(2), 2);
+  assert.equal(arenaNiceStep(2.5), 2.5);
+  assert.equal(arenaNiceStep(5), 5);
+  assert.equal(arenaNiceStep(10), 10);
 });
 
-test('arenaNiceMax steps up the moment a boundary is crossed', () => {
-  assert.equal(arenaNiceMax(1.01), 2);
-  assert.equal(arenaNiceMax(2.01), 2.5);
-  assert.equal(arenaNiceMax(2.51), 5);
-  assert.equal(arenaNiceMax(5.01), 10);
+test('arenaNiceStep steps up the moment a boundary is crossed', () => {
+  assert.equal(arenaNiceStep(1.01), 2);
+  assert.equal(arenaNiceStep(2.01), 2.5);
+  assert.equal(arenaNiceStep(2.51), 5);
+  assert.equal(arenaNiceStep(5.01), 10);
 });
 
-test('arenaNiceMax scales the same five steps across powers of ten', () => {
-  assert.equal(arenaNiceMax(0.4), 0.5);
-  assert.equal(arenaNiceMax(23), 25);
-  assert.equal(arenaNiceMax(230), 250);
-  assert.equal(arenaNiceMax(2300), 2500);
-  assert.equal(arenaNiceMax(7), 10);
-  assert.equal(arenaNiceMax(70), 100);
-  assert.equal(arenaNiceMax(7000), 10000);
+test('arenaNiceStep scales the same five steps across powers of ten', () => {
+  assert.equal(arenaNiceStep(0.4), 0.5);
+  assert.equal(arenaNiceStep(23), 25);
+  assert.equal(arenaNiceStep(230), 250);
+  assert.equal(arenaNiceStep(2300), 2500);
+  assert.equal(arenaNiceStep(7), 10);
+  assert.equal(arenaNiceStep(70), 100);
+  assert.equal(arenaNiceStep(7000), 10000);
 });
 
-test('arenaNiceMax never returns an axis top below the value it must hold', () => {
+test('arenaNiceStep never returns an axis top below the value it must hold', () => {
 
   for (let v = 0.01; v < 100000; v *= 1.37)
-    assert.ok(arenaNiceMax(v) >= v, `arenaNiceMax(${v}) = ${arenaNiceMax(v)} is below ${v}`);
+    assert.ok(arenaNiceStep(v) >= v, `arenaNiceStep(${v}) = ${arenaNiceStep(v)} is below ${v}`);
 });
 
-test('the ticks span the domain inclusive and yield count + 1 values', () => {
+test('the ticks span the domain inclusive, at the count the domain asks for or near it', () => {
+
   assert.deepEqual(arenaDomainTicks(arenaNiceDomain(0, 100)), [0, 25, 50, 75, 100]);
   assert.deepEqual(arenaDomainTicks(arenaNiceDomain(0, 10, 2)), [0, 5, 10]);
-  assert.equal(arenaDomainTicks(arenaNiceDomain(0, 7, 7)).length, 8);
+  for (const [max, count] of [[100, 4], [7, 7], [510, 4], [42, 4]] as const) {
+    const ticks = arenaDomainTicks(arenaNiceDomain(0, max, count));
+    assert.ok(Math.abs(ticks.length - (count + 1)) <= 2,
+      `${ticks.length} ticks for a count of ${count}: the step is nice, so the count gives rather than the labels`);
+  }
 });
 
-test('arenaNiceDomain leaves an all-positive series on the axis it always had', () => {
+test('an axis reaches its data and stops within one step of it, rather than at a nice round ceiling', () => {
 
-  for (const max of [1, 7, 23, 128, 2300]) {
+  for (const max of [1, 7, 23, 42, 128, 510, 2300]) {
     const domain = arenaNiceDomain(0, max);
     assert.equal(domain.min, 0);
-    assert.equal(domain.max, arenaNiceMax(max));
-    assert.deepEqual(arenaDomainTicks(domain), Array.from({ length: 5 }, (_, i) => (arenaNiceMax(max) / 4) * i),
-      'the old arenaTicks body, spelt out, so a positive axis is pinned to what it drew before');
+    assert.ok(domain.max >= max, `an axis of ${domain.max} does not hold ${max}`);
+    assert.ok(domain.max - max < domain.step,
+      `${domain.max - max} of dead space above ${max} is more than the one step ${domain.step} that rounding can cost`);
   }
+});
+
+test('no axis spends more than a third of itself on nothing', () => {
+
+  let worst = 0;
+  for (let max = 1; max <= 2000; max += 1) {
+    const domain = arenaNiceDomain(0, max);
+    worst = Math.max(worst, (domain.max - max) / domain.max);
+  }
+  assert.ok(worst <= 1 / 3 + 1e-9, `the worst axis in the sweep was ${(worst * 100).toFixed(0)}% empty`);
+});
+
+test('a whole-number series gets a whole-number step, near enough always', () => {
+
+  let fractional = 0;
+  for (let max = 1; max <= 2000; max += 1) {
+    if (!Number.isInteger(arenaNiceDomain(0, max).step)) fractional += 1;
+  }
+  assert.ok(fractional <= 5, `${fractional} of 2000 whole-number maxima drew a fractional step`);
 });
 
 test('a domain with a negative end puts zero exactly on a tick', () => {
@@ -364,9 +388,10 @@ test('a domain holds every value it was built from, on both sides of zero', () =
 });
 
 test('the ticks are evenly spaced by the domain\'s own step', () => {
-  const ticks = arenaDomainTicks(arenaNiceDomain(-20, 60));
+  const domain = arenaNiceDomain(-20, 60);
+  const ticks = arenaDomainTicks(domain);
   for (let i = 1; i < ticks.length; i++)
-    assert.ok(Math.abs((ticks[i] - ticks[i - 1]) - 25) < 1e-9, `interval ${i} was ${ticks[i] - ticks[i - 1]}`);
+    assert.ok(Math.abs((ticks[i] - ticks[i - 1]) - domain.step) < 1e-9, `interval ${i} was ${ticks[i] - ticks[i - 1]}`);
 });
 
 test('an all-negative series puts zero at the top rather than inventing a positive half', () => {
@@ -381,7 +406,8 @@ test('a domain built from nothing is still a real axis, which is what an empty c
   const domain = arenaNiceDomain(0, 0);
   assert.equal(domain.min, 0);
   assert.equal(domain.max, 1);
-  assert.deepEqual(arenaDomainTicks(domain), [0, 0.25, 0.5, 0.75, 1]);
+  assert.deepEqual(arenaDomainTicks(domain), [0, 1],
+    'an empty chart draws a whole-number axis rather than quartering a unit it has no data for');
 });
 
 test('one series takes the whole band, so a single-series chart draws what it always drew', () => {

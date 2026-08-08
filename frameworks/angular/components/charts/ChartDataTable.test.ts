@@ -114,8 +114,10 @@ test('arena-bar-chart appends valueSuffix to the axis ticks and to the accessibl
     const host = fixture.nativeElement as Element;
 
     const svgText = [...host.querySelectorAll('svg text')].map((t) => (t.textContent ?? '').trim());
-    assert.ok(svgText.includes('12.5 ms'), `the axis tick lost the suffix: ${JSON.stringify(svgText)}`);
-    assert.ok(svgText.includes('37.5 ms'), `the axis tick lost the suffix: ${JSON.stringify(svgText)}`);
+    const ticks = svgText.filter((text) => /^-?[\d.,]+ ms$/.test(text));
+    assert.ok(ticks.length >= 2, `no axis tick carried the suffix: ${JSON.stringify(svgText)}`);
+    assert.ok(svgText.filter((text) => /^-?[\d.,]+$/.test(text)).length === 0,
+      `a tick was written without the suffix: ${JSON.stringify(svgText)}`);
 
     const table = host.querySelector('table') as HTMLTableElement;
     const pairs = [...table.querySelectorAll('tbody tr')]
