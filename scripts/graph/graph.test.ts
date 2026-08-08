@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cyclePath, duplicateWriters, needsOf, selfFeeds, subscriptionProblems, topoOrder, unknownFeeds } from './graph.ts';
+import { cyclePath, duplicateWriters, needsOf, selfFeeds, subscriptionProblems, topoOrder, transitiveFeeds, unknownFeeds } from './graph.ts';
 
 const node = (name: string, over: Partial<{ reads: string[]; writes: string[]; feeds: string[] }> = {}) =>
   ({ name, reads: [], writes: [], feeds: [], ...over });
@@ -107,4 +107,25 @@ test('a node writing into what it reads is legal, and does not subscribe itself'
   assert.deepEqual(subscriptionProblems(nodes, flat), [],
     'the in-place generators write the descriptions into the components they read, so writes '
     + 'meeting reads is the shape rather than a defect');
+});
+
+test('a failure reaches everything downstream of it, however many hops away', () => {
+  const nodes = [
+    node('generate:tokens', { feeds: ['build:tailwind'] }),
+    node('build:tailwind', { feeds: ['build:demos', 'build:angular-demo'] }),
+    node('build:demos'),
+    node('build:angular-demo'),
+    node('build:vendor'),
+  ];
+  assert.deepEqual([...transitiveFeeds(nodes, 'generate:tokens')].sort(),
+    ['build:angular-demo', 'build:demos', 'build:tailwind'],
+    'generate:tokens does not feed build:demos directly, so a single hop would let a step compile '
+    + 'against tokens that were never written');
+  assert.deepEqual([...transitiveFeeds(nodes, 'build:vendor')], [],
+    'a step nothing depends on stops nothing, which is the half that makes the run worth continuing');
+});
+
+test('a cycle does not hang the walk downstream', () => {
+  const nodes = [node('a', { feeds: ['b'] }), node('b', { feeds: ['a'] })];
+  assert.deepEqual([...transitiveFeeds(nodes, 'a')].sort(), ['a', 'b']);
 });

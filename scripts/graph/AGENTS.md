@@ -89,6 +89,18 @@ program, so importing it makes it re-enter itself once per collection.
 `NOT_YET_SUBSCRIBED` names what has not joined yet. It is a count that goes to zero, and it exists
 so that a script in neither list is a decision nobody made rather than a default.
 
+## A failure stops its dependents and nothing else
+
+`graph.ts:transitiveFeeds(nodes, name)` is what decides. The failed step is FAIL, everything
+downstream of it is BLOCKED with the upstream named, and the rest of the run proceeds. This is the
+one place the graph pays for itself twice: it knows which steps are downstream, so it does not have
+to choose between stopping everything and running steps that cannot succeed.
+
+`check-all.ts` does NOT do this, and the difference is deliberate. A gate states a claim about the
+tree, and a failed claim does not stop another gate from reporting its own, so the sweep runs all of
+them and reports every problem in one pass. That rule predates the graph and the graph does not
+change it.
+
 ## The fingerprint recorded is measured after the step, never the one that decided it
 
 `generate:member-docs` writes each contracted member's description into the component that

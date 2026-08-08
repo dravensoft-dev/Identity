@@ -59,6 +59,17 @@ fingerprint. A `touch` keeps it, and so does checking out another branch and com
 filters and the content hash arbitrates. What invalidates a step is a changed byte in what it
 reads, a script it imports moving, an upstream having run, or one of its own artifacts being gone.
 
+**A failure stops what depends on it, and nothing else.** The step that failed is reported FAIL,
+every step that reads what it writes is reported BLOCKED with the upstream named, and the rest of
+the graph runs and reports. A step compiled against a failed upstream would report a second error
+over the real one, which is why the dependents stop; a step in another part of the graph has no
+reason to wait, which is why they do not. The tail counts the three apart, so a step that never ran
+cannot be read as one that passed.
+
+The blocking is transitive. `generate:tokens` does not feed `build:demos` directly, it reaches it
+through `build:tailwind`, and a single hop would let a step compile against tokens that were never
+written. A blocked step records nothing: it did not run, so there is no green to write down.
+
 **`bun run build:release` is the full run**, and it is what every workflow uses. It passes
 `--force --assert-full`: every step runs, and a run that kept anything fails on its own. That is
 not belt and braces. The step after the build in each workflow proves it idempotent with

@@ -1,19 +1,19 @@
 /* Runs the build in the order the graph derives, so the sequence follows what each step declares
  * rather than prose in package.json that nothing tests. It runs the steps under build/ and
  * generate/ and never a gate: every node is in one graph, and the phase that declared one says
- * whether a build is what runs it. It aborts on the first failure, which the `&&` chain it replaces
- * did and gates deliberately do not, because a step compiled against a failed upstream reports a
- * second error over the real one. The fingerprint RECORDED is measured after the step: two
- * generators write into what they read, so a value taken before is stale the instant they succeed.
- * --assert-full fails a run that kept anything, which stops a workflow proving the build idempotent
- * over a build that did nothing. */
+ * whether a build is what runs it. A failure stops what READS what that step writes, transitively,
+ * and nothing else: a step compiled against a failed upstream reports a second error over the real
+ * one, and a step in another part of the graph has no reason to wait. The fingerprint RECORDED is
+ * measured after the step, since two generators write into what they read. --assert-full fails a
+ * run that kept anything, which stops a workflow proving the build idempotent over one that did
+ * nothing. */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { isMainModule } from '../utils/main-module.ts';
 import { repoRoot } from '../lib/arena/repo-root.ts';
-import { needsOf, topoOrder } from './graph.ts';
+import { needsOf, topoOrder, transitiveFeeds } from './graph.ts';
 import { allNodes } from './nodes.ts';
 import { stampAll, universe } from './inputs.ts';
 import { fingerprintOne } from './fingerprint.ts';
@@ -52,11 +52,14 @@ export function partialRunProblems(results: { name: string; status: string }[]) 
 
 export function summarize(results: { name: string; status: string }[], ran: number, cached: number) {
   const failed = results.filter((r) => r.status === 'fail');
-  const lines = results.map((r) => `  ${r.status === 'fail' ? 'FAIL' : r.status === 'cached' ? 'CACHED' : 'PASS'}  ${r.name}`);
+  const label: Record<string, string> = { fail: 'FAIL', cached: 'CACHED', blocked: 'BLOCKED', pass: 'PASS' };
+  const lines = results.map((r) => `  ${label[r.status] ?? '????'}  ${r.name}`);
+  const blocked = results.filter((r) => r.status === 'blocked');
   const tail = failed.length
     ? `run-build: ${failed.length}/${results.length} step(s) failed`
     : `run-build: all ${results.length} step(s) passed`;
-  return [...lines, '', `${tail}, ${ran} ran, ${cached} came from the cache`].join('\n');
+  const held = blocked.length ? `, ${blocked.length} did not run because an upstream failed` : '';
+  return [...lines, '', `${tail}, ${ran} ran, ${cached} came from the cache${held}`].join('\n');
 }
 
 function runStep(name: string) {
@@ -92,10 +95,22 @@ async function main() {
 
   const results = [];
   const wouldKeep = new Set<string>();
+  const blocked = new Map<string, string>();
   let ran = 0;
   let cached = 0;
 
   for (const node of order) {
+    const failedAbove = blocked.get(node.name);
+    if (failedAbove) {
+      console.log(`\nrun-build: ${node.name} does not run, because ${failedAbove} failed and it reads `
+        + 'what that writes; a step compiled against an upstream that failed reports a second error '
+        + 'over the real one');
+      results.push({ name: node.name, status: 'blocked' });
+      forget(state, node.name);
+      writeState(state, repoRoot);
+      continue;
+    }
+
     const before = fingerprintOne(node, measure());
     const measured = decide(node, before, state.get(node.name), onDisk);
     if (!measured.run) wouldKeep.add(node.name);
@@ -117,10 +132,9 @@ async function main() {
 
     if (status === 'fail') {
       forget(state, node.name);
+      for (const fed of transitiveFeeds(collected.nodes, node.name)) blocked.set(fed, node.name);
       writeState(state, repoRoot);
-      console.error(`\nrun-build: ${node.name} failed, and the steps after it compile against what it `
-        + 'writes, so the run stops here rather than reporting a second error over the real one');
-      break;
+      continue;
     }
 
     refresh();

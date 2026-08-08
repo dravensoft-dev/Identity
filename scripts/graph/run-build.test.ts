@@ -54,3 +54,19 @@ test('a build runs what build/ and generate/ declared, and never a gate', () => 
     + 'is the thing that runs it. Without this, subscribing a gate quietly adds it to bun run build');
   assert.equal(isBuildStep(declaredIn, 'check:nothing'), false);
 });
+
+test('a blocked step is neither a pass nor a failure, and the tail counts it apart', () => {
+  const out = summarize([
+    { name: 'build:vendor', status: 'pass' },
+    { name: 'generate:tokens', status: 'fail' },
+    { name: 'build:tailwind', status: 'blocked' },
+  ], 2, 0);
+  assert.match(out, /^ {2}BLOCKED {2}build:tailwind$/m);
+  assert.match(out, /1\/3 step\(s\) failed, 2 ran, 0 came from the cache, 1 did not run because an upstream failed/,
+    'a step that never ran is not a step that passed, and a reader has to be able to tell which of '
+    + 'the two the tail is reporting');
+});
+
+test('a run with nothing blocked says nothing about blocking', () => {
+  assert.doesNotMatch(summarize([{ name: 'a', status: 'pass' }], 1, 0), /upstream/);
+});

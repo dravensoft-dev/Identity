@@ -89,6 +89,20 @@ export function topoOrder(nodes: GraphNode[]) {
   return order;
 }
 
+export function transitiveFeeds(nodes: GraphNode[], from: string) {
+  const known = byName(nodes);
+  const reached = new Set<string>();
+  const walk = (name: string) => {
+    for (const fed of known.get(name)?.feeds ?? []) {
+      if (reached.has(fed) || !known.has(fed)) continue;
+      reached.add(fed);
+      walk(fed);
+    }
+  };
+  walk(from);
+  return reached;
+}
+
 export function duplicateWriters(nodes: GraphNode[], resolve: Resolve) {
   const writers = new Map<string, string[]>();
   for (const node of nodes) {
