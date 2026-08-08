@@ -16,8 +16,8 @@ test('MANIFEST_COVERS names the eight manifests that draw more than their own co
   ]);
 });
 
-test('HAND_DRAWN names the three SVG charts and nothing else', () => {
-  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaLineChart']);
+test('HAND_DRAWN names the seven SVG charts and nothing else', () => {
+  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaHorizontalBarChart', 'ArenaLineChart', 'ArenaPyramidChart', 'ArenaRadarChart', 'ArenaScatterChart']);
 });
 
 test('every entry in either map carries a reason, because a reason is the whole entry', () => {
@@ -48,7 +48,7 @@ test('every component in scope resolves to a manifest, so no name is left with n
 });
 
 test('the scope is every component but the ones that draw by hand', () => {
-  assert.equal(everyComponent().length, 55);
+  assert.equal(everyComponent().length, 59);
   assert.equal(inScope().length, 52);
   assert.equal(inScope().some((n) => HAND_DRAWN.has(n)), false);
 });

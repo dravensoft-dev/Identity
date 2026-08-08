@@ -26,6 +26,28 @@ export const layerTarget = (layer: string) => `frameworks/${layer}/SKILL.md`;
 
 export const SKILL_TARGETS = [INDEX_TARGET, ...CONSUMER_LAYERS.map(layerTarget)];
 
+export const node = {
+  name: 'generate:skills',
+  reads: [
+    'frameworks/Components.json',
+    'contracts/api/components',
+    ...CONSUMER_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.behaviour.json`),
+  ],
+  writes: SKILL_TARGETS,
+  feeds: [
+    'build:angular-package',
+    'build:react-package',
+    'check:arbitrary',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:script-tokens',
+    'check:skills',
+  ],
+};
+
 const GENERATED = '<!-- GENERATED from the contracts by bun run generate:skills.'
   + ' Edit the contracts, not this file. -->';
 

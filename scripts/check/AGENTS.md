@@ -45,6 +45,68 @@ are rules a new gate holds to:
 When you write or move anything a gate resolves by path, the question is not "does it still
 pass" but "how many things did it look at, and is that the number I expect".
 
+## CACHED is a fourth label, and a skip is never recorded green
+
+A gate that declares a node in `scripts/graph/` is kept when nothing it reads has moved since its
+last **passing** run, and the summary says so at what fingerprint:
+
+```
+  CACHED  check:dtcg  (1c289ae16237, unchanged since the previous run)
+  PASS    check:text-contrast
+
+check-all: all 5 step(s) passed, 2 ran, 3 came from the cache
+```
+
+**The tail never collapses the count.** A run of five that did one is not a run of five, and the
+line has to make that impossible to misread.
+
+**Only a pass records.** A failure and a SKIP both delete the entry, so a gate that failed runs
+again next time, and a gate that could not run here is honest about it for ever rather than once.
+That is what keeps the cache from turning exit 2 into a permanent green.
+
+**A gate that declares no node runs every time**, and nothing has to be written down for that to be
+true. That is what makes the adoption safe: `scripts/graph/nodes.ts` says which gates never will and
+why, and which have not yet.
+
+**`--release` is a full run that also compares.** It runs every selected gate, and then reports a
+gate that failed while the graph WOULD have kept it, separately from the failure count and exiting
+non-zero on its own account:
+
+```
+check-all: check:ramp failed and the graph would have kept it -- that is a defect in the declared
+graph, not only in the gate: something it reads is not something it says it reads
+```
+
+That is the only defence against a declaration that omits a file the gate opens. `check:graph` holds
+the edges between declarations and cannot see it, and `check:graph --audit` sees it only where a
+tracer can follow the gate, which is not the twelve that spawn `tsc`, `ngc`, `ng-packagr` or a
+browser. A plain failure of a gate the run would have executed anyway says nothing about the graph
+and is not reported here.
+
+**A declaration WIDER than the walk is the mirror defect, and nothing catches it at all.** A gate
+whose walk skips a directory has to exclude that directory in `reads`, because a spec covering a
+tree the gate never visits invents an edge: whatever writes into it becomes an upstream, and the
+edge holds or breaks depending on whether that tree happens to be on disk. `check:generated` and
+`check:icons` both skip any directory named `build`, and `check:icons` skips `vendor` as well, so
+each excludes what it skips. A gate that grows a skip grows the matching `!` spec with it.
+
+`--force` runs every selected gate and rewrites what it records. `stepStatus` is untouched by any of
+this: it maps a child's exit code, and a kept gate spawns no child, so three of the four labels come
+from a process and the fourth comes from the graph.
+
+## A gate judges and does not emit
+
+**A gate declares no `writes`, and `check:graph` fails one that does.** A gate that emits is an
+artifact another gate can read, and a reader of a failed writer either runs against a stale file or
+has to be stopped; either way a sweep stops reporting every problem in one pass, which is the first
+thing this runner promises.
+
+`check:style-parity` used to write the page it drives a browser over. That page now comes from
+`build:style-parity-page`, and the gate measures it, the same shape `check:demos` and
+`check:tailwind-generated` already had. What the gate lost is the guarantee that the page is fresh
+because it wrote it a line earlier; what it gained is the contract every other generated artifact
+has, held by `check:generated` and by the build step declaring the manifests as its input.
+
 ## Exit 2 means SKIP, and a skip is never green
 
 **Six** gates need a runtime dependency that plain node does not have: `check:cards`,
@@ -101,7 +163,7 @@ nowhere runs in no job and is worth nothing, so the directory is not the authori
 
 | domain | gates | |
 | --- | --- | --- |
-| [`arena/`](./arena/AGENTS.md) | 27 | two or more layers at once, or the repository root |
+| [`arena/`](./arena/AGENTS.md) | 28 | two or more layers at once, or the repository root |
 | [`tailwind/`](./tailwind/AGENTS.md) | 8 | the shared Tailwind layer |
 | [`angular/`](./angular/AGENTS.md) | 4 | the Angular layer |
 | [`core/`](./core/AGENTS.md) | 5 | `contracts/` and `assets/` only |

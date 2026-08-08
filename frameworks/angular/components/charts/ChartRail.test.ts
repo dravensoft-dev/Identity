@@ -34,12 +34,14 @@ test('one point cannot be too close to anything, so nothing overflows', () => {
 @Component({
   standalone: true,
   imports: [ArenaLineChart],
-  template: `<arena-line-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
+  template: `<arena-line-chart [labels]="labels" [series]="series" label="Revenue"
                                [minPointSpacing]="spacing" />`,
 })
 class RailHost {
   labels = Array.from({ length: 30 }, (_, i) => `d${i}`);
   values = Array.from({ length: 30 }, (_, i) => i + 1);
+
+  get series() { return [{ label: 'Revenue', values: this.values }]; }
   spacing: number | undefined = undefined;
 }
 
@@ -52,17 +54,13 @@ function rail(spacing: number | undefined): Element | null {
   } finally { fixture.destroy(); }
 }
 
-test('a rail that does not overflow is not a scroll region, and takes no tab stop', () => {
-  const box = rail(undefined);
-  assert.equal(box?.getAttribute('tabindex'), null);
-  assert.equal(box?.getAttribute('role'), null,
-    'a dead tab stop on every chart that fits is worse than the gap it would close');
-});
+test('the plot is a keyboard region whether it overflows or not', () => {
 
-test('a rail that overflows is reachable and named, because an unfocusable scroll box is a trap', () => {
-  const box = rail(35);
-  assert.equal(box?.getAttribute('tabindex'), '0');
-  assert.equal(box?.getAttribute('role'), 'group');
-  assert.match(box?.getAttribute('aria-label') ?? '', /Revenue/,
-    'the region takes the chart\'s own name, so it is not announced as an unnamed group');
+  for (const spacing of [undefined, 35]) {
+    const box = rail(spacing);
+    assert.equal(box?.getAttribute('tabindex'), '0', `spacing ${spacing}: the data cursor needs somewhere to live`);
+    assert.equal(box?.getAttribute('role'), 'group', `spacing ${spacing}`);
+    assert.match(box?.getAttribute('aria-label') ?? '', /Revenue/,
+      'the region takes the chart\'s own name, so it is not announced as an unnamed group');
+  }
 });

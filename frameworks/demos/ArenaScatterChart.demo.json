@@ -1,0 +1,64 @@
+{
+  "component": "ArenaScatterChart",
+  "seed": {
+    "series": [
+      {
+        "label": "Staging",
+        "x": [
+          12,
+          19,
+          24,
+          31,
+          38,
+          45
+        ],
+        "y": [
+          240,
+          310,
+          290,
+          420,
+          390,
+          510
+        ],
+        "r": [
+          120,
+          340,
+          210,
+          480,
+          260,
+          610
+        ]
+      },
+      {
+        "label": "Production",
+        "x": [
+          15,
+          22,
+          29,
+          36,
+          44
+        ],
+        "y": [
+          180,
+          205,
+          260,
+          255,
+          330
+        ],
+        "r": [
+          90,
+          150,
+          320,
+          200,
+          410
+        ]
+      }
+    ],
+    "label": "Latency against load",
+    "xLabel": "Concurrent requests",
+    "yLabel": "p95 latency (ms)",
+    "sizeLabel": "Requests served",
+    "sizeLegend": true
+  },
+  "note": "Three quantities: two on the axes and one as the size of the mark, mapped by area so the blot is comparable."
+}

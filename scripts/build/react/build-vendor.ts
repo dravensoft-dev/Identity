@@ -30,6 +30,25 @@ export const ENTRIES = [
   { entry: 'react-dom/client.js', specifier: 'react-dom/client', out: 'ReactDomClient.generated.js', real: 'react-dom/client.js', external: ['react'] },
 ];
 
+export const VENDOR_DIR = 'frameworks/react/vendor';
+
+export const node = {
+  name: 'build:vendor',
+  reads: ['package.json', 'bun.lock'],
+  writes: ENTRIES.map((entry) => `${VENDOR_DIR}/${entry.out}`),
+  feeds: [
+    'build:react-package',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:layer-independence',
+    'check:script-tokens',
+    'check:skills',
+    'check:vendor',
+  ],
+};
+
 function realExportNames(root: string, real: string) {
   return Object.keys(req(join(root, 'node_modules', real)));
 }

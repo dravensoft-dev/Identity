@@ -19,14 +19,13 @@ bun install
 bun run build
 ```
 
-That runs the steps below in order, the token layer first, because the Tailwind preset compiles
-against the token CSS. The chain is the one `package.json`'s `build` script declares, and
-reading it there is how the count is derived rather than remembered:
-
-```
-generate:tokens → generate:api → generate:playgrounds → generate:skills → build:react-barrel →
-build:tailwind → build:vendor → build:demos → build:angular-demo
-```
+**The order is derived, not written down.** `scripts/graph/run-build.ts` sorts the steps by what
+each declares in its own `node`, so `generate:tokens` runs before `build:tailwind` because the
+Tailwind preset reads the token CSS and the edge says so, rather than because a chain in
+`package.json` happens to list it first. Ties fall in the order the scripts are collected, so the
+sequence is stable. Read the order off a run, which prints every step and why it ran; there is no
+second copy of it to go stale. `scripts/graph/AGENTS.md` carries how a step declares itself, and
+`check:graph` refuses a step whose declaration and edges disagree.
 
 **Until it has run once, part of the tree does not exist.** These are git-ignored, so a fresh
 clone has none of them:
@@ -55,10 +54,54 @@ builds first for exactly this reason.
 not, a generator and a committed file disagree, which is what `check:tokens` and `check:fonts`
 exist to say out loud.
 
-`build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
-git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,
-always immediately before the suites that read it, because staleness there is prevented by
-ordering rather than by a gate.
+**A step whose inputs have not moved keeps the answer it had**, and the run says so and at what
+fingerprint. A `touch` keeps it, and so does checking out another branch and coming back: the stat
+filters and the content hash arbitrates. What invalidates a step is a changed byte in what it
+reads, a script it imports moving, an upstream having run, or one of its own artifacts being gone.
+
+**A failure stops what depends on it, and nothing else.** The step that failed is reported FAIL,
+every step that reads what it writes is reported BLOCKED with the upstream named, and the rest of
+the graph runs and reports. A step compiled against a failed upstream would report a second error
+over the real one, which is why the dependents stop; a step in another part of the graph has no
+reason to wait, which is why they do not. The tail counts the three apart, so a step that never ran
+cannot be read as one that passed.
+
+The blocking is transitive. `generate:tokens` does not feed `build:demos` directly, it reaches it
+through `build:tailwind`, and a single hop would let a step compile against tokens that were never
+written. A blocked step records nothing: it did not run, so there is no green to write down.
+
+**`bun run build:release` is the full run**, and it is what every workflow uses. It passes
+`--force --assert-full`: every step runs, and a run that kept anything fails on its own. That is
+not belt and braces. The step after the build in each workflow proves it idempotent with
+`git diff --exit-code`, and a build that skipped everything satisfies that by doing nothing, which
+is the one way this whole arrangement could turn a real failure green.
+
+`build:react-package` and `build:angular-package` are **not** part of `bun run build` either, and
+each says so in its own node through `releaseOnly`, with the reason: ng-packagr and the declaration
+emit cost more than a development loop should pay for an artefact only a release ships.
+
+**`--assemble` is what includes them**, so there are three ways to run this graph and each says what
+it is for. `bun run build` is the loop: thirteen steps, keeping what has not moved.
+`bun run build:packages` is the same plus the two packages, still keeping what has not moved.
+`bun run build:release` is `--assemble --force --assert-full`: fifteen steps, every one of them run,
+and a run that kept anything fails on its own. Every workflow uses the last one, and none of them
+assembles in a second step any more.
+
+`build:angular-tests` is deliberately **not** part of any of the three, and its node says so through
+`runsBeforeSuites` rather than `releaseOnly`: the reason is not cost, it is that `bun run test` and
+`check-all`'s `testStep()` run it immediately before the suites that read the emit, so staleness
+there is prevented by ordering. `--assemble` leaves it out too, since a release ships no test
+surface.
+
+**It is in the graph even so, and it feeds nobody.** It was given a node on the claim that
+`check:generated` and `check:icons` sweep `frameworks/` and reach the emit. They do not: both walks
+skip any directory named `build`, so neither has ever opened a file under
+`frameworks/angular/build/test/`. The two `feeds` entries only ever held because the gates' broad
+`frameworks/**` overlapped the emit path on a machine where a previous `bun run test` had left it on
+disk, and on a CI checkout, where it has not, they failed. Both gates now exclude
+`frameworks/angular/build/**`, which is what their walks were already doing. What the node is worth
+is its `reads` and `writes` being written down where every other step's are; its own mtime stamp is
+what decides whether `bun run test` recompiles, and that has not changed.
 
 ## The five domains
 

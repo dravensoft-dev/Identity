@@ -13,9 +13,8 @@ and this document is that one: **two npm packages a project installs with `bun a
 | `@dravensoft/arena-angular` | `frameworks/angular/dist/` | `frameworks/angular/` |
 
 ```bash
-bun run build               # the generated sources build:packages reads
-bun run build:packages     # both, from the sources in place
-bun run check:packages     # the manifests, and the CLI against the token pipeline
+bun run build:release   # every source, and both packages assembled from them
+bun run check:packages  # the manifests, and the CLI against the token pipeline
 ```
 
 Each package's own `README.md` is what a consumer reads. They are authored here as
@@ -156,8 +155,8 @@ nobody as a source.
 
 ## Assembly, not restructuring
 
-Nothing moves. `bun run build:packages` reads the tree as it stands and writes two
-directories that were not there before. The two other channels keep working on the same
+Nothing moves. Assembling reads the tree as it stands and writes two directories that were not
+there before. The two other channels keep working on the same
 files, byte for byte.
 
 The shared half is [`scripts/lib/arena/package-assembly.ts`](../scripts/lib/arena/package-assembly.ts):
@@ -284,9 +283,9 @@ Still possible, and the fallback when the workflow cannot run:
 
 ```bash
 bun scripts/check/arena/check-release.ts
-bun run build                   # the generated sources build:packages reads
-bun run build:packages          # the manifests take the version from plugin.json here
-bun run check:packages          # and this fails if they did not
+bun run build:release       # every source, and both packages assembled from them; the
+                            # manifests take the version from plugin.json here
+bun run check:packages      # and this fails if they did not
 
 npm login                       # a two-hour session; 2FA is enforced on publish
 cd frameworks/react/dist   && npm publish --dry-run && npm publish

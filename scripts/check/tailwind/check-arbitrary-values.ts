@@ -16,6 +16,16 @@ import { captured } from '../../utils/captures.ts';
 export const SKIPPED_NAMES = new Set(['node_modules', 'dist', 'vendor']);
 
 const EXTENSIONS = ['.json', '.ts', '.tsx', '.jsx', '.html', '.md'];
+
+export const node = {
+  name: 'check:arbitrary',
+  reads: [
+    ...EXTENSIONS.map((ext) => `frameworks/**/*${ext}`),
+    '!frameworks/**/*.manifest.generated.ts',
+  ],
+  writes: [],
+  feeds: [],
+};
 const CANDIDATE = /(?<![\w-])(-?[a-z][a-z0-9]*(?:-[a-z0-9]+)*-\[([^\]\s"']+)\])/g;
 const MARKER = /<!--\s*check-arbitrary-values allow:\s*([^>]*?)\s*-->/g;
 

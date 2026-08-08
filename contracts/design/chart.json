@@ -19,7 +19,12 @@
     },
     "pad-bottom": {
       "$value": { "value": 28, "unit": "px" },
-      "$description": "Holds the category labels. This is a CONSEQUENCE of the type scale, not a\nchosen dimension: it is enough room for a label at --dz-text-2xs. If the type\nscale moves, revisit it; it will not fail loudly.",
+      "$description": "Holds the category labels. This is a CONSEQUENCE of the type scale, not a\nchosen dimension: it is enough room for a label at --dz-text-2xs. If the type\nscale moves, revisit it; it will not fail loudly.\nThe labels stay on this edge whatever the data does, so a bar growing down from a\nzero line above the floor runs toward them. That is deliberate: a reader looks for\ncategory labels along the bottom, and moving them to follow the zero line would put\nthem somewhere different in every chart on a page. What it costs is a downward bar\nreaching its label at the extreme of the axis, which is the price of one place to\nlook.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "pad-category": {
+      "$value": { "value": 96, "unit": "px" },
+      "$description": "Holds the category names down the left edge of a horizontal bar chart, where\npad-left holds value labels on a vertical one. A separate token rather than a wider\npad-left, because the two hold different things and sizing every chart's value gutter for\nthe longest category name anyone might write would waste 52px on every vertical chart in\nthe library. A CONSEQUENCE of the type scale like pad-bottom, and a soft one: a name longer\nthan it fits is truncated rather than overrunning the plot, so this is the width at which a\nreader stops needing the tooltip to read a label, not a limit on what may be passed.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
     "pad-left": {
@@ -42,6 +47,11 @@
       "$description": "A bar's data end. Deliberately NOT --r-sm (6px): naming the value Arena\nalready renders is free, snapping to the radius scale is a visible 2px design\nchange and must be taken as one.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
+    "series-gap": {
+      "$value": { "value": 1, "unit": "px" },
+      "$description": "Between two bars of the same category, when a chart draws more than one series.\nDistinct from bar-gap, which is between categories, and deliberately smaller than it:\nthe wider gap is what tells a reader where one category ends, and if the two were equal\na grouped chart would read as one long row of unrelated bars. Script-readable, because\nJS subtracts it from a sub-band width to produce an SVG x.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
     "bar-gap": {
       "$value": { "value": 2, "unit": "px" },
       "$description": "Surface between bars. Equals --bw-strong, coincidentally.",
@@ -57,6 +67,21 @@
       "$description": "A line chart's point under the pointer. The 1px delta IS the hover\naffordance: the pair only means anything together.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     },
+    "tooltip-offset": {
+      "$value": "{sp.2}",
+      "$description": "Between the mark under the pointer and the tooltip's near edge. Not script-readable:\nthe chart interpolates the mark's own y into a calc() and CSS subtracts this from it, so\nthe stylesheet is what consumes the token. It settles a disagreement rather than recording\none: the bar chart offset its tooltip by --sp-2 and the line chart by 2.5 steps of --sp-1,\nwhich is 10px against 8px for the same affordance. Naming it moves the line chart's tooltip\n2px, and that is a visible design change taken deliberately, the same way chart.bar-radius\nrefuses to snap to --r-sm because doing so would be one.",
+      "$extensions": { "com.dravensoft.arena": {} }
+    },
+    "bubble-r-min": {
+      "$value": { "value": 4, "unit": "px" },
+      "$description": "A bubble at the smallest value it carries. Equals point-r, deliberately: a bubble\nchart with one size in it is a scatter, and it should draw like one rather than jumping to\nsome other mark size the moment a third column appears.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "bubble-r-max": {
+      "$value": { "value": 16, "unit": "px" },
+      "$description": "A bubble at the largest value it carries. The pair is a RADIUS range and the\nmapping between them is by area, not by radius: doubling a radius quadruples the blot, and a\nreader compares the blot, so a linear radius exaggerates the large value by a factor of four.\nSixteen is what fits the size key beside the series names without either crowding the other,\nand it is a chosen dimension rather than a consequence, unlike the pads.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
     "legend-min": {
       "$value": { "value": 120, "unit": "px" },
       "$description": "Doughnut legend, narrowest.",
@@ -70,6 +95,11 @@
     "legend-gap": {
       "$value": "{sp.4}",
       "$description": "Between the doughnut plot and its legend.",
+      "$extensions": { "com.dravensoft.arena": { "script": true } }
+    },
+    "legend-strip": {
+      "$value": { "value": 26, "unit": "px" },
+      "$description": "The row of series keys a cartesian chart draws below its plot, height including\nthe separation from the plot. A CONSEQUENCE of the type scale rather than a chosen\ndimension, the way pad-bottom is: one line at --dz-text-sm stands 18px at the root line\nheight, the swatch beside it is smaller and rides inside that line, and one step of the base\ngrid separates the row from the plot. If the type scale moves, revisit it; it will not fail\nloudly.\nIt comes OUT of the plot rather than being added to the chart's box, so --chart-height stays\nthe height of the whole component whether a legend is drawn or not. That is the same trade\nthe doughnut already makes on the other axis, where the legend column takes its width from\nthe ring rather than from the caller.",
       "$extensions": { "com.dravensoft.arena": { "script": true } }
     }
   }

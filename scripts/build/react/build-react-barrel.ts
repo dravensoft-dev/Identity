@@ -19,6 +19,32 @@ export const HELPERS = ['AnchorActivation', 'DataVisuals', 'UseArenaContainerWid
 
 export const TYPE_ONLY = ['Api.generated'];
 
+export const BARREL_TARGET = 'frameworks/react/Index.generated.ts';
+
+export const node = {
+  name: 'build:react-barrel',
+  reads: [
+    ...[...SOURCE_EXTENSIONS, '.ts', '.js'].map((ext) => `frameworks/react/components/**/*${ext}`),
+    '!frameworks/react/components/**/*.generated.*',
+    ...HELPERS.map((helper) => `frameworks/react/${helper}.*`),
+  ],
+  writes: [BARREL_TARGET],
+  feeds: [
+    'build:react-package',
+    'check:arbitrary',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:react-barrel',
+    'check:react-types',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+  ],
+};
+
 export const ROOT_PRIVATE = new Map([
   ['Tokens.generated', 'bare numbers a component reads to compute a position, and the one thing '
     + 'the token layer warns about: a value bound at import time cannot re-theme and cannot '

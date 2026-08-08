@@ -28,6 +28,18 @@ type Measured = {
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:cards',
+  reads: [
+    'frameworks/tailwind/components/**', 'frameworks/tailwind/consume/**',
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'assets/fonts/*.woff2',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const FRAME_FALLBACK_MS = 34;
 export const MEASURE_SCRIPT = `(async () => {
   const read = () => {

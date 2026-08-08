@@ -61,7 +61,15 @@ test('the header names the generator and forbids editing the output', () => {
 test('a field that is a slot or an event is refused -- R1, a predefined object is pure data', () => {
   assert.throws(() => fieldType({ form: 'slot' }), /R1/);
   assert.throws(() => fieldType({ form: 'event' }), /R1/);
-  assert.throws(() => fieldType({ form: 'array', of: 'string' }), /R1/);
+  assert.throws(() => fieldType({ form: 'consumerData' }), /R1/);
+});
+
+test('a field may be an array of primitives, and may not be an array of objects', () => {
+
+  assert.equal(fieldType({ form: 'array', of: 'number' }), 'readonly number[]');
+  assert.equal(fieldType({ form: 'array', of: 'string' }), 'readonly string[]');
+  assert.throws(() => fieldType({ form: 'array', of: 'ArenaSeries' }), /R1/);
+  assert.throws(() => fieldType({ form: 'array' }), /R1/);
 });
 
 test('an unknown kind is refused rather than silently skipped', () => {

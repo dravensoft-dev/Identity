@@ -23,17 +23,19 @@ const WRITTEN = 'Bs. 1.234,50';
   standalone: true,
   imports: [ArenaLineChart, ArenaBarChart, ArenaDoughnutChart],
   template: `
-    <arena-line-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
+    <arena-line-chart [labels]="labels" [series]="series" label="Revenue"
                       [valuePrefix]="prefix" [valueSuffix]="suffix" [valueFormat]="format" />
-    <arena-bar-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
+    <arena-bar-chart [labels]="labels" [series]="series" label="Revenue"
                      [valuePrefix]="prefix" [valueSuffix]="suffix" [valueFormat]="format" />
-    <arena-doughnut-chart [labels]="labels" [values]="values" seriesLabel="Revenue"
+    <arena-doughnut-chart [labels]="labels" [series]="series" label="Revenue"
                           [valuePrefix]="prefix" [valueSuffix]="suffix" [valueFormat]="format" />
   `,
 })
 class NumbersHost {
   labels = ['Mon'];
   values = [1234.5];
+
+  get series() { return [{ label: 'Revenue', values: this.values }]; }
   prefix: string | undefined = 'Bs. ';
   suffix: string | undefined = undefined;
   format: ArenaNumberFormat | undefined = FORMAT;

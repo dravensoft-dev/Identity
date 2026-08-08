@@ -9,6 +9,14 @@ import { manifestFiles } from '../../lib/tailwind/tailwind-compile.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { classStringsBySlot } from '../arena/check-manifest-states.ts';
 import type { ComponentManifest } from '../../lib/tailwind/manifest-shapes.ts';
+import { MANIFESTS } from '../../build/tailwind/build-tailwind.ts';
+
+export const node = {
+  name: 'check:radius',
+  reads: [MANIFESTS],
+  writes: [],
+  feeds: [],
+};
 
 const COMPONENTS_DIR = join(repoRoot, 'frameworks/tailwind/components');
 

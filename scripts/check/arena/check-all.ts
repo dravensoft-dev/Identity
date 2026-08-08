@@ -1,12 +1,12 @@
-/* Runs the selected gates and the test suite: one failure does not stop the rest, and with
- * no argument the selection is every domain, which is what `bun run check` gets. A gate whose
- * runtime dependency is missing exits 2 and is reported SKIP, making the run INCOMPLETE.
- * testStep() below is the single authority for how the test suite is invoked, and why it is
- * two bun processes: --preload installs happy-dom PROCESS-wide, and a DOM installed for a
- * whole invocation also replaces Bun's own fetch, which turns
- * scripts/lib/arena/static-server.test.ts's fetch assertion into a cross-origin failure --
- * so scripts/ rides the DOM-free invocation, not the preloaded one. The Angular emit is safe
- * in either: its TestBed registration site is guarded rather than throwing on a second call.
+/* Runs the selected gates and the test suite: one failure never stops the rest, which check:graph
+ * keeps true by refusing a gate that writes, since only an artifact could make one gate stop
+ * another. With no argument the selection is every domain, which is what `bun run check` gets. A
+ * gate whose runtime dependency is missing exits 2 and is reported SKIP, making the run INCOMPLETE.
+ * testStep() below is the single authority for how the test suite is invoked, and why it is two bun
+ * processes: --preload installs happy-dom PROCESS-wide, and a DOM installed for a whole invocation
+ * also replaces Bun's own fetch, which turns lib/arena/static-server.test.ts's fetch assertion into
+ * a cross-origin failure, so scripts/ rides the DOM-free invocation. The Angular emit is safe in
+ * either: its TestBed registration site is guarded rather than throwing on a second call.
  * Read the args here, never reconstruct them. */
 
 import { spawnSync } from 'node:child_process';
@@ -16,6 +16,7 @@ import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { DOMAINS, isSuite } from '../../lib/arena/domains.ts';
+import { gateDecisions, shortFingerprint } from '../../graph/gate-plan.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const checkRoot = join(here, '..');
@@ -24,6 +25,7 @@ export { DOMAINS };
 
 export const GATES = [
   { name: 'check:docs', file: 'arena/check-docs.ts' },
+  { name: 'check:graph', file: 'arena/check-graph.ts' },
   { name: 'check:generated', file: 'arena/check-generated.ts' },
   { name: 'check:skills', file: 'arena/check-skills.ts' },
   { name: 'check:prompts', file: 'arena/check-prompts.ts' },
@@ -88,15 +90,19 @@ export function gatesFor(domains: string[]) {
 export function parseCheckArgs(argv: string[]) {
   let domains = DOMAINS;
   let tests = true;
+  let force = false;
+  let release = false;
   for (const arg of argv) {
     if (arg === '--no-tests') { tests = false; continue; }
+    if (arg === '--force') { force = true; continue; }
+    if (arg === '--release') { force = true; release = true; continue; }
     if (arg.startsWith('--domain=')) {
       domains = arg.slice('--domain='.length).split(',').map((d) => d.trim()).filter(Boolean);
       continue;
     }
-    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b> and --no-tests`);
+    throw new Error(`check-all: unrecognised argument "${arg}"; it takes --domain=<a,b>, --no-tests, --force and --release`);
   }
-  return { domains, tests };
+  return { domains, tests, force, release };
 }
 
 export function testStep({ isBun, testFiles }: { isBun: boolean; testFiles: string[] }) {
@@ -118,18 +124,27 @@ export function stepStatus(code: number | null) {
   return 'fail';
 }
 
-export function summarize(results: { name: string; status: string }[]) {
-  const label: Record<string, string> = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP' };
-  const lines = results.map((r) => `  ${label[r.status]}  ${r.name}`);
+export function summarize(results: { name: string; status: string; note?: string }[]) {
+  const label: Record<string, string> = { pass: 'PASS', fail: 'FAIL', skip: 'SKIP', cached: 'CACHED' };
+  const lines = results.map((r) => `  ${label[r.status]}  ${r.name}${r.note ? `  (${r.note})` : ''}`);
   const failed = results.filter((r) => r.status === 'fail');
   const skipped = results.filter((r) => r.status === 'skip');
+  const cached = results.filter((r) => r.status === 'cached');
+  const kept = `, ${results.length - cached.length} ran, ${cached.length} came from the cache`;
 
   let tail;
-  if (failed.length) tail = `check-all: ${failed.length}/${results.length} step(s) failed`;
-  else if (skipped.length) tail = `check-all: INCOMPLETE — ${results.length - skipped.length}/${results.length} step(s) passed, ${skipped.length} could not run here (see above)`;
-  else tail = `check-all: all ${results.length} step(s) passed`;
+  if (failed.length) tail = `check-all: ${failed.length}/${results.length} step(s) failed${kept}`;
+  else if (skipped.length) tail = `check-all: INCOMPLETE — ${results.length - skipped.length}/${results.length} step(s) passed${kept}, ${skipped.length} could not run here (see above)`;
+  else tail = `check-all: all ${results.length} step(s) passed${kept}`;
 
   return [...lines, '', tail].join('\n');
+}
+
+export function keptButFailed(results: { name: string; status: string }[], wouldKeep: Set<string>) {
+  return results
+    .filter((r) => r.status === 'fail' && wouldKeep.has(r.name))
+    .map((r) => `${r.name} failed and the graph would have kept it -- that is a defect in the `
+      + 'declared graph, not only in the gate: something it reads is not something it says it reads');
 }
 
 function runStep(name: string, args: string[]) {
@@ -143,7 +158,7 @@ export function testFilesUnder(dir: string): string[] {
   return walkFiles(dir).filter((full) => isSuite(basename(full)));
 }
 
-function main() {
+async function main() {
   let selection;
   try {
     selection = parseCheckArgs(process.argv.slice(2));
@@ -160,7 +175,28 @@ function main() {
     process.exit(1);
   }
 
-  const results = gates.map(({ name, file }) => runStep(name, [join(checkRoot, file)]));
+  const graph = await gateDecisions(gates.map((g) => g.name), selection.force);
+  const wouldKeep = new Set<string>();
+  if (selection.release) {
+    const measured = await gateDecisions(gates.map((g) => g.name), false);
+    for (const [name, decided] of measured.decisions) if (!decided.run) wouldKeep.add(name);
+  }
+
+  const results = [];
+  for (const { name, file } of gates) {
+    const decided = graph.decisions.get(name);
+    if (decided && !decided.run) {
+      results.push({ name, status: 'cached', note: `${shortFingerprint(decided.fingerprint)}, unchanged since the previous run` });
+      continue;
+    }
+    if (decided?.reason) console.log(`\ncheck-all: ${name} runs, because ${decided.reason}`);
+    const result = runStep(name, [join(checkRoot, file)]);
+    results.push(result);
+    graph.record(name, result.status === 'pass');
+  }
+  graph.flush();
+
+  const wrongKeeps = keptButFailed(results, wouldKeep);
 
   if (selection.tests) {
     const isBun = Boolean(process.versions.bun);
@@ -171,7 +207,9 @@ function main() {
   console.log(`\n${'-'.repeat(60)}`);
   console.log(summarize(results));
 
-  process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
+  for (const problem of wrongKeeps) console.error(`\ncheck-all: ${problem}`);
+
+  process.exit(results.some((r) => r.status === 'fail') || wrongKeeps.length > 0 ? 1 : 0);
 }
 
-if (isMainModule(import.meta.url)) main();
+if (isMainModule(import.meta.url)) await main();

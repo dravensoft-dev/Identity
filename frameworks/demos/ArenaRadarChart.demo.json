@@ -1,0 +1,39 @@
+{
+  "component": "ArenaRadarChart",
+  "seed": {
+    "labels": [
+      "Latency",
+      "Throughput",
+      "Accuracy",
+      "Cost",
+      "Coverage",
+      "Uptime"
+    ],
+    "series": [
+      {
+        "label": "Current",
+        "values": [
+          72,
+          88,
+          64,
+          45,
+          80,
+          95
+        ]
+      },
+      {
+        "label": "Target",
+        "values": [
+          85,
+          90,
+          80,
+          60,
+          88,
+          99
+        ]
+      }
+    ],
+    "label": "Service profile"
+  },
+  "note": "Two profiles over one set of axes: the shape is the reading, not any single number."
+}

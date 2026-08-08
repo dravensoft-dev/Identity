@@ -1,0 +1,19 @@
+{
+  "pattern": "figure-with-data-table",
+  "exceptions": [
+    {
+      "requirement": "keyboard.ArrowLeft",
+      "reason": "This chart's categories run DOWN the plot, so the cursor answers ArrowUp and ArrowDown and leaves the horizontal pair alone. The pattern names both pairs because which one walks the categories is a property of the chart rather than of the pattern, and answering all four would consume a key this chart has no sequence for."
+    },
+    {
+      "requirement": "keyboard.ArrowRight",
+      "reason": "This chart's categories run DOWN the plot, so the cursor answers ArrowUp and ArrowDown and leaves the horizontal pair alone. The pattern names both pairs because which one walks the categories is a property of the chart rather than of the pattern, and answering all four would consume a key this chart has no sequence for."
+    }
+  ],
+  "additions": [
+    {
+      "provides": "keyboard.data-cursor",
+      "reason": "The plot is one keyboard region and the data cursor rides inside it: the group carries tabindex=\"0\", role=\"group\" and the chart name, and ArrowUp, ArrowDown, Home, End and Escape move a cursor that drives exactly what hover drives. It carries no scrolling rail, unlike the charts whose categories run across the plot, because a vertical scroll region nested in a page takes the page's own scroll away from a reader who only wanted to pass through it. The plot grows with its height member instead."
+    }
+  ]
+}

@@ -7,7 +7,7 @@ import { toPosix } from '../../utils/posix-path.ts';
 import { readJson } from '../../utils/read-file.ts';
 import { angularEmitRoot } from '../../lib/angular/emit-root.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
-import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder } from './check-all.ts';
+import { testStep, summarize, stepStatus, GATES, DOMAINS, gatesFor, parseCheckArgs, testFilesUnder, keptButFailed } from './check-all.ts';
 
 const CI_JOBS = {
   core: ['core', 'arena'],
@@ -17,10 +17,10 @@ const CI_JOBS = {
 };
 
 test('GATES lists every check gate', () => {
-  assert.equal(GATES.length, 48);
+  assert.equal(GATES.length, 49);
   assert.deepEqual(
     GATES.map((g) => g.name),
-    ['check:docs', 'check:generated', 'check:skills', 'check:prompts', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:component-css', 'check:style-parity', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:citations', 'check:agents', 'check:icons', 'check:fonts', 'check:intro', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:script-types', 'check:script-reach', 'check:cards', 'check:focus-trap', 'check:shared-arithmetic', 'check:packages', 'check:consumer', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
+    ['check:docs', 'check:graph', 'check:generated', 'check:skills', 'check:prompts', 'check:dtcg', 'check:tokens', 'check:script-tokens', 'check:duplicate-constants', 'check:ramp', 'check:text-contrast', 'check:tailwind', 'check:tailwind-generated', 'check:coverage', 'check:surface-parity', 'check:radius', 'check:arbitrary', 'check:component-css', 'check:style-parity', 'check:dimensions', 'check:states', 'check:appearance', 'check:layer-independence', 'check:structure', 'check:contracts', 'check:behaviour', 'check:compliance', 'check:api', 'check:playgrounds', 'check:citations', 'check:agents', 'check:icons', 'check:fonts', 'check:intro', 'check:vendor', 'check:demos', 'check:react-barrel', 'check:react-types', 'check:script-types', 'check:script-reach', 'check:cards', 'check:focus-trap', 'check:shared-arithmetic', 'check:packages', 'check:consumer', 'check:angular', 'check:angular-demos', 'check:assertions', 'check:cdk'],
   );
 });
 
@@ -86,15 +86,18 @@ test('the arena domain is where the cross-layer gates are, which is why the core
 });
 
 test('with no argument every domain runs and the suite runs, which is what bun run check gets', () => {
-  assert.deepEqual(parseCheckArgs([]), { domains: DOMAINS, tests: true });
+  assert.deepEqual(parseCheckArgs([]), { domains: DOMAINS, tests: true, force: false, release: false });
 });
 
 test('a narrowed invocation names its domains and can drop the suite', () => {
-  assert.deepEqual(parseCheckArgs(['--domain=core,arena', '--no-tests']), { domains: ['core', 'arena'], tests: false });
-  assert.deepEqual(parseCheckArgs(['--domain=react']), { domains: ['react'], tests: true });
+  assert.deepEqual(parseCheckArgs(['--domain=core,arena', '--no-tests']), { domains: ['core', 'arena'], tests: false, force: false, release: false });
+  assert.deepEqual(parseCheckArgs(['--domain=react']), { domains: ['react'], tests: true, force: false, release: false });
+  assert.deepEqual(parseCheckArgs(['--force']), { domains: DOMAINS, tests: true, force: true, release: false });
 });
 
 test('an argument nobody recognises is refused, so a typo in a workflow is loud', () => {
+  assert.deepEqual(parseCheckArgs(['--release']), { domains: DOMAINS, tests: true, force: true, release: true },
+    'a release run is a full run that also compares, so it implies --force rather than ranking against it');
   assert.throws(() => parseCheckArgs(['--domains=react']), /unrecognised argument/);
 });
 
@@ -190,4 +193,21 @@ test('a skipped step is never a green run — the summary says INCOMPLETE', () =
 test('a failure outranks a skip in the tail', () => {
   const out = summarize([{ name: 'a', status: 'fail' }, { name: 'b', status: 'skip' }]);
   assert.match(out, /1\/2 step\(s\) failed/);
+});
+
+test('a gate that failed while the graph would have kept it is a defect in the graph', () => {
+  const results = [
+    { name: 'check:api', status: 'fail' },
+    { name: 'check:docs', status: 'fail' },
+    { name: 'check:dtcg', status: 'pass' },
+  ];
+  assert.deepEqual(keptButFailed(results, new Set(['check:api', 'check:dtcg'])), [
+    'check:api failed and the graph would have kept it -- that is a defect in the declared graph, '
+    + 'not only in the gate: something it reads is not something it says it reads',
+  ]);
+});
+
+test('a failure the graph would have run anyway is the gate\'s own, and says nothing about the graph', () => {
+  assert.deepEqual(keptButFailed([{ name: 'check:docs', status: 'fail' }], new Set()), [],
+    'check:docs never subscribes, so a red there is a red and nothing more');
 });

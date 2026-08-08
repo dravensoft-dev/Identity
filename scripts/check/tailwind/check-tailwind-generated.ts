@@ -3,11 +3,22 @@ import { relative } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import {
   buildTailwind, buildManifestModules, buildComponentCss, buildClassModules,
-  buildStylesRuntime, generatedPath, BANNER,
+  buildStylesRuntime, generatedPath, BANNER, node as tailwindNode,
 } from '../../build/tailwind/build-tailwind.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export { BANNER, generatedPath };
+
+export const node = {
+  name: 'check:tailwind-generated',
+  reads: [
+    ...tailwindNode.reads, ...tailwindNode.writes,
+    'frameworks/tailwind/components/**/*.generated.ts',
+    'frameworks/angular/ArenaStyles.generated.ts', 'frameworks/angular/Tv.generated.ts',
+  ],
+  writes: [],
+  feeds: [],
+};
 
 export function drift(opts = {}) {
   const path = generatedPath(opts);

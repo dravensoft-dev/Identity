@@ -14,6 +14,17 @@ import type { BehaviourBinding } from '../../lib/arena/behaviour-contracts.ts';
 import { kebab } from '../../utils/case.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:compliance',
+  reads: [
+    'contracts/behaviour', 'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/react/test/**', 'frameworks/angular/test/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const SUITE_DIRS = [
   { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'components') },
   { layer: 'react', dir: join(repoRoot, 'frameworks', 'react', 'test') },
@@ -40,6 +51,10 @@ export const COVERED = {
   'ArenaCalendarEvent:react': 'TagAndChipCases.dom.test.tsx',
   'ArenaActivityFeed:react': 'ArenaActivityFeed.cases.dom.test.tsx',
   'ArenaBarChart:react': 'ChartFigures.dom.test.tsx',
+  'ArenaHorizontalBarChart:react': 'ChartFigures.dom.test.tsx',
+  'ArenaPyramidChart:react': 'ChartFigures.dom.test.tsx',
+  'ArenaRadarChart:react': 'ChartFigures.dom.test.tsx',
+  'ArenaScatterChart:react': 'ChartFigures.dom.test.tsx',
   'ArenaDoughnutChart:react': 'ChartFigures.dom.test.tsx',
   'ArenaLineChart:react': 'ChartFigures.dom.test.tsx',
   'ArenaButton:react': 'FormControlPatterns.dom.test.tsx',
@@ -86,6 +101,10 @@ export const COVERED = {
   'ArenaCalendarEvent:angular': 'ArenaCalendarEvent.cases.test.ts',
   'ArenaTableCell:angular': 'ArenaTable.cases.test.ts',
   'ArenaBarChart:angular': 'ChartDataTable.test.ts',
+  'ArenaHorizontalBarChart:angular': 'ChartDataTable.test.ts',
+  'ArenaPyramidChart:angular': 'ChartDataTable.test.ts',
+  'ArenaRadarChart:angular': 'ChartDataTable.test.ts',
+  'ArenaScatterChart:angular': 'ChartDataTable.test.ts',
   'ArenaActivityFeed:angular': 'ArenaActivityFeed.cases.test.ts',
   'ArenaDoughnutChart:angular': 'ChartDataTable.test.ts',
   'ArenaLineChart:angular': 'ChartDataTable.test.ts',

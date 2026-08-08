@@ -5,6 +5,13 @@
 import { isMainModule } from '../../utils/main-module.ts';
 import { typecheck, zeroProjectProblems } from '../../lib/arena/typecheck.ts';
 
+export const node = {
+  name: 'check:react-types',
+  reads: ['frameworks/react/**/*.ts', 'frameworks/react/**/*.tsx', 'frameworks/react/tsconfig*.json'],
+  writes: [],
+  feeds: [],
+};
+
 export const PROJECTS = [
   { project: 'frameworks/react/tsconfig.check.json', reaches: 'every component, helper and suite in the layer' },
 ];

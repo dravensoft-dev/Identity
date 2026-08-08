@@ -11,22 +11,34 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:shared-arithmetic',
+  reads: [
+    'frameworks/react/components/**', 'frameworks/angular/components/**',
+    'frameworks/react/*.ts', 'frameworks/angular/*.ts',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const PAIRED = [
   'AnchorActivation.ts',
   'WarnOnce.ts',
   'DataVisuals.ts',
+  'components/charts/ChartScales.ts',
+  'components/charts/ChartMarks.ts',
+  'components/charts/ChartAxis.ts',
+  'components/charts/ChartLegend.ts',
+  'components/charts/ChartTooltip.ts',
+  'components/charts/ChartSeries.ts',
+  'components/charts/ChartPointer.ts',
+  'components/charts/ChartPolar.ts',
   'components/display/arena-calendar/CalendarInternals.ts',
   'components/navigation/arena-pagination/PaginationWindow.ts',
 ];
 
 export const DIVERGENT = new Map([
-  ['DataVisuals.ts:arenaArcPath',
-   'the same two half-arcs for a sweep past a semicircle; one joins them by concatenation and the '
-   + 'other by a template. The geometry either side of the join is character for character the same.'],
-  ['DataVisuals.ts:arenaResolveColors',
-   'the same precedence, tone over slots over slot, with the same warning when a chart is given '
-   + 'both. One destructures its options in the signature and the other declares the object inline, '
-   + 'because one layer\'s callers hold an interface the other has no reason to export.'],
   ['components/display/arena-calendar/CalendarInternals.ts:arenaAddDays',
    'the same UTC day step; one hands arenaIsoDateOf a date and the other the full parts shape its own '
    + 'arenaIsoDateOf takes, which is why the zero hour and minute appear on one side only.'],

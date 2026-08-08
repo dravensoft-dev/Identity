@@ -1,6 +1,29 @@
 Steps to release a new version x.x.x of Arena
 
-1. Change version docs:
+1. Rebuild the packages:
+
+bun run build:release
+
+build:release is the full build AND the assembly: every step runs, both packages included, and a
+run that kept anything from the cache fails on its own. Plain `bun run build` keeps what nothing
+has moved under and leaves the packages out, which is right for a development loop and wrong for
+the tree a release is cut from. `bun run build:packages` is the middle one: it assembles and still
+keeps what has not moved, for iterating on packaging.
+
+Then run every gate the same way:
+
+bun run check --release
+
+That runs all of them and also reports any gate that failed while the graph would have kept it,
+which is a defect in what that gate declares rather than in the gate. A release is the one run
+where a wrong declaration has to surface, because it is the run nothing downstream re-checks.
+
+dist/ is git-ignored and no other build touches it, so it holds whatever was last built there,
+which after any component work is not what the tree says. check:packages reads both the version
+stamp and whether every component Components.json declares is in the emitted .d.ts, so a skipped
+rebuild reports itself rather than shipping.
+
+2. Change version docs:
 
 .claude-plugin/plugin.json:4
 .claude-plugin/marketplace.json:16
@@ -9,9 +32,11 @@ README.md:8
 
 verify with: 
 bun scripts/check/arena/check-release.ts 
-(expected a failure with "tag exists")
+(expected: every other check PASS, and "tag exists" FAIL with the git tag -a line,
+ because the tag is the next step. A clean pass here would mean the gate is not
+ looking at the tag at all, which is a defect it has had before.)
 
-2. Generate git tag:
+3. Generate git tag:
 
 git tag -a vx.x.x -m "Arena vx.x.x"
 

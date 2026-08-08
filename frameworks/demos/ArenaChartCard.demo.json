@@ -13,12 +13,17 @@
             "Tue",
             "Wed"
           ],
-          "values": [
-            42,
-            51,
-            38
+          "series": [
+            {
+              "label": "Deployments",
+              "values": [
+                42,
+                51,
+                38
+              ]
+            }
           ],
-          "seriesLabel": "Deployments"
+          "label": "Deployments this week"
         }
       }
     ],

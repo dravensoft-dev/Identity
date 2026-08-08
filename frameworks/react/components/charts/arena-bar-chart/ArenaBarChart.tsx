@@ -1,36 +1,36 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useArenaContainerWidth } from '../../../UseArenaContainerWidth.ts';
+import { arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter, ARENA_CHART_HEIGHT } from '../../../DataVisuals.ts';
 import {
-  arenaResolveColors, arenaNiceMax, arenaTicks, arenaBarPath, arenaSrOnly, arenaPlotWidth, arenaRailStyle, arenaValueWriter,
-  ARENA_PAD, ARENA_CHART_HEIGHT,
-} from '../../../DataVisuals.ts';
-import { chartBarGap, chartBarRadius, chartLabelGap } from '../../../Tokens.generated.js';
+  arenaLinearScale, arenaBandScale, arenaBandCenter, arenaBandIndex, arenaBandMark, arenaBandSubBand, arenaScaleValue,
+} from '../ChartScales.ts';
+import { arenaBarPath } from '../ChartMarks.ts';
+import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
+import {
+  arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount, arenaStackSegments, arenaStackDomain,
+} from '../ChartSeries.ts';
+import { arenaLegendStrip } from '../ChartLegend.ts';
+import { arenaTooltipAnchor } from '../ChartTooltip.ts';
+import { arenaCursorHandles, arenaCursorStep, arenaPointerClears, arenaPointerUpdates } from '../ChartPointer.ts';
+import { chartBarGap, chartSeriesGap, chartBarRadius } from '../../../Tokens.generated.js';
 
-import type { ArenaNumberFormat, ArenaSeriesTone } from '../../../Api.generated';
-
-export type { ArenaSeriesTone };
+import type { ArenaNumberFormat, ArenaSeries } from '../../../Api.generated';
 
 export interface ArenaBarChartProps {
 
-  /** One label per bar, in the same order as `values`. A label with no value at its index is dropped. */
+  /** One label per category, in the same order as every series' `values`. A category with no value in a series is drawn for the series that do have one. */
   labels: readonly string[];
 
-  /** The plotted data. One bar per entry; a negative value clamps to the baseline. */
-  values: readonly number[];
+  /** The plotted series, drawn as one group of bars per category. One series is the common case and draws exactly what it drew before; two or more share each category's band, so the bars of one category stand side by side and the reader compares within a category before comparing across. The ramp clamps at its last slot rather than cycling, so a ninth series folds into "Other" upstream, never into a colour already spent. */
+  series: readonly ArenaSeries[];
 
-  /** Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. */
-  seriesLabel: string;
+  /** Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. */
+  label: string;
 
-  /** One identity colour from the categorical ramp for the whole series. 1-based, clamped to the ramp, never cycled. */
-  slot?: number;
+  /** Sit each series on the one below it inside a single band per category, rather than standing them side by side. Stack when the series are parts of one total and that total is the thing being read; leave it off when the comparison is between the series, because a segment that does not start at zero is one a reader cannot measure against its neighbours. Positive and negative values stack on their own runs, so a category holding both grows in both directions from the zero line and the axis is sized from the two sums rather than from the largest single value. A series with no value at a category contributes no segment, and the segment above it sits on the one below rather than floating over a gap: a missing number is not a zero here either. Only the outermost segment of each direction is rounded, so the joints inside a bar stay square and read as joints. */
+  stack?: boolean;
 
-  /** Per-bar identity override, one ramp slot each. Wins over `slot`. */
-  slots?: readonly number[];
-
-  /** Semantic colour, for a series that IS a state. Mutually exclusive with slot/slots; passing both warns in development and tone wins. */
-  tone?: ArenaSeriesTone;
-
-  /** Appended verbatim to every number the chart draws: the axis arenaTicks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
+  /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   valueSuffix?: string;
 
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
@@ -42,24 +42,24 @@ export interface ArenaBarChartProps {
   /** The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. */
   height?: number;
 
-  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. */
+  /** The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is the same region the data cursor lives in, and it is keyboard-reachable whether it overflows or not. */
   minPointSpacing?: number;
 }
 
 
 export function ArenaBarChart({
-  labels, values, seriesLabel, slot, slots, tone, valueSuffix, valuePrefix, valueFormat,
+  labels, series, label, stack = false, valueSuffix, valuePrefix, valueFormat,
   height = ARENA_CHART_HEIGHT, minPointSpacing,
 }: ArenaBarChartProps) {
-  if (!seriesLabel) throw new Error('ArenaBarChart: `seriesLabel` is required (it names the series for the accessible name, and nothing can derive that)');
+  if (!label) throw new Error('ArenaBarChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
   if (!labels) throw new Error('ArenaBarChart: `labels` is required');
-  if (!values) throw new Error('ArenaBarChart: `values` is required');
+  if (!series) throw new Error('ArenaBarChart: `series` is required');
   const [ref, measured] = useArenaContainerWidth();
   const rail = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
 
   const available = measured ?? 600;
-  const n = values.length;
+  const n = arenaSeriesPointCount(series);
   const width = arenaPlotWidth(available, n, minPointSpacing);
   const scrolls = width > available;
   const fmt = arenaValueWriter({ prefix: valuePrefix, suffix: valueSuffix, format: valueFormat });
@@ -69,80 +69,132 @@ export function ArenaBarChart({
     if (!box || !scrolls) return;
     box.scrollLeft = box.scrollWidth - box.clientWidth;
   }, [scrolls, width]);
-  const colors = arenaResolveColors({ slot, slots, tone, count: n });
 
-  const max = arenaNiceMax(Math.max(0, ...values));
-  const iw = Math.max(1, width - ARENA_PAD.l - ARENA_PAD.r);
-  const ih = Math.max(1, height - ARENA_PAD.t - ARENA_PAD.b);
-  const step = iw / Math.max(1, n);
-  const bw = Math.max(1, step - chartBarGap);
-  const yOf = (v: number) => ARENA_PAD.t + ih - (Math.max(0, v) / max) * ih;
-  const baseline = ARENA_PAD.t + ih;
+  const domain = stack ? arenaStackDomain(series) : arenaSeriesDomain(series);
+  const strip = arenaLegendStrip(height, series.length);
+  const box = arenaPlotBox(width, strip.plotH);
+  const yScale = arenaLinearScale(domain.min, domain.max, box.y + box.h, box.y);
+  const bands = arenaBandScale(n, box.x, box.w, chartBarGap);
+  const axis = arenaAxisModel(yScale, domain, fmt);
+  const colors = series.map((one, s) => arenaSeriesColors(one, n, s + 1));
+  const table = arenaChartTable('Category', series, labels, fmt);
 
-  const name = `${seriesLabel} — bar chart`;
+  const name = `${label} — bar chart`;
+
+  const onPointer = (e: React.PointerEvent<SVGRectElement>, phase: string) => {
+    if (!arenaPointerUpdates(e.pointerType, phase)) return;
+    const svg = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+    if (!svg) return;
+    const index = arenaBandIndex(bands, e.clientX - svg.left);
+    if (index >= 0) setHover(index);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!arenaCursorHandles(e.key, 'x')) return;
+    e.preventDefault();
+    setHover(arenaCursorStep(hover, e.key, n, 'x'));
+  };
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height }}>
-      <div ref={rail} style={arenaRailStyle} tabIndex={scrolls ? 0 : undefined}
-        role={scrolls ? 'group' : undefined} aria-label={scrolls ? name : undefined}>
-      <svg width={scrolls ? width : '100%'} height={height} role="img" aria-label={name}
-        onMouseLeave={() => setHover(null)} style={{ display: 'block', overflow: 'visible' }}>
+      <div ref={rail} style={arenaRailStyle} tabIndex={0} role="group" aria-label={name} onKeyDown={onKeyDown}>
+      <svg width={scrolls ? width : '100%'} height={strip.plotH} role="img" aria-label={name}
+        style={{ display: 'block', overflow: 'visible' }}>
         {}
-        {arenaTicks(max).map((t, i) => (
+        {axis.ticks.map((tick, i) => (
           <g key={i}>
-            <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={yOf(t)} y2={yOf(t)}
+            <line x1={box.x} x2={box.x + box.w} y1={tick.y} y2={tick.y}
               stroke="var(--border)" style={{ strokeWidth: 'var(--bw)' }} />
-            <text x={ARENA_PAD.l - chartLabelGap} y={yOf(t)} textAnchor="end" dominantBaseline="middle"
-              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{fmt(t)}</text>
+            <text x={arenaTickLabelX()} y={tick.y} textAnchor="end" dominantBaseline="middle"
+              fill="var(--text-muted)" fontFamily="var(--font-mono)" style={{ fontSize: 'var(--dz-text-2xs)' }}>{tick.label}</text>
           </g>
         ))}
-        <line x1={ARENA_PAD.l} x2={width - ARENA_PAD.r} y1={baseline} y2={baseline}
+        <line x1={box.x} x2={box.x + box.w} y1={axis.zeroY} y2={axis.zeroY}
           stroke="var(--line-strong)" style={{ strokeWidth: 'var(--bw)' }} />
 
-        {values.map((v, i) => {
-          const x = ARENA_PAD.l + i * step + (step - bw) / 2;
-          const y = yOf(v);
-          return (
-            <g key={i}>
-              <path d={arenaBarPath(x, y, bw, baseline - y, chartBarRadius)} fill={colors[i]}
+        {Array.from({ length: n }, (_, i) => (
+          <g key={i}>
+            {stack ? arenaStackSegments(series, i).map((segment) => (
+              <path key={segment.seriesIndex}
+                d={arenaBarPath(arenaBandMark(bands, i), bands.band, arenaScaleValue(yScale, segment.to),
+                  arenaScaleValue(yScale, segment.from), segment.outer ? chartBarRadius : 0)}
+                fill={colors[segment.seriesIndex]?.[i]}
                 opacity={hover === null || hover === i ? 1 : 0.55}
                 style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
-              {
-}
-              <rect x={ARENA_PAD.l + i * step} y={ARENA_PAD.t} width={step} height={ih}
-                fill="transparent" onMouseEnter={() => setHover(i)} />
-            </g>
-          );
-        })}
+            )) : series.map((one, s) => {
+              const value = one.values[i];
+              if (value === undefined) return null;
+              const y = arenaScaleValue(yScale, value);
+              const sub = arenaBandSubBand(bands, i, series.length, s, chartSeriesGap);
+              return (
+                <path key={s} d={arenaBarPath(sub.x, sub.width, y, axis.zeroY, chartBarRadius)} fill={colors[s]?.[i]}
+                  opacity={hover === null || hover === i ? 1 : 0.55}
+                  style={{ transition: 'opacity var(--dur-fast) var(--ease-out)' }} />
+              );
+            })}
+          </g>
+        ))}
 
         {
 
 }
-        {values.map((_, i) => (
-          <text key={i} x={ARENA_PAD.l + i * step + step / 2} y={height - chartLabelGap} textAnchor="middle"
+        {Array.from({ length: n }, (_, i) => (
+          <text key={i} x={arenaBandCenter(bands, i)} y={arenaCategoryLabelY(strip.plotH)} textAnchor="middle"
             fill="var(--text-muted)" fontFamily="var(--font-body)" style={{ fontSize: 'var(--fs-xs)' }}>{labels[i] ?? ''}</text>
         ))}
+
+        {
+}
+        <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="transparent"
+          onPointerMove={(e) => onPointer(e, 'move')} onPointerDown={(e) => onPointer(e, 'down')}
+          onPointerLeave={(e) => { if (arenaPointerClears(e.pointerType)) setHover(null); }}
+          onPointerCancel={() => setHover(null)} />
       </svg>
       </div>
 
-      {hover !== null && values[hover] !== undefined && (
+      {strip.stripH > 0 && (
+        <div aria-hidden="true" style={{
+          height: strip.stripH, display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 4)',
+          overflow: 'hidden', whiteSpace: 'nowrap',
+        }}>
+          {series.map((one, s) => (
+            <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 'calc(var(--sp-1) * 1.5)', minWidth: 0 }}>
+              <span style={{ width: 'calc(var(--sp-1) * 2.5)', height: 'calc(var(--sp-1) * 2.5)',
+                borderRadius: 'var(--r-xs)', background: colors[s]?.[0], flexShrink: 0 }} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-sm)', color: 'var(--text-body)' }}>{one.label}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {hover !== null && hover < n && (
         <div style={{
-          position: 'absolute', left: ARENA_PAD.l + hover * step + step / 2, top: `calc(${yOf(values[hover])}px - var(--sp-2))`,
-          transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
+          position: 'absolute', transform: 'translate(-50%,-100%)', pointerEvents: 'none', whiteSpace: 'nowrap',
           background: 'var(--bg-raised)', border: 'var(--bw) solid var(--border-strong)',
           borderRadius: 'var(--r-sm)', boxShadow: 'var(--shadow-2)', padding: 'calc(var(--sp-1) * 1.5) calc(var(--sp-1) * 2.5)',
+          ...arenaTooltipAnchor(arenaBandCenter(bands, hover),
+            Math.min(...(stack
+              ? arenaStackSegments(series, hover).map((segment) => arenaScaleValue(yScale, segment.to))
+              : series.map((one) => arenaScaleValue(yScale, one.values[hover] ?? 0))))),
         }}>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dz-text-xs)', color: 'var(--mute)' }}>{labels[hover]}</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>{fmt(values[hover])}</div>
+          {series.map((one, s) => one.values[hover] !== undefined && (
+            <div key={s} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--dz-text-md)', color: 'var(--bone)' }}>
+              {series.length > 1 ? `${one.label}: ` : ''}{fmt(one.values[hover] as number)}
+            </div>
+          ))}
         </div>
       )}
 
       {}
       <table style={arenaSrOnly}>
         <caption>{name}</caption>
-        <thead><tr><th>Category</th><th>{seriesLabel}</th></tr></thead>
+        <thead><tr>{table.columns.map((column, i) => <th key={i}>{column}</th>)}</tr></thead>
         <tbody>
-          {values.map((v, i) => <tr key={i}><th scope="row">{labels[i]}</th><td>{fmt(v)}</td></tr>)}
+          {table.rows.map((row, i) => (
+            <tr key={i}><th scope="row">{row.header}</th>{row.cells.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
+          ))}
         </tbody>
       </table>
     </div>

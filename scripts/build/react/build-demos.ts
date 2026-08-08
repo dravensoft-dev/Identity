@@ -29,6 +29,34 @@ export const ROOT_MODULES = [
 export const SOURCE_EXTENSIONS = ['.jsx', '.tsx'];
 export const COMPILED_EXTENSIONS = ['.jsx', '.tsx', '.ts'];
 
+export const node = {
+  name: 'build:demos',
+  reads: [
+    ...ROOTS.flatMap((root) => COMPILED_EXTENSIONS.map((ext) => `${root}/**/*${ext}`)),
+    ...ROOT_MODULES,
+  ],
+  writes: ROOTS.map((root) => `${root}/**/*.generated.js`),
+  feeds: [
+    'build:react-package',
+    'check:appearance',
+    'check:behaviour',
+    'check:cards',
+    'check:compliance',
+    'check:demos',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:playgrounds',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+    'check:states',
+  ],
+};
+
 export function loaderFor(path: string) {
   return path.endsWith('.tsx') || path.endsWith('.ts') ? 'tsx' : 'jsx';
 }

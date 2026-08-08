@@ -13,6 +13,17 @@ import { repoRoot } from '../../lib/arena/repo-root.ts';
 import { emittedTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const node = {
+  name: 'check:dimensions',
+  reads: [
+    'frameworks/react/**', 'frameworks/angular/**', 'frameworks/tailwind/**', 'frameworks/demos/**',
+    '!frameworks/angular/build/**', '!frameworks/react/dist/**', '!frameworks/angular/dist/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const EXTENSIONS = ['.jsx', '.ts', '.tsx'];
 
 const PROPS = new Set([
@@ -38,10 +49,10 @@ const PROPS = new Set([
 ]);
 
 export const EXEMPT = new Map([
-  ['frameworks/react/components/charts/arena-bar-chart/ArenaBarChart.tsx:top:`calc(${yOf(values[hover])}px - var(--sp-2))`',
-   'yOf(values[hover]) projects the hovered data point onto the chart\'s own measured inner height — a runtime data-to-pixel projection, not a design dimension. Unlike ArenaAvatar\'s ratio (this same task turns that operand into a token), there is no token to give this one: the series values, their max, and the container\'s measured width all change at runtime, so nothing in contracts/design/ could stand in for it'],
-  ['frameworks/react/components/charts/arena-line-chart/ArenaLineChart.tsx:top:`calc(${yOf(values[hover])}px - calc(var(--sp-1) * 2.5))`',
-   'the same yOf(values[hover]) projection as ArenaBarChart\'s own exemption above — a data point\'s value mapped onto the chart\'s measured pixel height, not a token'],
+  ['frameworks/react/components/charts/ChartTooltip.ts:top:`calc(${y}px - var(--chart-tooltip-offset))`',
+   'the hovered datum, already projected through the chart\'s own y scale, interpolated into the calc() that lifts the tooltip clear of it — a runtime data-to-pixel projection, not a design dimension. There is no token to give it: the series values, their nice maximum and the container\'s measured width all change at runtime. What IS a decision, the gap itself, is the chart-tooltip-offset token beside it. One entry per layer now covers what the bar and line charts each spelt for themselves, and the Angular copy is held to the same rule for the first time, since a template binding spells the property in a shape this gate cannot read'],
+  ['frameworks/angular/components/charts/ChartTooltip.ts:top:`calc(${y}px - var(--chart-tooltip-offset))`',
+   'the paired copy of the React entry above, byte for byte the same expression, because check:shared-arithmetic is what keeps the two anchors from drifting and an exemption that covered only one layer would let the other one drift silently'],
   ['frameworks/react/components/display/arena-calendar/ArenaCalendar.tsx:height:`max(calc(var(--sp-1) * 6.5), ${rawH}px)`',
    'the max()\'s floor, calc(var(--sp-1) * 6.5), already reads a token, and stays governed — only the computed arm is exempt: rawH is an event\'s duration in minutes projected to pixels, the same data-to-pixel category as the two chart entries above, never a fixed dimension'],
   ['frameworks/react/DataVisuals.ts:width:1',

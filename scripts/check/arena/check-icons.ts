@@ -11,6 +11,18 @@ import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
 import { repoRoot as ROOT } from '../../lib/arena/repo-root.ts';
 
+export const node = {
+  name: 'check:icons',
+  reads: [
+    'contracts/**', 'frameworks/**', 'assets/**', 'intro/**',
+    '!frameworks/react/dist/**', '!frameworks/angular/dist/**', '!frameworks/angular/build/**',
+    '!frameworks/react/vendor/**',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export const PHOSPHOR = 'node_modules/@phosphor-icons/web/src';
 
 export const SCANNED_ROOTS = ['frameworks', 'intro', 'contracts', 'docs'];

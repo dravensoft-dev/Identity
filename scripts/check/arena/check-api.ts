@@ -20,6 +20,18 @@ import { MEMBER_FORMS, memberEntries, fieldEntries } from '../../lib/arena/contr
 import type { ContractCandidate, TypeContract } from '../../lib/arena/contract-shapes.ts';
 import type { SurfaceMember } from '../../lib/arena/api-surface.ts';
 
+export const node = {
+  name: 'check:api',
+  reads: [
+    'contracts/api', 'frameworks/Components.json',
+    'frameworks/react/components/**/*.tsx', 'frameworks/angular/components/**/*.ts',
+    'frameworks/react/Api.generated.ts', 'frameworks/angular/Api.generated.ts',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 const FORMS: Set<string> = new Set(MEMBER_FORMS);
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'boolean']);
 
@@ -108,6 +120,11 @@ export function validateTypes(types: TypeContract[]) {
           problems.push(`${type.name}.${field}: names enum type "${spec.type}", which contracts/api/types/ does not declare`);
         } else if (kindByName.get(spec.type) !== 'enum') {
           problems.push(`${type.name}.${field}: "${spec.type}" is a ${kindByName.get(spec.type)}, used where an enum belongs`);
+        }
+      } else if (spec.form === 'array') {
+
+        if (!isPrimitive(spec.of)) {
+          problems.push(`${type.name}.${field}: a field of a predefined object may be an array of primitives, and "${spec.of}" is not a primitive — R1, an object is pure data with known fields, and an array of objects reopens a nesting depth the reader has no bottom for`);
         }
       } else if (spec.form === 'consumerData') {
 

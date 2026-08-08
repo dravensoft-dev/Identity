@@ -53,6 +53,16 @@ test('a substring that is not modifier-shaped does not false-positive', () => {
   assert.deepEqual([...stateFamilies('overflow-hidden shadow-2')], []);
 });
 
+test('a pointer spelling of hover counts as hover, because the affordance is the same one', () => {
+
+  const pointer = "function X() { return <rect onPointerMove={() => {}} onPointerLeave={() => {}} />; }";
+  assert.deepEqual(sourceImplements(pointer), { hover: true, focus: false });
+  assert.deepEqual(sourceImplements('<path (pointerenter)="x()" />'), { hover: true, focus: false });
+
+  assert.deepEqual(sourceImplements('<rect onPointerDown={() => {}} />'), { hover: false, focus: false },
+    'a press is not a hover, and reading it as one would license an undeclared affordance');
+});
+
 test('a component with onMouseEnter/onMouseLeave implements hover, not focus', () => {
   const src = "function X() { return <button onMouseEnter={() => {}} onMouseLeave={() => {}} />; }";
   assert.deepEqual(sourceImplements(src), { hover: true, focus: false });
@@ -137,14 +147,15 @@ test('THE OTHER HALF: React implementing an affordance its contract does not dec
 });
 
 test('the react half asks only the components that draw by hand, because the rest answer with their manifest', () => {
-  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaLineChart']);
-  assert.deepEqual(unaskedHandDrawn(['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaLineChart']), []);
+  assert.deepEqual([...HAND_DRAWN.keys()].sort(), ['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaHorizontalBarChart', 'ArenaLineChart', 'ArenaPyramidChart', 'ArenaRadarChart', 'ArenaScatterChart']);
+  assert.deepEqual(unaskedHandDrawn(['ArenaBarChart', 'ArenaDoughnutChart', 'ArenaHorizontalBarChart', 'ArenaLineChart', 'ArenaPyramidChart', 'ArenaRadarChart', 'ArenaScatterChart']), []);
 });
 
 test('a hand-drawn component the react half never opened is a failure, not a clean pass', () => {
   const problems = unaskedHandDrawn(['ArenaBarChart', 'ArenaDoughnutChart']);
-  assert.equal(problems.length, 1);
-  assert.match(problems[0] ?? '', /ArenaLineChart/);
+  assert.equal(problems.length, 5);
+  assert.deepEqual(problems.map((p) => /HAND_DRAWN names (\w+)/.exec(p)?.[1]).sort(),
+    ['ArenaHorizontalBarChart', 'ArenaLineChart', 'ArenaPyramidChart', 'ArenaRadarChart', 'ArenaScatterChart']);
   assert.match(problems[0] ?? '', /never opened/);
 });
 

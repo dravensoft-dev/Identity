@@ -3,6 +3,14 @@ import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import { repoRoot } from '../../lib/arena/repo-root.ts';
+import { MANIFESTS, PRESET } from '../../build/tailwind/build-tailwind.ts';
+
+export const node = {
+  name: 'check:coverage',
+  reads: [...PRESET, MANIFESTS],
+  writes: [],
+  feeds: [],
+};
 import { captured } from '../../utils/captures.ts';
 
 export const EXCLUDED = new Map([
@@ -37,11 +45,17 @@ export const EXCLUDED = new Map([
   ['chart-pad-left', 'script-readable: JS computes SVG positions from it, never a utility'],
   ['chart-bar-radius', 'script-readable: passed to arenaBarPath(), which builds an SVG path string'],
   ['chart-bar-gap', 'script-readable: subtracted from the per-bar step width'],
+  ['chart-series-gap', 'script-readable: subtracted from a sub-band width to place one grouped bar'],
   ['chart-point-r', 'script-readable: an SVG circle r attribute computed per point'],
+  ['chart-bubble-r-min', 'script-readable: one end of a radius range JS interpolates by AREA to size a bubble, so no utility could carry either end alone'],
+  ['chart-bubble-r-max', 'script-readable: the other end, and the same interpolation. It also sizes the size key\'s sample circles, which are SVG r attributes computed per sample'],
   ['chart-point-r-hover', 'script-readable: an SVG circle r attribute computed per point'],
+  ['chart-tooltip-offset', 'read inside a calc() beside a runtime px projection of the hovered datum, so the whole expression is inline and no utility could carry it'],
   ['chart-legend-min', 'script-readable: a clamp bound compared against a measured width'],
   ['chart-legend-max', 'script-readable: a clamp bound compared against a measured width'],
   ['chart-legend-gap', 'script-readable: subtracted from a measured width to size the plot'],
+  ['chart-pad-category', 'script-readable: subtracted from the measured width to size a horizontal chart\'s plot, and the same number places the category label at its right edge'],
+  ['chart-legend-strip', 'script-readable: subtracted from the chart height to size the plot, and the same number is the strip\'s own height, so one utility could carry at most half of it'],
   ['chart-label-gap', 'script-readable: subtracted from a pad or a height in JS to place an SVG text x/y, never a utility'],
   ['chart-ring-inset', 'script-readable: subtracted from half the plot box in JS to size the doughnut\'s outer radius, never a utility'],
   ['calendar-hour-h', 'script-readable in both layers: JS projects a minute-of-day onto a pixel offset from it, and the chip and the hour cell it sits over must agree to the pixel, which only one shared number gives them'],

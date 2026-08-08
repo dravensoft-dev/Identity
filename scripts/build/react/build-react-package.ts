@@ -23,6 +23,7 @@ import {
 } from '../../lib/arena/package-assembly.ts';
 import { splitCompiledSheet } from '../../lib/tailwind/sheet-split.ts';
 import { captured } from '../../utils/captures.ts';
+import { CONSUME } from '../tailwind/build-tailwind.ts';
 
 export const NAME = '@dravensoft/arena-react';
 export const LAYER = 'frameworks/react';
@@ -30,6 +31,24 @@ export const LAYER = 'frameworks/react';
 export const ROOT_JS = ['Tokens.generated.js'];
 export const ROOT_TS = ['AnchorActivation.ts', 'DataVisuals.ts', 'UseArenaContainerWidth.ts', 'UseDialogModal.ts', 'Theme.ts', 'WarnOnce.ts', 'Api.generated.ts', 'ArenaStyles.generated.ts', 'Index.generated.ts'];
 export const DIST_PROJECT = 'frameworks/react/tsconfig.dist.json';
+
+export const node = {
+  name: 'build:react-package',
+  reads: [
+    `${LAYER}/**`, '!frameworks/react/dist/**',
+    'frameworks/tailwind/Utilities.generated.css', `${CONSUME}/**/*.css`,
+    'frameworks/Components.json', '.claude-plugin/plugin.json', 'LICENSE',
+  ],
+  writes: [`${LAYER}/dist/**`],
+  feeds: [
+    'check:arbitrary',
+    'check:consumer',
+    'check:packages',
+    'check:react-types',
+  ],
+  releaseOnly: 'the declaration emit costs more than a development loop should pay for an artefact only a '
+    + 'release ships, so bun run build leaves it out and bun run build:packages runs it',
+};
 
 export function isSource(path: string) {
   return (path.endsWith('.ts') || path.endsWith('.tsx')) && !path.endsWith('.d.ts');

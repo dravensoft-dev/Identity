@@ -16,6 +16,35 @@ import {
 } from './generate-skills.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const PROMPTS = CONSUMER_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.prompt.md`);
+
+export const node = {
+  name: 'generate:prompt-api',
+  reads: ['contracts/api/components', 'frameworks/Components.json', ...PROMPTS],
+  writes: PROMPTS,
+  feeds: [
+    'build:angular-package',
+    'build:react-package',
+    'check:appearance',
+    'check:arbitrary',
+    'check:behaviour',
+    'check:cards',
+    'check:compliance',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:playgrounds',
+    'check:prompts',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+    'check:states',
+  ],
+};
+
 export const CONSUMER_DATA = 'Record<string, unknown>';
 
 export const OPEN_LINE = /^<!-- @api GENERATED from [^\n]*-->$/m;

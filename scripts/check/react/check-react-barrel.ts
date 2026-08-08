@@ -7,7 +7,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
-import { buildBarrel, ROOT_PRIVATE } from '../../build/react/build-react-barrel.ts';
+import { buildBarrel, ROOT_PRIVATE, BARREL_TARGET, node as barrelNode } from '../../build/react/build-react-barrel.ts';
+
+export const node = {
+  name: 'check:react-barrel',
+  reads: [...barrelNode.reads, BARREL_TARGET],
+  writes: [],
+  feeds: [],
+};
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
 export function driftProblems(files: Map<string, string>, read: (path: string) => string) {

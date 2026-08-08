@@ -122,8 +122,24 @@
      Holds the category labels. This is a CONSEQUENCE of the type scale, not a
      chosen dimension: it is enough room for a label at --dz-text-2xs. If the type
      scale moves, revisit it; it will not fail loudly.
+     The labels stay on this edge whatever the data does, so a bar growing down from a
+     zero line above the floor runs toward them. That is deliberate: a reader looks for
+     category labels along the bottom, and moving them to follow the zero line would put
+     them somewhere different in every chart on a page. What it costs is a downward bar
+     reaching its label at the extreme of the axis, which is the price of one place to
+     look.
    */
   --chart-pad-bottom:28px;
+  /*
+     Holds the category names down the left edge of a horizontal bar chart, where
+     pad-left holds value labels on a vertical one. A separate token rather than a wider
+     pad-left, because the two hold different things and sizing every chart's value gutter for
+     the longest category name anyone might write would waste 52px on every vertical chart in
+     the library. A CONSEQUENCE of the type scale like pad-bottom, and a soft one: a name longer
+     than it fits is truncated rather than overrunning the plot, so this is the width at which a
+     reader stops needing the tooltip to read a label, not a limit on what may be passed.
+   */
+  --chart-pad-category:96px;
   --chart-pad-left:44px; /* Holds the value labels. A consequence of the type scale, like pad-bottom. */
   /*
      Between an axis label and the plot it labels: a y-axis tick label ends this far
@@ -145,6 +161,14 @@
      change and must be taken as one.
    */
   --chart-bar-radius:4px;
+  /*
+     Between two bars of the same category, when a chart draws more than one series.
+     Distinct from bar-gap, which is between categories, and deliberately smaller than it:
+     the wider gap is what tells a reader where one category ends, and if the two were equal
+     a grouped chart would read as one long row of unrelated bars. Script-readable, because
+     JS subtracts it from a sub-band width to produce an SVG x.
+   */
+  --chart-series-gap:1px;
   --chart-bar-gap:2px; /* Surface between bars. Equals --bw-strong, coincidentally. */
   --chart-point-r:4px; /* A line chart's point at rest. */
   /*
@@ -152,9 +176,46 @@
      affordance: the pair only means anything together.
    */
   --chart-point-r-hover:5px;
+  /*
+     Between the mark under the pointer and the tooltip's near edge. Not script-readable:
+     the chart interpolates the mark's own y into a calc() and CSS subtracts this from it, so
+     the stylesheet is what consumes the token. It settles a disagreement rather than recording
+     one: the bar chart offset its tooltip by --sp-2 and the line chart by 2.5 steps of --sp-1,
+     which is 10px against 8px for the same affordance. Naming it moves the line chart's tooltip
+     2px, and that is a visible design change taken deliberately, the same way chart.bar-radius
+     refuses to snap to --r-sm because doing so would be one.
+   */
+  --chart-tooltip-offset:8px;
+  /*
+     A bubble at the smallest value it carries. Equals point-r, deliberately: a bubble
+     chart with one size in it is a scatter, and it should draw like one rather than jumping to
+     some other mark size the moment a third column appears.
+   */
+  --chart-bubble-r-min:4px;
+  /*
+     A bubble at the largest value it carries. The pair is a RADIUS range and the
+     mapping between them is by area, not by radius: doubling a radius quadruples the blot, and a
+     reader compares the blot, so a linear radius exaggerates the large value by a factor of four.
+     Sixteen is what fits the size key beside the series names without either crowding the other,
+     and it is a chosen dimension rather than a consequence, unlike the pads.
+   */
+  --chart-bubble-r-max:16px;
   --chart-legend-min:120px; /* Doughnut legend, narrowest. */
   --chart-legend-max:180px; /* Doughnut legend, widest. */
   --chart-legend-gap:16px; /* Between the doughnut plot and its legend. */
+  /*
+     The row of series keys a cartesian chart draws below its plot, height including
+     the separation from the plot. A CONSEQUENCE of the type scale rather than a chosen
+     dimension, the way pad-bottom is: one line at --dz-text-sm stands 18px at the root line
+     height, the swatch beside it is smaller and rides inside that line, and one step of the base
+     grid separates the row from the plot. If the type scale moves, revisit it; it will not fail
+     loudly.
+     It comes OUT of the plot rather than being added to the chart's box, so --chart-height stays
+     the height of the whole component whether a legend is drawn or not. That is the same trade
+     the doughnut already makes on the other axis, where the legend column takes its width from
+     the ring rather than from the caller.
+   */
+  --chart-legend-strip:26px;
 }
 :root{
   /*

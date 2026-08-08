@@ -14,6 +14,17 @@ import {
   renderRegion, promptPaths, OPEN_LINE, CLOSE_LINE,
 } from '../../generate/arena/generate-prompt-api.ts';
 
+export const node = {
+  name: 'check:prompts',
+  reads: [
+    'contracts/api/components', 'frameworks/Components.json',
+    'frameworks/react/components/**/*.prompt.md', 'frameworks/angular/components/**/*.prompt.md',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export function regionOf(source: string) {
   const lines = source.split('\n');
   const opensAt = lines.findIndex((line) => OPEN_LINE.test(line));

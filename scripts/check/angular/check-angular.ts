@@ -17,6 +17,18 @@ export const PROJECTS = [
   { project: 'frameworks/angular/tsconfig.demo.json', reaches: 'the demo page entries, which no barrel reaches' },
 ];
 
+export const LAYER = 'frameworks/angular';
+
+export const node = {
+  name: 'check:angular',
+  reads: [
+    `${LAYER}/**/*.ts`, `${LAYER}/**/*.html`, `${LAYER}/tsconfig*.json`,
+    '!frameworks/angular/build/**', 'package.json', 'bun.lock',
+  ],
+  writes: [],
+  feeds: [],
+};
+
 export function typecheck(opts: { root?: string; project?: string } = {}) {
   const root = opts.root ?? repoRoot;
   const bin = ngcBin(root);

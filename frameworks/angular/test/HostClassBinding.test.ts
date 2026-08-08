@@ -179,12 +179,13 @@ class UnauthCardWithoutProjectionHost {}
   standalone: true,
   imports: [ArenaBarChart],
   host: { 'data-host': 'bar-chart' },
-  template: `<arena-bar-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
+  template: `<arena-bar-chart [label]="label" [labels]="labels" [series]="series" />`,
 })
 class BarChartHost {
-  seriesLabel = 'Deployments per week';
+  label = 'Deployments per week';
   labels: string[] = [];
   values: number[] = [];
+  series: { label: string; values: number[] }[] = [{ label: 'One', values: [] }];
 }
 
 function createBarChartHost() {
@@ -197,12 +198,13 @@ function createBarChartHost() {
   standalone: true,
   imports: [ArenaLineChart],
   host: { 'data-host': 'line-chart' },
-  template: `<arena-line-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
+  template: `<arena-line-chart [label]="label" [labels]="labels" [series]="series" />`,
 })
 class LineChartHost {
-  seriesLabel = 'p95 latency';
+  label = 'p95 latency';
   labels: string[] = [];
   values: number[] = [];
+  series: { label: string; values: number[] }[] = [{ label: 'One', values: [] }];
 }
 
 function createLineChartHost() {
@@ -215,12 +217,13 @@ function createLineChartHost() {
   standalone: true,
   imports: [ArenaDoughnutChart],
   host: { 'data-host': 'doughnut-chart' },
-  template: `<arena-doughnut-chart [seriesLabel]="seriesLabel" [labels]="labels" [values]="values" />`,
+  template: `<arena-doughnut-chart [label]="label" [labels]="labels" [series]="series" />`,
 })
 class DoughnutChartHost {
-  seriesLabel = 'Traffic by region';
+  label = 'Traffic by region';
   labels: string[] = [];
   values: number[] = [];
+  series: { label: string; values: number[] }[] = [{ label: 'One', values: [] }];
 }
 
 function createDoughnutChartHost() {
@@ -774,7 +777,7 @@ function findManifestFile(componentsDir: string, filename: string): string | und
   return paths.find((p) => basename(p) === filename);
 }
 
-const NO_MANIFEST = new Set(['arena-bar-chart', 'arena-line-chart', 'arena-doughnut-chart']);
+const NO_MANIFEST = new Set(['arena-bar-chart', 'arena-line-chart', 'arena-doughnut-chart', 'arena-horizontal-bar-chart', 'arena-pyramid-chart', 'arena-radar-chart', 'arena-scatter-chart']);
 
 const HOST_SLOT: Record<string, { manifest?: string; slot: string }> = {
   'arena-bottom-nav-item': { manifest: 'ArenaBottomNav.manifest.json', slot: 'item' },

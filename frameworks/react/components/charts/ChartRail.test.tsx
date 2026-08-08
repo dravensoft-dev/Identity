@@ -32,20 +32,22 @@ const labels = Array.from({ length: 30 }, (_, i) => `d${i}`);
 const values = Array.from({ length: 30 }, (_, i) => i + 1);
 
 const rail = (minPointSpacing?: number) => renderToStaticMarkup(
-  <ArenaLineChart labels={labels} values={values} seriesLabel="Revenue" minPointSpacing={minPointSpacing} />,
+  <ArenaLineChart labels={labels} series={[{ label: 'Revenue', values: values }]} label="Revenue" minPointSpacing={minPointSpacing} />,
 );
 
-test('a rail that does not overflow is not a scroll region, and takes no tab stop', () => {
-  const html = rail(undefined);
-  assert.doesNotMatch(html, /tabindex="0"/,
-    'a dead tab stop on every chart that fits is worse than the gap it would close');
-  assert.doesNotMatch(html, /role="group"/);
+test('the plot is a keyboard region whether it overflows or not', () => {
+
+  for (const [what, html] of [['fits', rail(undefined)], ['overflows', rail(35)]] as const) {
+    assert.match(html, /tabindex="0"/, `${what}: the data cursor needs somewhere to live`);
+    assert.match(html, /role="group"/, what);
+    assert.match(html, /aria-label="Revenue[^"]*"/,
+      'the region takes the chart\'s own name, so it is not announced as an unnamed group');
+  }
 });
 
-test('a rail that overflows is reachable and named, because an unfocusable scroll box is a trap', () => {
+test('the region is exactly one tab stop, however many marks the plot holds', () => {
+
   const html = rail(35);
-  assert.match(html, /tabindex="0"/);
-  assert.match(html, /role="group"/);
-  assert.match(html, /aria-label="Revenue[^"]*"/,
-    'the region takes the chart\'s own name, so it is not announced as an unnamed group');
+  assert.equal((html.match(/tabindex="0"/g) ?? []).length, 1,
+    'thirty points must not be thirty stops: the cursor moves inside the region, it does not add to it');
 });

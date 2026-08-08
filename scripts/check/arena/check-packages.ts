@@ -22,6 +22,18 @@ import { arenaConfig } from '../../lib/core/arena-config.ts';
 import { themeCss } from '../../generate/core/arena-to-prod/theme-css.ts';
 import { MAP_FILE } from '../../lib/arena/component-map.ts';
 
+export const node = {
+  name: 'check:packages',
+  reads: [
+    'frameworks/react/dist/**', 'frameworks/angular/dist/**', 'frameworks/Components.json',
+    '.claude-plugin/plugin.json', 'contracts/design/palette.*.json',
+    'contracts/design-generated/palette.generated.css',
+  ],
+  writes: [],
+  feeds: [],
+};
+
+
 export type PackageManifest = {
   name?: string;
   version?: string;
@@ -213,6 +225,24 @@ export function styleProblems(pkg: { layer: string; name: string }, dir: string)
   return { problems, walked: seen.size };
 }
 
+export function declaredComponents(base = root): string[] {
+  const declared = readJson(join(base, 'frameworks', 'Components.json')) as Record<string, string[]>;
+  return Object.values(declared).flat().sort();
+}
+
+export function componentReachProblems(pkg: { layer: string; name: string }, dir: string, declared: string[]) {
+  const types = walkFiles(dir).filter((path) => path.endsWith('.d.ts'));
+  if (types.length === 0) {
+    return [`${pkg.name}: no .d.ts was emitted, so nothing states what the package exposes`];
+  }
+  const surface = types.map((path) => readFileSync(path, 'utf8')).join('\n');
+  const missing = declared.filter((name) => !new RegExp(`\\b${name}\\b`).test(surface));
+  if (missing.length === 0) return [];
+  return [`${pkg.name}: declared in Components.json and absent from the assembled package: ${missing.join(', ')}. `
+    + 'dist/ is git-ignored and no generator rebuilds it, so it goes stale silently while its version stamp stays right. '
+    + 'Run bun run build:packages'];
+}
+
 export function collect(base = root) {
   const version = readJson(join(base, '.claude-plugin/plugin.json')).version;
   const problems = [];
@@ -223,6 +253,7 @@ export function collect(base = root) {
   problems.push(...equivalence.problems);
 
   const assembled = [];
+  const declared = declaredComponents(base);
   for (const pkg of PACKAGES) {
     const dir = distDir(pkg.layer, base);
     const manifestPath = join(dir, 'package.json');
@@ -232,6 +263,7 @@ export function collect(base = root) {
     problems.push(...manifestProblems(pkg, manifest, version));
     problems.push(...exportProblems(pkg, manifest, dir));
     problems.push(...componentMapProblems(pkg, dir));
+    problems.push(...componentReachProblems(pkg, dir, declared));
     problems.push(...styleProblems(pkg, dir).problems);
   }
 

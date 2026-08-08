@@ -1,0 +1,26 @@
+{
+  "component": "ArenaHorizontalBarChart",
+  "seed": {
+    "labels": [
+      "Documentation",
+      "Onboarding",
+      "Billing",
+      "Search",
+      "Notifications"
+    ],
+    "series": [
+      {
+        "label": "Open issues",
+        "values": [
+          42,
+          31,
+          18,
+          12,
+          5
+        ]
+      }
+    ],
+    "label": "Open issues by area"
+  },
+  "note": "Categories with names worth reading are what this chart is for: across the plot they would be rotated or truncated."
+}

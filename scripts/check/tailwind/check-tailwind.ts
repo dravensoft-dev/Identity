@@ -1,5 +1,13 @@
 import { isMainModule } from '../../utils/main-module.ts';
 import { compileLayer, manifestClasses, escapeClass } from '../../lib/tailwind/tailwind-compile.ts';
+import { node as tailwindNode } from '../../build/tailwind/build-tailwind.ts';
+
+export const node = {
+  name: 'check:tailwind',
+  reads: tailwindNode.reads,
+  writes: [],
+  feeds: [],
+};
 import { arenaTokens } from '../../lib/core/arena-tokens.ts';
 import type { ManifestClassSource } from '../../lib/tailwind/manifest-shapes.ts';
 import { captured } from '../../utils/captures.ts';

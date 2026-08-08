@@ -15,6 +15,47 @@ import type { ContractCandidate } from '../../lib/arena/contract-shapes.ts';
 import type { ComponentTree } from '../../lib/arena/layers.ts';
 import { captured } from '../../utils/captures.ts';
 
+export const COMPONENT_SOURCES = [
+  'frameworks/react/components/**/*.tsx', 'frameworks/angular/components/**/*.ts',
+  '!frameworks/**/*.generated.*', '!frameworks/**/*.test.*',
+];
+
+export const node = {
+  name: 'generate:member-docs',
+  reads: ['contracts/api/components', 'frameworks/Components.json', ...COMPONENT_SOURCES],
+  writes: COMPONENT_SOURCES,
+  feeds: [
+    'build:angular-demo',
+    'build:angular-package',
+    'build:angular-tests',
+    'build:demos',
+    'build:react-barrel',
+    'build:react-package',
+    'check:angular',
+    'check:api',
+    'check:appearance',
+    'check:arbitrary',
+    'check:behaviour',
+    'check:cards',
+    'check:compliance',
+    'check:demos',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:playgrounds',
+    'check:react-barrel',
+    'check:react-types',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+    'check:states',
+    'generate:playgrounds',
+  ],
+};
+
 export const MEMBER_START: Record<string, RegExp> = {
   react: /^(\s*)([A-Za-z_$][\w$]*)(\??\s*:)/,
   angular: /^(\s*)(?:readonly\s+)([A-Za-z_$][\w$]*)(\s*=)/,

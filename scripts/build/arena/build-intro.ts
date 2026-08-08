@@ -18,6 +18,17 @@ import { captured } from '../../utils/captures.ts';
 export const PAGE_DIR = 'intro';
 export const GENERATED_SUFFIX = '.generated.js';
 
+export const node = {
+  name: 'build:intro',
+  reads: [`${PAGE_DIR}/*.html`, `${PAGE_DIR}/*.js`, `!${PAGE_DIR}/*${GENERATED_SUFFIX}`],
+  writes: [`${PAGE_DIR}/*${GENERATED_SUFFIX}`],
+  feeds: [
+    'check:generated',
+    'check:icons',
+    'check:intro',
+  ],
+};
+
 const MODULE_ENTRY = /<script[^>]*\stype="module"[^>]*\ssrc="([^"]+)"/g;
 
 export const BANNER = (source: string) =>

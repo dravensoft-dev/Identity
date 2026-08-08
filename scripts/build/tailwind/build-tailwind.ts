@@ -46,6 +46,61 @@ export const PRELUDE = `${CONSUME}/Prelude.generated.css`;
 export const BARREL = `${CONSUME}/Components.generated.css`;
 export const PREFLIGHT = `${CONSUME}/Preflight.generated.css`;
 
+export const MANIFESTS = 'frameworks/**/*.manifest.json';
+
+export const PRESET = [
+  'frameworks/tailwind/Theme.css', 'frameworks/tailwind/Animations.css',
+  'frameworks/tailwind/Breakpoints.generated.css', 'contracts/design-generated',
+];
+
+export const node = {
+  name: 'build:tailwind',
+  reads: [
+    ...PRESET, MANIFESTS,
+    'frameworks/tailwind/ArenaStyles.ts', 'frameworks/tailwind/Tv.ts',
+  ],
+  writes: [
+    'frameworks/tailwind/Utilities.generated.css', PRELUDE, BARREL, PREFLIGHT,
+    `${CONSUME}/**/*.styles.generated.css`,
+    ...CONSUMING_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.manifest.generated.ts`),
+    ...CSS_CONSUMING_LAYERS.map((layer) => `frameworks/${layer}/components/**/*.classes.generated.ts`),
+    ...CONSUMING_LAYERS.flatMap((layer) => [
+      `frameworks/${layer}/ArenaStyles.generated.ts`, `frameworks/${layer}/Tv.generated.ts`,
+    ]),
+  ],
+  feeds: [
+    'build:angular-demo',
+    'build:angular-package',
+    'build:angular-tests',
+    'build:demos',
+    'build:react-package',
+    'build:style-parity-page',
+    'check:angular',
+    'check:api',
+    'check:appearance',
+    'check:arbitrary',
+    'check:behaviour',
+    'check:cards',
+    'check:compliance',
+    'check:component-css',
+    'check:demos',
+    'check:dimensions',
+    'check:duplicate-constants',
+    'check:focus-trap',
+    'check:generated',
+    'check:icons',
+    'check:layer-independence',
+    'check:playgrounds',
+    'check:react-types',
+    'check:script-tokens',
+    'check:shared-arithmetic',
+    'check:skills',
+    'check:states',
+    'check:style-parity',
+    'check:tailwind-generated',
+  ],
+};
+
 export function sheetPath(manifestFile: string) {
   return manifestFile
     .replace('frameworks/tailwind/components/', `${CONSUME}/components/`)

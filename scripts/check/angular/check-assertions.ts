@@ -15,6 +15,13 @@ import { repoRoot } from '../../lib/arena/repo-root.ts';
 
 export const SUITE_ROOT = 'frameworks/angular';
 
+export const node = {
+  name: 'check:assertions',
+  reads: [`${SUITE_ROOT}/**/*.test.ts`],
+  writes: [],
+  feeds: [],
+};
+
 export const NODE_MARKERS = /document\.activeElement|\.querySelector\(|\.nativeElement|\.closest\(|\.parentElement|\.firstElementChild|\.lastElementChild/;
 
 const SCALAR_PROPERTY = 'textContent|innerText|length|value|tagName|className|id|checked'

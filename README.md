@@ -1,4 +1,4 @@
-# Arena, the Dravensoft Design System
+# Arena, a design system consumable by AI agents via repo & npm packages
 
 [![npm react](https://img.shields.io/npm/v/@dravensoft/arena-react?style=flat-square&color=c5a059&label=arena-react)](https://www.npmjs.com/package/@dravensoft/arena-react)
 [![npm angular](https://img.shields.io/npm/v/@dravensoft/arena-angular?style=flat-square&color=c5a059&label=arena-angular)](https://www.npmjs.com/package/@dravensoft/arena-angular)
@@ -19,7 +19,7 @@ governs what it is about to write, and the gate tells it when it got it wrong.
 Code plugin, and a standalone Agent Skill in [`SKILL.md`](./SKILL.md) that any agent can read.
 
 ## Latest project artifacts
-- **Repo/Claude Code plugin**: 6.0.2
+- **Repo/Claude Code plugin**: 7.0.0
 - [npm React package](https://www.npmjs.com/package/@dravensoft/arena-react?activeTab=versions)
 - [npm Angular package](https://www.npmjs.com/package/@dravensoft/arena-angular?activeTab=versions)
 

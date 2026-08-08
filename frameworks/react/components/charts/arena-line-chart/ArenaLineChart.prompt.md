@@ -1,15 +1,21 @@
 A line for a value over an ordered sequence, time, builds, releases. Hovering anywhere snaps a crosshair to the nearest point and shows its tooltip. Dependency-free SVG; it re-themes with the page for free.
 
 ```tsx
-<ArenaLineChart labels={days} values={[120,138,131,142,180,164,150]} seriesLabel="p95 ms" />
+<ArenaLineChart label="Request latency" labels={days}
+  series={[{ label: 'p95', values: [120,138,131,142,180,164,150] }]} valueSuffix=" ms" />
 
 {/* area: one series, a tint of the line */}
-<ArenaLineChart labels={days} values={latency} seriesLabel="p95 ms" slot={5} area
+<ArenaLineChart label="Request latency" labels={days}
+  series={[{ label: 'p95', values: latency, slot: 5 }]} area valueSuffix=" ms" />
+
+{/* two series: one polyline each over the same sequence, no area */}
+<ArenaLineChart label="Request latency" labels={days}
+  series={[{ label: 'p50', values: median }, { label: 'p95', values: latency }]}
   valueSuffix=" ms" />
 
 {/* meaning: the series IS a state */}
-<ArenaLineChart labels={days} values={errorRate} tone="danger" seriesLabel="Error rate"
-  valueSuffix="%" />
+<ArenaLineChart label="Error budget" labels={days}
+  series={[{ label: 'Error rate', values: errorRate, tone: 'danger' }]} valueSuffix="%" />
 ```
 
 <!-- @api GENERATED from contracts/api/components/ArenaLineChart.json. Edit the contract, not this table. -->
@@ -18,32 +24,32 @@ A line for a value over an ordered sequence, time, builds, releases. Hovering an
 
 | Member | Form | Type | Default | What it is |
 |---|---|---|---|---|
-| `labels*` | array | `readonly string[]` |  | One label per point, in the same order as `values`. A label with no value at its index is dropped. |
-| `values*` | array | `readonly number[]` |  | The plotted data, in order. One point per entry; a negative value clamps to the baseline. |
-| `seriesLabel*` | primitive | `string` |  | Names the series for the accessible name, the table caption and its value column. Required and guarded rather than defaulted: a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. Nothing can derive it -- what a series is about is editorial, the same reason ArenaTable.label is required. |
-| `slot` | primitive | `number` | `1` | The identity colour from the categorical ramp. A line is one series, so there is no per-mark override. |
-| `tone` | enum | `ArenaSeriesTone` |  | Semantic colour, for a series that IS a state. Mutually exclusive with slot; passing both warns in development and tone wins. |
+| `labels*` | array | `readonly string[]` |  | One label per point, in the same order as every series' `values`. A label with no value in a series ends that series' line there rather than dropping to zero. |
+| `series*` | array | `readonly ArenaSeries[]` |  | The plotted series, drawn as one polyline each over the same ordered sequence. One series is the common case and draws exactly what it drew before. The area fill is refused past one series, because two fills occlude each other and the reader cannot tell which value either edge belongs to. |
+| `label*` | primitive | `string` |  | Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. |
 | `area` | primitive | `boolean` | `false` | Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. |
-| `valueSuffix` | primitive | `string` |  | Appended verbatim to every number the chart draws: the axis arenaTicks, the tooltip and the accessible table. Carries its own leading space if one is wanted. |
+| `curve` | primitive | `boolean` | `false` | Draw the series as a smooth curve rather than straight segments between points. The interpolation is monotone cubic, not Catmull-Rom, and that is the whole of the decision: a Catmull-Rom curve overshoots, so between two measured points it draws a peak or a trough nobody measured, and a chart that draws data which does not exist is the one thing a chart may not do. A monotone curve stays inside the band its own two points define, keeps a flat tangent at a turning point, and never crosses zero unless the values do. It changes the path string and nothing else: the points, the crosshair, the tooltip and the data cursor read the same numbers at the same places. |
+| `valueSuffix` | primitive | `string` |  | Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. |
 | `valuePrefix` | primitive | `string` |  | Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. |
 | `valueFormat` | object | `ArenaNumberFormat` |  | How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. |
 | `height` | primitive | `number` | `280` | The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark, and a caller-supplied "20rem" is neither a token nor a derivation of one. |
-| `minPointSpacing` | primitive | `number` |  | The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is a keyboard-reachable region, because an overflow box nothing can focus is a trap. |
+| `minPointSpacing` | primitive | `number` |  | The narrowest gap, in px, the chart draws between two adjacent points. Below it the chart stops compressing and overflows its container horizontally instead, scrolled and anchored to the most recent point: marker spacing is a legibility constant, not something that yields to the viewport, and thirty days in 390px is unreadable at any font size. Absent, the chart fits whatever width it is given. The rail it scrolls in is the same region the data cursor lives in, and it is keyboard-reachable whether it overflows or not. |
 
 <!-- @api end -->
 
 **Do**
+- Give `label` and give every series its own `label`. They are two different names: `label` is the chart's, and it becomes the accessible name and the table caption; a series' `label` heads that series' column in the same table.
 - Use a line for ordered data. If the categories have no order, bars compare them more honestly.
 - Turn `area` on for a single series to give the trend weight.
 - Pass `valueSuffix` so the axis, the tooltip and the accessible table all carry the unit. It is appended verbatim, so write the space yourself: `" ms"`, but `"%"`.
 
 **Don't**
-- Don't pass `tone` together with `slot`: identity or meaning, never both. It warns in development and `tone` wins.
-- Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed.
-- Don't stack `area` fills for several series, because they occlude each other and the reader cannot recover the values. Use plain lines, or small multiples.
-- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `number[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
-- Don't omit `labels` or `values`. Both are required props, `ArenaLineChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
-- Don't pass more `labels` than `values`. A point is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn with no point above it.
+- Don't pass `tone` together with `slot` on one series: identity or meaning, never both. It warns in development and `tone` wins.
+- Don't add a second axis. Arena charts have one; a dual axis invents a correlation the data never claimed. Several series on one scale is what `series` is for; several series that do not share a scale are several charts.
+- Don't turn `area` on for more than one series. It is refused past one and warns in development, because two fills occlude each other and the reader cannot tell which value either edge belongs to. Use plain lines, or small multiples.
+- Use `valuePrefix` for a currency that goes in front, and `valueFormat` for the number itself: locale, fraction digits, grouping, compaction. Formatting before you pass them is not an option, because what you pass is `ArenaSeries[]` and the writing happens on labels Arena generates afterwards. With no `valueFormat` the raw JavaScript number is drawn, which is what a chart always did.
+- Don't omit `labels`, `series` or `label`. All three are required props, and `ArenaLineChart` throws from its render rather than drawing an empty box. A required member absent is a caller bug that fails hard in every layer, not a state to render.
+- Don't pass more `labels` than a series has values. A point is drawn per value and takes the label at its own index, so a surplus label is silently dropped rather than drawn with no point above it. A series shorter than its neighbours ends its line there rather than dropping to zero, because a missing number is not a zero.
 
 
 ### When the points stop fitting
@@ -57,8 +63,54 @@ font size.
 Arena computes the minimum width from its own axis padding, so nothing outside needs to know
 what that padding is, and the rail is the chart's own box rather than the card's: a
 `ArenaChartCard` around it needs no change. The rail takes `tabIndex={0}` and a `role="group"`
-named after the chart, but only while it actually overflows, because a rail that fits is not
-a scroll region and a tab stop on it would be dead.
+named after the chart whether it overflows or not.
 
 `height` is the plot's height in px, the `--chart-height` token by default. A number rather
 than a length string, because the chart does arithmetic with it to place every mark.
+
+### Reading the line without a pointer
+
+The rail is one keyboard region and it is the plot's only tab stop. Inside it, Arrow Left and
+Arrow Right move a data cursor from point to point, clamping at the ends rather than wrapping,
+Home and End jump to the first and the last, and Escape clears it. The cursor drives exactly
+what hover drives: the enlarged point, the crosshair and the tooltip.
+
+Nothing inside the graphic is focusable, and that is deliberate rather than an omission. A
+`role="img"` subtree is presentational, so no ARIA on a mark inside it reaches a screen
+reader however correct it is. A screen reader gets the visually hidden table of the same
+numbers, which is already there; a sighted keyboard user gets the cursor. There is no third
+copy of the numbers for either of them to disagree with.
+
+### The legend, and when there is one
+
+A chart of two or more series draws a row of keys below the plot, one swatch and one series name
+each, in the order the series were given. A chart of one series draws none: `label` already names
+the chart, the table's single value column is already headed by that series' own name, and a
+one-row legend would restate both while spending plot height to do it. There is no member for
+this; the number of series is the whole rule.
+
+The strip comes out of the plot rather than being added to the box, so `height` stays the height
+of the whole component whether a legend is drawn or not. That is what keeps a grid of tiles
+aligned when one of them gains a second series.
+
+It is `aria-hidden`, deliberately. It is a key for a reader who can see the colours, and those
+same names are already the column headers of the numbers table, so a focusable copy of them would
+be a second source for one fact. Its rows take no focus, and the plot still has exactly one tab
+stop.
+
+### Straight or smooth
+
+`curve` draws the series as a smooth curve instead of straight segments. It changes the path
+string and nothing else: the points sit where they sat, the crosshair snaps to the same one, the
+tooltip reads the same numbers and the data cursor walks the same sequence.
+
+The interpolation is monotone cubic rather than Catmull-Rom, and that choice is the whole reason
+this member is safe to use on real data. A Catmull-Rom curve overshoots, so between two measured
+points it draws a peak or a trough nobody measured, and a chart that draws data which does not
+exist is the one thing a chart may not do. A monotone curve stays inside the band its own two
+points define, flattens at a turning point instead of sailing past it, and never crosses zero
+unless the values do.
+
+Reach for it when the underlying quantity really is continuous, a temperature or a load average
+sampled at intervals. Leave it off when the points are discrete events counted per bucket: a
+smooth line between two counts implies values between them that were never counted.

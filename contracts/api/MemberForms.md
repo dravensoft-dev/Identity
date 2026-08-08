@@ -17,7 +17,7 @@ A member of any Arena component's API is exactly one of nine forms, and nothing 
 |---|---|
 | **primitive** | `string`, `number` or `boolean` |
 | **enum** | a closed, named set of literals |
-| **predefined object** | a record of fields, each field itself a primitive or an enum |
+| **predefined object** | a record of fields, each field itself a primitive, an enum, or an array of one primitive type |
 | **array of primitives** | a homogeneous list of one primitive type |
 | **array of predefined objects** | a homogeneous list of one predefined object |
 | **consumer data** | a homogeneous list, or a single record, whose element type the contract does not describe |
@@ -136,7 +136,11 @@ the whole of what the reader needs.
 **R1. A predefined object is pure data with known fields.** No functions and no slots
 inside it. A field that is a function becomes an **event of the component**, carrying the
 object in its payload; a field that is a node becomes a **slot of the component**, or a
-primitive if Arena draws it. **And no consumer data inside it either**: an object states its
+primitive if Arena draws it. **A field may be an array of primitives, and may not be an array
+of objects**: `ArenaSeries.values` is `number[]`, which is pure data with a known element type
+and so is exactly what R1 exists to protect, while an array of objects reopens a nesting depth
+the reader has no bottom for. The carve-out is that narrow on purpose, and it does not reach
+the three things R1 actually refuses. **And no consumer data inside it either**: an object states its
 fields, and consumer data is by construction a record whose fields are unknown, so a declared
 type cannot carry an undescribed bag. A per-event `meta` bag on a calendar event is the shape
 this refuses, and it is **nothing at all** rather than a member of the component. The per-item

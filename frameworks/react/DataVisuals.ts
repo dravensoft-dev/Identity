@@ -53,25 +53,6 @@ export function arenaToneColor(tone: ArenaTone): string {
   return TONE_VARS[tone];
 }
 
-export interface ArenaResolveColorsOptions {
-  slot?: number;
-  slots?: readonly number[];
-  tone?: ArenaSeriesTone;
-  count: number;
-}
-
-export function arenaResolveColors({ slot, slots, tone, count }: ArenaResolveColorsOptions): string[] {
-  if (tone && (slot !== undefined || slots !== undefined)) {
-    arenaWarnOnce('chart: `tone` and `slot`/`slots` are mutually exclusive — a chart carries identity or meaning, never both. `tone` wins; remove the other.');
-  }
-  if (tone) {
-    const c = arenaToneColor(tone) || arenaCatColor(1);
-    return Array.from({ length: count }, () => c);
-  }
-  if (slots) return Array.from({ length: count }, (_, i) => arenaCatColor(slots[i] ?? i + 1));
-  return Array.from({ length: count }, () => arenaCatColor(slot ?? 1));
-}
-
 export interface ArenaValueWriterOptions {
   prefix?: string;
   suffix?: string;
@@ -108,42 +89,8 @@ export function arenaPlotWidth(available: number, count: number, minPointSpacing
   return Math.max(available, needed);
 }
 export const arenaRailStyle: React.CSSProperties = {
-  overflowX: 'auto', overflowY: 'hidden', display: 'block',
+  overflowX: 'auto', overflowY: 'hidden', display: 'block', outlineOffset: 'var(--focus-offset)',
 };
-
-export function arenaNiceMax(max: number): number {
-  if (!(max > 0)) return 1;
-  const mag = Math.pow(10, Math.floor(Math.log10(max)));
-  const norm = max / mag;
-  const step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
-  return step * mag;
-}
-
-export function arenaTicks(max: number, count = 4): number[] {
-  return Array.from({ length: count + 1 }, (_, i) => (max / count) * i);
-}
-
-export function arenaBarPath(x: number, y: number, w: number, h: number, r: number): string {
-  const rr = Math.max(0, Math.min(r, w / 2, h));
-  return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y}`
-    + ` L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`;
-}
-
-export function arenaArcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number): string {
-
-  if (a1 - a0 >= Math.PI * 2 - 1e-6) {
-    const mid = a0 + Math.PI;
-    return arenaArcPath(cx, cy, rOuter, rInner, a0, mid) + ' ' + arenaArcPath(cx, cy, rOuter, rInner, mid, a1);
-  }
-  const large = a1 - a0 > Math.PI ? 1 : 0;
-  const pt = (r: number, a: number): [number, number] => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-  const [x0, y0] = pt(rOuter, a0);
-  const [x1, y1] = pt(rOuter, a1);
-  const [x2, y2] = pt(rInner, a1);
-  const [x3, y3] = pt(rInner, a0);
-  return `M${x0},${y0} A${rOuter},${rOuter} 0 ${large} 1 ${x1},${y1}`
-    + ` L${x2},${y2} A${rInner},${rInner} 0 ${large} 0 ${x3},${y3} Z`;
-}
 
 export const arenaSrOnly: React.CSSProperties = {
   position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
