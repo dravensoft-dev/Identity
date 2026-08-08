@@ -94,6 +94,14 @@ export function unreachedSpecNotes(nodes: GraphNode[], paths: string[]) {
       + 'so this reads as an extension the node compiles and the tree does not hold yet'));
 }
 
+export function writingGateProblems(nodes: GraphNode[]) {
+  return nodes
+    .filter((node) => node.name.startsWith('check:') && node.writes.length > 0)
+    .map((node) => `${node.name} declares writes, and a gate judges rather than emits: an artifact `
+      + 'a gate writes is one another gate can read, which lets one gate stop another from running '
+      + 'and costs the sweep a problem it would have reported. Emit it from a build step instead');
+}
+
 export function vacuousProblems(nodes: GraphNode[], scripts: string[]) {
   if (scripts.length === 0) return ['no script was collected, so this gate compared nothing'];
   if (nodes.length === 0) return ['no script declares a node, so this gate compared nothing'];
@@ -121,6 +129,7 @@ export async function graphProblems(base = repoRoot) {
     ...(cycle ? [`a cycle produces nothing and never settles: ${cycle.join(' -> ')}`] : []),
     ...duplicateWriters(nodes, resolve),
     ...subscriptionProblems(nodes, resolve),
+    ...writingGateProblems(nodes),
     ...emptySpecProblems(nodes, paths, resolve),
   ];
 

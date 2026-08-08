@@ -8,51 +8,25 @@
  * two layers disagreed. */
 
 import { withTimeout } from '../../utils/with-timeout.ts';
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { isMainModule } from '../../utils/main-module.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { startStaticServer } from '../../lib/arena/static-server.ts';
 import { findChromium, launchChromium } from '../../lib/arena/chromium.ts';
 import { connect } from '../../lib/arena/cdp.ts';
 import type { Cdp } from '../../lib/arena/cdp.ts';
-import { layerManifests } from '../../lib/tailwind/tailwind-compile.ts';
-import { COMPARE_SCRIPT, cases, parityPage } from '../../lib/tailwind/style-parity.ts';
-import { sheetPath, CONSUME, MANIFESTS } from '../../build/tailwind/build-tailwind.ts';
+import { COMPARE_SCRIPT } from '../../lib/tailwind/style-parity.ts';
+import { CONSUME, MANIFESTS } from '../../build/tailwind/build-tailwind.ts';
+import { PAGE } from '../../build/tailwind/build-style-parity-page.ts';
 
-export const PAGE = 'frameworks/tailwind/StyleParity.generated.html';
+export { PAGE };
 
 export const node = {
   name: 'check:style-parity',
-  reads: [MANIFESTS, `${CONSUME}/**/*.css`],
-  writes: [PAGE],
-  feeds: [
-    'check:arbitrary',
-    'check:dimensions',
-    'check:generated',
-    'check:icons',
-    'check:layer-independence',
-  ],
+  reads: [PAGE, MANIFESTS, `${CONSUME}/**/*.css`],
+  writes: [],
+  feeds: [],
 };
 const TIMEOUT_MS = 60_000;
-
-export function sheetsFor(manifests: Map<string, any>) {
-  return [
-    '/intro/styles.css',
-    '/frameworks/tailwind/Utilities.generated.css',
-    ...[...manifests.keys()].map((file) => `/${sheetPath(file)}`),
-  ];
-}
-
-export function allCases(manifests: Map<string, any>) {
-  return [...manifests.values()].flatMap((manifest) => cases(manifest));
-}
-
-export function writePage(manifests: Map<string, any>, base = root) {
-  const html = parityPage(sheetsFor(manifests), allCases(manifests));
-  writeFileSync(join(base, PAGE), html);
-  return html;
-}
 
 export async function measure(cdp: Cdp, url: string, reducedMotion: boolean) {
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
@@ -95,9 +69,6 @@ async function main() {
   const browser = findChromium();
   if (browser.path === null) skip(browser.reason);
 
-  const manifests = layerManifests(root);
-  writePage(manifests);
-
   const server = await startStaticServer(root);
   let chrome;
   let cdp;
@@ -132,8 +103,8 @@ async function main() {
     console.error(`check-style-parity: ${problems.length} mismatch(es) across ${compared} comparison(s)`);
     process.exit(1);
   }
-  console.log(`check-style-parity: ${compared} rendered comparison(s) match the manifest they came from, `
-    + `across ${manifests.size} manifest(s), at rest and under reduced motion`);
+  console.log(`check-style-parity: ${compared} rendered comparison(s) match the manifest they came `
+    + 'from, at rest and under reduced motion');
 }
 
 if (isMainModule(import.meta.url)) await main();

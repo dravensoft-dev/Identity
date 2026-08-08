@@ -1,12 +1,12 @@
-/* Runs the selected gates and the test suite: one failure does not stop the rest, and with
- * no argument the selection is every domain, which is what `bun run check` gets. A gate whose
- * runtime dependency is missing exits 2 and is reported SKIP, making the run INCOMPLETE.
- * testStep() below is the single authority for how the test suite is invoked, and why it is
- * two bun processes: --preload installs happy-dom PROCESS-wide, and a DOM installed for a
- * whole invocation also replaces Bun's own fetch, which turns
- * scripts/lib/arena/static-server.test.ts's fetch assertion into a cross-origin failure --
- * so scripts/ rides the DOM-free invocation, not the preloaded one. The Angular emit is safe
- * in either: its TestBed registration site is guarded rather than throwing on a second call.
+/* Runs the selected gates and the test suite: one failure never stops the rest, which check:graph
+ * keeps true by refusing a gate that writes, since only an artifact could make one gate stop
+ * another. With no argument the selection is every domain, which is what `bun run check` gets. A
+ * gate whose runtime dependency is missing exits 2 and is reported SKIP, making the run INCOMPLETE.
+ * testStep() below is the single authority for how the test suite is invoked, and why it is two bun
+ * processes: --preload installs happy-dom PROCESS-wide, and a DOM installed for a whole invocation
+ * also replaces Bun's own fetch, which turns lib/arena/static-server.test.ts's fetch assertion into
+ * a cross-origin failure, so scripts/ rides the DOM-free invocation. The Angular emit is safe in
+ * either: its TestBed registration site is guarded rather than throwing on a second call.
  * Read the args here, never reconstruct them. */
 
 import { spawnSync } from 'node:child_process';

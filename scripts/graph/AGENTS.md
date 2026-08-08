@@ -96,10 +96,16 @@ downstream of it is BLOCKED with the upstream named, and the rest of the run pro
 one place the graph pays for itself twice: it knows which steps are downstream, so it does not have
 to choose between stopping everything and running steps that cannot succeed.
 
-`check-all.ts` does NOT do this, and the difference is deliberate. A gate states a claim about the
-tree, and a failed claim does not stop another gate from reporting its own, so the sweep runs all of
-them and reports every problem in one pass. That rule predates the graph and the graph does not
-change it.
+**A gate never stops another gate, and `check:graph` keeps that true rather than hoping for it: a
+node named `check:` that declares `writes` fails.** The rest follows. Only an artifact can carry an
+edge, so a graph in which no gate writes is one in which no gate is downstream of another, and a
+sweep reporting every problem in one pass is a property of the shape instead of a rule to remember.
+
+`check:style-parity` was the one gate that wrote. It emitted the page it then drove a browser over,
+and five gates that sweep `frameworks/` read that page incidentally: a failure there would have
+stopped `check:dimensions` from reporting a dimension literal, which has nothing to do with it. The
+emit is now `build:style-parity-page` and the gate measures what that step wrote. Splitting it
+removed the case rather than encoding an exception for it.
 
 ## The fingerprint recorded is measured after the step, never the one that decided it
 

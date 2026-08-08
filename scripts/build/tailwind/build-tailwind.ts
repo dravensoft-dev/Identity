@@ -71,6 +71,7 @@ export const node = {
   feeds: [
     'build:angular-demo',
     'build:demos',
+    'build:style-parity-page',
     'check:angular',
     'check:api',
     'check:appearance',

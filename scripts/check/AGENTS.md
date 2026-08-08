@@ -87,6 +87,19 @@ and is not reported here.
 this: it maps a child's exit code, and a kept gate spawns no child, so three of the four labels come
 from a process and the fourth comes from the graph.
 
+## A gate judges and does not emit
+
+**A gate declares no `writes`, and `check:graph` fails one that does.** A gate that emits is an
+artifact another gate can read, and a reader of a failed writer either runs against a stale file or
+has to be stopped; either way a sweep stops reporting every problem in one pass, which is the first
+thing this runner promises.
+
+`check:style-parity` used to write the page it drives a browser over. That page now comes from
+`build:style-parity-page`, and the gate measures it, the same shape `check:demos` and
+`check:tailwind-generated` already had. What the gate lost is the guarantee that the page is fresh
+because it wrote it a line earlier; what it gained is the contract every other generated artifact
+has, held by `check:generated` and by the build step declaring the manifests as its input.
+
 ## Exit 2 means SKIP, and a skip is never green
 
 **Six** gates need a runtime dependency that plain node does not have: `check:cards`,
