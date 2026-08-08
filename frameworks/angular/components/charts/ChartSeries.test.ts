@@ -5,8 +5,9 @@ import { forgetArenaWarnings } from '../../WarnOnce';
 import {
   arenaChartTable, arenaOneSeries, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount,
   arenaStackSegments, arenaStackDomain, arenaMirrorDomain, arenaTwoSeries,
+  arenaPointCount, arenaPointSeriesDomain, arenaPointSeriesColor, arenaPointTable,
 } from './ChartSeries';
-import type { ArenaSeries } from '../../Api.generated';
+import type { ArenaPointSeries, ArenaSeries } from '../../Api.generated';
 import type { ArenaSeriesTone } from '../../Api.generated';
 
 const write = (value: number) => `${value} ms`;
@@ -313,6 +314,69 @@ test('two series are what a pyramid reads, and anything else warns rather than d
     assert.equal(pair.length, 2, 'the missing side is empty rather than absent, so the chart still lays out');
     assert.equal(pair[1]?.values.length, 0);
     assert.ok(warnings.some((w) => w.includes('two series')), `no warning, got ${JSON.stringify(warnings)}`);
+  } finally {
+    console.warn = real;
+  }
+});
+
+const PAIRS: ArenaPointSeries[] = [
+  { label: 'Staging', x: [12, 19, 24], y: [240, 310, 290] },
+  { label: 'Production', x: [15, 22], y: [180, 205] },
+];
+
+test('a pair needs both halves, so the shorter array ends the series', () => {
+
+  const ragged: ArenaPointSeries[] = [{ label: 'Half', x: [1, 2, 3], y: [10, 20] }];
+  assert.equal(arenaPointCount(ragged), 2, 'a third x with no y is not a point, and inventing the y is the one thing a chart may not do');
+  assert.equal(arenaPointTable(ragged, 'X', 'Y', String).rows.length, 2, 'and the table says the same');
+});
+
+test('the mark count is every pair across every series, because the cursor walks them all', () => {
+  assert.equal(arenaPointCount(PAIRS), 5);
+  assert.equal(arenaPointCount([]), 0);
+});
+
+test('a scatter measures two ranges, and neither one borrows the other\'s ticks', () => {
+
+  const domains = arenaPointSeriesDomain(PAIRS);
+  assert.ok(domains.x.max >= 24, `x reaches ${domains.x.max}`);
+  assert.ok(domains.y.max >= 310, `y reaches ${domains.y.max}`);
+  assert.notEqual(domains.x.max, domains.y.max, 'two quantities in different units share no scale');
+});
+
+test('both domains still put zero on a tick, which is what the two rules are drawn against', () => {
+  const domains = arenaPointSeriesDomain(PAIRS);
+  for (const [which, domain] of [['x', domains.x], ['y', domains.y]] as const) {
+    assert.ok(Math.abs(domain.max / domain.step - Math.round(domain.max / domain.step)) < 1e-9, `${which} axis`);
+  }
+});
+
+test('the table lists a row per pair with the series named on every one, in the order given', () => {
+
+  const table = arenaPointTable(PAIRS, 'Requests', 'Latency', (v) => `${v}`);
+  assert.deepEqual(table.columns, ['Series', 'Requests', 'Latency']);
+  assert.equal(table.rows.length, 5);
+  assert.deepEqual(table.rows[0], { header: 'Staging', cells: ['12', '240'] });
+  assert.deepEqual(table.rows[3], { header: 'Production', cells: ['15', '180'] },
+    'the second series follows the first, which is the order the cursor walks too');
+});
+
+test('a point series takes its colour by position when it declares none', () => {
+  assert.notEqual(arenaPointSeriesColor(PAIRS[0] as ArenaPointSeries, 1),
+    arenaPointSeriesColor(PAIRS[1] as ArenaPointSeries, 2),
+    'two clouds that were never told apart must not come out the same colour');
+});
+
+test('tone still wins over slot on a point series, and still warns', () => {
+
+  forgetArenaWarnings();
+  const warnings: string[] = [];
+  const real = console.warn;
+  console.warn = (message: string) => { warnings.push(message); };
+  try {
+    const both: ArenaPointSeries = { label: 'Both', x: [1], y: [1], slot: 4, tone: 'danger' };
+    assert.equal(arenaPointSeriesColor(both, 1), arenaPointSeriesColor({ label: 'T', x: [], y: [], tone: 'danger' }, 1));
+    assert.ok(warnings.some((w) => w.includes('mutually exclusive')), `no warning, got ${JSON.stringify(warnings)}`);
   } finally {
     console.warn = real;
   }

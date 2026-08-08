@@ -15,6 +15,7 @@ import { ArenaLineChart } from './arena-line-chart/ArenaLineChart';
 import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart';
 import { ArenaPyramidChart } from './arena-pyramid-chart/ArenaPyramidChart';
 import { ArenaRadarChart } from './arena-radar-chart/ArenaRadarChart';
+import { ArenaScatterChart } from './arena-scatter-chart/ArenaScatterChart';
 import { assertPattern, ANGULAR_COMPONENTS } from '../../test/Compliance';
 const BINDING = join(ANGULAR_COMPONENTS, 'charts/arena-bar-chart/ArenaBarChart.behaviour.json');
 
@@ -326,6 +327,49 @@ test('arena-radar-chart matches its binding, and its cursor walks the axes round
   try {
     const host = fixture.nativeElement as Element;
     assertFigure(host, 'charts/arena-radar-chart/ArenaRadarChart.behaviour.json', cursorVerdicts(fixture, host));
+  } finally {
+    fixture.destroy();
+  }
+});
+
+test('arena-scatter-chart matches its binding, and its table names both quantities', () => {
+  const fixture = TestBed.createComponent(ArenaScatterChart);
+  fixture.componentRef.setInput('series', [
+    { label: 'Staging', x: [12, 19, 24], y: [240, 310, 290] },
+    { label: 'Production', x: [15, 22], y: [180, 205] },
+  ]);
+  fixture.componentRef.setInput('label', CHART);
+  fixture.componentRef.setInput('xLabel', 'Concurrent requests');
+  fixture.componentRef.setInput('yLabel', 'p95 latency');
+  fixture.detectChanges();
+  try {
+    const host = fixture.nativeElement as Element;
+    const head = [...host.querySelectorAll('thead th')].map((c) => (c.textContent ?? '').trim());
+    assert.deepEqual(head, ['Series', 'Concurrent requests', 'p95 latency']);
+
+    const rows = [...host.querySelectorAll('tbody tr')]
+      .map((row) => [...row.querySelectorAll('th, td')].map((c) => (c.textContent ?? '').trim()));
+    assert.equal(rows.length, 5, 'one row per pair, across both series');
+    assert.deepEqual(rows[3], ['Production', '15', '180']);
+
+    assert.equal(host.querySelectorAll('circle').length, 5, 'one mark per pair and no more');
+
+    assertPattern({
+      root: host,
+      bindingPath: join(ANGULAR_COMPONENTS, 'charts/arena-scatter-chart/ArenaScatterChart.behaviour.json'),
+      subjects: { default: host.querySelector('[role="img"]') },
+      behavioural: {
+        'alternative.table': true,
+        'focus.roving': true,
+        'keyboard.ArrowLeft': true,
+        'keyboard.ArrowRight': true,
+        'keyboard.ArrowUp': false,
+        'keyboard.ArrowDown': false,
+        'keyboard.Home': true,
+        'keyboard.End': true,
+        'keyboard.Escape': true,
+      },
+    });
   } finally {
     fixture.destroy();
   }

@@ -1,0 +1,54 @@
+{
+  "component": "ArenaScatterChart",
+  "description": "Two quantities against each other, one mark per pair. The first chart here whose horizontal axis carries a value rather than a position, which is why it takes a series of pairs and names both of its axes. Dependency-free SVG with a visually-hidden table of the same numbers.",
+  "affordances": [
+    "hover"
+  ],
+  "api": {
+    "series": {
+      "form": "array",
+      "of": "ArenaPointSeries",
+      "required": true,
+      "description": "The plotted series, drawn as one cloud of marks each. Each carries pairs rather than indexed values, because a scatter has no categories to index against: that is what ArenaPointSeries is for and why it is a separate type from ArenaSeries. The ramp clamps at its last slot rather than cycling."
+    },
+    "label": {
+      "form": "primitive",
+      "type": "string",
+      "required": true,
+      "description": "Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing."
+    },
+    "xLabel": {
+      "form": "primitive",
+      "type": "string",
+      "required": true,
+      "description": "Names the horizontal quantity, for the accessible table's column. Required, because unlike every other chart here both axes carry a quantity a reader cannot derive: a bar chart's categories name themselves through `labels` and its value axis is the one thing being measured, while a scatter measures two things and a table of bare X and Y columns says which is which to nobody."
+    },
+    "yLabel": {
+      "form": "primitive",
+      "type": "string",
+      "required": true,
+      "description": "Names the vertical quantity, for the accessible table's column. Required for the reason xLabel is."
+    },
+    "valueSuffix": {
+      "form": "primitive",
+      "type": "string",
+      "description": "Appended verbatim to every number the chart draws: both axes' ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. It reaches BOTH axes, so leave it off when the two quantities are not in the same unit, which on a scatter is the common case."
+    },
+    "valuePrefix": {
+      "form": "primitive",
+      "type": "string",
+      "description": "Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it, and on both axes for the same reason."
+    },
+    "valueFormat": {
+      "form": "object",
+      "type": "ArenaNumberFormat",
+      "description": "How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number."
+    },
+    "height": {
+      "form": "primitive",
+      "type": "number",
+      "default": 280,
+      "description": "The plot's height in px, the --chart-height token by default. A number rather than a dimension string, because the chart does arithmetic with it to place every mark."
+    }
+  }
+}

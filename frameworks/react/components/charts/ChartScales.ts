@@ -151,3 +151,18 @@ export function arenaDoughnutSlices(values: readonly number[]): ArenaDoughnutSli
     return { index, from, to, share, percent: Math.round(share * 100) };
   });
 }
+
+export function arenaNearestPoint(points: readonly ArenaLinePoint[], x: number, y: number): number {
+  let best = -1;
+  let reach = Infinity;
+  points.forEach((point, index) => {
+    const dx = point.x - x;
+    const dy = point.y - y;
+    const away = dx * dx + dy * dy;
+    if (away < reach) {
+      reach = away;
+      best = index;
+    }
+  });
+  return best;
+}

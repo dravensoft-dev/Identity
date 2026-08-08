@@ -331,6 +331,23 @@ that axis is what the data grows along. `chart.pad-category` is its own token ra
 gutter for the longest category name anybody might write would spend it on every vertical chart in
 the library.
 
+**A scatter takes a different series TYPE, and that type carries two parallel arrays rather than
+an array of pairs.** `ArenaPointSeries` is not a variant of `ArenaSeries`: the two disagree about
+what a mark is, since an `ArenaSeries` value takes its place on the axis from its index and a pair
+carries both coordinates. Folding them together would hand every chart in the library a member
+most cannot use. The two arrays are not a workaround either: R1 in `contracts/api/MemberForms.md`
+says a predefined object may hold an array of primitives and may not hold an array of objects, on
+the recorded ground that an array of objects reopens a nesting depth the reader has no bottom for.
+So the pairing is by index, which is the pairing `labels` and `values` already make on every other
+chart, with the same rule when the two do not line up: a mark is drawn only where both arrays have
+a value, because a pair with half a coordinate is not a point.
+
+**A cursor over marks with no sequence walks them in the order the table lists them.** A scatter
+has no order of its own, so the cursor goes series by series and within a series in the order
+given, which is exactly what `arenaPointTable` emits. Sorting by x was weighed and refused: it
+jumps between series and reads as one sequence where there are several, and it would put the two
+readings of the chart into an order the table does not have.
+
 **A polar grid keeps its own floor at the centre, and its labels ride outside it.** A radius
 cannot be negative, so a value below zero is drawn at the centre rather than on the opposite axis,
 where it would land as a different datum entirely. That floor is the chart's, not the scale's,

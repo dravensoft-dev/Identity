@@ -1,0 +1,47 @@
+{
+  "component": "ArenaScatterChart",
+  "seed": {
+    "series": [
+      {
+        "label": "Staging",
+        "x": [
+          12,
+          19,
+          24,
+          31,
+          38,
+          45
+        ],
+        "y": [
+          240,
+          310,
+          290,
+          420,
+          390,
+          510
+        ]
+      },
+      {
+        "label": "Production",
+        "x": [
+          15,
+          22,
+          29,
+          36,
+          44
+        ],
+        "y": [
+          180,
+          205,
+          260,
+          255,
+          330
+        ]
+      }
+    ],
+    "label": "Latency against load",
+    "xLabel": "Concurrent requests",
+    "yLabel": "p95 latency (ms)"
+  },
+  "note": "Two quantities against each other. Both axes are named, because neither one names itself the way a category does."
+}

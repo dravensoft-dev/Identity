@@ -1,0 +1,19 @@
+{
+  "pattern": "figure-with-data-table",
+  "exceptions": [
+    {
+      "requirement": "keyboard.ArrowUp",
+      "reason": "A cloud has no vertical sequence, so the cursor answers ArrowLeft and ArrowRight and leaves the vertical pair to the page. A chart that consumed ArrowUp would take the page scroll away from a keyboard reader who only wanted to pass through."
+    },
+    {
+      "requirement": "keyboard.ArrowDown",
+      "reason": "A cloud has no vertical sequence, so the cursor answers ArrowLeft and ArrowRight and leaves the vertical pair to the page. A chart that consumed ArrowUp would take the page scroll away from a keyboard reader who only wanted to pass through."
+    }
+  ],
+  "additions": [
+    {
+      "provides": "keyboard.data-cursor",
+      "reason": "The plot is one keyboard region and the data cursor rides inside it: the group carries tabindex=\"0\", role=\"group\" and the chart name, and ArrowLeft, ArrowRight, Home, End and Escape move a cursor that drives exactly what hover drives. It walks the marks in the order the accessible table lists them, series by series and within a series in the order given, so the two readings of this chart agree. Walking them sorted by x was refused: it jumps between series and reads as one sequence where there are several, and a scatter has no sequence of its own."
+    }
+  ]
+}

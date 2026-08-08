@@ -17,6 +17,7 @@ import { ArenaLineChart } from './arena-line-chart/ArenaLineChart.tsx';
 import { ArenaHorizontalBarChart } from './arena-horizontal-bar-chart/ArenaHorizontalBarChart.tsx';
 import { ArenaPyramidChart } from './arena-pyramid-chart/ArenaPyramidChart.tsx';
 import { ArenaRadarChart } from './arena-radar-chart/ArenaRadarChart.tsx';
+import { ArenaScatterChart } from './arena-scatter-chart/ArenaScatterChart.tsx';
 import type { ArenaSeries } from '../../Api.generated';
 
 afterEach(cleanup);
@@ -268,4 +269,80 @@ test('ArenaPyramidChart matches its binding, whose cursor walks bands and not ba
     subjects: { default: graphic },
     behavioural: { 'alternative.table': true, ...cursorVerdicts(root, 'ArenaPyramidChart') },
   });
+});
+
+const CLOUD = [
+  { label: 'Staging', x: [12, 19, 24], y: [240, 310, 290] },
+  { label: 'Production', x: [15, 22], y: [180, 205] },
+];
+
+test('ArenaScatterChart matches its binding, and its table names both quantities', () => {
+  const root = mount(<ArenaScatterChart series={CLOUD} label={CHART}
+    xLabel="Concurrent requests" yLabel="p95 latency" />);
+
+  const graphic = root.querySelector<HTMLElement>('[role="img"]');
+  assert.ok(graphic, 'a chart with no role="img" is a decoration, not a figure');
+
+  const table = root.querySelector<HTMLElement>('table')!;
+  const head = [...table.querySelectorAll<HTMLElement>('thead th')].map((c) => (c.textContent ?? '').trim());
+  assert.deepEqual(head, ['Series', 'Concurrent requests', 'p95 latency'],
+    'a table of bare X and Y columns names neither quantity, which is why both labels are required');
+
+  const rows = [...table.querySelectorAll<HTMLElement>('tbody tr')]
+    .map((row) => [...row.querySelectorAll<HTMLElement>('th, td')].map((c) => (c.textContent ?? '').trim()));
+  assert.equal(rows.length, 5, 'one row per pair, across both series');
+  assert.deepEqual(rows[0], ['Staging', '12', '240']);
+  assert.deepEqual(rows[3], ['Production', '15', '180'], 'the second series follows the first');
+
+  assert.equal(root.querySelectorAll('circle').length, 5, 'one mark per pair and no more');
+
+  assertPattern({
+    root,
+    bindingPath: join(REACT_COMPONENTS, 'charts/arena-scatter-chart/ArenaScatterChart.behaviour.json'),
+    subjects: { default: graphic },
+    behavioural: {
+      'alternative.table': true,
+      'focus.roving': true,
+      'keyboard.ArrowLeft': true,
+      'keyboard.ArrowRight': true,
+      'keyboard.ArrowUp': false,
+      'keyboard.ArrowDown': false,
+      'keyboard.Home': true,
+      'keyboard.End': true,
+      'keyboard.Escape': true,
+    },
+  });
+});
+
+test('ArenaScatterChart refuses to render without a name for either axis', () => {
+
+  assert.throws(
+    () => mount(<ArenaScatterChart series={CLOUD} label={CHART} xLabel="" yLabel="Y" />),
+    /`xLabel` is required/,
+    'the horizontal quantity names itself to nobody, and no fallback can derive it',
+  );
+  assert.throws(
+    () => mount(<ArenaScatterChart series={CLOUD} label={CHART} xLabel="X" yLabel="" />),
+    /`yLabel` is required/,
+    'and neither does the vertical one',
+  );
+});
+
+test('the cursor walks the marks in the order the table lists them, so the two readings agree', () => {
+
+  const root = mount(<ArenaScatterChart series={CLOUD} label={CHART} xLabel="Requests" yLabel="Latency" />);
+  const region = root.querySelector<HTMLElement>('[role="group"]')!;
+
+  press(region, 'ArrowRight');
+  assert.ok(reading(root)?.includes('Staging'), `the first mark is the first row, got ${reading(root)}`);
+
+  for (let i = 0; i < 3; i += 1) press(region, 'ArrowRight');
+  assert.ok(reading(root)?.includes('Production'),
+    'walking past the end of one series enters the next, which is what the table does too');
+
+  press(region, 'End');
+  assert.ok(reading(root)?.includes('Production'), 'End lands on the last mark of the last series');
+
+  press(region, 'Escape');
+  assert.equal(reading(root), null);
 });

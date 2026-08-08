@@ -2,7 +2,7 @@ import { arenaCatColor, arenaToneColor } from '../../DataVisuals';
 import { arenaWarnOnce } from '../../WarnOnce';
 import { arenaNiceDomain } from './ChartScales';
 import type { ArenaDomain } from './ChartScales';
-import type { ArenaSeries } from '../../Api.generated';
+import type { ArenaPointSeries, ArenaSeries } from '../../Api.generated';
 
 export interface ArenaChartTableRow {
   header: string;
@@ -146,4 +146,59 @@ export function arenaRadarDomain(series: readonly ArenaSeries[], count = 4): Are
     }
   }
   return arenaNiceDomain(0, max, count);
+}
+
+export interface ArenaPointDomains {
+  x: ArenaDomain;
+  y: ArenaDomain;
+}
+
+export function arenaPointCount(series: readonly ArenaPointSeries[]): number {
+  let count = 0;
+  for (const one of series) count += Math.min(one.x.length, one.y.length);
+  return count;
+}
+
+export function arenaPointSeriesDomain(series: readonly ArenaPointSeries[], count = 4): ArenaPointDomains {
+  let minX = 0;
+  let maxX = 0;
+  let minY = 0;
+  let maxY = 0;
+  for (const one of series) {
+    const pairs = Math.min(one.x.length, one.y.length);
+    for (let index = 0; index < pairs; index += 1) {
+      const x = one.x[index] as number;
+      const y = one.y[index] as number;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+  return { x: arenaNiceDomain(minX, maxX, count), y: arenaNiceDomain(minY, maxY, count) };
+}
+
+export function arenaPointSeriesColor(series: ArenaPointSeries, fallbackSlot: number): string {
+  const { slot, tone } = series;
+  if (tone && slot !== undefined) {
+    arenaWarnOnce('chart: `tone` and `slot` are mutually exclusive — a series carries identity or meaning, never both. `tone` wins; remove the other.');
+  }
+  if (tone) return arenaToneColor(tone) || arenaCatColor(1);
+  return arenaCatColor(slot ?? fallbackSlot);
+}
+
+export function arenaPointTable(
+  series: readonly ArenaPointSeries[],
+  xHeading: string,
+  yHeading: string,
+  write: (value: number) => string,
+): ArenaChartTable {
+  const rows: ArenaChartTableRow[] = [];
+  for (const one of series) {
+    const pairs = Math.min(one.x.length, one.y.length);
+    for (let index = 0; index < pairs; index += 1) {
+      rows.push({ header: one.label, cells: [write(one.x[index] as number), write(one.y[index] as number)] });
+    }
+  }
+  return { columns: ['Series', xHeading, yHeading], rows };
 }
