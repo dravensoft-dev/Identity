@@ -4,7 +4,9 @@
  * against an upstream that failed reports a second, misleading error over the real one. The
  * fingerprint RECORDED is measured after the step, never the one that decided it: two generators
  * write into the files they read, so a value measured before would be stale the instant they
- * succeed, and one measured after is the converged one their next run recomputes exactly. */
+ * succeed, and one measured after is the converged one their next run recomputes exactly.
+ * --assert-full fails a run that kept anything, which is what stops a workflow proving the build
+ * idempotent over a build that did nothing. */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -20,24 +22,29 @@ import { decide, shortFingerprint } from './plan.ts';
 
 export function parseBuildArgs(argv: string[]) {
   let force = false;
-  let obey = false;
+  let assertFull = false;
   for (const arg of argv) {
     if (arg === '--force') { force = true; continue; }
-    if (arg === '--obey') { obey = true; continue; }
-    throw new Error(`run-build: unrecognised argument "${arg}"; it takes --force and --obey`);
+    if (arg === '--assert-full') { assertFull = true; continue; }
+    throw new Error(`run-build: unrecognised argument "${arg}"; it takes --force and --assert-full`);
   }
-  if (force && obey) throw new Error('run-build: --force and --obey ask for opposite things');
-  return { force, obey };
+  return { force, assertFull };
 }
 
-export function summarize(results: { name: string; status: string }[], ran: number, cached: number, obey: boolean) {
+export function partialRunProblems(results: { name: string; status: string }[]) {
+  const kept = results.filter((r) => r.status === 'cached').map((r) => r.name);
+  if (kept.length === 0) return [];
+  return [`${kept.length} step(s) came from the cache and this run was asked to be a full one: `
+    + `${kept.join(', ')}. A build that skipped is a build whose idempotence nobody proved.`];
+}
+
+export function summarize(results: { name: string; status: string }[], ran: number, cached: number) {
   const failed = results.filter((r) => r.status === 'fail');
   const lines = results.map((r) => `  ${r.status === 'fail' ? 'FAIL' : r.status === 'cached' ? 'CACHED' : 'PASS'}  ${r.name}`);
   const tail = failed.length
     ? `run-build: ${failed.length}/${results.length} step(s) failed`
     : `run-build: all ${results.length} step(s) passed`;
-  const kept = obey ? 'came from the cache' : 'would have come from the cache';
-  return [...lines, '', `${tail}, ${ran} ran, ${cached} ${kept}`].join('\n');
+  return [...lines, '', `${tail}, ${ran} ran, ${cached} came from the cache`].join('\n');
 }
 
 function runStep(name: string) {
@@ -81,18 +88,16 @@ async function main() {
       ? { run: true, reason: 'every node runs, because this is a full run' }
       : decide(node, before, state.get(node.name), onDisk);
 
-    if (step.run) {
-      console.log(`\nrun-build: ${node.name} runs, because ${step.reason}`);
-      ran += 1;
-    } else {
-      console.log(`\nrun-build: ${node.name} ${options.obey ? 'comes' : 'would have come'} from the cache (${shortFingerprint(before.fingerprint)})`);
+    if (!step.run) {
+      console.log(`\nrun-build: ${node.name} comes from the cache (${shortFingerprint(before.fingerprint)})`);
       cached += 1;
-      if (options.obey) {
-        results.push({ name: node.name, status: 'cached' });
-        upstream.set(node.name, state.get(node.name)?.fingerprint ?? before.fingerprint);
-        continue;
-      }
+      results.push({ name: node.name, status: 'cached' });
+      upstream.set(node.name, state.get(node.name)?.fingerprint ?? before.fingerprint);
+      continue;
     }
+
+    console.log(`\nrun-build: ${node.name} runs, because ${step.reason}`);
+    ran += 1;
 
     const status = runStep(node.name);
     results.push({ name: node.name, status });
@@ -115,8 +120,12 @@ async function main() {
   writeFiles(stamps, repoRoot);
 
   console.log(`\n${'-'.repeat(60)}`);
-  console.log(summarize(results, ran, cached, options.obey));
-  process.exit(results.some((r) => r.status === 'fail') ? 1 : 0);
+  console.log(summarize(results, ran, cached));
+
+  const partial = options.assertFull ? partialRunProblems(results) : [];
+  for (const problem of partial) console.error(`\nrun-build: ${problem}`);
+
+  process.exit(results.some((r) => r.status === 'fail') || partial.length > 0 ? 1 : 0);
 }
 
 if (isMainModule(import.meta.url)) await main();

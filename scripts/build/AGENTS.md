@@ -54,10 +54,16 @@ builds first for exactly this reason.
 not, a generator and a committed file disagree, which is what `check:tokens` and `check:fonts`
 exist to say out loud.
 
-**Every step runs on every invocation.** The run measures what each step would have kept from the
-cache and prints it, and keeps nothing: a fingerprint is worth believing only after a run where
-being wrong could not have skipped anything. `--obey` is what asks it to act on the measurement,
-and `--force` is what refuses to measure at all.
+**A step whose inputs have not moved keeps the answer it had**, and the run says so and at what
+fingerprint. A `touch` keeps it, and so does checking out another branch and coming back: the stat
+filters and the content hash arbitrates. What invalidates a step is a changed byte in what it
+reads, a script it imports moving, an upstream having run, or one of its own artifacts being gone.
+
+**`bun run build:release` is the full run**, and it is what every workflow uses. It passes
+`--force --assert-full`: every step runs, and a run that kept anything fails on its own. That is
+not belt and braces. The step after the build in each workflow proves it idempotent with
+`git diff --exit-code`, and a build that skipped everything satisfies that by doing nothing, which
+is the one way this whole arrangement could turn a real failure green.
 
 `build:angular-tests` is deliberately **not** part of `bun run build`. It emits into
 git-ignored `frameworks/angular/build/test/` and is run by `bun run test` and `bun run check` themselves,

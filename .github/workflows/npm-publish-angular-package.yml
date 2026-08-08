@@ -133,7 +133,7 @@ jobs:
         run: bun scripts/check/arena/check-release.ts
 
       - name: build the sources the package is assembled from
-        run: bun run build
+        run: bun run build:release
 
       - name: assemble
         run: bun run build:packages

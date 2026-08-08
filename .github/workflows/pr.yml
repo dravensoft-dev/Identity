@@ -52,7 +52,7 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - name: build
-        run: bun run build
+        run: bun run build:release
 
       - name: the build is idempotent, so a tracked file it rewrote is a generator out of step
         run: git diff --exit-code

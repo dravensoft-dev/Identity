@@ -29,11 +29,25 @@ build              bun run build, then build:packages, then one cache entry
 pr-gate            the only required check
 ```
 
-**`build` is one job because the build is one thing.** `bun run build` runs a chain of steps in
-order and the order is not decorative: the Tailwind preset compiles against the token CSS,
-and every layer's components read the class names that step writes. A build
-job per layer would have each of them redoing most of what the others did.
-[`../../scripts/build/AGENTS.md`](../../scripts/build/AGENTS.md) carries the chain.
+**`build` is one job because the build is one thing.** The steps run in an order the graph derives
+and the order is not decorative: the Tailwind preset compiles against the token CSS, and every
+layer's components read the class names that step writes. A build job per layer would have each of
+them redoing most of what the others did.
+[`../../scripts/build/AGENTS.md`](../../scripts/build/AGENTS.md) carries how the order is decided.
+
+**Every workflow runs `bun run build:release`, never `bun run build`.** Locally the build keeps
+what nothing has moved under, which is the point of it. In a workflow that would be the wrong kind
+of green: the step after it proves the build idempotent with `git diff --exit-code`, and a build
+that did nothing satisfies that by doing nothing. `build:release` passes `--force --assert-full`,
+so every step runs and a run that kept anything fails on its own.
+
+**`.cache/` is not in the paths `actions/cache` restores, and that is the load-bearing part.** The
+list is `frameworks/**/*.generated.*`, the two `dist/` trees and `frameworks/angular/build`. Adding
+`.cache` there would hand the next job the graph's recorded state and turn the whole gate from a
+full run into an incremental one, in silence. `--assert-full` is what would catch it; this
+paragraph is what explains the failure to whoever added the path. **Caching between runs is a
+non-goal**: incrementality is a local development feature, and a workflow starts from a clean
+checkout on purpose.
 
 **The four names are on the test stage, where the layers are genuinely disjoint.** A gate
 belongs to exactly one of the five domains `check-all.ts` sorts by, and the jobs partition
