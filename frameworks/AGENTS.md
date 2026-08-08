@@ -55,14 +55,26 @@ a gate with nothing to check rather than something to fail.
    prompt tables and the consumer index tree, and commit what it writes under `frameworks/`
    only where the tree tracks it.
 
-**Two literal counts move outside the layer you touched, and the layer's own suite cannot see
-either.** `scripts/lib/arena/behaviour-contracts.test.ts` asserts an inventory **per layer** by
-literal value, one for React and one for Angular, so a new component **directory** moves the one
-for that layer and a component landing in both moves both. Find them with
-`grep -n 'found.length' scripts/lib/arena/behaviour-contracts.test.ts` rather than assuming
-there is one, and move them in the same commit. Verify with the merged process, the args array in `testStep()`, because
-`bun test frameworks/react` never matches `scripts/` and reports green over a tree whose run is
-red.
+**A family of literal inventories moves outside the layer you touched, and no layer suite can
+see any of them.** `scripts/lib/arena/behaviour-contracts.test.ts` asserts an inventory **per
+layer** by literal value, one for React and one for Angular, so a new component **directory**
+moves the one for that layer and a component landing in both moves both. It is not alone, and
+treating it as the only one is how a green layer run sits in front of a red merged one. The rest,
+found by adding a component and reading what went red rather than by a list anybody maintained:
+`scripts/check/arena/components-categories.test.ts` totals the declaration,
+`scripts/lib/tailwind/manifest-surfaces.test.ts` holds both the `HAND_DRAWN` roster and the count
+of everything else, `scripts/check/arena/check-manifest-states.test.ts` holds that roster a second
+time, `scripts/check/arena/check-playgrounds.test.ts` counts emitted pages once in total and once
+per layer, and `frameworks/angular/test/HostClassBinding.test.ts` carries `NO_MANIFEST`, which is
+the one nothing points at from anywhere.
+
+**Two of those assert an ORDER and not a number, which fails in a shape that reads like a
+regression.** `unaskedHandDrawn` reports in `HAND_DRAWN` order, so a suite matching
+`problems[0]` against a component name breaks when a new entry sorts ahead of it, and the message
+says a component was never opened rather than that a test hard-coded a position. Assert the set.
+Find them all with `bun test scripts` before assuming a count is a count. Verify with the merged
+process, the args array in `testStep()`, because `bun test frameworks/react` never matches
+`scripts/` and reports green over a tree whose run is red.
 
 **The consumer index tree moves too**, `frameworks/SKILL.md` and one `SKILL.md` per layer. It is
 generated, so nothing is written by hand: `bun run generate:skills`, which `bun run build`
@@ -280,6 +292,53 @@ own label. So the plot keeps its one tab stop and no chart binding gains an exce
 addition. The doughnut's rows are the deliberate opposite and stay `<button>`: activating one
 emits `sliceActivate`, and a ring has no sequence for a data cursor to walk, both of which its own
 binding records.
+
+**A curve is monotone cubic and never Catmull-Rom, and that is the rule rather than a
+preference.** Catmull-Rom is shorter and is what most libraries reach for, and it overshoots:
+between two measured points it draws a peak or a trough nobody measured. On an axis that holds
+negatives it will dip a line under zero on data that never went there. Arena already refuses to
+invent the difference when a series is short, on the ground that a missing number is not a zero;
+fabricating the values BETWEEN two numbers is the same lie with better manners. So
+`arenaCurveTangents` uses Fritsch-Carlson with a turning point forced flat, and its suite asserts
+the PROPERTIES by sampling the cubic rather than pinning the path string: inside the band its own
+two points define, no valley beside a spike, no zero crossing the data did not make.
+
+**A stack's radius belongs to the outermost segment of each DIRECTION, not of each bar.** A
+category holding both signs ends two runs and each gets its corner; every joint between segments
+stays square, because a rounded joint reads as the end of something. `ChartMarks.ts` needed
+nothing for this: `arenaBarPath` already takes a value end and a base end and rounds only the
+value end, so a stack segment is that function with the base moved off the zero line and an
+interior segment is the same call with a radius of nothing. The forked piece is the domain:
+`arenaStackDomain` sums the two directions separately per category and takes the extremes of those
+sums, where `arenaSeriesDomain` takes the extremes of the individual values.
+
+**Which arrow pair moves a data cursor is a property of the chart, so the cursor functions take
+the axis and a chart answers one pair only.** `contracts/behaviour/figure-with-data-table.json`
+names both pairs and every chart excepts the one it does not use, which is verbose and is what the
+flat `requires` map is for: one exception cannot quietly excuse three. A chart must not consume
+the pair it has no sequence for, because `preventDefault` on `ArrowUp` takes the page scroll away
+from a keyboard reader who only wanted to pass through, which is the reasoning that already keeps
+`touch-action` off the rail. Both render suites press the idle pair and assert the cursor did not
+move.
+
+**A chart whose categories run down the plot carries no scrolling rail, and that is a decision
+rather than a gap.** `ArenaBarChart` overflows sideways when the points stop fitting, and sideways
+is a direction a page does not use. Down is the direction a page already scrolls, so a rail there
+would nest one scroller inside another and eat the gesture a reader was making to leave.
+`ArenaHorizontalBarChart` and `ArenaPyramidChart` take the room through `height` instead, which on
+that axis is what the data grows along. `chart.pad-category` is its own token rather than a wider
+`chart.pad-left` because the two gutters hold different things, and sizing every chart's value
+gutter for the longest category name anybody might write would spend it on every vertical chart in
+the library.
+
+**A pyramid negates its first series when it DRAWS it and nowhere else.** Both sides carry counts,
+the accessible table reads the numbers that were passed, and the axis is written in magnitudes,
+because a tick reading a minus would say one side is a debt rather than a count. A negative value
+is not corrected: it crosses the centre and draws on the other side, which is what the number says
+and what the table says too. Taking the magnitude quietly would make this the one place in Arena
+where the picture and the table can disagree. `arenaMirrorDomain` measures the larger side and
+reaches the same distance on both, because two halves scaled to their own maxima look balanced
+whatever the data said.
 
 **It appears at two series and not at one, and that is a consequence rather than a member.** One
 series is already named by the chart's `label` and by the only value column in its table, so a
