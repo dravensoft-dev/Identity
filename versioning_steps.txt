@@ -1,6 +1,15 @@
 Steps to release a new version x.x.x of Arena
 
-1. Change version docs:
+1. Rebuild the packages:
+
+bun run build:packages
+
+dist/ is git-ignored and no other build touches it, so it holds whatever was last built there,
+which after any component work is not what the tree says. check:packages reads both the version
+stamp and whether every component Components.json declares is in the emitted .d.ts, so a skipped
+rebuild reports itself rather than shipping.
+
+2. Change version docs:
 
 .claude-plugin/plugin.json:4
 .claude-plugin/marketplace.json:16
@@ -11,7 +20,7 @@ verify with:
 bun scripts/check/arena/check-release.ts 
 (expected a failure with "tag exists")
 
-2. Generate git tag:
+3. Generate git tag:
 
 git tag -a vx.x.x -m "Arena vx.x.x"
 

@@ -4,9 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  PACKAGES, GENERATED_PALETTE, distDir, stripAtStatements,
-  paletteEquivalenceProblems, manifestProblems, exportProblems, globMatches, collect, styleProblems,
-  componentMapProblems,
+  GENERATED_PALETTE, PACKAGES, collect, componentMapProblems, componentReachProblems, declaredComponents, distDir, exportProblems, globMatches, manifestProblems, paletteEquivalenceProblems, stripAtStatements, styleProblems,
 } from './check-packages.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 
@@ -288,4 +286,36 @@ test('a cycle terminates rather than walking the same sheet forever', () => {
   });
   assert.deepEqual(styleProblems(ANGULAR_PACKAGE, dir).problems, []);
   rmSync(dir, { recursive: true });
+});
+
+test('a package missing a declared component is a stale dist, and says which ones and what to run', () => {
+
+  const pkg = { layer: 'react', name: '@dravensoft/arena-react' };
+  const dir = join(root, 'frameworks', 'react', 'dist');
+  const problems = componentReachProblems(pkg, dir, ['ArenaButton', 'ArenaNeverExisted']);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0] ?? '', /ArenaNeverExisted/);
+  assert.doesNotMatch(problems[0] ?? '', /ArenaButton/, 'a component that IS there must not be reported');
+  assert.match(problems[0] ?? '', /build:packages/, 'the message has to carry the one command that fixes it');
+});
+
+test('a package holding every declared component reports nothing', () => {
+  const pkg = { layer: 'react', name: '@dravensoft/arena-react' };
+  const dir = join(root, 'frameworks', 'react', 'dist');
+  assert.deepEqual(componentReachProblems(pkg, dir, declaredComponents()), []);
+});
+
+test('a directory with no declarations at all is a failure rather than a clean pass', () => {
+
+  const pkg = { layer: 'react', name: '@dravensoft/arena-react' };
+  const problems = componentReachProblems(pkg, join(root, 'contracts', 'behaviour'), ['ArenaButton']);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0] ?? '', /no \.d\.ts was emitted/);
+});
+
+test('every component the tree declares is one this gate would look for', () => {
+
+  const declared = declaredComponents();
+  assert.ok(declared.length > 40, `only ${declared.length} components declared, which is not the whole library`);
+  assert.deepEqual([...declared].sort(), declared, 'the list is sorted, so a diff of it reads');
 });
