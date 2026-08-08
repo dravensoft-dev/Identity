@@ -17,6 +17,9 @@ judging.
 | `plan.ts` | whether a node runs and the sentence saying why: `decide(node, current, previous, onDisk)`. |
 | `run-build.ts` | the build, in the order the graph derives. |
 | `graph-problems.ts` | everything `check:graph` asserts, so the gate under `check/arena/` is a print and an exit. |
+| `fs-trace.ts`, `trace-preload.ts` | what a run actually opens: the preload wraps the read entry points before the script's own imports run. |
+| `audit.ts` | `auditProblems(node, script)`, which compares a traced run against the declaration. `UNTRACEABLE` names what spawns a process the tracer cannot enter. |
+| `gate-plan.ts` | what `check-all.ts` asks the graph, kept out of the runner so that file stays the single authority for how the suite is invoked. |
 
 ## A script subscribes by editing itself
 
@@ -47,6 +50,31 @@ each contracted member's description into the component that declares it, and
 
 **A spec opening with `!` excludes**, which is how a node claims a directory of hand-written
 sources without claiming the generated files beside them.
+
+## `check:graph --audit` answers what `check:graph` cannot
+
+The gate holds the edges **between** declarations, so it finds a reader nobody subscribed. It cannot
+find a `reads` that is too narrow: a file no node claims is a file every declaration agrees is
+nobody's business, and there is no disagreement to detect. Only a run is a witness, so `--audit`
+runs each node under a tracer and reports what it opened and does not declare.
+
+It found real gaps in declarations that had already passed the gate and a planted-defect test:
+`generate:playgrounds` read `frameworks/Components.json` without declaring it, `check:cdk` read the
+generated token sheets, and `check:react-barrel` probed a `.jsx` its spec did not reach.
+
+**Nothing under `fs-trace.ts` imports `node:fs` through ESM**, and that rule is load-bearing rather
+than tidy. The first ESM import of a builtin fixes the bindings every later importer gets, so a
+preload that touches `node:fs` before patching wraps an object nobody will call. Measured: with an
+ESM import ahead of the patch, 0 of 3 calls are intercepted; without it, 3 of 3. The CommonJS object
+is reached through `createRequire`, is the same object, and has writable properties.
+`audit.test.ts` pins both halves, so the day the runtime changes, the suite says so.
+
+A directory listing is not counted against a declaration. The digest is over the sorted list of path
+and hash pairs, so a file appearing under a directory a spec reaches already moves the fingerprint.
+
+**A node that spawns a process is reported unaudited and never clean.** `UNTRACEABLE` names each
+with its reason: `tsc`, `ngc`, `ng-packagr`, a browser and the shipped CLI all read in a process the
+tracer cannot enter. Measuring nothing and finding nothing have to read differently.
 
 ## Two lists say what is out, and both are keyed by path
 

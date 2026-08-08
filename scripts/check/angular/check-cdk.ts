@@ -17,7 +17,8 @@ const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css')
 
 export const node = {
   name: 'check:cdk',
-  reads: [BRIDGE, 'package.json', 'bun.lock'],
+  reads: [BRIDGE, 'contracts/design-generated/*.generated.css', 'contracts/design/colors.css',
+    'package.json', 'bun.lock'],
   writes: [],
   feeds: [],
 };

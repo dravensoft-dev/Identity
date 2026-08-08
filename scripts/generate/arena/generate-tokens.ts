@@ -60,6 +60,8 @@ export const node = {
     'build:tailwind',
     'check:angular',
     'check:arbitrary',
+    'check:cdk',
+    'check:component-css',
     'check:coverage',
     'check:ramp',
     'check:tailwind',

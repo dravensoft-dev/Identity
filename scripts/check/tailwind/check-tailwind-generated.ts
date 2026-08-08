@@ -11,7 +11,11 @@ export { BANNER, generatedPath };
 
 export const node = {
   name: 'check:tailwind-generated',
-  reads: [...tailwindNode.reads, ...tailwindNode.writes],
+  reads: [
+    ...tailwindNode.reads, ...tailwindNode.writes,
+    'frameworks/tailwind/components/**/*.generated.ts',
+    'frameworks/angular/ArenaStyles.generated.ts', 'frameworks/angular/Tv.generated.ts',
+  ],
   writes: [],
   feeds: [],
 };

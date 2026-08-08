@@ -6,7 +6,9 @@
  * write into the files they read, so a value measured before would be stale the instant they
  * succeed, and one measured after is the converged one their next run recomputes exactly.
  * --assert-full fails a run that kept anything, which is what stops a workflow proving the build
- * idempotent over a build that did nothing. */
+ * idempotent over a build that did nothing. It runs the steps under build/ and generate/ and never
+ * a gate: every node is in one graph, and which phase declared a node is what says whether a build
+ * is the thing that runs it. */
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -19,6 +21,11 @@ import { stampAll, universe } from './inputs.ts';
 import { fingerprintOne } from './fingerprint.ts';
 import { forget, readFiles, readState, recordGreen, writeFiles, writeState } from './state.ts';
 import { decide, shortFingerprint } from './plan.ts';
+
+export const BUILT_BY = ['scripts/build/', 'scripts/generate/'];
+
+export const isBuildStep = (declaredIn: Map<string, string>, name: string) =>
+  BUILT_BY.some((phase) => (declaredIn.get(name) ?? '').startsWith(phase));
 
 export function parseBuildArgs(argv: string[]) {
   let force = false;
@@ -64,7 +71,7 @@ async function main() {
   }
 
   const collected = await allNodes(repoRoot);
-  const order = topoOrder(collected.nodes);
+  const order = topoOrder(collected.nodes).filter((node) => isBuildStep(collected.declaredIn, node.name));
   const needs = needsOf(collected.nodes);
   const state = readState(repoRoot);
   const upstream = new Map<string, string>();

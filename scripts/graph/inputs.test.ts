@@ -17,12 +17,18 @@ const withTree = (build: (dir: string) => void, run: (dir: string) => void) => {
 
 test('a file whose stat has not moved is taken from the record, and never read again', () => {
   withTree((dir) => writeFileSync(join(dir, 'a.txt'), 'one'), (dir) => {
-    const first = stampOf(join(dir, 'a.txt'));
-    writeFileSync(join(dir, 'a.txt'), 'two');
-    const forced = { ...first };
-    assert.equal(stampOf(join(dir, 'a.txt'), forced), forced,
-      'the stat is the filter and it is trusted when it agrees, which is the whole saving; a '
-      + 'rewrite preserving both size and mtime is the one blind spot, and --force answers it');
+    const path = join(dir, 'a.txt');
+    const first = stampOf(path);
+
+    writeFileSync(path, 'two');
+    const when = first.mtimeMs / 1000;
+    utimesSync(path, when, when);
+
+    assert.equal(statSync(path).size, first.size, 'the fixture holds the size as well as the time');
+    assert.equal(stampOf(path, first), first,
+      'the stat is the filter and it is trusted when it agrees, which is the whole saving. This '
+      + 'fixture IS the blind spot, written on purpose: a rewrite that restores both the size and '
+      + 'the mtime is read as the file it was, and --force is what answers it');
   });
 });
 

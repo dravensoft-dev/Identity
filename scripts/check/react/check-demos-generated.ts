@@ -3,15 +3,22 @@ import { join, relative } from 'node:path';
 import { toPosix } from '../../utils/posix-path.ts';
 import { isMainModule } from '../../utils/main-module.ts';
 import { walkFiles } from '../../utils/walk-files.ts';
-import { buildDemos, BANNER, ROOTS } from '../../build/react/build-demos.ts';
+import { buildDemos, BANNER, ROOTS, ROOT_MODULES, COMPILED_EXTENSIONS } from '../../build/react/build-demos.ts';
 import { repoRoot as root } from '../../lib/arena/repo-root.ts';
 import { skipExitCode } from '../../lib/arena/arena-scripts-vars.ts';
+
+export function emittedName(path: string) {
+  const stem = path.replace(/\.tsx?$/, '');
+  return stem.endsWith('.generated') ? `${stem}.js` : `${stem}.generated.js`;
+}
 
 export const node = {
   name: 'check:demos',
   reads: [
-    ...ROOTS.flatMap((root) => ['tsx', 'jsx', 'ts'].map((ext) => `${root}/**/*.${ext}`)),
+    ...ROOTS.flatMap((root) => COMPILED_EXTENSIONS.map((ext) => `${root}/**/*${ext}`)),
     ...ROOTS.map((root) => `${root}/**/*.generated.js`),
+    ...ROOT_MODULES,
+    ...ROOT_MODULES.map(emittedName),
   ],
   writes: [],
   feeds: [],

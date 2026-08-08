@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBuildArgs, partialRunProblems, summarize } from './run-build.ts';
+import { isBuildStep, parseBuildArgs, partialRunProblems, summarize } from './run-build.ts';
 
 test('the runner takes two flags and refuses anything else', () => {
   assert.deepEqual(parseBuildArgs([]), { force: false, assertFull: false });
@@ -39,4 +39,18 @@ test('the guard is what keeps a workflow from proving idempotence over a build t
     'CI restores no graph state today, so this passes trivially; it is the guard for the day '
     + 'somebody adds .cache to the paths actions/cache restores, which would turn the whole gate '
     + 'from a full run into an incremental one in silence');
+});
+
+test('a build runs what build/ and generate/ declared, and never a gate', () => {
+  const declaredIn = new Map([
+    ['generate:tokens', 'scripts/generate/arena/generate-tokens.ts'],
+    ['build:tailwind', 'scripts/build/tailwind/build-tailwind.ts'],
+    ['check:dtcg', 'scripts/check/core/check-dtcg.ts'],
+  ]);
+  assert.equal(isBuildStep(declaredIn, 'generate:tokens'), true);
+  assert.equal(isBuildStep(declaredIn, 'build:tailwind'), true);
+  assert.equal(isBuildStep(declaredIn, 'check:dtcg'), false,
+    'every node is in one graph, and the phase that declared a node is what says whether a build '
+    + 'is the thing that runs it. Without this, subscribing a gate quietly adds it to bun run build');
+  assert.equal(isBuildStep(declaredIn, 'check:nothing'), false);
 });

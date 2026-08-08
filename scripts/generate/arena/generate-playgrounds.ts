@@ -17,11 +17,19 @@ import { angularEntry, angularPage, MARKERS_SOURCE } from '../../lib/angular/pla
 
 export const PLAYGROUND_LAYERS = ['react', 'angular'];
 
+export const PROBED_LAYERS = [...PLAYGROUND_LAYERS, 'tailwind'];
+
 export const CODEC_SOURCE = 'frameworks/demos/PlaygroundCodec.ts';
 
 export const node = {
   name: 'generate:playgrounds',
-  reads: [CODEC_SOURCE, 'frameworks/demos/*.demo.json', 'contracts/api/types', 'contracts/api/components'],
+  reads: [
+    CODEC_SOURCE, 'frameworks/demos/*.demo.json', 'frameworks/Components.json',
+    'frameworks/angular/ProjectionMarkers.ts', 'contracts/api/types', 'contracts/api/components',
+    ...PROBED_LAYERS.flatMap((layer) => ['ts', 'tsx', 'manifest.json']
+      .map((ext) => `frameworks/${layer}/components/**/*.${ext}`)),
+    '!frameworks/**/*.generated.*',
+  ],
   writes: PLAYGROUND_LAYERS.flatMap((layer) => [
     `frameworks/${layer}/playground/PlaygroundCodec.generated.ts`,
     `frameworks/${layer}/components/**/*.demo.generated.html`,

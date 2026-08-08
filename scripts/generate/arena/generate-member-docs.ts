@@ -33,6 +33,7 @@ export const node = {
     'check:demos',
     'check:react-barrel',
     'check:react-types',
+    'generate:playgrounds',
   ],
 };
 

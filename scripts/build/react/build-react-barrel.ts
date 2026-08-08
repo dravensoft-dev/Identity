@@ -24,7 +24,7 @@ export const BARREL_TARGET = 'frameworks/react/Index.generated.ts';
 export const node = {
   name: 'build:react-barrel',
   reads: [
-    'frameworks/react/components/**/*.tsx', 'frameworks/react/components/**/*.ts',
+    ...[...SOURCE_EXTENSIONS, '.ts', '.js'].map((ext) => `frameworks/react/components/**/*${ext}`),
     '!frameworks/react/components/**/*.generated.*',
     ...HELPERS.map((helper) => `frameworks/react/${helper}.*`),
   ],

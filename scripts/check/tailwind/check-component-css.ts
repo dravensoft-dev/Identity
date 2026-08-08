@@ -22,7 +22,11 @@ import { CONSUME, MANIFESTS } from '../../build/tailwind/build-tailwind.ts';
 
 export const node = {
   name: 'check:component-css',
-  reads: [MANIFESTS, `${CONSUME}/**/*.css`, 'contracts/design/environment.css'],
+  reads: [
+    MANIFESTS, `${CONSUME}/**/*.css`, 'frameworks/tailwind/components/**/*.card.html',
+    'contracts/design/environment.css', 'contracts/design/colors.css',
+    'contracts/design-generated/*.generated.css',
+  ],
   writes: [],
   feeds: [],
 };
