@@ -41,3 +41,68 @@ export function arenaLineAreaPath(points: readonly ArenaLinePoint[], baseline: n
   const line = points.map((point) => `${point.x},${point.y}`).join(' L');
   return `M${first.x},${baseline} L${line} L${last.x},${baseline} Z`;
 }
+
+export function arenaCurveTangents(points: readonly ArenaLinePoint[]): number[] {
+  const n = points.length;
+  if (n < 2) return points.map(() => 0);
+  const slopes: number[] = [];
+  for (let i = 0; i < n - 1; i += 1) {
+    const a = points[i];
+    const b = points[i + 1];
+    if (!a || !b) return points.map(() => 0);
+    const dx = b.x - a.x;
+    slopes.push(dx === 0 ? 0 : (b.y - a.y) / dx);
+  }
+  const m: number[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const before = slopes[i - 1];
+    const after = slopes[i];
+    if (before === undefined) m.push(after ?? 0);
+    else if (after === undefined) m.push(before);
+    else if (before * after <= 0) m.push(0);
+    else m.push((before + after) / 2);
+  }
+  for (let i = 0; i < n - 1; i += 1) {
+    const d = slopes[i] ?? 0;
+    if (d === 0) {
+      m[i] = 0;
+      m[i + 1] = 0;
+      continue;
+    }
+    const a = (m[i] ?? 0) / d;
+    const b = (m[i + 1] ?? 0) / d;
+    const s = a * a + b * b;
+    if (s > 9) {
+      const t = 3 / Math.sqrt(s);
+      m[i] = t * a * d;
+      m[i + 1] = t * b * d;
+    }
+  }
+  return m;
+}
+
+export function arenaCurveSegments(points: readonly ArenaLinePoint[]): string {
+  const m = arenaCurveTangents(points);
+  let path = '';
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const a = points[i];
+    const b = points[i + 1];
+    if (!a || !b) break;
+    const dx = (b.x - a.x) / 3;
+    path += ` C${a.x + dx},${a.y + (m[i] ?? 0) * dx} ${b.x - dx},${b.y - (m[i + 1] ?? 0) * dx} ${b.x},${b.y}`;
+  }
+  return path;
+}
+
+export function arenaCurvePath(points: readonly ArenaLinePoint[]): string {
+  const first = points[0];
+  if (!first) return '';
+  return `M${first.x},${first.y}${arenaCurveSegments(points)}`;
+}
+
+export function arenaCurveAreaPath(points: readonly ArenaLinePoint[], baseline: number): string {
+  const first = points[0];
+  const last = points[points.length - 1];
+  if (!first || !last) return '';
+  return `M${first.x},${baseline} L${first.x},${first.y}${arenaCurveSegments(points)} L${last.x},${baseline} Z`;
+}

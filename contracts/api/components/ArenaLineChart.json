@@ -29,6 +29,12 @@
       "default": false,
       "description": "Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other."
     },
+    "curve": {
+      "form": "primitive",
+      "type": "boolean",
+      "default": false,
+      "description": "Draw the series as a smooth curve rather than straight segments between points. The interpolation is monotone cubic, not Catmull-Rom, and that is the whole of the decision: a Catmull-Rom curve overshoots, so between two measured points it draws a peak or a trough nobody measured, and a chart that draws data which does not exist is the one thing a chart may not do. A monotone curve stays inside the band its own two points define, keeps a flat tangent at a turning point, and never crosses zero unless the values do. It changes the path string and nothing else: the points, the crosshair, the tooltip and the data cursor read the same numbers at the same places."
+    },
     "valueSuffix": {
       "form": "primitive",
       "type": "string",

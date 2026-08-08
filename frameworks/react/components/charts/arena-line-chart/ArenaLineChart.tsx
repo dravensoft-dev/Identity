@@ -7,7 +7,7 @@ import { arenaWarnOnce } from '../../../WarnOnce.ts';
 import {
   arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaNearestPointIndex,
 } from '../ChartScales.ts';
-import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks.ts';
+import { arenaLinePoints, arenaLineAreaPath, arenaCurvePath, arenaCurveAreaPath } from '../ChartMarks.ts';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis.ts';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries.ts';
 import { arenaLegendStrip } from '../ChartLegend.ts';
@@ -31,6 +31,9 @@ export interface ArenaLineChartProps {
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   area?: boolean;
 
+  /** Draw the series as a smooth curve rather than straight segments between points. The interpolation is monotone cubic, not Catmull-Rom, and that is the whole of the decision: a Catmull-Rom curve overshoots, so between two measured points it draws a peak or a trough nobody measured, and a chart that draws data which does not exist is the one thing a chart may not do. A monotone curve stays inside the band its own two points define, keeps a flat tangent at a turning point, and never crosses zero unless the values do. It changes the path string and nothing else: the points, the crosshair, the tooltip and the data cursor read the same numbers at the same places. */
+  curve?: boolean;
+
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   valueSuffix?: string;
 
@@ -49,7 +52,7 @@ export interface ArenaLineChartProps {
 
 
 export function ArenaLineChart({
-  labels, series, label, area = false, valueSuffix, valuePrefix, valueFormat,
+  labels, series, label, area = false, curve = false, valueSuffix, valuePrefix, valueFormat,
   height = ARENA_CHART_HEIGHT, minPointSpacing,
 }: ArenaLineChartProps) {
   if (!label) throw new Error('ArenaLineChart: `label` is required (it names the chart for the accessible name, and nothing can derive that)');
@@ -121,7 +124,8 @@ export function ArenaLineChart({
 
         {}
         {fills && plotted.map((points, s) => points.length > 0 && (
-          <path key={s} d={arenaLineAreaPath(points, axis.zeroY)} fill={arenaAreaFill(colors[s] as string)} stroke="none" />
+          <path key={s} d={curve ? arenaCurveAreaPath(points, axis.zeroY) : arenaLineAreaPath(points, axis.zeroY)}
+            fill={arenaAreaFill(colors[s] as string)} stroke="none" />
         ))}
 
         {hover !== null && (
@@ -129,10 +133,13 @@ export function ArenaLineChart({
             stroke="var(--border-strong)" style={{ strokeWidth: 'var(--bw)' }} strokeDasharray="3 3" />
         )}
 
-        {plotted.map((points, s) => points.length > 1 && (
+        {plotted.map((points, s) => points.length > 1 && (curve ? (
+          <path key={s} d={arenaCurvePath(points)} fill="none" stroke={colors[s]} style={{ strokeWidth: 'var(--bw-strong)' }}
+            strokeLinejoin="round" strokeLinecap="round" />
+        ) : (
           <polyline key={s} points={arenaLinePoints(points)} fill="none" stroke={colors[s]} style={{ strokeWidth: 'var(--bw-strong)' }}
             strokeLinejoin="round" strokeLinecap="round" />
-        ))}
+        )))}
 
         {plotted.map((points, s) => points.map((point, i) => (
           <circle key={`${s}-${i}`} cx={point.x} cy={point.y} r={hover === i ? chartPointRHover : chartPointR}

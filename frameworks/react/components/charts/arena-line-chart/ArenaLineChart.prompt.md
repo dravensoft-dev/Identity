@@ -28,6 +28,7 @@ A line for a value over an ordered sequence, time, builds, releases. Hovering an
 | `series*` | array | `readonly ArenaSeries[]` |  | The plotted series, drawn as one polyline each over the same ordered sequence. One series is the common case and draws exactly what it drew before. The area fill is refused past one series, because two fills occlude each other and the reader cannot tell which value either edge belongs to. |
 | `label*` | primitive | `string` |  | Names the chart for its accessible name and for the caption of its data table. This is the CHART's name, not a series': a series names itself. Required and guarded rather than defaulted, because a fallback of the chart TYPE satisfies roles.label mechanically and tells a screen-reader user nothing, so two charts on one page announce identically. |
 | `area` | primitive | `boolean` | `false` | Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. |
+| `curve` | primitive | `boolean` | `false` | Draw the series as a smooth curve rather than straight segments between points. The interpolation is monotone cubic, not Catmull-Rom, and that is the whole of the decision: a Catmull-Rom curve overshoots, so between two measured points it draws a peak or a trough nobody measured, and a chart that draws data which does not exist is the one thing a chart may not do. A monotone curve stays inside the band its own two points define, keeps a flat tangent at a turning point, and never crosses zero unless the values do. It changes the path string and nothing else: the points, the crosshair, the tooltip and the data cursor read the same numbers at the same places. |
 | `valueSuffix` | primitive | `string` |  | Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. |
 | `valuePrefix` | primitive | `string` |  | Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. |
 | `valueFormat` | object | `ArenaNumberFormat` |  | How each number is written before the prefix and suffix are added: which locale, how many fraction digits, whether thousands are grouped, whether large numbers are compacted. Absent, the raw JavaScript number, which is what this chart drew before the member existed. |
@@ -96,3 +97,20 @@ It is `aria-hidden`, deliberately. It is a key for a reader who can see the colo
 same names are already the column headers of the numbers table, so a focusable copy of them would
 be a second source for one fact. Its rows take no focus, and the plot still has exactly one tab
 stop.
+
+### Straight or smooth
+
+`curve` draws the series as a smooth curve instead of straight segments. It changes the path
+string and nothing else: the points sit where they sat, the crosshair snaps to the same one, the
+tooltip reads the same numbers and the data cursor walks the same sequence.
+
+The interpolation is monotone cubic rather than Catmull-Rom, and that choice is the whole reason
+this member is safe to use on real data. A Catmull-Rom curve overshoots, so between two measured
+points it draws a peak or a trough nobody measured, and a chart that draws data which does not
+exist is the one thing a chart may not do. A monotone curve stays inside the band its own two
+points define, flattens at a turning point instead of sailing past it, and never crosses zero
+unless the values do.
+
+Reach for it when the underlying quantity really is continuous, a temperature or a load average
+sampled at intervals. Leave it off when the points are discrete events counted per bucket: a
+smooth line between two counts implies values between them that were never counted.

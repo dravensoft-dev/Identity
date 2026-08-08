@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ARENA_CHART_HEIGHT, ARENA_PAD } from '../../DataVisuals';
-import { arenaBarPath, arenaArcPath, arenaLinePoints, arenaLineAreaPath } from './ChartMarks';
+import { arenaBarPath, arenaArcPath, arenaCurveTangents, arenaCurvePath, arenaCurveAreaPath, arenaLinePoints, arenaLineAreaPath } from './ChartMarks';
 import { arenaDoughnutSlices } from './ChartScales';
 import { arenaDoughnutRadii } from './ChartAxis';
 
@@ -176,4 +176,96 @@ test('a doughnut path is untouched by the branch a pie needed', () => {
   const path = arenaArcPath(100, 100, 80, 50, 0, Math.PI / 2);
   assert.ok(path.startsWith('M180,100'), `a ring still starts on its outer edge, got ${path}`);
   assert.equal((path.match(/A/g) ?? []).length, 2, 'a ring has two arcs, outer and inner');
+});
+
+function sampleCurve(points: { x: number; y: number }[], steps: number): { x: number; y: number }[] {
+
+  const m = arenaCurveTangents(points);
+  const out: { x: number; y: number }[] = [];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const a = points[i]!;
+    const b = points[i + 1]!;
+    const dx = (b.x - a.x) / 3;
+    const p1 = { x: a.x + dx, y: a.y + m[i]! * dx };
+    const p2 = { x: b.x - dx, y: b.y - m[i + 1]! * dx };
+    for (let s = 0; s <= steps; s += 1) {
+      const t = s / steps;
+      const u = 1 - t;
+      out.push({
+        x: u * u * u * a.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * b.x,
+        y: u * u * u * a.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * b.y,
+      });
+    }
+  }
+  return out;
+}
+
+test('a curve never leaves the band its own two points define, which is what stops it inventing data', () => {
+
+  const points = [{ x: 0, y: 100 }, { x: 50, y: 100 }, { x: 100, y: 20 }, { x: 150, y: 90 }, { x: 200, y: 88 }];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const a = points[i]!;
+    const b = points[i + 1]!;
+    const lo = Math.min(a.y, b.y);
+    const hi = Math.max(a.y, b.y);
+    for (const sample of sampleCurve([a, b], 20)) {
+      assert.ok(sample.y >= lo - 1e-9 && sample.y <= hi + 1e-9,
+        `between (${a.x},${a.y}) and (${b.x},${b.y}) the curve reached ${sample.y}`);
+    }
+  }
+});
+
+test('a spike does not dig a valley beside it, because a turning point gets a flat tangent', () => {
+
+  const points = [{ x: 0, y: 100 }, { x: 50, y: 20 }, { x: 100, y: 100 }];
+  const m = arenaCurveTangents(points);
+  assert.equal(m[1], 0, 'the tangent at a local extreme must be flat or the curve overshoots past it');
+  for (const sample of sampleCurve(points, 40)) {
+    assert.ok(sample.y <= 100 + 1e-9, `the curve rose past both ends, to ${sample.y}`);
+    assert.ok(sample.y >= 20 - 1e-9, `the curve dipped below the peak value, to ${sample.y}`);
+  }
+});
+
+test('a curve over values that never cross zero does not cross it either', () => {
+
+  const zero = 200;
+  const points = [{ x: 0, y: 190 }, { x: 40, y: 30 }, { x: 80, y: 195 }, { x: 120, y: 60 }];
+  for (const sample of sampleCurve(points, 40)) {
+    assert.ok(sample.y < zero, `the curve reached ${sample.y}, at or past the zero line at ${zero}`);
+  }
+});
+
+test('two points curve into the straight line they always were', () => {
+  const points = [{ x: 0, y: 10 }, { x: 100, y: 90 }];
+  for (const sample of sampleCurve(points, 20)) {
+    const straight = 10 + (sample.x / 100) * 80;
+    assert.ok(Math.abs(sample.y - straight) < 1e-6, `at x ${sample.x} the curve was ${sample.y}, the line ${straight}`);
+  }
+});
+
+test('a flat run stays flat rather than rippling between equal values', () => {
+  const points = [{ x: 0, y: 50 }, { x: 50, y: 50 }, { x: 100, y: 50 }, { x: 150, y: 20 }];
+  for (const sample of sampleCurve(points.slice(0, 3), 20)) {
+    assert.ok(Math.abs(sample.y - 50) < 1e-9, `a run of equal values rippled to ${sample.y}`);
+  }
+});
+
+test('a curve path starts where the line does and carries one cubic per gap', () => {
+  const points = [{ x: 0, y: 10 }, { x: 50, y: 40 }, { x: 100, y: 20 }];
+  const path = arenaCurvePath(points);
+  assert.ok(path.startsWith('M0,10'), `got ${path}`);
+  assert.equal((path.match(/C/g) ?? []).length, 2);
+});
+
+test('a curve with no points and a curve with one draw nothing rather than a stray move', () => {
+  assert.equal(arenaCurvePath([]), '');
+  assert.equal(arenaCurvePath([{ x: 5, y: 5 }]), 'M5,5');
+  assert.equal(arenaCurveAreaPath([], 100), '');
+});
+
+test('a curved area closes to the baseline at both ends, as the straight one does', () => {
+  const points = [{ x: 0, y: 10 }, { x: 50, y: 40 }];
+  const area = arenaCurveAreaPath(points, 200);
+  assert.ok(area.startsWith('M0,200 L0,10'), `got ${area}`);
+  assert.ok(area.endsWith('L50,200 Z'), `got ${area}`);
 });

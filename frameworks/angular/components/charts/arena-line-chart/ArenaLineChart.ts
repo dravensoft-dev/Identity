@@ -10,7 +10,7 @@ import {
 import {
   arenaLinearScale, arenaPointScale, arenaPointAt, arenaScaleValue, arenaNearestPointIndex,
 } from '../ChartScales';
-import { arenaLinePoints, arenaLineAreaPath } from '../ChartMarks';
+import { arenaLinePoints, arenaLineAreaPath, arenaCurvePath, arenaCurveAreaPath } from '../ChartMarks';
 import { arenaPlotBox, arenaAxisModel, arenaTickLabelX, arenaCategoryLabelY } from '../ChartAxis';
 import { arenaChartTable, arenaSeriesColors, arenaSeriesDomain, arenaSeriesPointCount } from '../ChartSeries';
 import { arenaTooltipAnchor } from '../ChartTooltip';
@@ -79,8 +79,13 @@ const POINT_LABEL_STYLE = { fontSize: 'var(--fs-xs)' } as const satisfies Readon
 
       @for (line of lines(); track line.key) {
         @if (line.points.length > 1) {
-          <polyline [attr.points]="line.polyline" fill="none" [attr.stroke]="line.color"
-                    stroke-linejoin="round" stroke-linecap="round" [style]="seriesStrokeStyle" />
+          @if (curve()) {
+            <path [attr.d]="line.curvePath" fill="none" [attr.stroke]="line.color"
+                  stroke-linejoin="round" stroke-linecap="round" [style]="seriesStrokeStyle" />
+          } @else {
+            <polyline [attr.points]="line.polyline" fill="none" [attr.stroke]="line.color"
+                      stroke-linejoin="round" stroke-linecap="round" [style]="seriesStrokeStyle" />
+          }
         }
       }
 
@@ -142,6 +147,8 @@ export class ArenaLineChart {
   readonly label = input.required<string>();
   /** Fill under the line at 18% of the series colour: a tint, never a gradient. For a single series; two fills occlude each other. */
   readonly area = input(false, { transform: booleanAttribute });
+  /** Draw the series as a smooth curve rather than straight segments between points. The interpolation is monotone cubic, not Catmull-Rom, and that is the whole of the decision: a Catmull-Rom curve overshoots, so between two measured points it draws a peak or a trough nobody measured, and a chart that draws data which does not exist is the one thing a chart may not do. A monotone curve stays inside the band its own two points define, keeps a flat tangent at a turning point, and never crosses zero unless the values do. It changes the path string and nothing else: the points, the crosshair, the tooltip and the data cursor read the same numbers at the same places. */
+  readonly curve = input(false, { transform: booleanAttribute });
   /** Appended verbatim to every number the chart draws: the axis ticks, the tooltip and the accessible table. Carries its own leading space if one is wanted. */
   readonly valueSuffix = input<string>();
   /** Drawn verbatim before every number the chart writes, as valueSuffix is drawn after it. A currency that precedes its amount is the majority case worldwide and had no expression: with suffix alone, "1234.5 Bs." is what a chart drew where the table beside it read "Bs. 1.234,50", and the accessible table inherited the disagreement. */
@@ -238,13 +245,15 @@ export class ArenaLineChart {
     const xScale = this.xScale();
     const colors = this.colors();
     const zeroY = this.zeroY();
+    const curved = this.curve();
     return this.series().map((one, index) => {
       const points = one.values.map((value, i) => ({ x: arenaPointAt(xScale, i), y: arenaScaleValue(yScale, value) }));
       return {
         key: index,
         color: colors[index],
         polyline: arenaLinePoints(points),
-        areaPath: arenaLineAreaPath(points, zeroY),
+        curvePath: arenaCurvePath(points),
+        areaPath: curved ? arenaCurveAreaPath(points, zeroY) : arenaLineAreaPath(points, zeroY),
         areaFill: arenaAreaFill(colors[index] as string),
         points,
       };
