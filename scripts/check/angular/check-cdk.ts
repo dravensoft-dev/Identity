@@ -15,6 +15,13 @@ import { captured } from '../../utils/captures.ts';
 const BRIDGE = join('frameworks', 'angular', 'theme', 'arena-cdk.css');
 const PREBUILT = join('node_modules', '@angular', 'cdk', 'overlay-prebuilt.css');
 
+export const node = {
+  name: 'check:cdk',
+  reads: [BRIDGE, 'package.json', 'bun.lock'],
+  writes: [],
+  feeds: [],
+};
+
 export function bridgeSelectors(css: string) {
   const out = new Set<string>();
   const noAtRules = css.replace(/@[a-z-]+[^;{}]*;/gi, '');

@@ -58,6 +58,7 @@ export const node = {
   feeds: [
     'build:angular-demo',
     'build:tailwind',
+    'check:angular',
     'check:arbitrary',
     'check:coverage',
     'check:ramp',

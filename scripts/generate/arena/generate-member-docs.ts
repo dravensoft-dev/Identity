@@ -28,6 +28,7 @@ export const node = {
     'build:angular-demo',
     'build:demos',
     'build:react-barrel',
+    'check:angular',
     'check:arbitrary',
     'check:demos',
     'check:react-barrel',

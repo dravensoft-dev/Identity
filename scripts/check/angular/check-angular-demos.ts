@@ -19,6 +19,17 @@ export const BUNDLE_DIR = 'build/demo/js';
 export const PAGE_SUFFIX = '.demo.generated.html';
 export const ENTRY_SUFFIX = '.demo.entry.generated.ts';
 
+export const node = {
+  name: 'check:angular-demos',
+  reads: [
+    `frameworks/angular/components/**/*${PAGE_SUFFIX}`,
+    `frameworks/angular/components/**/*${ENTRY_SUFFIX}`,
+    `frameworks/angular/${BUNDLE_DIR}/**/*.js`,
+  ],
+  writes: [],
+  feeds: [],
+};
+
 export function pageProblems(tree: Record<string, string[]>, read: (path: string) => string | null) {
   const problems = [];
   const found = new Set();

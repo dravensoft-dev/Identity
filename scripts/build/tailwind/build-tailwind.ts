@@ -71,6 +71,7 @@ export const node = {
   feeds: [
     'build:angular-demo',
     'build:demos',
+    'check:angular',
     'check:arbitrary',
     'check:component-css',
     'check:demos',
